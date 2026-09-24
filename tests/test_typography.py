@@ -66,3 +66,20 @@ def test_html_emails_get_the_same_typography():
 
     html = mail.outbox[0].alternatives[0][0]
     assert f"w{NBSP}Monituj" in html
+
+
+def test_plain_text_emails_keep_their_lines():
+    from apps.common.typography import fix_orphans_text
+
+    text = "Pozostało do przesłania:\n- Faktury\n- Umowa\nLink do\nhttps://x.pl"
+
+    kept = fix_orphans_text(text, keep_lines=True).replace("\u00a0", " ")
+
+    assert kept.split("\n") == [
+        "Pozostało do przesłania:",
+        "- Faktury",
+        "- Umowa",
+        "Link do",
+        "https://x.pl",
+    ]
+    assert fix_orphans_text("idź w las", keep_lines=True) == "idź w\u00a0las"

@@ -1,0 +1,12 @@
+{% load formatting %}{% autoescape off %}{% if upload_count == 1 %}Dotarł nowy dokument{% else %}Dotarły nowe dokumenty ({{ upload_count }}){% endif %} od {{ client_name }} do prośby „{{ request_name }}”:
+{% for upload in uploads %}
+- {{ upload.item }}: {{ upload.file }}{% endfor %}
+
+Dostarczono: {{ progress }}.{% if missing_items %}
+Wciąż brakuje: {{ missing_items|join:", " }}.{% endif %}
+
+Sprawdź dokumenty:
+{{ panel_link }}
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

@@ -93,12 +93,13 @@ pip-audit -r requirements/prod.txt
 | Zadanie | Co robi |
 |---|---|
 | `send_automatic_reminders` (co 5 minut) | Wysyła automatyczne przypomnienia, których termin nadszedł |
+| `send_upload_emails` (co minutę) | Wysyła nadawcy e-mail o nowych dokumentach – gdy klient przestanie przesyłać pliki na minutę, jeden e-mail zbiera wszystkie (najpóźniej po 10 minutach). Pomija dokumenty, które nadawca już zobaczył w panelu, i prośby zakończone e-mailem „komplet dokumentów” |
 | `anonymize_expired_documents` | Usuwa pliki po okresie przechowywania i powiadamia obie strony |
 | `delete_unconfirmed_requests` | Usuwa prośby bez konta niepotwierdzone w ciągu 48 godzin (i konta bez hasła utworzone tylko dla nich) |
 | `delete_expired_demo_accounts` | Usuwa konta demo starsze niż 24 godziny |
 | `delete_old_throttle_events` | Czyści stare wpisy limitów (logowanie, e-maile, przesyłanie plików) |
 
-Bez działających kontenerów `worker` i `beat` strona działa, ale przypomnienia nie są wysyłane, a pliki nie są usuwane po terminie. Na produkcji oba uruchamiają się automatycznie razem ze stroną.
+Bez działających kontenerów `worker` i `beat` strona działa, ale przypomnienia i e-maile o nowych dokumentach nie są wysyłane, a pliki nie są usuwane po terminie. Na produkcji oba uruchamiają się automatycznie razem ze stroną.
 
 ---
 

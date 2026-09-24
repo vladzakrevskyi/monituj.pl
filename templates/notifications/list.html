@@ -1,0 +1,45 @@
+{% extends "base/app_base.html" %}
+{% load formatting %}
+
+{% block page_name %}Powiadomienia{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<div>
+<h1>Powiadomienia</h1>
+<p class="page-header__sub">Dokumenty przesłane przez Twoich klientów, od najnowszych. O nowych dokumentach informujemy też mailem.</p>
+</div>
+</div>
+
+{% if notices %}
+<ul class="notice-list">
+{% for notice in notices %}
+{% with document=notice.document item=notice.document.request_item request_obj=notice.document.request_item.request %}
+<li class="notice{% if not notice.read_at %} is-unread{% endif %}">
+<span class="notice__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/></svg></span>
+<div class="notice__body">
+<p class="notice__text"><strong>{{ request_obj.client.name }}</strong> przesyła dokument <strong>{{ item.name }}</strong> do prośby <a href="{% url 'requests:detail' request_obj.pk %}" title="Otwórz prośbę {{ request_obj.name }}">{{ request_obj.name }}</a></p>
+<p class="notice__meta">{% if document.is_anonymized %}Plik usunięty po okresie przechowywania{% else %}<a href="{% url 'documents_api:download' document.id %}" download title="Pobierz plik {{ document.original_filename }}">{{ document.original_filename }}</a>{% endif %} · {{ notice.created_at|dt }}{% if not notice.read_at %} · <span class="notice__new">Nowe</span>{% endif %}</p>
+</div>
+</li>
+{% endwith %}
+{% endfor %}
+</ul>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="pagination">
+{% if page_obj.has_previous %}
+<a href="?page={{ page_obj.previous_page_number }}" title="Poprzednia strona">&larr; Poprzednia</a>
+{% endif %}
+<span>Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</span>
+{% if page_obj.has_next %}
+<a href="?page={{ page_obj.next_page_number }}" title="Następna strona">Następna &rarr;</a>
+{% endif %}
+</div>
+{% endif %}
+{% else %}
+<div class="card">
+<p class="mb-0">Nie masz jeszcze powiadomień. Gdy klient prześle dokument, zobaczysz to tutaj.</p>
+</div>
+{% endif %}
+{% endblock %}

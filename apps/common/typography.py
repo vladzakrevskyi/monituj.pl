@@ -29,9 +29,16 @@ _TOKEN = re.compile(
 _INLINE_TAG = re.compile(r"</?(a|abbr|b|em|i|mark|small|span|strong|time|u)\b", re.I)
 
 
-def fix_orphans_text(text):
-    text = _ORPHAN.sub(rf"\1{NBSP}", text)
-    return _DASH.sub(NBSP, text)
+# In plain-text emails a line break is part of the layout ("- item" lists,
+# a link on its own line), so gluing never reaches across one there.
+_ORPHAN_IN_LINE = re.compile(rf"(?<![^\s(„\"'«])({_SHORT})[ \t]+(?=\S)")
+_DASH_IN_LINE = re.compile(r"(?<=\S)[ \t]+(?=[–—-](?:\s|$))")
+
+
+def fix_orphans_text(text, keep_lines=False):
+    orphan, dash = (_ORPHAN_IN_LINE, _DASH_IN_LINE) if keep_lines else (_ORPHAN, _DASH)
+    text = orphan.sub(rf"\1{NBSP}", text)
+    return dash.sub(NBSP, text)
 
 
 def fix_orphans(html):

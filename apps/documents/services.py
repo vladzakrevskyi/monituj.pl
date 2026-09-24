@@ -14,6 +14,7 @@ from apps.common.exceptions import (
 from apps.documents.models import Document, DocumentStatus
 from apps.documents.storage import private_storage
 from apps.documents.validation import validate_upload
+from apps.notifications.inbox import notify_upload
 from apps.notifications.models import EmailStatus, EmailTemplate
 from apps.notifications.services import EmailService
 from apps.requests.models import RequestItemStatus
@@ -86,6 +87,7 @@ class UploadDocumentService:
         AuditService.log(
             AuditEvent.DOCUMENT_UPLOADED, target=document, request=django_request
         )
+        notify_upload(document)
 
         recipient = request_item.request.client.email
         EmailService.send(

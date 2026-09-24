@@ -16,6 +16,7 @@ from apps.common.responses import (
     is_ajax_request,
     success_response,
 )
+from apps.notifications import inbox
 from apps.reminders.schedule import recipient_zone, send_clock
 from apps.reminders.services import ReminderScheduleService
 from apps.requests import received
@@ -127,6 +128,8 @@ def request_detail(request, request_id):
     except ApplicationError:
         raise Http404 from None
 
+    # Whoever opens the request has seen what arrived.
+    inbox.mark_read(request.user, request_obj)
     items = request_obj.items.all().order_by("id")
     reminders = request_obj.reminders.all().order_by("-sent_at")
     history = AuditService.history_for_request(request_obj)

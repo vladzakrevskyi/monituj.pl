@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 from apps.common.models import TimeStampedModel
@@ -34,6 +35,7 @@ class EmailTemplate(models.TextChoices):
         "kontakt_potwierdzenie",
         "Formularz kontaktowy (potwierdzenie)",
     )
+    UPLOAD_OWNER = "dokument_dodany", "Nowy dokument (nadawca)"
 
 
 class EmailStatus(models.TextChoices):
@@ -60,3 +62,41 @@ class EmailLog(TimeStampedModel):
 
     def __str__(self):
         return f"{self.template} to {self.recipient_email}"
+
+
+class NotificationKind(models.TextChoices):
+    DOCUMENT_UPLOADED = "dokument_dodany", "Dodano dokument"
+
+
+class Notification(TimeStampedModel):
+    """What a sender sees under "Powiadomienia" in the panel - and what the
+    upload email is built from. Points at the document instead of copying its
+    name, so deleting or anonymizing the file takes the trace with it."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+    kind = models.CharField(
+        max_length=32,
+        choices=NotificationKind.choices,
+        default=NotificationKind.DOCUMENT_UPLOADED,
+    )
+    document = models.ForeignKey(
+        "documents.Document",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+    read_at = models.DateTimeField(null=True, blank=True)
+    emailed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(fields=["user", "read_at"]),
+            models.Index(fields=["emailed_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.kind} for {self.user_id}"

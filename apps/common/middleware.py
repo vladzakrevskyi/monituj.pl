@@ -15,6 +15,7 @@ PRIVATE_PREFIXES = (
     "/klienci/",
     "/przypomnienia/",
     "/otrzymane/",
+    "/powiadomienia/",
     "/ustawienia/",
     "/d/",
     "/moje-prosby/",

@@ -149,6 +149,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.reminders.tasks.send_automatic_reminders",
         "schedule": 300.0,
     },
+    # "Nowy dokument" emails to senders, once the recipient stops uploading.
+    "send-upload-emails": {
+        "task": "apps.notifications.tasks.send_upload_emails",
+        "schedule": 60.0,
+    },
     "anonymize-expired-documents": {
         "task": "apps.documents.tasks.anonymize_expired_documents",
         "schedule": 3600.0,

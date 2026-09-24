@@ -92,7 +92,8 @@ class EmailService:
         text_body = fix_orphans_text(
             render_to_string(
                 f"notifications/emails/{template}_body.txt", full_context
-            ).strip()
+            ).strip(),
+            keep_lines=True,
         )
         html_body = add_link_titles(
             fix_orphans(

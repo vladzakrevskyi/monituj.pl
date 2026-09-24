@@ -1,0 +1,21 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}{{ client_name }} – {% for upload in uploads %}{{ upload.item }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endblock %}
+{% block eyebrow %}{% if upload_count == 1 %}Nowy dokument{% else %}Nowe dokumenty{% endif %}{% endblock %}
+{% block title %}{% if upload_count == 1 %}Dotarł nowy dokument{% else %}Dotarły nowe dokumenty ({{ upload_count }}){% endif %}{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">{{ client_name }} {% if upload_count == 1 %}przesyła dokument{% else %}przesyła dokumenty{% endif %} do prośby „{{ request_name }}”.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+{% for upload in uploads %}
+<tr>
+<td style="padding:10px 14px;border:1px solid #e4e4e8;border-left:3px solid #15803d;border-radius:8px;background-color:#ffffff;"><span style="display:block;font-size:15px;font-weight:600;color:#0b0b0c;">{{ upload.item }}</span><span style="display:block;margin-top:2px;font-size:13px;color:#62636d;word-break:break-word;">{{ upload.file }}</span></td>
+</tr>
+{% if not forloop.last %}<tr><td style="height:6px;font-size:0;line-height:0;">&nbsp;</td></tr>{% endif %}
+{% endfor %}
+</table>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Dostarczono" value=progress %}
+{% include "notifications/emails/_details_close.html" %}
+{% include "notifications/emails/_missing_items.html" with heading="Wciąż brakuje" %}
+{% include "notifications/emails/_button.html" with url=panel_link label="Sprawdź dokumenty" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ jesteś nadawcą tej prośby w Monituj.{% endblock %}
