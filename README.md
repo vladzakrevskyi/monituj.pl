@@ -24,7 +24,9 @@ Cały interfejs, wiadomości e-mail i dokumenty prawne są w języku polskim.
 | Przechowywanie | Automatyczne usuwanie plików po okresie przechowywania; w historii zostaje tylko informacja „plik usunięty” |
 | Historia | Dziennik zdarzeń każdej prośby (utworzenie, otwarcie linku przez klienta, przesłanie pliku, decyzje, przypomnienia) |
 | Panel | Statystyki: aktywne prośby, brakujące i dostarczone dokumenty, wysłane przypomnienia, ostatnia aktywność |
-| Bez konta | `/wyslij-prosbe/` – jedna prośba dziennie bez rejestracji |
+| Bez konta | `/wyslij-prosbe/` – jedna prośba dziennie bez rejestracji. Nadawca potwierdza prośbę linkiem z maila (dopiero wtedy trafia ona do odbiorcy) i dostaje konto bez hasła: stały link `/dostep/<token>/` otwiera zwykły panel ze wszystkimi jego prośbami. Po ustawieniu hasła limit znika |
+| Odbiorca | Jeden stały link `/moje-prosby/<token>/` z listą wszystkich próśb wysłanych na jego adres – od wszystkich nadawców; jest w każdym e-mailu do odbiorcy |
+| Zamykanie | Prośbę można zamknąć (i otworzyć ponownie): przypomnienia stają, a odbiorca nie może już przesyłać plików |
 | Demo | `/demo/` – każdy odwiedzający dostaje osobne, tymczasowe konto z przykładowymi danymi (usuwane po 24 godzinach, bez wysyłki e-maili) |
 | Konto | Rejestracja z potwierdzeniem adresu e-mail, zmiana hasła i adresu e-mail z potwierdzeniem, usunięcie konta z potwierdzeniem mailowym (wszystkie dane są usuwane od razu) |
 | E-maile | Wiadomości HTML w stylu strony oraz wersja tekstowa. Wszystkie wychodzą z `no-reply@monituj.pl`; odpowiedź klienta na e-mail dotyczący prośby trafia do firmy, która o dokumenty prosi, a odpowiedzi na pozostałe wiadomości – na `kontakt@monituj.pl` |
@@ -68,6 +70,7 @@ tests/            testy (pytest)
 |---|---|
 | `send_automatic_reminders` | Wysyła automatyczne przypomnienia, których termin nadszedł |
 | `anonymize_expired_documents` | Usuwa pliki po okresie przechowywania i powiadamia obie strony |
+| `delete_unconfirmed_requests` | Usuwa prośby bez konta niepotwierdzone w ciągu 48 godzin (i konta bez hasła utworzone tylko dla nich) |
 | `delete_expired_demo_accounts` | Usuwa konta demo starsze niż 24 godziny |
 
 Bez działających kontenerów `worker` i `beat` strona działa, ale przypomnienia nie są wysyłane, a pliki nie są usuwane po terminie. Na produkcji oba uruchamiają się automatycznie razem ze stroną.
