@@ -88,8 +88,9 @@ def test_verify_email_view_accepts_valid_token(client):
 
     response = client.get(reverse("accounts:verify-email", args=[raw_token]))
 
-    assert response.status_code == 200
-    assert b"Email zweryfikowany" in response.content
+    # Confirming the address logs straight in.
+    assert response.url == reverse("accounts:panel")
+    assert client.get(reverse("accounts:panel")).status_code == 200
     user.refresh_from_db()
     assert user.is_email_verified is True
 
@@ -113,7 +114,11 @@ def test_panel_requires_login_and_redirects_with_next(client):
 
 @pytest.mark.django_db
 def test_login_view_success_redirects_to_panel(client):
-    User.objects.create_user(email="login-view@example.com", password=VALID_PASSWORD)
+    User.objects.create_user(
+        email="login-view@example.com",
+        password=VALID_PASSWORD,
+        email_verified_at=timezone.now(),
+    )
 
     response = client.post(
         reverse("accounts:login"),
@@ -129,7 +134,11 @@ def test_login_view_success_redirects_to_panel(client):
 
 @pytest.mark.django_db
 def test_login_view_already_authenticated_redirects_to_panel(client):
-    User.objects.create_user(email="already@example.com", password=VALID_PASSWORD)
+    User.objects.create_user(
+        email="already@example.com",
+        password=VALID_PASSWORD,
+        email_verified_at=timezone.now(),
+    )
     client.post(
         reverse("accounts:login"),
         {"email": "already@example.com", "password": VALID_PASSWORD},

@@ -13,7 +13,9 @@ from apps.reminders.schedule import due_dates
 from apps.requests.models import Request
 from apps.requests.services import RequestStatus, compute_status, with_stats
 
-MANUAL_REMINDER_COOLDOWN = timedelta(seconds=10)
+# One manual reminder an hour per request is plenty for a person and stops
+# the button from being used to flood someone's inbox.
+MANUAL_REMINDER_COOLDOWN = timedelta(hours=1)
 
 
 class ReminderService:
@@ -31,11 +33,16 @@ class ReminderService:
             )
 
         recent_cutoff = timezone.now() - MANUAL_REMINDER_COOLDOWN
-        if Reminder.objects.filter(
-            request=request_obj, sent_at__gte=recent_cutoff
-        ).exists():
+        last = (
+            Reminder.objects.filter(request=request_obj, sent_at__gte=recent_cutoff)
+            .order_by("-sent_at")
+            .first()
+        )
+        if last is not None:
+            next_at = timezone.localtime(last.sent_at + MANUAL_REMINDER_COOLDOWN)
             raise ValidationAppError(
-                "Przypomnienie zostało już wysłane. Spróbuj ponownie za chwilę.",
+                "Przypomnienie wysłano przed chwilą. Kolejne możesz wysłać od "
+                f"{next_at:%H:%M}.",
                 code="REMINDER_TOO_SOON",
             )
 

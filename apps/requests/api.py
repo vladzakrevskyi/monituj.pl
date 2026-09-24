@@ -5,12 +5,15 @@ from django.core.validators import validate_email
 from django.views.decorators.http import require_http_methods
 
 from apps.clients.services import ClientService
+from apps.common import throttle
 from apps.common.decorators import api_login_required
 from apps.common.exceptions import ValidationAppError
 from apps.common.responses import success_response
 from apps.requests.forms import RequestEditForm, RequestForm
 from apps.requests.serializers import serialize_request
 from apps.requests.services import RequestService
+
+SEND_LINK_PER_DAY = 50
 
 
 def _parse_json_body(request):
@@ -130,6 +133,13 @@ def send_link(request, request_id):
             "Nieprawidłowy adres email.", code="INVALID_EMAIL"
         ) from exc
 
+    throttle.consume(
+        f"send-link:{request.user.pk}",
+        SEND_LINK_PER_DAY,
+        throttle.DAY,
+        "Dzisiaj wysłano już bardzo dużo linków. Spróbuj ponownie jutro.",
+        code="SEND_LINK_LIMIT_REACHED",
+    )
     RequestService.send_invitation(
         request_obj, email, actor=request.user, django_request=request
     )

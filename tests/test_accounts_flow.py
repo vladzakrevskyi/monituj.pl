@@ -48,12 +48,13 @@ def test_register_creates_user_sends_verification_and_logs_audit():
 
 @pytest.mark.django_db
 def test_register_rejects_duplicate_email():
-    RegistrationService.register(
+    first = RegistrationService.register(
         email="dup@example.com",
         password=VALID_PASSWORD,
         accept_terms=True,
         accept_privacy_policy=True,
     )
+    User.objects.filter(pk=first.pk).update(email_verified_at=timezone.now())
 
     with pytest.raises(ValidationAppError):
         RegistrationService.register(
@@ -124,7 +125,11 @@ def test_verify_email_rejects_expired_token():
 
 @pytest.mark.django_db
 def test_login_succeeds_with_correct_credentials(rf):
-    User.objects.create_user(email="login@example.com", password=VALID_PASSWORD)
+    User.objects.create_user(
+        email="login@example.com",
+        password=VALID_PASSWORD,
+        email_verified_at=timezone.now(),
+    )
     request = rf.post("/logowanie/")
     request.request_id = "req-1"
 

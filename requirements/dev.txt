@@ -4,3 +4,4 @@ pytest-django>=4.14
 ruff>=0.16
 mypy>=2.3
 django-stubs>=6.1
+pip-audit>=2.7

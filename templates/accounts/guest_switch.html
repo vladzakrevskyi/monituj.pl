@@ -1,0 +1,17 @@
+{% extends "base/base.html" %}
+
+{% block title %}Przełączyć konto? - Monituj{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+<h1>Przełączyć konto?</h1>
+<p>Jesteś zalogowany jako <strong>{{ user.email }}</strong>. Ten link otwiera panel konta <strong>{{ target_email }}</strong>.</p>
+<form method="post">
+{% csrf_token %}
+<input type="hidden" name="next" value="{{ next }}">
+<button type="submit" class="btn btn-primary btn-block">Przełącz na {{ target_email }}</button>
+</form>
+<p class="mb-0 mt-5"><a href="{% url 'accounts:panel' %}">Zostań w swoim panelu</a></p>
+</div>
+{% endblock %}

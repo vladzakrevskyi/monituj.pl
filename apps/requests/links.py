@@ -19,11 +19,28 @@ def guest_panel_url(user, next_path=None):
     return url
 
 
+def guest_email_url(user, next_path=None):
+    """A 14-day login link for everyday emails - an old forwarded email
+    must not open the panel for good (the permanent link is sent only in
+    the "Twój panel" email)."""
+    from apps.accounts.services import GuestAccessService
+
+    url = absolute_url(
+        reverse(
+            "accounts:guest-email-access",
+            args=[GuestAccessService.email_link_token(user)],
+        )
+    )
+    if next_path:
+        url += "?" + urlencode({"next": next_path})
+    return url
+
+
 def owner_link(user, path):
     """Where an email to a request's sender should point: straight into the
-    panel for regular accounts, through the permanent link for guests."""
+    panel for regular accounts, through a 14-day login link for guests."""
     if hasattr(user, "guest_access"):
-        return guest_panel_url(user, path)
+        return guest_email_url(user, path)
     return absolute_url(path)
 
 

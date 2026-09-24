@@ -1,5 +1,7 @@
 import re
+import time
 from datetime import timedelta
+from unittest.mock import patch
 
 import pytest
 from django.core import mail
@@ -214,13 +216,18 @@ def test_setting_a_password_turns_it_into_a_regular_account(client):
         **AJAX,
     )
 
+    # Nothing changes until the owner clicks the link in their inbox.
     assert response.status_code == 200
+    owner.refresh_from_db()
+    assert not owner.has_usable_password()
+    confirm = _link(mail.outbox[-1], "/ustawienia/haslo/potwierdz/")
+    BrowserClient().post(confirm)
+
     owner.refresh_from_db()
     assert owner.check_password("Nowe-Haslo-123!")
     assert not GuestAccess.objects.filter(user=owner).exists()
     assert BrowserClient().get(old_link).status_code == 404
-    # Still logged in, and the daily limit is gone.
-    assert client.get(reverse("accounts:panel")).status_code == 200
+    # The daily limit is gone.
     RequestService.create(
         owner=owner,
         client_id=Client.objects.get(owner=owner).pk,
@@ -232,7 +239,7 @@ def test_setting_a_password_turns_it_into_a_regular_account(client):
 
 
 @pytest.mark.django_db
-def test_sender_emails_point_to_the_permanent_link(client):
+def test_sender_emails_carry_a_short_lived_login_link(client):
     _submit(client)
     _confirm(client)
     owner = User.objects.get(email="biuro@example.com")
@@ -245,11 +252,17 @@ def test_sender_emails_point_to_the_permanent_link(client):
     complete = next(
         m for m in mail.outbox if m.to == [owner.email] and "Komplet" in m.subject
     )
-    assert f"/dostep/{owner.guest_access.token}/" in complete.body
+    # Everyday emails carry a 14-day login link, not the permanent one.
+    assert owner.guest_access.token not in complete.body
+    path = _link(complete, "/dostep/e/")
+    browser = BrowserClient()
+    assert browser.get(path).url == reverse("requests:detail", args=[request_obj.pk])
+    assert browser.get(reverse("accounts:panel")).status_code == 200
 
 
 @pytest.mark.django_db
 def test_an_existing_account_is_used_but_not_logged_in(client, user):
+    User.objects.filter(pk=user.pk).update(email_verified_at=timezone.now())
     _submit(client, sender_email=user.email)
 
     response = _confirm(client, sender=user.email)
@@ -327,3 +340,87 @@ def test_passwordless_account_can_be_deleted_without_a_password(client):
 
     assert response.status_code == 200
     assert "/ustawienia/usun-konto/potwierdz/" in mail.outbox[-1].body
+
+
+@pytest.mark.django_db
+def test_confirming_takes_back_an_address_someone_registered_without_proof(client):
+    squatter = User.objects.create_user(
+        email="biuro@example.com", password="Haslo-Oszusta-1"
+    )
+    thief = BrowserClient()
+    thief.force_login(squatter)
+    _submit(client)
+
+    _confirm(client)
+
+    squatter.refresh_from_db()
+    assert not squatter.has_usable_password()
+    assert squatter.email_verified_at is not None
+    assert GuestAccess.objects.filter(user=squatter).exists()
+    # The squatter's session died with the password.
+    assert thief.get(reverse("accounts:panel")).status_code == 302
+    # The real owner is in.
+    assert client.get(reverse("requests:received")).status_code == 200
+
+
+def _guest_owner(client):
+    _submit(client)
+    _confirm(client)
+    mail.outbox.clear()
+    return User.objects.get(email="biuro@example.com")
+
+
+@pytest.mark.django_db
+def test_email_links_expire_but_offer_a_fresh_one(client):
+    from apps.requests.links import guest_email_url
+
+    owner = _guest_owner(client)
+    url = guest_email_url(owner)
+    later = time.time() + 15 * 24 * 3600
+
+    with patch("django.core.signing.time.time", return_value=later):
+        page = BrowserClient().get(url)
+
+    assert page.status_code == 404
+    assert "Wyślij mi nowy link" in page_text(page)
+    BrowserClient().post(reverse("accounts:guest-link-request"), {"email": owner.email})
+    assert f"/dostep/{owner.guest_access.token}/" in mail.outbox[-1].body
+
+
+@pytest.mark.django_db
+def test_new_link_turns_off_every_old_one(client):
+    from apps.requests.links import guest_email_url
+
+    owner = _guest_owner(client)
+    old_permanent = guest_panel_url(owner)
+    old_email_link = guest_email_url(owner)
+
+    client.post(reverse("accounts:settings"), {"form_action": "rotate_link"}, **AJAX)
+
+    owner.refresh_from_db()
+    assert BrowserClient().get(old_permanent).status_code == 404
+    assert BrowserClient().get(old_email_link).status_code == 404
+    assert guest_panel_url(owner) in mail.outbox[-1].body
+
+
+@pytest.mark.django_db
+def test_asking_for_a_link_reveals_nothing_about_other_addresses(client):
+    response = client.post(
+        reverse("accounts:guest-link-request"), {"email": "nikt@example.com"}
+    )
+
+    assert "Jeśli dla adresu" in page_text(response)
+    assert mail.outbox == []
+
+
+@pytest.mark.django_db
+def test_a_link_never_silently_swaps_the_signed_in_account(client, user):
+    owner = _guest_owner(BrowserClient())
+    client.force_login(user)
+
+    page = client.get(guest_panel_url(owner))
+
+    assert "Przełączyć konto?" in page_text(page)
+    assert client.get(reverse("accounts:panel")).context["user"] == user
+    client.post(guest_panel_url(owner))
+    assert client.get(reverse("accounts:panel")).context["user"] == owner

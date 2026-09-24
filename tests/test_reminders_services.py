@@ -49,7 +49,7 @@ def test_manual_reminder_blocks_rapid_double_click(user, request_record):
 def test_manual_reminder_sequence_increments(user, request_record):
     ReminderService.send_manual(request_record, actor=user)
     Reminder.objects.filter(request=request_record).update(
-        sent_at=timezone.now() - timedelta(minutes=1)
+        sent_at=timezone.now() - timedelta(hours=2)
     )
 
     second = ReminderService.send_manual(request_record, actor=user)

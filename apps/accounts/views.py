@@ -90,17 +90,19 @@ def verification_sent(request):
 
 
 def verify_email(request, token):
+    """The link proves the address, so it also logs straight in - no need to
+    type the password again right after registering."""
     try:
-        VerificationService.verify(token, request=request)
-        context = {
-            "title": "Email zweryfikowany",
-            "message": (
-                "Twój adres email został potwierdzony. Możesz się teraz zalogować."
-            ),
-        }
+        user = VerificationService.verify(token, request=request)
     except ApplicationError as exc:
-        context = {"title": "Nieprawidłowy link", "message": exc.message}
-    return render(request, "base/message.html", context)
+        return render(
+            request,
+            "base/message.html",
+            {"title": "Nieprawidłowy link", "message": exc.message},
+        )
+    GuestAccessService.login(request, user)
+    messages.success(request, "Adres email potwierdzony – witaj w Monituj!")
+    return redirect("accounts:panel")
 
 
 @require_http_methods(["GET", "POST"])
@@ -119,7 +121,11 @@ def login_view(request):
                     return success_response({"redirect_url": redirect_url})
                 return redirect(redirect_url)
             except ApplicationError as exc:
-                add_service_error(form, exc, {"INVALID_CREDENTIALS": "password"})
+                add_service_error(
+                    form,
+                    exc,
+                    {"INVALID_CREDENTIALS": "password", "EMAIL_NOT_VERIFIED": "email"},
+                )
         if is_ajax_request(request):
             return ajax_form_error_response(form)
     else:
@@ -138,19 +144,23 @@ def password_reset_request(request):
     if request.method == "POST":
         form = PasswordResetRequestForm(request.POST)
         if form.is_valid():
-            PasswordResetService.request_reset(
-                form.cleaned_data["email"], request=request
-            )
-            title = "Sprawdź swoją skrzynkę"
-            message = (
-                "Jeśli konto z podanym adresem email istnieje, "
-                "wysłaliśmy link do resetu hasła."
-            )
-            if is_ajax_request(request):
-                return success_response({"title": title, "message": message})
-            return render(
-                request, "base/message.html", {"title": title, "message": message}
-            )
+            try:
+                PasswordResetService.request_reset(
+                    form.cleaned_data["email"], request=request
+                )
+            except ApplicationError as exc:
+                add_service_error(form, exc)
+            else:
+                title = "Sprawdź swoją skrzynkę"
+                message = (
+                    "Jeśli konto z podanym adresem email istnieje, "
+                    "wysłaliśmy link do resetu hasła."
+                )
+                if is_ajax_request(request):
+                    return success_response({"title": title, "message": message})
+                return render(
+                    request, "base/message.html", {"title": title, "message": message}
+                )
         if is_ajax_request(request):
             return ajax_form_error_response(form)
     else:
@@ -288,25 +298,32 @@ def settings_view(request):
                     )
             if ajax:
                 return ajax_form_error_response(email_form)
+        elif action == "rotate_link" and guest:
+            GuestAccessService.rotate(request.user, request=request)
+            success_message = (
+                f"Nowy stały link wysłaliśmy na {request.user.email}. "
+                "Wszystkie poprzednie linki przestały działać."
+            )
+            if ajax:
+                return success_response({"message": success_message})
+            messages.success(request, success_message)
+            return redirect("accounts:settings")
         elif action == "set_password" and guest:
             set_password_form = SetPasswordForm(request.POST, auto_id="id_set_%s")
             if set_password_form.is_valid():
                 try:
-                    GuestAccessService.set_password(
+                    GuestAccessService.request_password(
                         request.user,
                         set_password_form.cleaned_data["new_password"],
                         request=request,
                     )
                     success_message = (
-                        "Hasło zostało ustawione. Od teraz logujesz się adresem "
-                        "email i hasłem, bez dziennego limitu próśb."
+                        f"Wysłaliśmy link potwierdzający na {request.user.email}. "
+                        "Po kliknięciu zalogujesz się już hasłem."
                     )
-                    # The page changes shape (no more guest cards), so reload.
-                    messages.success(request, success_message)
                     if ajax:
-                        return success_response(
-                            {"redirect_url": reverse("accounts:settings")}
-                        )
+                        return success_response({"message": success_message})
+                    messages.success(request, success_message)
                     return redirect("accounts:settings")
                 except ApplicationError as exc:
                     add_service_error(
@@ -441,9 +458,34 @@ def account_deletion_confirm(request, token):
     )
 
 
+def _safe_next(request):
+    target = request.GET.get("next") or request.POST.get("next") or ""
+    if url_has_allowed_host_and_scheme(
+        target, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return target
+    return reverse("accounts:panel")
+
+
+def _enter_guest_account(request, user):
+    """Logs in through a panel link. If someone else is signed in in this
+    browser, ask first - a link from a stranger must not silently swap the
+    account you are working in."""
+    if request.user == user:
+        return redirect(_safe_next(request))
+    if request.user.is_authenticated and request.method != "POST":
+        return render(
+            request,
+            "accounts/guest_switch.html",
+            {"target_email": user.email, "next": _safe_next(request)},
+        )
+    GuestAccessService.login(request, user)
+    return redirect(_safe_next(request))
+
+
+@require_http_methods(["GET", "POST"])
 def guest_access(request, token):
-    """The permanent link of an account without a password: logs in and
-    opens the panel (or the page named in ?next=)."""
+    """The permanent link of an account without a password."""
     try:
         user = GuestAccessService.user_for(token)
     except ApplicationError as exc:
@@ -453,11 +495,42 @@ def guest_access(request, token):
             {"title": "Link nie działa", "message": exc.message},
             status=404,
         )
-    if request.user != user:
-        GuestAccessService.login(request, user)
-    target = request.GET.get("next", "")
-    if not url_has_allowed_host_and_scheme(
-        target, allowed_hosts={request.get_host()}, require_https=request.is_secure()
-    ):
-        target = reverse("accounts:panel")
-    return redirect(target)
+    return _enter_guest_account(request, user)
+
+
+@require_http_methods(["GET", "POST"])
+def guest_email_access(request, signed):
+    """The 14-day link from everyday emails."""
+    try:
+        user = GuestAccessService.user_for_email_link(signed)
+    except ApplicationError as exc:
+        expired_for = getattr(exc, "user", None)
+        return render(
+            request,
+            "accounts/guest_link_expired.html",
+            {
+                "message": exc.message,
+                "email": expired_for.email if expired_for else "",
+            },
+            status=404,
+        )
+    return _enter_guest_account(request, user)
+
+
+@require_http_methods(["GET", "POST"])
+def guest_link_request(request):
+    """Sends the permanent panel link again - for anyone who lost it."""
+    sent = False
+    error = ""
+    email = request.POST.get("email", "").strip() if request.method == "POST" else ""
+    if request.method == "POST":
+        try:
+            GuestAccessService.send_access_link(email, request=request)
+            sent = True
+        except ApplicationError as exc:
+            error = exc.message
+    return render(
+        request,
+        "accounts/guest_link_request.html",
+        {"sent": sent, "error": error, "email": email},
+    )

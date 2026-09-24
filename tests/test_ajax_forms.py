@@ -83,7 +83,11 @@ def test_register_non_ajax_still_returns_html_on_error(client):
 
 @pytest.mark.django_db
 def test_login_ajax_success_returns_redirect_url(client):
-    User.objects.create_user(email="ajax-login@example.com", password=VALID_PASSWORD)
+    User.objects.create_user(
+        email="ajax-login@example.com",
+        password=VALID_PASSWORD,
+        email_verified_at=timezone.now(),
+    )
 
     response = client.post(
         reverse("accounts:login"),

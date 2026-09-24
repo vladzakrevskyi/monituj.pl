@@ -73,6 +73,11 @@ class _RequestDetailsFieldsMixin(forms.Form):
         },
     )
 
+    def clean_name(self):
+        # The name goes into email subjects, where a line break would stop
+        # the email from being sent at all.
+        return " ".join(self.cleaned_data["name"].split())
+
     def clean_deadline(self):
         return _deadline_to_end_of_day(self.cleaned_data.get("deadline"))
 

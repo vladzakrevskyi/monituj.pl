@@ -10,6 +10,7 @@ from apps.accounts.models import is_guest_account
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.clients.models import Client
+from apps.common import throttle
 from apps.common.exceptions import (
     NotFoundAppError,
     RateLimitedAppError,
@@ -35,6 +36,9 @@ GUEST_DAILY_LIMIT_MESSAGE = (
     "Z tego adresu wysłano już dziś prośbę bez hasła. Jutro możesz wysłać "
     "kolejną – albo ustaw hasło w ustawieniach konta, aby wysyłać bez limitu."
 )
+# Far above what an office sends in a day; stops a script, not a person.
+REQUESTS_PER_DAY = 200
+PASSWORD_FAILURES = 10
 CLOSED_MESSAGE = "Ta prośba została zamknięta – nie można już przesyłać plików."
 # How long a request sent through the public form waits for its sender to
 # confirm it before it is deleted.
@@ -190,6 +194,14 @@ class RequestService:
         the recipient; GuestRequestService.confirm() sends it later."""
         if is_guest_account(owner):
             check_guest_daily_limit(owner)
+        throttle.consume(
+            f"requests-created:{owner.pk}",
+            REQUESTS_PER_DAY,
+            throttle.DAY,
+            "Dzisiaj utworzono już bardzo dużo próśb. Jeśli potrzebujesz więcej, "
+            "napisz do nas.",
+            code="REQUEST_LIMIT_REACHED",
+        )
         client = Client.objects.filter(owner=owner, pk=client_id).first()
         if client is None:
             raise NotFoundAppError("Nie znaleziono klienta.")
@@ -345,8 +357,15 @@ class PublicAccessService:
 
     @staticmethod
     def check_password(request_obj, raw_password, django_request):
+        key = throttle.ip_key(f"request-password:{request_obj.pk}", django_request)
+        if throttle.is_limited(key, PASSWORD_FAILURES, timedelta(minutes=15)):
+            raise RateLimitedAppError(
+                "Zbyt wiele błędnych haseł. Spróbuj ponownie za 15 minut.",
+                code="PASSWORD_LIMIT_REACHED",
+            )
         access = request_obj.password_protected_access
         if not check_password(raw_password, access.password_hash):
+            throttle.record(key)
             AuditService.log(
                 AuditEvent.PASSWORD_ACCESS_FAILED,
                 target=request_obj,

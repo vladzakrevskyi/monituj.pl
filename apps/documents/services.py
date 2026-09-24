@@ -1,6 +1,7 @@
 import secrets
 
 from django.core.files.base import ContentFile
+from django.db.models import Sum
 from django.utils import timezone
 
 from apps.audit.models import AuditEvent
@@ -16,7 +17,13 @@ from apps.documents.validation import validate_upload
 from apps.notifications.models import EmailStatus, EmailTemplate
 from apps.notifications.services import EmailService
 from apps.requests.models import RequestItemStatus
+from apps.requests.received import is_verified_recipient
 from apps.requests.services import CLOSED_MESSAGE, PublicAccessService, with_stats
+
+# Generous for real documents, but a leaked link can't fill the disk.
+MAX_FILES_PER_ITEM = 20
+MAX_BYTES_PER_REQUEST = 500 * 1024 * 1024
+UPLOADS_PER_IP_HOUR = 120
 
 
 def _generate_storage_key(extension: str) -> str:
@@ -32,6 +39,23 @@ class UploadDocumentService:
         if request_item.status == RequestItemStatus.ZAAKCEPTOWANY:
             raise ValidationAppError(
                 "Ten dokument został już zaakceptowany.", code="ITEM_ALREADY_ACCEPTED"
+            )
+
+        stored = Document.objects.filter(
+            request_item__request=request_item.request, anonymized_at__isnull=True
+        )
+        if stored.filter(request_item=request_item).count() >= MAX_FILES_PER_ITEM:
+            raise ValidationAppError(
+                f"Do jednego dokumentu można dodać najwyżej {MAX_FILES_PER_ITEM} "
+                "plików. Usuń zbędne albo połącz je w jeden plik.",
+                code="TOO_MANY_FILES",
+            )
+        used = stored.aggregate(total=Sum("size"))["total"] or 0
+        if used + (uploaded_file.size or 0) > MAX_BYTES_PER_REQUEST:
+            raise ValidationAppError(
+                "W tej prośbie zabrakło miejsca na kolejne pliki. Skontaktuj się "
+                "z nadawcą.",
+                code="REQUEST_STORAGE_FULL",
             )
 
         validated = validate_upload(uploaded_file)
@@ -208,7 +232,18 @@ class DocumentAccessService:
         ):
             return document
 
-        if PublicAccessService.has_access(request_obj, django_request):
+        # The recipient who proved their address may fetch anything they sent.
+        # Someone who only has the link gets just the files sent from their
+        # own browser - the link may have been forwarded, and document ids are
+        # easy to guess.
+        if is_verified_recipient(django_request, request_obj.client.email):
+            return document
+        session_key = django_request.session.session_key
+        if (
+            PublicAccessService.has_access(request_obj, django_request)
+            and session_key
+            and document.uploaded_by_session_key == session_key
+        ):
             return document
 
         raise PermissionDeniedAppError("Brak dostępu do tego zasobu.")

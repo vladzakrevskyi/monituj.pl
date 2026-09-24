@@ -16,6 +16,7 @@ from apps.accounts.models import GuestAccess, User
 from apps.audit.models import AuditLog
 from apps.clients.services import ClientService
 from apps.common.exceptions import ValidationAppError
+from apps.common.site import absolute_url
 from apps.common.timezones import browser_timezone
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
@@ -89,7 +90,7 @@ class GuestRequestService:
             request=django_request,
             awaiting_confirmation=True,
         )
-        confirm_url = django_request.build_absolute_uri(
+        confirm_url = absolute_url(
             reverse(
                 "public:guest-request-confirm",
                 args=[request_obj.confirmation_token],
@@ -147,7 +148,15 @@ class GuestRequestService:
             first_confirmation = owner.email_verified_at is None
             if first_confirmation:
                 owner.email_verified_at = timezone.now()
-                owner.save(update_fields=["email_verified_at"])
+                fields = ["email_verified_at"]
+                if owner.has_usable_password():
+                    # Someone registered this address without ever proving
+                    # it; the real owner just did. Their password - and every
+                    # session opened with it - stops working.
+                    owner.set_unusable_password()
+                    fields.append("password")
+                owner.save(update_fields=fields)
+                GuestAccess.objects.get_or_create(user=owner)
 
         RequestService.deliver(
             request_obj, password, actor=owner, request=django_request

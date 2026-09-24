@@ -11,6 +11,7 @@
 </form>
 <div class="auth-links">
 <p><a href="{% url 'accounts:password-reset-request' %}">Nie pamiętasz hasła?</a></p>
+<p>Wysyłasz prośby bez konta? <a href="{% url 'accounts:guest-link-request' %}">Wyślij mi link do panelu</a></p>
 <p>Nie masz konta? <a href="{% url 'accounts:register' %}">Zarejestruj się</a></p>
 </div>
 {% endblock %}

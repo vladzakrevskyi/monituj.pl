@@ -4,11 +4,13 @@ import mimetypes
 from django.http import FileResponse
 from django.views.decorators.http import require_http_methods
 
+from apps.common import throttle
 from apps.common.decorators import api_login_required
 from apps.common.exceptions import ValidationAppError
 from apps.common.formatting import format_datetime
 from apps.common.responses import error_response, success_response
 from apps.documents.services import (
+    UPLOADS_PER_IP_HOUR,
     DocumentAccessService,
     DocumentReviewService,
     GuestDeleteService,
@@ -34,6 +36,13 @@ def public_upload_item(request, token, item_id):
     uploaded_file = request.FILES.get("file")
     if uploaded_file is None:
         raise ValidationAppError("Wybierz plik do przesłania.", code="FILE_REQUIRED")
+    throttle.consume(
+        throttle.ip_key("upload", request),
+        UPLOADS_PER_IP_HOUR,
+        throttle.HOUR,
+        "Przesłano bardzo dużo plików w krótkim czasie. Spróbuj ponownie za godzinę.",
+        code="UPLOAD_LIMIT_REACHED",
+    )
 
     document = UploadDocumentService.upload_for_item(
         item, uploaded_file, django_request=request

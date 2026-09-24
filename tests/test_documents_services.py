@@ -181,7 +181,26 @@ def test_download_denies_guest_who_never_visited_the_public_page(request_item):
 
 
 @pytest.mark.django_db
-def test_download_allows_guest_after_visiting_unprotected_public_page(request_item):
+def test_download_allows_guest_their_own_upload(request_item):
+    from django.contrib.auth.models import AnonymousUser
+
+    from apps.requests.services import PublicAccessService
+
+    request = _django_request()
+    request.user = AnonymousUser()
+    PublicAccessService.grant_access(request_item.request, request)
+    document = UploadDocumentService.upload_for_item(
+        request_item, make_pdf_upload(), django_request=request
+    )
+
+    found = DocumentAccessService.get_for_download(document.pk, request)
+    assert found.pk == document.pk
+
+
+@pytest.mark.django_db
+def test_download_denies_link_holder_files_uploaded_elsewhere(request_item):
+    """A forwarded link must not open files the recipient sent from another
+    browser, even though document ids are easy to guess."""
     from django.contrib.auth.models import AnonymousUser
 
     from apps.requests.services import PublicAccessService
@@ -191,8 +210,8 @@ def test_download_allows_guest_after_visiting_unprotected_public_page(request_it
     request.user = AnonymousUser()
     PublicAccessService.grant_access(request_item.request, request)
 
-    found = DocumentAccessService.get_for_download(document.pk, request)
-    assert found.pk == document.pk
+    with pytest.raises(PermissionDeniedAppError):
+        DocumentAccessService.get_for_download(document.pk, request)
 
 
 @pytest.mark.django_db

@@ -1,11 +1,12 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.auth import authenticate, update_session_auth_hash
+from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
+from django.core import signing
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.urls import reverse
 from django.utils import timezone
@@ -14,7 +15,8 @@ from apps.accounts.erasure import erase_account
 from apps.accounts.models import AccountToken, AccountTokenPurpose, GuestAccess, User
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
-from apps.common.exceptions import ValidationAppError
+from apps.common import throttle
+from apps.common.exceptions import RateLimitedAppError, ValidationAppError
 from apps.common.security import generate_public_token, hash_token
 from apps.common.site import absolute_url
 from apps.documents.models import Document
@@ -56,9 +58,36 @@ class GuestOwnerService:
         return user
 
 
+def _is_unclaimed(user):
+    return (
+        user.email_verified_at is None
+        and user.is_active
+        and not hasattr(user, "guest_access")
+        and not hasattr(user, "demo_account")
+        and not user.requests.exists()
+        and not user.clients.exists()
+    )
+
+
+REGISTRATIONS_PER_IP_HOUR = 5
+RESETS_PER_EMAIL_HOUR = 3
+RESETS_PER_IP_HOUR = 10
+LOGIN_FAILURES_PER_IP = 20
+LOGIN_FAILURES_PER_EMAIL = 8
+LOGIN_WINDOW = timedelta(minutes=15)
+
+
 class RegistrationService:
     @staticmethod
     def register(email, password, accept_terms, accept_privacy_policy, request=None):
+        if request is not None:
+            throttle.consume(
+                throttle.ip_key("register", request),
+                REGISTRATIONS_PER_IP_HOUR,
+                throttle.HOUR,
+                "Z tego adresu założono już kilka kont. Spróbuj ponownie za godzinę.",
+                code="REGISTER_LIMIT_REACHED",
+            )
         existing = User.objects.filter(email__iexact=email).first()
         if existing is not None and hasattr(existing, "guest_access"):
             raise ValidationAppError(
@@ -67,7 +96,11 @@ class RegistrationService:
                 "logowania.",
                 code="EMAIL_TAKEN",
             )
-        if existing is not None:
+        # An account nobody ever confirmed proves nothing about who owns the
+        # address - e.g. someone registered it to block the real owner. It
+        # can't be used and holds no data, so registering again takes it over.
+        unclaimed = existing is not None and _is_unclaimed(existing)
+        if existing is not None and not unclaimed:
             raise ValidationAppError(
                 "Konto z tym adresem email już istnieje.", code="EMAIL_TAKEN"
             )
@@ -79,12 +112,25 @@ class RegistrationService:
         _validate_password_strength(password)
 
         now = timezone.now()
-        user = User.objects.create_user(
-            email=email,
-            password=password,
-            terms_accepted_at=now,
-            privacy_policy_accepted_at=now,
-        )
+        if unclaimed:
+            user = existing
+            user.set_password(password)
+            user.terms_accepted_at = now
+            user.privacy_policy_accepted_at = now
+            user.save(
+                update_fields=[
+                    "password",
+                    "terms_accepted_at",
+                    "privacy_policy_accepted_at",
+                ]
+            )
+        else:
+            user = User.objects.create_user(
+                email=email,
+                password=password,
+                terms_accepted_at=now,
+                privacy_policy_accepted_at=now,
+            )
         AuditService.log(
             AuditEvent.USER_REGISTERED, actor=user, target=user, request=request
         )
@@ -140,8 +186,21 @@ class VerificationService:
 class AuthenticationService:
     @staticmethod
     def login(request, email, password):
+        ip_key = throttle.ip_key("login-ip", request)
+        email_key = "login-email:" + hash_token(email.strip().lower())
+        if throttle.is_limited(
+            ip_key, LOGIN_FAILURES_PER_IP, LOGIN_WINDOW
+        ) or throttle.is_limited(email_key, LOGIN_FAILURES_PER_EMAIL, LOGIN_WINDOW):
+            raise RateLimitedAppError(
+                "Zbyt wiele nieudanych prób logowania. Spróbuj ponownie za 15 minut "
+                "albo zresetuj hasło.",
+                code="LOGIN_LIMIT_REACHED",
+            )
+
         user = authenticate(request, username=email, password=password)
         if user is None:
+            throttle.record(ip_key)
+            throttle.record(email_key)
             AuditService.log(
                 AuditEvent.USER_LOGIN_FAILED, request=request, metadata={"email": email}
             )
@@ -149,6 +208,19 @@ class AuthenticationService:
                 "Nieprawidłowy adres email lub hasło.",
                 code="INVALID_CREDENTIALS",
                 status_code=401,
+            )
+        throttle.clear(email_key)
+        if user.email_verified_at is None:
+            # The password is right, so help rather than just refuse: send the
+            # confirmation link again (not more often than every few minutes).
+            resend_key = f"verify-resend:{user.pk}"
+            if not throttle.is_limited(resend_key, 1, timedelta(minutes=5)):
+                throttle.record(resend_key)
+                VerificationService.send_verification_email(user)
+            raise ValidationAppError(
+                f"Najpierw potwierdź adres email – link wysłaliśmy na {user.email}. "
+                "Po kliknięciu zalogujesz się automatycznie.",
+                code="EMAIL_NOT_VERIFIED",
             )
         django_login(request, user)
         AuditService.log(
@@ -166,9 +238,22 @@ class AuthenticationService:
 class PasswordResetService:
     @staticmethod
     def request_reset(email, request=None):
+        if request is not None:
+            throttle.consume(
+                throttle.ip_key("reset-ip", request),
+                RESETS_PER_IP_HOUR,
+                throttle.HOUR,
+                "Zbyt wiele próśb o reset hasła. Spróbuj ponownie za godzinę.",
+                code="RESET_LIMIT_REACHED",
+            )
         user = User.objects.filter(email__iexact=email).first()
         if user is None:
             return
+        # Silently: the reply must not reveal whether the account exists.
+        email_key = f"reset-email:{user.pk}"
+        if throttle.is_limited(email_key, RESETS_PER_EMAIL_HOUR, throttle.HOUR):
+            return
+        throttle.record(email_key)
 
         raw_token = generate_public_token()
         AccountToken.objects.create(
@@ -200,7 +285,9 @@ class PasswordResetService:
         user = token.user
         _validate_password_strength(new_password, user=user)
         user.set_password(new_password)
-        user.save(update_fields=["password"])
+        # The reset link came to this address, which proves who owns it.
+        user.email_verified_at = user.email_verified_at or timezone.now()
+        user.save(update_fields=["password", "email_verified_at"])
         # A passwordless account becomes a regular one: the permanent panel
         # link stops working and the daily limit is gone.
         GuestAccess.objects.filter(user=user).delete()
@@ -282,6 +369,8 @@ class PasswordChangeService:
         user = token.user
         user.password = token.metadata
         user.save(update_fields=["password"])
+        # An account without a password becomes a regular one.
+        GuestAccess.objects.filter(user=user).delete()
 
         token.used_at = timezone.now()
         token.save(update_fields=["used_at"])
@@ -518,19 +607,17 @@ class AccountDeletionService:
         return email
 
 
+GUEST_EMAIL_LINK_MAX_AGE = timedelta(days=14)
+GUEST_EMAIL_LINK_SALT = "guest-email-link"
+ACCESS_LINKS_PER_EMAIL_HOUR = 3
+ACCESS_LINKS_PER_IP_HOUR = 10
+INVALID_ACCESS_MESSAGE = "Ten link nie działa. Jeśli masz już hasło, zaloguj się nim."
+
+
 class GuestAccessService:
-    @staticmethod
-    def set_password(user, new_password, request=None):
-        _validate_password_strength(new_password, user=user)
-        user.set_password(new_password)
-        user.save(update_fields=["password"])
-        GuestAccess.objects.filter(user=user).delete()
-        if request is not None:
-            update_session_auth_hash(request, user)
-        AuditService.log(
-            AuditEvent.PASSWORD_CHANGED, actor=user, target=user, request=request
-        )
-        return user
+    """Accounts without a password. Their one permanent link arrives only in
+    the "Twój panel" email; everyday emails carry a link that works for 14
+    days, so an old forwarded email doesn't open the panel for good."""
 
     @staticmethod
     def user_for(token):
@@ -540,15 +627,126 @@ class GuestAccessService:
             .first()
         )
         if access is None or access.user.email_verified_at is None:
-            raise ValidationAppError(
-                "Ten link nie działa. Jeśli masz już hasło, zaloguj się nim.",
-                code="INVALID_TOKEN",
-            )
+            raise ValidationAppError(INVALID_ACCESS_MESSAGE, code="INVALID_TOKEN")
         return access.user
+
+    @staticmethod
+    def email_link_token(user):
+        return signing.dumps(
+            {"u": user.pk, "t": user.guest_access.token[:16]},
+            salt=GUEST_EMAIL_LINK_SALT,
+            compress=True,
+        )
+
+    @staticmethod
+    def user_for_email_link(signed):
+        """The account behind a 14-day link. An expired one raises with the
+        account attached, so the page can offer to send a fresh link."""
+        try:
+            data = signing.loads(
+                signed,
+                salt=GUEST_EMAIL_LINK_SALT,
+                max_age=GUEST_EMAIL_LINK_MAX_AGE,
+            )
+            expired = False
+        except signing.SignatureExpired:
+            data = signing.loads(signed, salt=GUEST_EMAIL_LINK_SALT)
+            expired = True
+        except signing.BadSignature as exc:
+            raise ValidationAppError(
+                INVALID_ACCESS_MESSAGE, code="INVALID_TOKEN"
+            ) from exc
+        user = (
+            User.objects.filter(pk=data.get("u"), is_active=True)
+            .select_related("guest_access")
+            .first()
+        )
+        # A newer link (or a password) replaces every older one.
+        if (
+            user is None
+            or not hasattr(user, "guest_access")
+            or not user.guest_access.token.startswith(data.get("t", "-"))
+            or user.email_verified_at is None
+        ):
+            raise ValidationAppError(INVALID_ACCESS_MESSAGE, code="INVALID_TOKEN")
+        if expired:
+            error = ValidationAppError(
+                "Ten link wygasł – linki z wiadomości działają przez 14 dni.",
+                code="LINK_EXPIRED",
+            )
+            error.user = user
+            raise error
+        return user
 
     @staticmethod
     def login(request, user):
         django_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         AuditService.log(
             AuditEvent.USER_LOGIN, actor=user, target=user, request=request
+        )
+
+    @staticmethod
+    def send_access_link(email, request=None):
+        """Mails the permanent panel link again (lost or expired links).
+        Answers the same way whether or not such an account exists."""
+        if request is not None:
+            throttle.consume(
+                throttle.ip_key("access-link", request),
+                ACCESS_LINKS_PER_IP_HOUR,
+                throttle.HOUR,
+            )
+        user = User.objects.filter(
+            email__iexact=email, is_active=True, email_verified_at__isnull=False
+        ).first()
+        if user is None or not hasattr(user, "guest_access"):
+            return
+        key = f"access-link:{user.pk}"
+        if throttle.is_limited(key, ACCESS_LINKS_PER_EMAIL_HOUR, throttle.HOUR):
+            return
+        throttle.record(key)
+        GuestAccessService._mail_access_link(user)
+
+    @staticmethod
+    def rotate(user, request=None):
+        """A new permanent link; every older link (permanent or from emails)
+        stops working. For when a link may have reached someone else."""
+        user.guest_access.token = generate_public_token()
+        user.guest_access.save(update_fields=["token"])
+        GuestAccessService._mail_access_link(user)
+
+    @staticmethod
+    def _mail_access_link(user):
+        from apps.requests.links import guest_panel_url
+
+        EmailService.send(
+            EmailTemplate.GUEST_PANEL_ACCESS,
+            to_email=user.email,
+            context={"access_url": guest_panel_url(user)},
+        )
+
+    @staticmethod
+    def request_password(user, new_password, request=None):
+        """Setting a password needs a click in the account's inbox: whoever
+        only got hold of a panel link can't lock the owner out."""
+        _validate_password_strength(new_password, user=user)
+        raw_token = generate_public_token()
+        AccountToken.objects.create(
+            user=user,
+            purpose=AccountTokenPurpose.PASSWORD_CHANGE,
+            token_hash=hash_token(raw_token),
+            expires_at=timezone.now() + PASSWORD_CHANGE_TTL,
+            metadata=make_password(new_password),
+        )
+        EmailService.send(
+            EmailTemplate.PASSWORD_CHANGE_CONFIRM,
+            to_email=user.email,
+            context={
+                "confirm_url": absolute_url(f"/ustawienia/haslo/potwierdz/{raw_token}/")
+            },
+        )
+        AuditService.log(
+            AuditEvent.PASSWORD_CHANGE_REQUESTED,
+            actor=user,
+            target=user,
+            request=request,
         )

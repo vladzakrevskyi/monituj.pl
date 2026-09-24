@@ -42,7 +42,7 @@ Cały interfejs, wiadomości e-mail i dokumenty prawne są w języku polskim.
 - **nginx + Let's Encrypt** – HTTPS na serwerze;
 - **Docker Compose** – cały stos na serwerze uruchamiany jednym poleceniem.
 
-Bezpieczeństwo: hasła hashowane algorytmem Argon2, restrykcyjny CSP (`'self'`, bez skryptów i stylów inline), HSTS, bezpieczne ciasteczka, weryfikacja zawartości przesyłanych plików (libmagic), prywatny magazyn plików poza katalogiem publicznym, limity zapytań na adres IP, dziennik audytu.
+Bezpieczeństwo: logowanie dopiero po potwierdzeniu adresu e-mail, limity prób logowania, resetów hasła, wysyłanych e-maili i przesyłanych plików, hasła hashowane algorytmem Argon2, restrykcyjny CSP (`'self'`, bez skryptów i stylów inline), HSTS, bezpieczne ciasteczka, weryfikacja zawartości przesyłanych plików (libmagic), prywatny magazyn plików poza katalogiem publicznym, limity zapytań na adres IP, dziennik audytu.
 
 ### Struktura projektu
 
@@ -63,6 +63,10 @@ static/           CSS i JS
 deploy/           konfiguracja nginx, szablon .env dla produkcji, skrypt kopii zapasowych
 tests/            testy (pytest)
 ```
+
+### CI
+
+Przy każdym pushu i pull requeście GitHub Actions (`.github/workflows/ci.yml`) uruchamia ruff, sprawdza migracje, puszcza testy i skanuje zależności narzędziem `pip-audit`. Dependabot co tydzień proponuje aktualizacje pakietów i obrazów Dockera.
 
 ### Zadania w tle (Celery beat)
 

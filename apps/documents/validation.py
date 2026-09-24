@@ -7,20 +7,23 @@ from apps.common.exceptions import ValidationAppError
 
 MAX_UPLOAD_SIZE = 20 * 1024 * 1024
 
-ALLOWED_EXTENSIONS = {"pdf", "jpg", "jpeg", "png", "doc", "docx", "xls", "xlsx", "csv"}
+_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
-ALLOWED_MIME_TYPES = {
-    "application/pdf",
-    "image/jpeg",
-    "image/png",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "text/csv",
-    "text/plain",
-    "application/zip",
+# What the file's content may be for each extension. Office files are zip
+# archives inside, which older libmagic versions report as plain zip.
+ALLOWED_TYPES = {
+    "pdf": {"application/pdf"},
+    "jpg": {"image/jpeg"},
+    "jpeg": {"image/jpeg"},
+    "png": {"image/png"},
+    "doc": {"application/msword"},
+    "xls": {"application/vnd.ms-excel"},
+    "docx": {_DOCX, "application/zip"},
+    "xlsx": {_XLSX, "application/zip"},
+    "csv": {"text/csv", "text/plain"},
 }
+ALLOWED_EXTENSIONS = set(ALLOWED_TYPES)
 
 
 class ValidatedUpload:
@@ -47,7 +50,7 @@ def validate_upload(uploaded_file) -> ValidatedUpload:
 
     content = uploaded_file.read()
     mime_type = magic.from_buffer(content, mime=True)
-    if mime_type not in ALLOWED_MIME_TYPES:
+    if mime_type not in ALLOWED_TYPES[extension]:
         raise ValidationAppError(
             "Ten format pliku nie jest dozwolony.", code="MIME_NOT_ALLOWED"
         )

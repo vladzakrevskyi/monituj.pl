@@ -17,7 +17,7 @@ from apps.documents.services import GuestUploadContext
 from apps.requests import received
 from apps.requests.forms import PublicPasswordForm, PublicRequestForm
 from apps.requests.guest import GuestRequestService
-from apps.requests.links import guest_panel_url, remember_recipient_timezone
+from apps.requests.links import guest_email_url, remember_recipient_timezone
 from apps.requests.models import RecipientAccess
 from apps.requests.services import PublicAccessService, compute_status
 
@@ -40,14 +40,20 @@ def public_request_detail(request, token):
         if request.method == "POST":
             form = PublicPasswordForm(request.POST)
             if form.is_valid():
-                if PublicAccessService.check_password(
-                    request_obj, form.cleaned_data["password"], request
-                ):
+                try:
+                    correct = PublicAccessService.check_password(
+                        request_obj, form.cleaned_data["password"], request
+                    )
+                except ApplicationError as exc:
+                    form.add_error("password", exc.message)
+                    correct = None
+                if correct:
                     redirect_url = reverse("public:request-detail", args=[token])
                     if is_ajax_request(request):
                         return success_response({"redirect_url": redirect_url})
                     return redirect(redirect_url)
-                form.add_error("password", "Nieprawidłowe hasło.")
+                if correct is False:
+                    form.add_error("password", "Nieprawidłowe hasło.")
             if is_ajax_request(request):
                 return ajax_form_error_response(form)
         else:
@@ -202,7 +208,7 @@ def recipient_portal(request, token):
     account_link = None
     if account is not None and hasattr(account, "guest_access"):
         if account.email_verified_at is not None:
-            account_link = guest_panel_url(account, reverse("requests:received"))
+            account_link = guest_email_url(account, reverse("requests:received"))
     elif account is not None and not hasattr(account, "demo_account"):
         account_link = (
             reverse("accounts:login") + "?next=" + reverse("requests:received")

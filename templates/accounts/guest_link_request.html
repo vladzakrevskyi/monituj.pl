@@ -1,0 +1,26 @@
+{% extends "base/base.html" %}
+
+{% block title %}Link do panelu - Monituj{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+{% if sent %}
+<h1>Sprawdź skrzynkę</h1>
+<p class="mb-0">Jeśli dla adresu <strong>{{ email }}</strong> istnieje panel bez hasła, właśnie wysłaliśmy do niego stały link. Zajrzyj też do folderu spam.</p>
+{% else %}
+<h1>Link do Twojego panelu</h1>
+<p class="text-muted">Wysyłałeś prośby bez zakładania konta? Podaj adres, z którego je wysyłałeś – wyślemy na niego stały link do panelu.</p>
+<form method="post" novalidate>
+{% csrf_token %}
+<p>
+<label for="id_link_email">Adres email:</label>
+<input type="email" name="email" id="id_link_email" value="{{ email }}" required{% if error %} aria-invalid="true"{% endif %}>
+{% if error %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endif %}
+</p>
+<button type="submit" class="btn btn-primary btn-block">Wyślij link</button>
+</form>
+<p class="mb-0 mt-5"><a href="{% url 'accounts:login' %}">Masz hasło? Zaloguj się</a></p>
+{% endif %}
+</div>
+{% endblock %}
