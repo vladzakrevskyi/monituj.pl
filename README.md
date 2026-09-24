@@ -60,7 +60,7 @@ apps/
 config/           ustawienia (base / dev / prod), adresy URL, Celery
 templates/        szablony HTML stron i e-maili
 static/           CSS i JS
-deploy/           konfiguracja nginx, szablon .env dla produkcji, skrypt kopii zapasowych
+deploy/           konfiguracja nginx, szablon .env dla produkcji
 tests/            testy (pytest)
 ```
 
@@ -419,7 +419,7 @@ Najważniejsze zmienne:
 | `CONTACT_EMAIL` | `kontakt@monituj.pl` – tu trafiają wiadomości z formularza kontaktowego i odpowiedzi na e-maile systemowe. Ta skrzynka musi istnieć i odbierać pocztę |
 | `LEGAL_*` | Dane firmy. Puste wartości są wyróżniane na stronach prawnych jako „[uzupełnij: …]” |
 | `MAINTENANCE_MODE`, `MAINTENANCE_ALLOWED_IPS` | Tryb serwisowy – patrz sekcja „Tryb serwisowy” niżej. Domyślnie wyłączony |
-| `LEGAL_BACKUP_DAYS` | Liczba dni przechowywania kopii zapasowych. Musi być równa `KEEP_DAYS` w skrypcie kopii (krok 11) – ta liczba jest podana w polityce prywatności |
+| `LEGAL_BACKUP_DAYS` | Liczba dni przechowywania kopii zapasowych u hostingu (krok 11), np. `7` – ta liczba jest podana w polityce prywatności |
 
 Wartości ze spacjami (np. adres firmy) wpisuj bez cudzysłowów.
 
@@ -532,64 +532,16 @@ Następnie przejdź ręcznie cały proces:
 
 ### Krok 11. Kopie zapasowe
 
-Skrypt `deploy/backup.sh` robi zrzut bazy danych i archiwum przesłanych plików, a kopie starsze niż `KEEP_DAYS` dni usuwa.
+Kopie zapasowe robi hosting: codziennie między północą a 3:00 zapisuje cały serwer i przechowuje 7 ostatnich kopii (wliczając kopie zrobione ręcznie). Przywracasz je w panelu hostingu – cały serwer wraca do stanu z wybranego dnia.
 
-```bash
-sudo mkdir -p /var/backups/monituj && sudo chown deploy:deploy /var/backups/monituj
-```
-
-Próbne uruchomienie:
-
-```bash
-/srv/monituj/deploy/backup.sh && ls -lh /var/backups/monituj
-```
-
-Codzienne uruchamianie o 3:30 przez cron:
-
-```bash
-crontab -e
-```
-
-Dodaj linię (okres przechowywania musi być równy `LEGAL_BACKUP_DAYS`):
-
-```
-30 3 * * * KEEP_DAYS=30 /srv/monituj/deploy/backup.sh >> /srv/monituj/backup.log 2>&1
-```
-
-**Kopiuj kopie zapasowe poza serwer.** Kopia leżąca na tym samym serwerze nie pomoże, jeśli serwer przestanie istnieć. Najprostsze rozwiązanie to codzienny `rsync` lub `rclone` do osobnego magazynu (Storage Box, magazyn zgodny z S3 w UE). Kopie zawierają dane osobowe i dokumenty klientów: przechowuj je wyłącznie w UE i z ograniczonym dostępem.
-
-#### Przywracanie z kopii
-
-```bash
-cd /srv/monituj && docker compose stop web worker beat
-```
-
-Baza danych (podaj nazwę pliku):
-
-```bash
-docker compose exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' < /var/backups/monituj/db_2026-09-24_0330.dump
-```
-
-Pliki:
-
-```bash
-docker run --rm -v monituj_storage:/data -v /var/backups/monituj:/backup alpine sh -c "rm -rf /data/* && tar xzf /backup/storage_2026-09-24_0330.tar.gz -C /data"
-```
-
-```bash
-docker compose start web worker beat
-```
+W `.env` ustaw `LEGAL_BACKUP_DAYS=7`. Ta liczba trafia do Polityki prywatności, Regulaminu, Umowy powierzenia i maila po usunięciu konta, więc musi odpowiadać rzeczywistej rotacji kopii. Jeśli zmienisz plan kopii u hostingu, zmień też tę wartość.
 
 ### Krok 12. Aktualizacja strony
 
-Zatwierdź i wypchnij zmiany na swoim komputerze, a potem na serwerze:
+Zatwierdź i wypchnij zmiany na swoim komputerze. Przed większą aktualizacją (np. z migracjami bazy danych) zrób ręczną kopię w panelu hostingu. Potem na serwerze:
 
 ```bash
-cd /srv/monituj && ./deploy/backup.sh
-```
-
-```bash
-git pull
+cd /srv/monituj && git pull
 ```
 
 ```bash
@@ -598,7 +550,7 @@ docker compose up -d --build
 
 Migracje wykonają się automatycznie przy starcie kontenera `web`. Podczas odtwarzania kontenera strona jest niedostępna przez kilka sekund.
 
-Powrót do poprzedniej wersji: `git log --oneline`, następnie `git checkout <commit>` i `docker compose up -d --build`. Jeśli nowa wersja zmieniała bazę danych (migracje), razem z kodem przywróć też bazę z kopii wykonanej przed aktualizacją.
+Powrót do poprzedniej wersji: `git log --oneline`, następnie `git checkout <commit>` i `docker compose up -d --build`. Jeśli nowa wersja zmieniała bazę danych (migracje), zamiast tego przywróć w panelu hostingu ręczną kopię zrobioną przed aktualizacją – wrócą wtedy jednocześnie kod i baza danych.
 
 Co kilka miesięcy warto zaktualizować obrazy PostgreSQL i Redisa (w obrębie tych samych wersji 16 i 7):
 
@@ -674,7 +626,7 @@ Podłącz darmowy zewnętrzny monitoring dostępności (UptimeRobot, Better Stac
 - [ ] HTTPS działa, http przekierowuje na https.
 - [ ] Testowy e-mail dotarł i nie trafił do spamu (SPF, DKIM i DMARC skonfigurowane).
 - [ ] Wszystkie zmienne `LEGAL_*` są uzupełnione, a Regulamin, Polityka prywatności i Umowa powierzenia zostały sprawdzone przez prawnika.
-- [ ] Kopie zapasowe wykonują się przez cron i są kopiowane poza serwer; przywracanie zostało przetestowane przynajmniej raz.
-- [ ] `KEEP_DAYS` w cronie jest równe `LEGAL_BACKUP_DAYS`.
+- [ ] Kopie zapasowe u hostingu są włączone; przywracanie zostało przetestowane przynajmniej raz.
+- [ ] `LEGAL_BACKUP_DAYS` odpowiada liczbie dni przechowywania kopii u hostingu.
 - [ ] Skonfigurowany jest zewnętrzny monitoring `/api/health/`.
 - [ ] Logowanie na serwer tylko kluczem SSH, ufw jest włączony.
