@@ -7,3 +7,4 @@ django-environ>=0.14
 python-magic>=0.4.27
 gunicorn>=26.2
 whitenoise>=6.12
+PyJWT[crypto]>=2.10

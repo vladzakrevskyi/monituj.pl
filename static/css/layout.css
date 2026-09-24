@@ -867,6 +867,30 @@ body.nav-open {
   margin-top: var(--space-2);
 }
 
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.stack-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
 .auth-links {
   display: flex;
   flex-direction: column;

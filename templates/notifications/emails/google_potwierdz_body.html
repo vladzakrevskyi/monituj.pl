@@ -1,0 +1,13 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Potwierdź, że to Ty logujesz się przez Google.{% endblock %}
+{% block eyebrow %}Logowanie przez Google{% endblock %}
+{% block title %}{% if new_account %}Potwierdź założenie konta{% else %}Potwierdź logowanie przez Google{% endif %}{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">{% if new_account %}Ktoś zakłada konto Monituj dla tego adresu, logując się kontem Google.{% else %}Ktoś chce logować się do Twojego konta Monituj kontem Google.{% endif %} Jeśli to Ty, kliknij przycisk – w tej samej przeglądarce, w której logowałeś się przez Google.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Konto Google" value=google_email %}
+{% include "notifications/emails/_details_close.html" %}
+{% include "notifications/emails/_button.html" with url=confirm_url label="Potwierdź" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Link jest ważny przez 30 minut. Jeśli to nie Ty, zignoruj tę wiadomość – bez kliknięcia nic się nie zmieni.</p>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

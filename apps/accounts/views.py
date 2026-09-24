@@ -16,6 +16,7 @@ from apps.accounts.forms import (
     RegistrationForm,
     SetPasswordForm,
 )
+from apps.accounts.google_auth import GoogleAuthService
 from apps.accounts.models import is_guest_account
 from apps.accounts.services import (
     AccountDeletionService,
@@ -225,9 +226,11 @@ def settings_view(request):
     password_form = PasswordChangeForm(auto_id="id_password_%s")
     email_form = EmailChangeForm(auto_id="id_email_%s")
     guest = is_guest_account(request.user)
+    # Guests and accounts created with Google have no password yet.
+    has_password = request.user.has_usable_password()
     set_password_form = SetPasswordForm(auto_id="id_set_%s")
     deletion_form = AccountDeletionForm(
-        auto_id="id_delete_%s", require_password=not guest
+        auto_id="id_delete_%s", require_password=has_password
     )
 
     if request.method == "POST" and is_demo_user(request.user):
@@ -321,7 +324,23 @@ def settings_view(request):
                 return success_response({"message": success_message})
             messages.success(request, success_message)
             return redirect("accounts:settings")
-        elif action == "set_password" and guest:
+        elif action == "google_disconnect":
+            try:
+                GoogleAuthService.disconnect(request.user, request=request)
+                success_message = (
+                    "Odłączono Google. Logujesz się teraz adresem email i hasłem."
+                )
+                if ajax:
+                    return success_response(
+                        {"message": success_message, "redirect_url": request.path}
+                    )
+                messages.success(request, success_message)
+            except ApplicationError as exc:
+                if ajax:
+                    return error_response(exc.code, exc.message, status=400)
+                messages.error(request, exc.message)
+            return redirect("accounts:settings")
+        elif action == "set_password" and not has_password:
             set_password_form = SetPasswordForm(request.POST, auto_id="id_set_%s")
             if set_password_form.is_valid():
                 try:
@@ -346,7 +365,7 @@ def settings_view(request):
                 return ajax_form_error_response(set_password_form)
         elif action == "delete":
             deletion_form = AccountDeletionForm(
-                request.POST, auto_id="id_delete_%s", require_password=not guest
+                request.POST, auto_id="id_delete_%s", require_password=has_password
             )
             if deletion_form.is_valid():
                 try:
@@ -382,6 +401,8 @@ def settings_view(request):
             "deletion_form": deletion_form,
             "set_password_form": set_password_form,
             "is_guest": guest,
+            "has_password": has_password,
+            "google_account": getattr(request.user, "google_account", None),
         },
     )
 

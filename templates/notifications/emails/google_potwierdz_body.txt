@@ -1,0 +1,7 @@
+{% autoescape off %}{% if new_account %}Ktoś zakłada konto Monituj dla tego adresu, logując się kontem Google {{ google_email }}.{% else %}Ktoś chce logować się do Twojego konta Monituj kontem Google {{ google_email }}.{% endif %} Jeśli to Ty, otwórz link w tej samej przeglądarce (ważny 30 minut):
+{{ confirm_url }}
+
+Jeśli to nie Ty, zignoruj tę wiadomość – bez kliknięcia nic się nie zmieni.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

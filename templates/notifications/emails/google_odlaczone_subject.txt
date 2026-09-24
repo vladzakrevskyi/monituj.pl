@@ -1,0 +1,1 @@
+{% autoescape off %}Odłączono logowanie przez Google – Monituj{% endautoescape %}

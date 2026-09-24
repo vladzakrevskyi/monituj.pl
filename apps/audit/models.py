@@ -37,6 +37,8 @@ class AuditEvent(models.TextChoices):
         "ACCOUNT_DELETION_REQUESTED",
         "Account deletion requested",
     )
+    GOOGLE_LINKED = "GOOGLE_LINKED", "Google sign-in linked"
+    GOOGLE_UNLINKED = "GOOGLE_UNLINKED", "Google sign-in unlinked"
 
 
 class AuditLog(models.Model):

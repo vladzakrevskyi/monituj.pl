@@ -41,6 +41,19 @@ class RegistrationForm(forms.Form):
         return cleaned_data
 
 
+class GoogleSignupForm(forms.Form):
+    accept_terms = forms.BooleanField(
+        label="Akceptuję Regulamin wraz z umową powierzenia przetwarzania danych",
+        required=True,
+        error_messages={"required": "Musisz zaakceptować regulamin."},
+    )
+    accept_privacy_policy = forms.BooleanField(
+        label="Zapoznałem się z Polityką prywatności",
+        required=True,
+        error_messages={"required": "Musisz zaakceptować politykę prywatności."},
+    )
+
+
 class LoginForm(forms.Form):
     email = forms.EmailField(
         label="Adres email",

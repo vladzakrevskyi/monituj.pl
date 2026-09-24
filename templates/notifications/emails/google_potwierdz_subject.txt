@@ -1,0 +1,1 @@
+{% autoescape off %}{% if new_account %}Potwierdź założenie konta{% else %}Potwierdź logowanie przez Google{% endif %} – Monituj{% endautoescape %}

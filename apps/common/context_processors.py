@@ -1,5 +1,6 @@
 from django.conf import settings
 
+from apps.accounts.google import enabled as google_login_enabled
 from apps.accounts.models import is_guest_account
 from apps.common.analytics import gtm_id
 
@@ -42,6 +43,7 @@ def site(request):
     return {
         "seo": seo.for_request(request),
         "gtm_id": gtm_id(),
+        "google_login": google_login_enabled(),
         "cookie_consent": cookies.consent(),
         # Legal pages must stay readable before deciding, so no cookie wall there.
         "cookie_lock": getattr(request.resolver_match, "namespace", "") != "legal",

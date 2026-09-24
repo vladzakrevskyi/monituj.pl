@@ -421,6 +421,7 @@ Najważniejsze zmienne:
 | `LEGAL_*` | Dane firmy. Puste wartości są wyróżniane na stronach prawnych jako „[uzupełnij: …]” |
 | `MAINTENANCE_MODE`, `MAINTENANCE_ALLOWED_IPS` | Tryb serwisowy – patrz sekcja „Tryb serwisowy” niżej. Domyślnie wyłączony |
 | `LEGAL_BACKUP_DAYS` | Liczba dni przechowywania kopii zapasowych u hostingu (krok 11), np. `7` – ta liczba jest podana w polityce prywatności |
+| `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | Logowanie przez Google (opcjonalnie, zob. „Logowanie przez Google” w kroku 10). Puste = przyciski Google się nie pokazują |
 
 Wartości ze spacjami (np. adres firmy) wpisuj bez cudzysłowów.
 
@@ -531,6 +532,21 @@ Następnie przejdź ręcznie cały proces:
 3. Otwarcie linku i przesłanie pliku PDF → plik widoczny w panelu → akceptacja albo odrzucenie.
 4. Sprawdzenie `/demo/` i `/wyslij-prosbe/`.
 
+#### Logowanie przez Google (opcjonalnie)
+
+1. W [Google Cloud Console](https://console.cloud.google.com/) utwórz projekt, a w nim **APIs & Services → OAuth consent screen**: typ *External*, nazwa „Monituj”, logo, adres kontaktowy, linki do `https://monituj.pl/polityka-prywatnosci/` i `https://monituj.pl/regulamin/`, domena `monituj.pl` (zweryfikowana w Search Console). Zakresy: tylko `openid` i `email`. Na koniec **Publish app** – bez tego zalogują się tylko konta testowe.
+2. **Credentials → Create credentials → OAuth client ID**, typ *Web application*. W **Authorized redirect URIs** wpisz dokładnie `https://monituj.pl/logowanie/google/powrot/` (to `SITE_URL` + `/logowanie/google/powrot/`; lokalnie: `http://localhost:8000/logowanie/google/powrot/`). *Authorized JavaScript origins* nie są potrzebne.
+3. Client ID i Client secret wpisz w `.env` jako `GOOGLE_OAUTH_CLIENT_ID` i `GOOGLE_OAUTH_CLIENT_SECRET`, potem `docker compose up -d`. Sekret trzymaj tylko w `.env` na serwerze.
+
+Jak to działa i dlaczego jest bezpieczne (szczegóły w `apps/accounts/google.py` i `apps/accounts/google_auth.py`):
+
+- przepływ *authorization code* z PKCE, jednorazowym `state` powiązanym z sesją przeglądarki i `nonce`; podpis tokenu ID sprawdzany kluczami Google, razem z wystawcą, odbiorcą i ważnością;
+- konto jest rozpoznawane po stałym identyfikatorze konta Google, nie po adresie e-mail;
+- adres, który już ma konto w Monituj: przy Gmailu i Google Workspace konta łączą się od razu, przy innych adresach dopiero po kliknięciu linku z maila w tej samej przeglądarce; o każdym połączeniu właściciel dostaje e-mail;
+- konto założone przez kogoś, kto nigdy nie potwierdził adresu, przejmuje właściciel skrzynki – hasło ustawione przez tamtą osobę przestaje działać;
+- nowe konto przez Google wymaga akceptacji Regulaminu i Polityki prywatności, jak przy rejestracji hasłem;
+- konto z Google może w każdej chwili ustawić hasło (Ustawienia albo „Nie pamiętasz hasła?”) i logować się na oba sposoby; Google można odłączyć tylko, gdy konto ma hasło.
+
 ### Krok 11. Kopie zapasowe
 
 Kopie zapasowe robi hosting: codziennie między północą a 3:00 zapisuje cały serwer i przechowuje 7 ostatnich kopii (wliczając kopie zrobione ręcznie). Przywracasz je w panelu hostingu – cały serwer wraca do stanu z wybranego dnia.
@@ -629,5 +645,6 @@ Podłącz darmowy zewnętrzny monitoring dostępności (UptimeRobot, Better Stac
 - [ ] Wszystkie zmienne `LEGAL_*` są uzupełnione, a Regulamin, Polityka prywatności i Umowa powierzenia zostały sprawdzone przez prawnika.
 - [ ] Kopie zapasowe u hostingu są włączone; przywracanie zostało przetestowane przynajmniej raz.
 - [ ] `LEGAL_BACKUP_DAYS` odpowiada liczbie dni przechowywania kopii u hostingu.
+- [ ] Jeśli włączasz logowanie przez Google: aplikacja OAuth jest opublikowana, a adres przekierowania zgadza się z `SITE_URL`.
 - [ ] Skonfigurowany jest zewnętrzny monitoring `/api/health/`.
 - [ ] Logowanie na serwer tylko kluczem SSH, ufw jest włączony.

@@ -193,6 +193,11 @@ CONTACT_EMAIL = env("CONTACT_EMAIL", default="kontakt@monituj.pl")
 
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
 
+# Sign in with Google (OAuth client of type "Web application" in Google
+# Cloud Console). Both empty = the Google buttons are not shown at all.
+GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID", default="")
+GOOGLE_OAUTH_CLIENT_SECRET = env("GOOGLE_OAUTH_CLIENT_SECRET", default="")
+
 # Google Tag Manager container, e.g. GTM-NWZ96857. Empty = no analytics.
 # See apps/common/analytics.py for where and when it loads.
 GTM_ID = env("GTM_ID", default="")

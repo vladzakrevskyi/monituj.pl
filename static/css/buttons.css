@@ -182,3 +182,23 @@ button.is-loading::after,
   width: 16px;
   height: 16px;
 }
+
+/* Sign in with Google: white, the multicolour "G" (Google branding rules). */
+.btn-google {
+  background: #fff;
+  color: #1f1f1f;
+  border-color: var(--color-border-strong);
+  font-weight: 600;
+  gap: var(--space-3);
+}
+
+.btn-google:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+  color: #1f1f1f;
+}
+
+.btn-google svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}

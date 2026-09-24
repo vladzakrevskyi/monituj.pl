@@ -1,0 +1,16 @@
+{% extends "base/base.html" %}
+
+{% block page_name %}Potwierdź logowanie przez Google{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+<h1>{% if new_account %}Potwierdź założenie konta{% else %}Połącz konto z Google{% endif %}</h1>
+<p>{% if new_account %}Kliknij, aby założyć konto Monituj i logować się kontem Google <strong>{{ google_email }}</strong>.{% else %}Kliknij, aby logować się do swojego konta Monituj kontem Google <strong>{{ google_email }}</strong>.{% endif %}</p>
+<p class="text-muted">Jeśli nie próbowałeś logować się przez Google, zamknij tę stronę – nic się nie zmieni.</p>
+<form method="post">
+{% csrf_token %}
+<button type="submit" class="btn btn-primary btn-lg btn-block">{% if new_account %}Załóż konto{% else %}Połącz i zaloguj się{% endif %}</button>
+</form>
+</div>
+{% endblock %}

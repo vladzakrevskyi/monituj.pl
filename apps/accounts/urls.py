@@ -1,12 +1,29 @@
 from django.urls import path
 
-from apps.accounts import views
+from apps.accounts import google_views, views
 
 app_name = "accounts"
 
 urlpatterns = [
     path("rejestracja/", views.register, name="register"),
     path("logowanie/", views.login_view, name="login"),
+    path("logowanie/google/", google_views.google_start, name="google-start"),
+    path(
+        "logowanie/google/powrot/",
+        google_views.google_callback,
+        name="google-callback",
+    ),
+    path(
+        "logowanie/google/potwierdz/<str:signed>/",
+        google_views.google_confirm,
+        name="google-confirm",
+    ),
+    path("rejestracja/google/", google_views.google_signup, name="google-signup"),
+    path(
+        "ustawienia/google/polacz/",
+        google_views.google_connect,
+        name="google-connect",
+    ),
     path("wyloguj/", views.logout_view, name="logout"),
     path("weryfikacja-email/", views.verification_sent, name="verification-sent"),
     path("weryfikacja-email/<str:token>/", views.verify_email, name="verify-email"),

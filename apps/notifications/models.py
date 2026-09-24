@@ -36,6 +36,9 @@ class EmailTemplate(models.TextChoices):
         "Formularz kontaktowy (potwierdzenie)",
     )
     UPLOAD_OWNER = "dokument_dodany", "Nowy dokument (nadawca)"
+    GOOGLE_LINKED = "google_polaczone", "Logowanie Google dodane"
+    GOOGLE_UNLINKED = "google_odlaczone", "Logowanie Google odłączone"
+    GOOGLE_LINK_CONFIRM = "google_potwierdz", "Potwierdzenie połączenia z Google"
 
 
 class EmailStatus(models.TextChoices):

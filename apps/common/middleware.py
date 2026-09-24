@@ -15,6 +15,8 @@ PRIVATE_PREFIXES = (
     "/klienci/",
     "/przypomnienia/",
     "/otrzymane/",
+    "/logowanie/google/",
+    "/rejestracja/google/",
     "/powiadomienia/",
     "/ustawienia/",
     "/d/",

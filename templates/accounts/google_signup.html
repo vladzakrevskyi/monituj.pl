@@ -1,0 +1,17 @@
+{% extends "base/auth_base.html" %}
+
+{% block page_name %}Załóż konto przez Google{% endblock %}
+{% block auth_title %}Zacznij zbierać <strong>dokumenty</strong> w&nbsp;kilka minut{% endblock %}
+
+{% block auth_form %}
+<h2>Ostatni krok</h2>
+<p class="text-muted">Zakładasz konto Monituj dla adresu <strong>{{ google_email }}</strong>. Będziesz logować się przez Google – hasło możesz ustawić później w ustawieniach.</p>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+{% include "base/_consent_fields.html" with terms_field=form.accept_terms privacy_field=form.accept_privacy_policy with_dpa=True %}
+<button type="submit" class="btn btn-primary btn-lg btn-block">Załóż konto</button>
+</form>
+<div class="auth-links">
+<p>To nie ten adres? <a href="{% url 'accounts:google-start' %}">Wybierz inne konto Google</a></p>
+</div>
+{% endblock %}

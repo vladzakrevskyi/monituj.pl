@@ -4,7 +4,10 @@
 
 {% block auth_form %}
 <h2>Zaloguj się</h2>
-<form method="post" novalidate data-ajax-form>
+{% if google_login %}
+{% url 'accounts:google-start' as google_url %}{% include "base/_google_button.html" with href=google_url label="Zaloguj się przez Google" %}
+{% include "base/_auth_divider.html" %}
+{% endif %}<form method="post" novalidate data-ajax-form>
 {% csrf_token %}
 {{ form.as_p }}
 <button type="submit" class="btn btn-primary btn-lg btn-block">Zaloguj się</button>

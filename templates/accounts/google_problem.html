@@ -1,0 +1,15 @@
+{% extends "base/base.html" %}
+
+{% block page_name %}{{ title }}{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+<h1>{{ title }}</h1>
+<p>{{ message }}</p>
+<div class="stack-actions">
+<a class="btn btn-primary btn-block" href="{% url 'accounts:google-start' %}">Spróbuj ponownie przez Google</a>
+<a class="btn btn-secondary btn-block" href="{% url 'accounts:login' %}">Zaloguj się adresem email</a>
+</div>
+</div>
+{% endblock %}

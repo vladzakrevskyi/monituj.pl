@@ -1,0 +1,12 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Z Twojego konta odłączono logowanie przez Google.{% endblock %}
+{% block eyebrow %}Bezpieczeństwo konta{% endblock %}
+{% block title %}Odłączono logowanie przez Google{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Z Twojego konta w Monituj odłączono logowanie przez Google. Logujesz się teraz adresem email i hasłem.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Konto Google" value=google_email %}
+{% include "notifications/emails/_details_close.html" %}
+{% include "notifications/emails/_notice.html" with text="Jeśli to nie Ty, natychmiast zresetuj hasło przez „Nie pamiętasz hasła?” i napisz do nas." tone="danger" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

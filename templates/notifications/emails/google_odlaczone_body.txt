@@ -1,0 +1,6 @@
+{% autoescape off %}Z Twojego konta w Monituj odłączono logowanie przez Google (konto Google: {{ google_email }}). Logujesz się teraz adresem email i hasłem.
+
+Jeśli to nie Ty, natychmiast zresetuj hasło przez „Nie pamiętasz hasła?” i napisz do nas.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

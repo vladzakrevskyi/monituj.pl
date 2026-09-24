@@ -1,0 +1,12 @@
+{% extends "base/base.html" %}
+
+{% block page_name %}Sprawdź swoją skrzynkę{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+<h1>Sprawdź swoją skrzynkę</h1>
+<p>Wysłaliśmy link potwierdzający na <strong>{{ email }}</strong>. Otwórz go <strong>w tej przeglądarce</strong> w ciągu 30 minut – potem logowanie przez Google zadziała od razu.</p>
+<p class="text-muted mb-0">Prosimy o to, bo Google nie prowadzi tej skrzynki, więc sprawdzamy, że nadal należy do Ciebie. Przy adresach Gmail i Google Workspace ten krok nie jest potrzebny.</p>
+</div>
+{% endblock %}

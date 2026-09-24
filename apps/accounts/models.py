@@ -94,5 +94,22 @@ class GuestAccess(models.Model):
         return f"Guest access for {self.user_id}"
 
 
+class GoogleAccount(TimeStampedModel):
+    """Sign in with Google for this account. Keyed by Google's permanent
+    account id (`sub`), never by address: a Google account may change its
+    email, and the address alone must not decide whose account opens."""
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="google_account"
+    )
+    subject = models.CharField(max_length=255, unique=True)
+    # The Google address at the last sign-in - shown in settings only.
+    email = models.EmailField()
+    last_login_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Google account of {self.user_id}"
+
+
 def is_guest_account(user) -> bool:
     return bool(user and user.is_authenticated and hasattr(user, "guest_access"))

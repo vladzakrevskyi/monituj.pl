@@ -32,6 +32,8 @@ EVENT_LABELS_PL = {
     AuditEvent.FILE_DELETED: "Usunięto przesłany dokument",
     AuditEvent.DOCUMENTS_ANONYMIZED: "Usunięto pliki po okresie przechowywania",
     AuditEvent.ACCOUNT_DELETION_REQUESTED: "Zażądano usunięcia konta",
+    AuditEvent.GOOGLE_LINKED: "Dodano logowanie przez Google",
+    AuditEvent.GOOGLE_UNLINKED: "Odłączono logowanie przez Google",
 }
 
 
