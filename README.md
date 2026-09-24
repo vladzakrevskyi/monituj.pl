@@ -2,80 +2,80 @@
 
 **Monituj pilnuje Twoich dokumentów i terminów.**
 
-Monituj — это польский сервис для фирм, которым регулярно нужны документы от клиентов: бухгалтерских бюро, кадровых отделов, юристов, кредитных посредников, строительных фирм. Это не «ещё один способ переслать файл», а инструмент, который выстраивает процесс сбора документов:
+Monituj to polska usługa dla firm, które regularnie potrzebują dokumentów od swoich klientów: biur rachunkowych, działów kadr, kancelarii prawnych, pośredników kredytowych czy firm budowlanych. To nie jest „kolejny sposób na przesłanie pliku”, tylko narzędzie, które porządkuje cały proces zbierania dokumentów:
 
-- фирма один раз формирует просьбу со списком нужных документов и сроком;
-- клиент получает защищённую ссылку и загружает файлы без регистрации;
-- Monituj сам напоминает клиенту о недостающих документах по расписанию;
-- фирма видит в панели, у кого чего не хватает, принимает или отклоняет файлы с причиной;
-- по истечении выбранного срока хранения файлы автоматически и безвозвратно удаляются, а обе стороны получают уведомление.
+- firma raz przygotowuje prośbę z listą potrzebnych dokumentów i terminem;
+- klient dostaje zabezpieczony link i przesyła pliki bez zakładania konta;
+- Monituj sam przypomina klientowi o brakujących dokumentach według harmonogramu;
+- firma widzi w panelu, u kogo czego brakuje, i akceptuje albo odrzuca pliki, podając powód;
+- po upływie wybranego okresu przechowywania pliki są automatycznie i trwale usuwane, a obie strony dostają powiadomienie.
 
-Весь интерфейс, письма и юридические тексты — на польском языке.
+Cały interfejs, wiadomości e-mail i dokumenty prawne są w języku polskim.
 
-## Возможности
+## Funkcje
 
-| Область | Что умеет |
+| Obszar | Co potrafi |
 |---|---|
-| Клиенты | Список с поиском и фильтрами, количество активных просьб и недостающих документов, все документы клиента на одной странице |
-| Просьбы | Список документов, срок, необязательный пароль на ссылку, выбор срока хранения файлов (до 365 дней) |
-| Публичная ссылка `/d/<token>/` | Загрузка файлов клиентом без аккаунта, drag & drop, проверка типа и размера (до 20 МБ), удаление своего файла до принятия |
-| Проверка | Принять или отклонить документ с причиной — клиент получает письмо и может загрузить заново |
-| Напоминания | Автоматические по расписанию (первое через N дней, затем каждые N дней, максимум N штук, в заданный час) и ручные; в панели видны даты всех следующих напоминаний |
-| Хранение | Автоматическое удаление файлов после срока хранения, в истории остаётся заглушка «файл удалён» |
-| Журнал | История событий каждой просьбы (создание, открытие ссылки клиентом, загрузки, решения, напоминания) |
-| Панель | Статистика: активные просьбы, недостающие и доставленные документы, отправленные напоминания, последняя активность |
-| Без аккаунта | `/wyslij-prosbe/` — одна просьба в день без регистрации |
-| Демо | `/demo/` — каждый посетитель получает отдельный временный аккаунт с примерами данных (удаляется через 24 часа, письма не отправляются) |
-| Аккаунт | Регистрация с подтверждением email, смена пароля и email с подтверждением, удаление аккаунта с подтверждением по почте (удаляются все данные сразу) |
-| Письма | HTML-письма в стиле сайта + текстовая версия |
-| Право | Regulamin, Polityka prywatności, Polityka cookies, Umowa powierzenia (DPA) — данные фирмы подставляются из переменных окружения |
+| Klienci | Lista z wyszukiwarką i filtrami, liczba aktywnych próśb i brakujących dokumentów, wszystkie dokumenty klienta na jednej stronie |
+| Prośby | Lista dokumentów, termin, opcjonalne hasło do linku, wybór okresu przechowywania plików (do 365 dni) |
+| Link publiczny `/d/<token>/` | Przesyłanie plików przez klienta bez konta, przeciąganie i upuszczanie, kontrola typu i rozmiaru (do 20 MB), usunięcie własnego pliku przed akceptacją |
+| Weryfikacja | Akceptacja lub odrzucenie dokumentu z podaniem powodu – klient dostaje e-mail i może przesłać plik ponownie |
+| Przypomnienia | Automatyczne według harmonogramu (pierwsze po N dniach, potem co N dni, maksymalnie N razy, o wybranej godzinie) oraz ręczne; w panelu widać daty wszystkich kolejnych przypomnień |
+| Przechowywanie | Automatyczne usuwanie plików po okresie przechowywania; w historii zostaje tylko informacja „plik usunięty” |
+| Historia | Dziennik zdarzeń każdej prośby (utworzenie, otwarcie linku przez klienta, przesłanie pliku, decyzje, przypomnienia) |
+| Panel | Statystyki: aktywne prośby, brakujące i dostarczone dokumenty, wysłane przypomnienia, ostatnia aktywność |
+| Bez konta | `/wyslij-prosbe/` – jedna prośba dziennie bez rejestracji |
+| Demo | `/demo/` – każdy odwiedzający dostaje osobne, tymczasowe konto z przykładowymi danymi (usuwane po 24 godzinach, bez wysyłki e-maili) |
+| Konto | Rejestracja z potwierdzeniem adresu e-mail, zmiana hasła i adresu e-mail z potwierdzeniem, usunięcie konta z potwierdzeniem mailowym (wszystkie dane są usuwane od razu) |
+| E-maile | Wiadomości HTML w stylu strony oraz wersja tekstowa |
+| Dokumenty prawne | Regulamin, Polityka prywatności, Polityka cookies, Umowa powierzenia przetwarzania danych – dane firmy są pobierane ze zmiennych środowiskowych |
 
-## Технологии
+## Technologie
 
-- **Python 3.14, Django 6.1** — серверные шаблоны + немного чистого JavaScript, без фронтенд-фреймворков;
-- **PostgreSQL 16** — база данных;
-- **Redis 7 + Celery** — отправка писем и фоновые задачи;
-- **Gunicorn + WhiteNoise** — приложение и статика в продакшене;
-- **nginx + Let's Encrypt** — HTTPS на сервере;
-- **Docker Compose** — весь стек на сервере запускается одной командой.
+- **Python 3.14, Django 6.1** – szablony renderowane po stronie serwera i trochę czystego JavaScriptu, bez frameworków frontendowych;
+- **PostgreSQL 16** – baza danych;
+- **Redis 7 + Celery** – wysyłka e-maili i zadania w tle;
+- **Gunicorn + WhiteNoise** – aplikacja i pliki statyczne na produkcji;
+- **nginx + Let's Encrypt** – HTTPS na serwerze;
+- **Docker Compose** – cały stos na serwerze uruchamiany jednym poleceniem.
 
-Безопасность: пароли хешируются Argon2, строгий CSP (`'self'`, без inline-скриптов и стилей), HSTS, защищённые cookie, проверка содержимого загружаемых файлов (libmagic), приватное хранилище файлов вне публичной папки, лимиты запросов по IP, журнал аудита.
+Bezpieczeństwo: hasła hashowane algorytmem Argon2, restrykcyjny CSP (`'self'`, bez skryptów i stylów inline), HSTS, bezpieczne ciasteczka, weryfikacja zawartości przesyłanych plików (libmagic), prywatny magazyn plików poza katalogiem publicznym, limity zapytań na adres IP, dziennik audytu.
 
-### Структура
+### Struktura projektu
 
 ```
 apps/
-  accounts/       пользователи, вход, регистрация, настройки, удаление аккаунта
-  clients/        клиенты
-  requests/       просьбы, пункты, публичная ссылка, просьба без аккаунта
-  documents/      загрузка, проверка и хранение файлов, удаление по сроку
-  reminders/      ручные и автоматические напоминания
-  notifications/  отправка и журнал писем
-  audit/          журнал событий
-  demo/           временные демо-аккаунты
-  common/         общие вещи: маркетинговые и юридические страницы, middleware, типографика
-config/           настройки (base / dev / prod), urls, celery
-templates/        HTML-шаблоны страниц и писем
-static/           CSS и JS
-deploy/           конфиг nginx, шаблон .env для продакшена, скрипт бэкапов
-tests/            тесты (pytest)
+  accounts/       użytkownicy, logowanie, rejestracja, ustawienia, usuwanie konta
+  clients/        klienci
+  requests/       prośby, pozycje, link publiczny, prośba bez konta
+  documents/      przesyłanie, weryfikacja i przechowywanie plików, usuwanie po terminie
+  reminders/      przypomnienia ręczne i automatyczne
+  notifications/  wysyłka e-maili i ich rejestr
+  audit/          dziennik zdarzeń
+  demo/           tymczasowe konta demonstracyjne
+  common/         elementy wspólne: strony marketingowe i prawne, middleware, typografia
+config/           ustawienia (base / dev / prod), adresy URL, Celery
+templates/        szablony HTML stron i e-maili
+static/           CSS i JS
+deploy/           konfiguracja nginx, szablon .env dla produkcji, skrypt kopii zapasowych
+tests/            testy (pytest)
 ```
 
-### Фоновые задачи (Celery beat, раз в час)
+### Zadania w tle (Celery beat, co godzinę)
 
-| Задача | Что делает |
+| Zadanie | Co robi |
 |---|---|
-| `send_automatic_reminders` | Отправляет автоматические напоминания, у которых наступил срок |
-| `anonymize_expired_documents` | Удаляет файлы, у которых истёк срок хранения, и уведомляет обе стороны |
-| `delete_expired_demo_accounts` | Удаляет демо-аккаунты старше 24 часов |
+| `send_automatic_reminders` | Wysyła automatyczne przypomnienia, których termin nadszedł |
+| `anonymize_expired_documents` | Usuwa pliki po okresie przechowywania i powiadamia obie strony |
+| `delete_expired_demo_accounts` | Usuwa konta demo starsze niż 24 godziny |
 
-Без запущенных `worker` и `beat` сайт работает, но напоминания не уходят, а файлы не удаляются по сроку. В продакшене они запускаются автоматически вместе с сайтом.
+Bez działających kontenerów `worker` i `beat` strona działa, ale przypomnienia nie są wysyłane, a pliki nie są usuwane po terminie. Na produkcji oba uruchamiają się automatycznie razem ze stroną.
 
 ---
 
-## Локальная разработка
+## Praca lokalna
 
-Нужны Python 3.14 и Docker (для PostgreSQL и Redis) — или локально установленные PostgreSQL и Redis.
+Potrzebny jest Python 3.14 oraz Docker (dla PostgreSQL i Redisa) albo lokalnie zainstalowane PostgreSQL i Redis.
 
 ```bash
 python3.14 -m venv .venv
@@ -93,7 +93,7 @@ pip install -r requirements/dev.txt
 cp .env.example .env
 ```
 
-В `.env` впишите `DJANGO_SECRET_KEY` (любая длинная строка) и при желании настройки SMTP. Чтобы письма печатались в консоль вместо отправки, поставьте `EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend`.
+W pliku `.env` ustaw `DJANGO_SECRET_KEY` (dowolny długi ciąg znaków) i ewentualnie dane SMTP. Jeśli e-maile mają być wypisywane w konsoli zamiast wysyłane, ustaw `EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend`.
 
 ```bash
 docker compose up -d db redis
@@ -107,7 +107,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Сайт: http://localhost:8000. Фоновые задачи (в отдельных терминалах):
+Strona: http://localhost:8000. Zadania w tle (w osobnych terminalach):
 
 ```bash
 celery -A config worker -l info
@@ -117,7 +117,7 @@ celery -A config worker -l info
 celery -A config beat -l info
 ```
 
-Тесты и линтер:
+Testy i linter:
 
 ```bash
 pytest -q
@@ -127,67 +127,68 @@ pytest -q
 ruff check . && ruff format --check .
 ```
 
-> `docker-compose.yml` — только для разработки: он открывает порты базы и Redis наружу и запускает `runserver`. На сервере используется `docker-compose.prod.yml`.
+> Plik `docker-compose.yml` służy wyłącznie do pracy lokalnej: wystawia porty bazy danych i Redisa na zewnątrz i uruchamia `runserver`. Na serwerze używany jest `docker-compose.prod.yml`.
 
 ---
 
-## Развёртывание на VPS — пошагово
+## Wdrożenie na serwerze VPS – krok po kroku
 
-Ниже — полный путь от чистого сервера до работающего `https://monituj.pl`. Везде вместо `monituj.pl` подставьте свой домен, вместо `1.2.3.4` — IP сервера.
+Poniżej pełna droga od czystego serwera do działającej strony `https://monituj.pl`. Wszędzie zamiast `monituj.pl` wpisz swoją domenę, a zamiast `1.2.3.4` – adres IP serwera.
 
-**Как это устроено на сервере:**
+**Jak to działa na serwerze:**
 
 ```
-Интернет ──443──▶ nginx (на сервере, HTTPS, Let's Encrypt)
+Internet ──443──▶ nginx (na serwerze, HTTPS, Let's Encrypt)
                     │
                     ▼  127.0.0.1:8000
-          ┌──────── Docker Compose ─────────────────────────┐
-          │ web (gunicorn + Django)   worker (Celery)       │
-          │ beat (расписание)         db (PostgreSQL)       │
-          │ redis                     тома: postgres_data,  │
-          │                                  storage (файлы)│
-          └─────────────────────────────────────────────────┘
+          ┌──────── Docker Compose ──────────────────────────┐
+          │ web (gunicorn + Django)   worker (Celery)        │
+          │ beat (harmonogram)        db (PostgreSQL)        │
+          │ redis                     wolumeny:              │
+          │                           postgres_data (baza),  │
+          │                           storage (pliki)        │
+          └──────────────────────────────────────────────────┘
 ```
 
-Наружу открыты только порты 22, 80 и 443. База, Redis и само приложение снаружи недоступны.
+Na zewnątrz otwarte są tylko porty 22, 80 i 443. Baza danych, Redis i sama aplikacja nie są dostępne z internetu.
 
-### Шаг 0. Что понадобится
+### Krok 0. Czego potrzebujesz
 
-- **VPS**: Ubuntu 24.04 LTS, минимум 2 vCPU, 2 ГБ RAM, 40 ГБ SSD. Сервер лучше взять **в ЕС** (клиенты польские, данные подпадают под RODO/GDPR) — эту страну потом нужно указать в `LEGAL_HOSTING_LOCATION`.
-- **Домен** и доступ к его DNS.
-- **SMTP** для писем: транзакционный сервис (например, Brevo, Mailgun, Postmark, Amazon SES) или почта хостинга. Нужны хост, порт, логин, пароль.
-- **Реквизиты фирмы** для юридических страниц: название, адрес, NIP, REGON, KRS/CEIDG, контактный email.
-- Код в Git-репозитории. Сейчас в репозитории нет ни одного коммита — сначала закоммитьте и запушьте проект на своём компьютере:
+- **Serwer VPS**: Ubuntu 24.04 LTS, co najmniej 2 vCPU, 2 GB RAM, 40 GB SSD. Serwer najlepiej wybrać **w UE** (klienci są z Polski, dane podlegają RODO) – kraj serwerowni trzeba potem wpisać w `LEGAL_HOSTING_LOCATION`.
+- **Domenę** i dostęp do jej ustawień DNS.
+- **Konto SMTP** do wysyłki e-maili: serwis transakcyjny (np. Brevo, Mailgun, Postmark, Amazon SES) albo poczta u hostingodawcy. Potrzebne są: serwer, port, login i hasło.
+- **Dane firmy** do dokumentów prawnych: nazwa, adres, NIP, REGON, KRS/CEIDG, adres e-mail do kontaktu.
+- **Kod w repozytorium Git.** Jeśli projekt nie jest jeszcze wypchnięty, zrób to na swoim komputerze:
 
 ```bash
 git add -A && git commit -m "Monituj v1" && git push -u origin main
 ```
 
-### Шаг 1. DNS
+### Krok 1. DNS
 
-У регистратора домена создайте записи:
+U rejestratora domeny dodaj rekordy:
 
-| Тип | Имя | Значение |
+| Typ | Nazwa | Wartość |
 |---|---|---|
 | A | `@` | `1.2.3.4` |
 | A | `www` | `1.2.3.4` |
-| AAAA | `@`, `www` | IPv6 сервера (если есть) |
+| AAAA | `@`, `www` | adres IPv6 serwera (jeśli jest) |
 
-Проверить (может занять от нескольких минут до пары часов):
+Sprawdzenie (propagacja może potrwać od kilku minut do kilku godzin):
 
 ```bash
 dig +short monituj.pl
 ```
 
-### Шаг 2. Первый вход и пользователь для деплоя
+### Krok 2. Pierwsze logowanie i użytkownik do wdrożeń
 
-Зайдите на сервер под root (данные даёт хостер):
+Zaloguj się na serwer jako root (dane dostaniesz od hostingodawcy):
 
 ```bash
 ssh root@1.2.3.4
 ```
 
-Обновите систему и создайте пользователя `deploy`:
+Zaktualizuj system i utwórz użytkownika `deploy`:
 
 ```bash
 apt update && apt upgrade -y
@@ -201,42 +202,42 @@ adduser deploy
 usermod -aG sudo deploy
 ```
 
-Скопируйте свой SSH-ключ этому пользователю (команда выполняется **на вашем компьютере**; если ключа нет — сначала `ssh-keygen -t ed25519`):
+Skopiuj swój klucz SSH dla tego użytkownika. Polecenie wykonujesz **na swoim komputerze**; jeśli nie masz klucza, najpierw uruchom `ssh-keygen -t ed25519`:
 
 ```bash
 ssh-copy-id deploy@1.2.3.4
 ```
 
-Проверьте, что вход по ключу работает, **в новом окне терминала**:
+Sprawdź logowanie kluczem **w nowym oknie terminala**:
 
 ```bash
 ssh deploy@1.2.3.4
 ```
 
-### Шаг 3. Защита сервера
+### Krok 3. Zabezpieczenie serwera
 
-Все дальнейшие команды — на сервере под пользователем `deploy`.
+Wszystkie kolejne polecenia wykonujesz na serwerze jako użytkownik `deploy`.
 
-**Запрет входа по паролю и под root.** Откройте конфиг SSH:
+**Wyłączenie logowania hasłem i jako root.** Otwórz konfigurację SSH:
 
 ```bash
 sudo nano /etc/ssh/sshd_config
 ```
 
-Установите (раскомментируйте) строки:
+Ustaw (i odkomentuj) linie:
 
 ```
 PermitRootLogin no
 PasswordAuthentication no
 ```
 
-Перезапустите SSH (не закрывая текущую сессию, пока не проверите вход в новом окне):
+Zrestartuj SSH. Nie zamykaj bieżącej sesji, dopóki nie sprawdzisz logowania w nowym oknie:
 
 ```bash
 sudo systemctl restart ssh
 ```
 
-**Файрвол** — открываем только SSH, HTTP и HTTPS:
+**Zapora sieciowa** – otwieramy tylko SSH, HTTP i HTTPS:
 
 ```bash
 sudo ufw allow OpenSSH
@@ -250,19 +251,19 @@ sudo ufw allow 80/tcp && sudo ufw allow 443/tcp
 sudo ufw enable
 ```
 
-**Автоматические обновления безопасности:**
+**Automatyczne aktualizacje bezpieczeństwa:**
 
 ```bash
 sudo apt install -y unattended-upgrades && sudo dpkg-reconfigure -plow unattended-upgrades
 ```
 
-**Защита от перебора паролей SSH:**
+**Ochrona przed zgadywaniem haseł SSH:**
 
 ```bash
 sudo apt install -y fail2ban
 ```
 
-**Swap** (на сервере с 2 ГБ RAM сборка образа без него может упасть):
+**Plik wymiany (swap)** – na serwerze z 2 GB RAM budowanie obrazu bez niego może się nie udać:
 
 ```bash
 sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
@@ -272,15 +273,15 @@ sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapf
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
-**Часовой пояс** (для логов; само приложение всегда работает по `Europe/Warsaw`):
+**Strefa czasowa** (dla logów; aplikacja zawsze działa w strefie `Europe/Warsaw`):
 
 ```bash
 sudo timedatectl set-timezone Europe/Warsaw
 ```
 
-### Шаг 4. Установка Docker
+### Krok 4. Instalacja Dockera
 
-Официальный репозиторий Docker:
+Z oficjalnego repozytorium Dockera:
 
 ```bash
 sudo apt install -y ca-certificates curl git
@@ -298,23 +299,23 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 sudo apt update && sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-Разрешите пользователю `deploy` работать с Docker без sudo:
+Pozwól użytkownikowi `deploy` korzystać z Dockera bez sudo:
 
 ```bash
 sudo usermod -aG docker deploy
 ```
 
-Выйдите с сервера (`exit`) и зайдите снова, чтобы группа применилась. Проверка:
+Wyloguj się z serwera (`exit`) i zaloguj ponownie, żeby uprawnienia grupy zaczęły działać. Sprawdzenie:
 
 ```bash
 docker run --rm hello-world
 ```
 
-> Docker сам управляет правилами iptables, и опубликованные порты контейнеров **обходят ufw**. Поэтому в `docker-compose.prod.yml` приложение слушает только `127.0.0.1:8000`, а у базы и Redis портов наружу нет вообще. Не добавляйте туда `ports:` без `127.0.0.1:`.
+> Docker sam zarządza regułami iptables, a porty opublikowane przez kontenery **omijają ufw**. Dlatego w `docker-compose.prod.yml` aplikacja nasłuchuje tylko na `127.0.0.1:8000`, a baza danych i Redis w ogóle nie mają portów na zewnątrz. Nie dodawaj tam sekcji `ports:` bez `127.0.0.1:`.
 
-### Шаг 5. Код на сервере
+### Krok 5. Kod na serwerze
 
-Если репозиторий приватный, дайте серверу ключ только на чтение (deploy key):
+Jeśli repozytorium jest prywatne, daj serwerowi klucz tylko do odczytu (deploy key):
 
 ```bash
 ssh-keygen -t ed25519 -C "monituj-vps" -f ~/.ssh/monituj_deploy -N ""
@@ -324,13 +325,18 @@ ssh-keygen -t ed25519 -C "monituj-vps" -f ~/.ssh/monituj_deploy -N ""
 cat ~/.ssh/monituj_deploy.pub
 ```
 
-Скопируйте вывод в GitHub: репозиторий → **Settings → Deploy keys → Add deploy key** (галочку «Allow write access» не ставьте). Затем укажите SSH, какой ключ использовать для GitHub:
+Skopiuj wynik polecenia i dodaj go w serwisie z repozytorium:
+
+- **GitHub:** repozytorium → **Settings → Deploy keys → Add deploy key** (nie zaznaczaj „Allow write access”);
+- **GitLab:** projekt → **Settings → Repository → Deploy keys** (bez uprawnień do zapisu).
+
+Wskaż SSH, którego klucza ma używać (dla GitLaba zamień `github.com` na `gitlab.com`):
 
 ```bash
 printf 'Host github.com\n  IdentityFile ~/.ssh/monituj_deploy\n  IdentitiesOnly yes\n' >> ~/.ssh/config && chmod 600 ~/.ssh/config
 ```
 
-Склонируйте проект в `/srv/monituj`:
+Sklonuj projekt do katalogu `/srv/monituj` (podaj adres swojego repozytorium):
 
 ```bash
 sudo mkdir -p /srv/monituj && sudo chown deploy:deploy /srv/monituj
@@ -344,15 +350,15 @@ git clone git@github.com:vladzakrevskyi/monituj.pl.git /srv/monituj
 cd /srv/monituj
 ```
 
-### Шаг 6. Файл `.env`
+### Krok 6. Plik `.env`
 
-Создайте его из шаблона для продакшена:
+Utwórz go z szablonu produkcyjnego:
 
 ```bash
 cp deploy/env.production.example .env && chmod 600 .env
 ```
 
-Сгенерируйте секретный ключ и пароль базы:
+Wygeneruj klucz tajny i hasło do bazy danych:
 
 ```bash
 python3 -c "import secrets; print(secrets.token_urlsafe(50))"
@@ -362,57 +368,57 @@ python3 -c "import secrets; print(secrets.token_urlsafe(50))"
 openssl rand -hex 24
 ```
 
-Заполните файл:
+Uzupełnij plik:
 
 ```bash
 nano .env
 ```
 
-Что важно:
+Najważniejsze zmienne:
 
-| Переменная | Значение |
+| Zmienna | Wartość |
 |---|---|
-| `COMPOSE_FILE` | Оставьте `docker-compose.prod.yml` — тогда простая команда `docker compose` в этой папке всегда работает с продакшен-стеком |
-| `DJANGO_SECRET_KEY` | Первая сгенерированная строка. Никому не показывать и не коммитить |
+| `COMPOSE_FILE` | Zostaw `docker-compose.prod.yml` – dzięki temu zwykłe `docker compose` w tym katalogu zawsze działa na stosie produkcyjnym |
+| `DJANGO_SECRET_KEY` | Pierwszy wygenerowany ciąg. Nikomu go nie pokazuj i nie commituj |
 | `DEBUG` | `False` |
 | `ALLOWED_HOSTS` | `monituj.pl,www.monituj.pl` |
 | `CSRF_TRUSTED_ORIGINS` | `https://monituj.pl,https://www.monituj.pl` |
-| `SITE_URL` | `https://monituj.pl` — из него строятся все ссылки в письмах |
-| `POSTGRES_PASSWORD` | Вторая строка (только буквы и цифры — пароль вставляется в URL подключения) |
-| `EMAIL_*` | Данные SMTP. Порт 587 + `EMAIL_USE_TLS=True` — самый частый вариант |
-| `DEFAULT_FROM_EMAIL` | Отправитель, например `Monituj <no-reply@monituj.pl>`. Домен должен совпадать с доменом, настроенным у SMTP-провайдера |
-| `LEGAL_*` | Реквизиты фирмы. Пустые значения на юридических страницах подсвечиваются как «[uzupełnij: …]» |
-| `LEGAL_BACKUP_DAYS` | Сколько дней хранятся бэкапы. Должно совпадать с `KEEP_DAYS` в скрипте бэкапов (шаг 11) — эта цифра указана в политике конфиденциальности |
+| `SITE_URL` | `https://monituj.pl` – na tej podstawie budowane są wszystkie linki w e-mailach |
+| `POSTGRES_PASSWORD` | Drugi wygenerowany ciąg (tylko litery i cyfry – hasło trafia do adresu URL połączenia) |
+| `EMAIL_*` | Dane SMTP. Najczęściej port 587 i `EMAIL_USE_TLS=True` |
+| `DEFAULT_FROM_EMAIL` | Nadawca, np. `Monituj <no-reply@monituj.pl>`. Domena musi być skonfigurowana u dostawcy SMTP |
+| `LEGAL_*` | Dane firmy. Puste wartości są wyróżniane na stronach prawnych jako „[uzupełnij: …]” |
+| `LEGAL_BACKUP_DAYS` | Liczba dni przechowywania kopii zapasowych. Musi być równa `KEEP_DAYS` w skrypcie kopii (krok 11) – ta liczba jest podana w polityce prywatności |
 
-Значения со пробелами (адрес фирмы) пишутся без кавычек.
+Wartości ze spacjami (np. adres firmy) wpisuj bez cudzysłowów.
 
-### Шаг 7. Первый запуск
+### Krok 7. Pierwsze uruchomienie
 
 ```bash
 docker compose up -d --build
 ```
 
-Первая сборка занимает несколько минут. При каждом старте контейнер `web` сам применяет миграции базы и собирает статику.
+Pierwsze budowanie obrazu trwa kilka minut. Przy każdym starcie kontener `web` sam wykonuje migracje bazy danych i zbiera pliki statyczne.
 
-Проверьте, что все пять контейнеров работают (`State: running`, у `db` — `healthy`):
+Sprawdź, czy wszystkie pięć kontenerów działa (`running`, a `db` ma status `healthy`):
 
 ```bash
 docker compose ps
 ```
 
-Проверьте логи на ошибки:
+Przejrzyj logi pod kątem błędów:
 
 ```bash
 docker compose logs --tail=50 web worker beat
 ```
 
-Проверьте, что приложение отвечает изнутри сервера (редирект 301 на https — это нормально):
+Sprawdź, czy aplikacja odpowiada wewnątrz serwera (przekierowanie 301 na https jest prawidłowe):
 
 ```bash
 curl -sI -H "Host: monituj.pl" http://127.0.0.1:8000/ | head -1
 ```
 
-### Шаг 8. nginx
+### Krok 8. nginx
 
 ```bash
 sudo apt install -y nginx
@@ -422,7 +428,7 @@ sudo apt install -y nginx
 sudo cp /srv/monituj/deploy/nginx/monituj.conf /etc/nginx/sites-available/monituj.conf
 ```
 
-Если домен другой — поменяйте `server_name` в этом файле. Включите сайт и отключите стандартную заглушку:
+Jeśli masz inną domenę, zmień `server_name` w tym pliku. Włącz stronę i wyłącz domyślną:
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/monituj.conf /etc/nginx/sites-enabled/ && sudo rm -f /etc/nginx/sites-enabled/default
@@ -432,13 +438,13 @@ sudo ln -s /etc/nginx/sites-available/monituj.conf /etc/nginx/sites-enabled/ && 
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Что делает конфиг:
+Co robi ta konfiguracja:
 
-- проксирует всё на `127.0.0.1:8000`;
-- разрешает загрузку файлов до 25 МБ (в приложении лимит 20 МБ);
-- передаёт приложению реальный IP посетителя. Заголовок `X-Forwarded-For` **перезаписывается**, а не дополняется: по этому IP работают лимиты (просьба без аккаунта, демо), и посетитель не должен иметь возможности его подделать.
+- przekazuje cały ruch do `127.0.0.1:8000`;
+- pozwala przesyłać pliki do 25 MB (limit w aplikacji to 20 MB);
+- przekazuje aplikacji prawdziwy adres IP odwiedzającego. Nagłówek `X-Forwarded-For` jest **nadpisywany**, a nie uzupełniany: na podstawie tego adresu działają limity (prośba bez konta, demo), więc odwiedzający nie może go podrobić.
 
-### Шаг 9. HTTPS (Let's Encrypt)
+### Krok 9. HTTPS (Let's Encrypt)
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
@@ -448,92 +454,92 @@ sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d monituj.pl -d www.monituj.pl --redirect -m twoj@email.pl --agree-tos --no-eff-email
 ```
 
-certbot сам добавит в конфиг nginx блок с сертификатом и редирект с http на https. Сертификат продлевается автоматически; проверка продления:
+certbot sam doda do konfiguracji nginx certyfikat i przekierowanie z http na https. Certyfikat odnawia się automatycznie; test odnowienia:
 
 ```bash
 sudo certbot renew --dry-run
 ```
 
-Откройте https://monituj.pl — должна открыться главная страница. Проверка из консоли:
+Otwórz https://monituj.pl – powinna pojawić się strona główna. Sprawdzenie z konsoli:
 
 ```bash
 curl -s https://monituj.pl/api/health/
 ```
 
-Ожидаемый ответ: `{"success": true, "data": {"status": "ok"}}`.
+Oczekiwana odpowiedź: `{"success": true, "data": {"status": "ok"}}`.
 
-> В продакшене включён HSTS с `includeSubDomains` и `preload`: браузеры запомнят, что домен и **все его поддомены** открываются только по HTTPS. Если на поддоменах есть что-то без HTTPS — сначала переведите их на HTTPS.
+> Na produkcji włączony jest HSTS z opcjami `includeSubDomains` i `preload`: przeglądarki zapamiętają, że domena i **wszystkie jej subdomeny** otwierają się tylko przez HTTPS. Jeśli na subdomenach działa coś bez HTTPS, najpierw przenieś to na HTTPS.
 
-### Шаг 10. Администратор и проверка писем
+### Krok 10. Administrator i test e-maili
 
-Создайте суперпользователя для панели `/admin/`:
+Utwórz konto administratora do panelu `/admin/`:
 
 ```bash
 docker compose exec web python manage.py createsuperuser
 ```
 
-Отправьте тестовое письмо на свой адрес:
+Wyślij testowy e-mail na swój adres:
 
 ```bash
 docker compose exec web python manage.py sendtestemail twoj@email.pl
 ```
 
-Если письмо не пришло — смотрите `docker compose logs web` и данные SMTP в `.env`. После изменения `.env` перезапустите контейнеры:
+Jeśli wiadomość nie dotarła, sprawdź `docker compose logs web` i dane SMTP w `.env`. Po każdej zmianie `.env` odtwórz kontenery:
 
 ```bash
 docker compose up -d
 ```
 
-Чтобы письма не попадали в спам, у SMTP-провайдера настройте для домена **SPF**, **DKIM** и **DMARC** (провайдер покажет, какие DNS-записи добавить). Минимальная DMARC-запись: TXT `_dmarc.monituj.pl` → `v=DMARC1; p=none; rua=mailto:twoj@email.pl`.
+Żeby wiadomości nie trafiały do spamu, skonfiguruj dla domeny u dostawcy SMTP rekordy **SPF**, **DKIM** i **DMARC** (dostawca pokaże, jakie rekordy DNS dodać). Minimalny rekord DMARC: TXT `_dmarc.monituj.pl` → `v=DMARC1; p=none; rua=mailto:twoj@email.pl`.
 
-Затем пройдите весь путь руками:
+Następnie przejdź ręcznie cały proces:
 
-1. Регистрация → письмо с подтверждением → вход.
-2. Добавить клиента (свой второй email) → создать просьбу → письмо со ссылкой.
-3. Открыть ссылку, загрузить PDF → в панели файл появился → принять или отклонить.
-4. Проверить `/demo/` и `/wyslij-prosbe/`.
+1. Rejestracja → e-mail z potwierdzeniem → logowanie.
+2. Dodanie klienta (swój drugi adres e-mail) → utworzenie prośby → e-mail z linkiem.
+3. Otwarcie linku i przesłanie pliku PDF → plik widoczny w panelu → akceptacja albo odrzucenie.
+4. Sprawdzenie `/demo/` i `/wyslij-prosbe/`.
 
-### Шаг 11. Бэкапы
+### Krok 11. Kopie zapasowe
 
-Скрипт `deploy/backup.sh` каждый раз делает дамп базы и архив загруженных файлов, а бэкапы старше `KEEP_DAYS` дней удаляет.
+Skrypt `deploy/backup.sh` robi zrzut bazy danych i archiwum przesłanych plików, a kopie starsze niż `KEEP_DAYS` dni usuwa.
 
 ```bash
 sudo mkdir -p /var/backups/monituj && sudo chown deploy:deploy /var/backups/monituj
 ```
 
-Пробный запуск:
+Próbne uruchomienie:
 
 ```bash
 /srv/monituj/deploy/backup.sh && ls -lh /var/backups/monituj
 ```
 
-Ежедневный запуск в 3:30 через cron:
+Codzienne uruchamianie o 3:30 przez cron:
 
 ```bash
 crontab -e
 ```
 
-Добавьте строку (срок хранения должен совпадать с `LEGAL_BACKUP_DAYS`):
+Dodaj linię (okres przechowywania musi być równy `LEGAL_BACKUP_DAYS`):
 
 ```
 30 3 * * * KEEP_DAYS=30 /srv/monituj/deploy/backup.sh >> /srv/monituj/backup.log 2>&1
 ```
 
-**Копируйте бэкапы с сервера.** Бэкап, который лежит на том же сервере, не спасёт, если сервер пропадёт. Самый простой вариант — ежедневный `rsync` или `rclone` в отдельное хранилище (Storage Box, S3-совместимое хранилище в ЕС). Бэкапы содержат персональные данные и документы клиентов: храните их только в ЕС и с ограниченным доступом.
+**Kopiuj kopie zapasowe poza serwer.** Kopia leżąca na tym samym serwerze nie pomoże, jeśli serwer przestanie istnieć. Najprostsze rozwiązanie to codzienny `rsync` lub `rclone` do osobnego magazynu (Storage Box, magazyn zgodny z S3 w UE). Kopie zawierają dane osobowe i dokumenty klientów: przechowuj je wyłącznie w UE i z ograniczonym dostępem.
 
-#### Восстановление из бэкапа
+#### Przywracanie z kopii
 
 ```bash
 cd /srv/monituj && docker compose stop web worker beat
 ```
 
-База (подставьте имя файла):
+Baza danych (podaj nazwę pliku):
 
 ```bash
 docker compose exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' < /var/backups/monituj/db_2026-09-24_0330.dump
 ```
 
-Файлы:
+Pliki:
 
 ```bash
 docker run --rm -v monituj_storage:/data -v /var/backups/monituj:/backup alpine sh -c "rm -rf /data/* && tar xzf /backup/storage_2026-09-24_0330.tar.gz -C /data"
@@ -543,9 +549,9 @@ docker run --rm -v monituj_storage:/data -v /var/backups/monituj:/backup alpine 
 docker compose start web worker beat
 ```
 
-### Шаг 12. Обновление сайта
+### Krok 12. Aktualizacja strony
 
-На своём компьютере закоммитьте и запушьте изменения, затем на сервере:
+Zatwierdź i wypchnij zmiany na swoim komputerze, a potem na serwerze:
 
 ```bash
 cd /srv/monituj && ./deploy/backup.sh
@@ -559,17 +565,17 @@ git pull
 docker compose up -d --build
 ```
 
-Миграции применятся автоматически при старте `web`. Во время пересоздания контейнера сайт недоступен несколько секунд.
+Migracje wykonają się automatycznie przy starcie kontenera `web`. Podczas odtwarzania kontenera strona jest niedostępna przez kilka sekund.
 
-Откат на предыдущую версию: `git log --oneline`, затем `git checkout <коммит>` и `docker compose up -d --build`. Если новая версия меняла базу (миграции), вместе с кодом восстановите и базу из бэкапа, сделанного перед обновлением.
+Powrót do poprzedniej wersji: `git log --oneline`, następnie `git checkout <commit>` i `docker compose up -d --build`. Jeśli nowa wersja zmieniała bazę danych (migracje), razem z kodem przywróć też bazę z kopii wykonanej przed aktualizacją.
 
-Раз в пару месяцев стоит обновлять образы PostgreSQL и Redis (в пределах тех же версий 16 и 7):
+Co kilka miesięcy warto zaktualizować obrazy PostgreSQL i Redisa (w obrębie tych samych wersji 16 i 7):
 
 ```bash
 docker compose pull db redis && docker compose up -d
 ```
 
-Очистка старых образов после обновлений:
+Usuwanie starych obrazów po aktualizacjach:
 
 ```bash
 docker image prune -f
@@ -577,50 +583,50 @@ docker image prune -f
 
 ---
 
-## Эксплуатация
+## Utrzymanie
 
-### Полезные команды
+### Przydatne polecenia
 
-Все команды — из `/srv/monituj`.
+Wszystkie polecenia uruchamiasz z katalogu `/srv/monituj`.
 
-| Что | Команда |
+| Co | Polecenie |
 |---|---|
-| Состояние контейнеров | `docker compose ps` |
-| Логи в реальном времени | `docker compose logs -f web worker beat` |
-| Перезапуск всего | `docker compose restart` |
-| Остановка | `docker compose down` (данные в томах сохраняются) |
-| Django shell | `docker compose exec web python manage.py shell` |
-| Консоль PostgreSQL | `docker compose exec db psql -U monituj monituj` |
-| Место на диске | `df -h` и `docker system df` |
-| Логи nginx | `sudo tail -f /var/log/nginx/error.log` |
+| Stan kontenerów | `docker compose ps` |
+| Logi na żywo | `docker compose logs -f web worker beat` |
+| Restart wszystkiego | `docker compose restart` |
+| Zatrzymanie | `docker compose down` (dane w wolumenach zostają) |
+| Konsola Django | `docker compose exec web python manage.py shell` |
+| Konsola PostgreSQL | `docker compose exec db psql -U monituj monituj` |
+| Miejsce na dysku | `df -h` oraz `docker system df` |
+| Logi nginx | `sudo tail -f /var/log/nginx/error.log` |
 
-> **Никогда не запускайте `docker compose down -v`** — флаг `-v` удаляет тома, то есть базу и все загруженные файлы.
+> **Nigdy nie uruchamiaj `docker compose down -v`** – flaga `-v` usuwa wolumeny, czyli bazę danych i wszystkie przesłane pliki.
 
-### Мониторинг
+### Monitoring
 
-Подключите бесплатный внешний мониторинг доступности (UptimeRobot, Better Stack и т. п.) на адрес `https://monituj.pl/api/health/` — он пришлёт письмо, если сайт перестанет отвечать.
+Podłącz darmowy zewnętrzny monitoring dostępności (UptimeRobot, Better Stack itp.) pod adres `https://monituj.pl/api/health/` – dostaniesz e-mail, gdy strona przestanie odpowiadać.
 
-### Частые проблемы
+### Najczęstsze problemy
 
-| Симптом | Причина и решение |
+| Objaw | Przyczyna i rozwiązanie |
 |---|---|
-| `502 Bad Gateway` | Контейнер `web` не запущен или ещё стартует. `docker compose ps`, `docker compose logs web` |
-| `400 Bad Request` на всех страницах | Домена нет в `ALLOWED_HOSTS` |
-| `403 CSRF verification failed` при отправке форм | В `CSRF_TRUSTED_ORIGINS` нет `https://` адреса сайта |
-| Бесконечный редирект | В nginx нет `proxy_set_header X-Forwarded-Proto $scheme;` |
-| `413 Request Entity Too Large` при загрузке | Не применён `client_max_body_size` — проверьте конфиг nginx и сделайте `sudo systemctl reload nginx` |
-| Не приходят письма | Данные SMTP в `.env`, `docker compose logs worker web`, записи SPF/DKIM у домена |
-| Не уходят напоминания, файлы не удаляются по сроку | Не работает `beat` или `worker`: `docker compose ps`, `docker compose logs beat worker` |
-| В письмах ссылки на `localhost` | Неверный `SITE_URL` в `.env` |
-| Юридические страницы показывают «[uzupełnij: …]» | Не заполнены переменные `LEGAL_*` |
+| `502 Bad Gateway` | Kontener `web` nie działa albo jeszcze startuje. `docker compose ps`, `docker compose logs web` |
+| `400 Bad Request` na wszystkich stronach | Domeny nie ma w `ALLOWED_HOSTS` |
+| `403 CSRF verification failed` przy wysyłaniu formularzy | W `CSRF_TRUSTED_ORIGINS` brakuje adresu strony z `https://` |
+| Nieskończone przekierowanie | W nginx brakuje `proxy_set_header X-Forwarded-Proto $scheme;` |
+| `413 Request Entity Too Large` przy przesyłaniu pliku | Nie działa `client_max_body_size` – sprawdź konfigurację nginx i wykonaj `sudo systemctl reload nginx` |
+| E-maile nie dochodzą | Dane SMTP w `.env`, `docker compose logs worker web`, rekordy SPF/DKIM domeny |
+| Przypomnienia nie wychodzą, pliki nie są usuwane po terminie | Nie działa `beat` albo `worker`: `docker compose ps`, `docker compose logs beat worker` |
+| Linki w e-mailach prowadzą do `localhost` | Błędny `SITE_URL` w `.env` |
+| Strony prawne pokazują „[uzupełnij: …]” | Nie uzupełniono zmiennych `LEGAL_*` |
 
-### Чек-лист перед запуском для клиентов
+### Lista kontrolna przed udostępnieniem klientom
 
-- [ ] `DEBUG=False`, свой `DJANGO_SECRET_KEY`, сложный `POSTGRES_PASSWORD`.
-- [ ] HTTPS работает, http редиректит на https.
-- [ ] Тестовое письмо дошло и не попало в спам (SPF, DKIM, DMARC настроены).
-- [ ] Все переменные `LEGAL_*` заполнены, тексты Regulamin, Polityka prywatności и Umowa powierzenia проверены юристом.
-- [ ] Бэкапы делаются по cron и копируются за пределы сервера, восстановление проверено хотя бы раз.
-- [ ] `KEEP_DAYS` в cron совпадает с `LEGAL_BACKUP_DAYS`.
-- [ ] Настроен внешний мониторинг `/api/health/`.
-- [ ] Вход на сервер только по SSH-ключу, ufw включён.
+- [ ] `DEBUG=False`, własny `DJANGO_SECRET_KEY`, silne `POSTGRES_PASSWORD`.
+- [ ] HTTPS działa, http przekierowuje na https.
+- [ ] Testowy e-mail dotarł i nie trafił do spamu (SPF, DKIM i DMARC skonfigurowane).
+- [ ] Wszystkie zmienne `LEGAL_*` są uzupełnione, a Regulamin, Polityka prywatności i Umowa powierzenia zostały sprawdzone przez prawnika.
+- [ ] Kopie zapasowe wykonują się przez cron i są kopiowane poza serwer; przywracanie zostało przetestowane przynajmniej raz.
+- [ ] `KEEP_DAYS` w cronie jest równe `LEGAL_BACKUP_DAYS`.
+- [ ] Skonfigurowany jest zewnętrzny monitoring `/api/health/`.
+- [ ] Logowanie na serwer tylko kluczem SSH, ufw jest włączony.
