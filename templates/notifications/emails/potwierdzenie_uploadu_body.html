@@ -1,0 +1,15 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Twój plik został bezpiecznie przesłany.{% endblock %}
+{% block eyebrow %}Dokument przesłany{% endblock %}
+{% block title %}Dokument dotarł – dziękujemy{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Potwierdzamy, że Twój plik został bezpiecznie przesłany{% if sender_name %} do <strong>{{ sender_name }}</strong>{% endif %}.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Plik" value=document_name %}
+{% include "notifications/emails/_row.html" with label="Prośba" value=request_name %}
+{% include "notifications/emails/_details_close.html" %}
+{% if missing_items %}{% include "notifications/emails/_missing_items.html" with heading="Pozostało do przesłania" %}
+{% include "notifications/emails/_button.html" with url=link label="Prześlij pozostałe dokumenty" %}{% else %}<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">To był ostatni brakujący dokument. Nie musisz nic więcej robić.</p>{% endif %}
+{% endblock %}
+{% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}

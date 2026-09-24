@@ -1,0 +1,5 @@
+{% if form.non_field_errors %}
+<ul class="visually-hidden" data-flash-messages>
+{% for error in form.non_field_errors %}<li data-level="error">{{ error }}</li>{% endfor %}
+</ul>
+{% endif %}

@@ -1,0 +1,17 @@
+{% load formatting %}{% autoescape off %}{% if sender_name %}{{ sender_name }} prosi{% else %}Otrzymujesz prośbę{% endif %} o przesłanie dokumentów. Nie musisz zakładać konta – wystarczy otworzyć link i dodać pliki.
+
+{% if sender_name %}Od: {{ sender_name }}
+{% endif %}Prośba: {{ request_name }}
+{% if deadline %}Termin: {{ deadline|dt }}
+{% endif %}{% if missing_items %}
+Potrzebne dokumenty:
+{% for name in missing_items %}- {{ name }}
+{% endfor %}{% endif %}
+Otwórz listę i prześlij dokumenty:
+{{ link }}
+{% if password_protected %}
+Link jest zabezpieczony hasłem. Hasło wyślemy Ci w osobnej wiadomości.
+{% endif %}
+--
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
+{% endautoescape %}

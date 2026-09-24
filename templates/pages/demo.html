@@ -1,0 +1,51 @@
+{% extends "pages/base_page.html" %}
+
+{% block title %}Demo – Monituj{% endblock %}
+{% block meta_description %}Wypróbuj Monituj bez rejestracji: własne konto demonstracyjne z przykładowymi klientami i prośbami o dokumenty, gotowe w jedno kliknięcie.{% endblock %}
+
+{% block hero_eyebrow %}Demo{% endblock %}
+{% block hero_title %}Zobacz Monituj w akcji – <strong>bez rejestracji</strong>{% endblock %}
+{% block hero_lead %}Jednym kliknięciem otworzysz własne konto demonstracyjne z przykładowymi klientami, prośbami i dokumentami. Klikaj śmiało: emaile nie są wysyłane, a konto usunie się samo po 24 godzinach.{% endblock %}
+{% block hero_actions %}
+<div class="hero__actions">
+{% if user.is_authenticated and not demo_account %}
+<a class="btn btn-dark btn-lg" href="{% url 'accounts:panel' %}">Przejdź do swojego panelu</a>
+{% else %}
+{% include "demo/_button.html" with cls="btn-dark btn-lg" label="Uruchom demo" %}
+{% endif %}
+<a class="btn btn-secondary btn-lg" href="{% url 'public:guest-request-create' %}">Wyślij prawdziwą prośbę bez konta</a>
+</div>
+{% if not user.is_authenticated %}<p class="try-card__note try-card__note--muted">Uruchamiając demo, akceptujesz <a href="{% url 'legal:terms' %}">Regulamin</a>.</p>{% endif %}
+{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container">
+<div class="section-head section-head--split">
+<div>
+<p class="eyebrow">Co jest w demo</p>
+<h2 class="display-2">Prawdziwy panel, <strong>przykładowe dane</strong></h2>
+</div>
+<p>Demo działa dokładnie tak jak konto Monituj. Różnica jest jedna: dane są przykładowe i nigdzie nie wychodzą.</p>
+</div>
+<div class="feature-grid">
+{% include "pages/_feature.html" with icon="chart" title="Panel ze statystykami" text="Aktywne prośby, brakujące i dostarczone dokumenty oraz ostatnia aktywność klientów." %}
+{% include "pages/_feature.html" with icon="list" title="Prośby w różnych statusach" text="W trakcie, komplet, po terminie i dokument do poprawy – zobacz, jak wygląda każdy etap." %}
+{% include "pages/_feature.html" with icon="check" title="Dokumenty do sprawdzenia" text="Część plików czeka na Twoją decyzję. Zaakceptuj je albo odrzuć z podaniem powodu." %}
+{% include "pages/_feature.html" with icon="clock" title="Harmonogram przypomnień" text="Zobacz, kiedy wyjdą kolejne przypomnienia, albo wyślij jedno ręcznie." %}
+{% include "pages/_feature.html" with icon="user" title="Widok Twojego klienta" text="Otwórz link prośby tak, jak zrobi to klient, i sam prześlij plik." %}
+{% include "pages/_feature.html" with icon="history" title="Historia zdarzeń" text="Każda prośba ma pełną historię: wysłanie, otwarcie linku, przesłanie, akceptacja." %}
+</div>
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container">
+<div class="demo-facts">
+<div class="demo-fact">{% include "pages/_icon.html" with icon="user" %}<div><strong>Osobne konto tylko dla Ciebie</strong><span>Nikt inny nie widzi Twojego demo.</span></div></div>
+<div class="demo-fact">{% include "pages/_icon.html" with icon="mail" %}<div><strong>Emaile nie są wysyłane</strong><span>Możesz wpisać dowolny adres – nic nie wyjdzie.</span></div></div>
+<div class="demo-fact">{% include "pages/_icon.html" with icon="trash" %}<div><strong>Usuwane po 24 godzinach</strong><span>Razem ze wszystkimi plikami, albo wcześniej jednym kliknięciem.</span></div></div>
+</div>
+</div>
+</section>
+{% endblock %}

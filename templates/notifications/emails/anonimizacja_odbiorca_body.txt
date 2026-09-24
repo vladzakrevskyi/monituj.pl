@@ -1,0 +1,9 @@
+{% load formatting %}{% autoescape off %}Minął okres przechowywania ({{ retention_days }} dni) ustalony przez nadawcę prośby. Usunęliśmy z serwerów Monituj {{ count }} {% if count == 1 %}przesłany przez Ciebie plik{% elif count < 5 %}przesłane przez Ciebie pliki{% else %}przesłanych przez Ciebie plików{% endif %}. Nie przechowujemy już ich treści ani nazw.
+
+{% if sender_name %}Pliki przesłane dla: {{ sender_name }}
+{% endif %}Prośba: {{ request_name }}
+
+Nie musisz nic robić – ta wiadomość ma charakter informacyjny.
+--
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
+{% endautoescape %}

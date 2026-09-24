@@ -1,0 +1,8 @@
+{% load formatting %}{% autoescape off %}Zgodnie z Twoją prośbą usunęliśmy konto w Monituj razem z klientami, prośbami, przypomnieniami i wszystkimi przesłanymi plikami. Automatyczne przypomnienia nie będą już wysyłane, a linki do przesyłania dokumentów przestały działać.
+{% if backup_days %}
+Kopie zapasowe są nadpisywane automatycznie – najpóźniej po {{ backup_days }} dniach nie zostanie po koncie żaden ślad.
+{% endif %}
+Dziękujemy za korzystanie z Monituj. Jeśli zechcesz wrócić, w każdej chwili możesz założyć nowe konto.
+--
+To ostatnia wiadomość dotycząca tego konta. Nie przechowujemy już Twojego adresu email.
+{% endautoescape %}

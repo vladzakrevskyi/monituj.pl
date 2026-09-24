@@ -1,0 +1,11 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Potwierdź adres email, aby aktywować konto.{% endblock %}
+{% block eyebrow %}Witaj w Monituj{% endblock %}
+{% block title %}Potwierdź swój adres email{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Dziękujemy za rejestrację. Jeszcze jeden krok – potwierdź adres email, a Monituj zacznie pilnować Twoich dokumentów i terminów.</p>
+{% include "notifications/emails/_button.html" with url=verification_url label="Potwierdź adres email" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Link jest ważny przez 48 godzin. Jeśli to nie Ty zakładałeś konto, po prostu zignoruj tę wiadomość.</p>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

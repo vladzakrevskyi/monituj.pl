@@ -1,0 +1,19 @@
+{% extends "base/base.html" %}
+
+{% block page_class %}page--legal{% endblock %}
+
+{% block content %}
+{% with current=request.resolver_match.url_name %}
+<nav class="tabs" aria-label="Dokumenty prawne">
+<a class="tabs__item{% if current == 'terms' %} is-active{% endif %}" href="{% url 'legal:terms' %}">Regulamin</a>
+<a class="tabs__item{% if current == 'privacy' %} is-active{% endif %}" href="{% url 'legal:privacy' %}">Polityka prywatności</a>
+<a class="tabs__item{% if current == 'cookies' %} is-active{% endif %}" href="{% url 'legal:cookies' %}">Polityka cookies</a>
+<a class="tabs__item{% if current == 'dpa' %} is-active{% endif %}" href="{% url 'legal:dpa' %}">Umowa powierzenia</a>
+</nav>
+{% endwith %}
+<article class="card legal">
+<h1>{% block legal_title %}{% endblock %}</h1>
+<p class="legal__meta">Obowiązuje od: {{ legal.effective_date }}</p>
+{% block legal_body %}{% endblock %}
+</article>
+{% endblock %}

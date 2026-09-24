@@ -1,0 +1,20 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="auth-card">
+<div class="auth-card__intro">
+<span class="brand-mark brand-mark--lg">M</span>
+<h1>{% block auth_title %}Kontroluj <strong>dokumenty</strong> od klientów bez chaosu w mailach{% endblock %}</h1>
+<ul class="auth-card__points">
+{% block auth_points %}
+{% include "base/_auth_point.html" with text="Bezpieczne linki z opcjonalnym hasłem" %}
+{% include "base/_auth_point.html" with text="Automatyczne przypomnienia o brakach" %}
+{% include "base/_auth_point.html" with text="Pełna historia i kontrola statusu" %}
+{% endblock %}
+</ul>
+</div>
+<div class="auth-card__form">
+{% block auth_form %}{% endblock %}
+</div>
+</div>
+{% endblock %}

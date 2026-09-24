@@ -1,0 +1,6 @@
+{% load formatting %}{% autoescape off %}Hasło do Twojego konta w Monituj zostało właśnie zmienione. Wylogowaliśmy Cię ze wszystkich urządzeń – zaloguj się ponownie, używając nowego hasła.
+
+Jeśli to nie Ty zmieniłeś hasło, natychmiast zresetuj je ponownie i skontaktuj się z nami.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

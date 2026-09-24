@@ -1,0 +1,28 @@
+{% extends "legal/base.html" %}
+
+{% block title %}Polityka cookies - Monituj{% endblock %}
+{% block legal_title %}Polityka cookies{% endblock %}
+
+{% block legal_body %}
+<h2>1. Czym są pliki cookies</h2>
+<p>Pliki cookies to niewielkie pliki tekstowe zapisywane w Twojej przeglądarce przez odwiedzane strony. Administratorem Serwisu jest {{ legal.name }}.</p>
+
+<h2>2. Jakich plików cookies używamy</h2>
+<p>Serwis Monituj używa wyłącznie plików cookies niezbędnych do jego działania. Nie stosujemy cookies analitycznych, reklamowych ani plików cookies podmiotów trzecich. Dlatego nie prosimy o zgodę – zgodnie z art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. – Prawo komunikacji elektronicznej zgoda nie jest wymagana dla cookies niezbędnych do świadczenia usługi.</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Nazwa</th><th>Cel</th><th>Czas przechowywania</th></tr></thead>
+<tbody>
+<tr><td><code>sessionid</code></td><td>Utrzymanie sesji: logowanie do Konta oraz dostęp do prośby zabezpieczonej hasłem</td><td>Do 2 tygodni lub do wylogowania</td></tr>
+<tr><td><code>csrftoken</code></td><td>Ochrona formularzy przed atakami typu CSRF</td><td>Do 1 roku</td></tr>
+<tr><td><code>messages</code></td><td>Wyświetlenie jednorazowego komunikatu po wykonaniu akcji (np. „Zmiany zostały zapisane”)</td><td>Do wyświetlenia komunikatu</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>3. Jak zarządzać plikami cookies</h2>
+<p>Możesz usunąć lub zablokować pliki cookies w ustawieniach swojej przeglądarki. Zablokowanie niezbędnych plików cookies uniemożliwi jednak logowanie do Konta i przesyłanie dokumentów.</p>
+
+<h2>4. Więcej informacji</h2>
+<p>Informacje o przetwarzaniu danych osobowych znajdziesz w <a href="{% url 'legal:privacy' %}">Polityce prywatności</a>.</p>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Pliki zostały usunięte po okresie przechowywania.{% endblock %}
+{% block eyebrow %}Usunięcie plików{% endblock %}
+{% block title %}Pliki z prośby zostały usunięte{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Minął okres przechowywania plików ({{ retention_days }} dni) ustawiony dla prośby <strong>{{ request_name }}</strong>. Usunęliśmy {{ count }} {% if count == 1 %}plik{% elif count < 5 %}pliki{% else %}plików{% endif %} z naszych serwerów.</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Prośba i jej historia pozostają w panelu, a w miejscu plików widnieje informacja o ich usunięciu. Tych plików nie da się już pobrać ani odzyskać. Odbiorca również otrzymał powiadomienie.</p>
+{% include "notifications/emails/_button.html" with url=panel_link label="Zobacz prośbę w panelu" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

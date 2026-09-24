@@ -1,0 +1,127 @@
+{% extends "legal/base.html" %}
+
+{% block title %}Regulamin - Monituj{% endblock %}
+{% block legal_title %}Regulamin serwisu Monituj{% endblock %}
+
+{% block legal_body %}
+<h2>§ 1. Postanowienia ogólne</h2>
+<ol>
+<li>Niniejszy regulamin (dalej: „Regulamin”) określa zasady świadczenia usług drogą elektroniczną w serwisie Monituj dostępnym pod adresem monituj.pl (dalej: „Serwis”). Regulamin jest regulaminem, o którym mowa w art. 8 ustawy z dnia 18 lipca 2002 r. o świadczeniu usług drogą elektroniczną.</li>
+<li>Usługodawcą i operatorem Serwisu jest {{ legal.name }}, {{ legal.address }}, NIP: {{ legal.nip }}, REGON: {{ legal.regon }}, {{ legal.register }} (dalej: „Usługodawca”).</li>
+<li>Kontakt z Usługodawcą: {{ legal.email }}.</li>
+<li>Regulamin jest udostępniony nieodpłatnie w Serwisie w formie, która umożliwia jego pobranie, utrwalenie i wydrukowanie.</li>
+</ol>
+
+<h2>§ 2. Definicje</h2>
+<ol>
+<li><strong>Użytkownik</strong> – osoba fizyczna, osoba prawna lub jednostka organizacyjna, która założyła Konto w Serwisie.</li>
+<li><strong>Konto</strong> – indywidualny panel Użytkownika w Serwisie, dostępny po zalogowaniu.</li>
+<li><strong>Prośba</strong> – utworzone w Serwisie zadanie zawierające listę dokumentów, których Użytkownik oczekuje od Odbiorcy, wraz z terminem i ustawieniami przypomnień (w Serwisie nazywane także „przypomnieniem”).</li>
+<li><strong>Zadanie bez konta</strong> – Prośba utworzona bez zakładania Konta.</li>
+<li><strong>Odbiorca</strong> – osoba, do której skierowana jest Prośba i która przesyła Dokumenty za pomocą linku.</li>
+<li><strong>Dokument</strong> – plik przesłany przez Odbiorcę w ramach Prośby.</li>
+<li><strong>Okres przechowywania</strong> – wybrany dla Prośby czas przechowywania Dokumentów, liczony od chwili przesłania danego Dokumentu, nie dłuższy niż 365 dni.</li>
+</ol>
+
+<h2>§ 3. Rodzaj i zakres usług</h2>
+<ol>
+<li>Usługodawca świadczy w Serwisie następujące usługi:
+<ol type="a">
+<li>prowadzenie Konta;</li>
+<li>tworzenie Próśb, wysyłanie Odbiorcom linków oraz przypomnień e-mail;</li>
+<li>udostępnianie Odbiorcom formularza do przesyłania Dokumentów;</li>
+<li>przechowywanie Dokumentów przez Okres przechowywania i udostępnianie ich Użytkownikowi;</li>
+<li>tworzenie Zadania bez konta, w liczbie ograniczonej do jednego dziennie;</li>
+<li>udostępnianie tymczasowego konta demonstracyjnego z przykładowymi danymi. Konto demonstracyjne jest usuwane automatycznie po 24 godzinach wraz ze wszystkimi danymi, a w jego ramach nie są wysyłane wiadomości e-mail. Uruchomienie konta demonstracyjnego oznacza akceptację Regulaminu.</li>
+</ol>
+</li>
+<li>Usługi są obecnie świadczone nieodpłatnie. O zamiarze wprowadzenia opłat Usługodawca poinformuje Użytkowników drogą e-mail z co najmniej 30-dniowym wyprzedzeniem. Opłaty nie będą pobierane bez wyraźnej akceptacji nowych warunków przez Użytkownika.</li>
+<li>Serwis jest przeznaczony przede wszystkim dla przedsiębiorców, w szczególności biur rachunkowych i firm zbierających dokumenty od swoich klientów.</li>
+</ol>
+
+<h2>§ 4. Wymagania techniczne i zagrożenia</h2>
+<ol>
+<li>Do korzystania z Serwisu potrzebne są: urządzenie z dostępem do internetu, aktualna wersja przeglądarki internetowej z włączoną obsługą JavaScript i plików cookies oraz aktywny adres e-mail.</li>
+<li>Przesyłane pliki muszą spełniać limity rozmiaru i typów plików wskazane w formularzu przesyłania.</li>
+<li>Korzystanie z usług elektronicznych wiąże się z ryzykiem, m.in. złośliwego oprogramowania, prób wyłudzenia danych (phishingu) i przechwycenia danych. W celu ograniczenia ryzyka należy korzystać z aktualnego oprogramowania, nie udostępniać hasła ani linków do Próśb osobom nieuprawnionym i sprawdzać, czy wiadomości e-mail rzeczywiście pochodzą z Serwisu.</li>
+</ol>
+
+<h2>§ 5. Konto</h2>
+<ol>
+<li>Założenie Konta wymaga podania adresu e-mail, ustalenia hasła, akceptacji Regulaminu oraz potwierdzenia adresu e-mail za pomocą przesłanego linku.</li>
+<li>Umowa o prowadzenie Konta zostaje zawarta na czas nieokreślony z chwilą potwierdzenia adresu e-mail.</li>
+<li>Użytkownik zobowiązany jest zachować hasło w tajemnicy. Użytkownik odpowiada za działania wykonane z użyciem jego Konta.</li>
+<li>Użytkownik może w każdej chwili usunąć Konto samodzielnie w ustawieniach Konta. Usunięcie wymaga podania hasła oraz potwierdzenia za pomocą linku wysłanego na adres e-mail Konta. Po potwierdzeniu Usługodawca niezwłocznie i nieodwracalnie usuwa Konto wraz z danymi Odbiorców, prośbami, przypomnieniami i Dokumentami, a Odbiorcy próśb, które nie zostały zakończone lub zawierają przesłane pliki, otrzymują powiadomienie e-mail, że prośba jest nieaktualna. Użytkownik może także zażądać usunięcia Konta, wysyłając wiadomość na adres {{ legal.email }} – wówczas Usługodawca usuwa Konto w terminie do 14 dni od otrzymania żądania.</li>
+<li>Przed usunięciem Konta Użytkownik powinien pobrać Dokumenty, które jest obowiązany przechowywać na podstawie przepisów prawa, w szczególności podatkowych lub rachunkowych. Usługodawca nie przechowuje kopii Dokumentów po usunięciu Konta, z zastrzeżeniem kopii zapasowych nadpisywanych w cyklu ich rotacji, nie dłuższym niż {{ legal.backup_days }} dni.</li>
+</ol>
+
+<h2>§ 6. Prośby, Dokumenty i Okres przechowywania</h2>
+<ol>
+<li>Użytkownik określa w Prośbie listę dokumentów, termin, opcjonalne hasło dostępu, ustawienia przypomnień oraz Okres przechowywania (domyślnie 90 dni, maksymalnie 365 dni).</li>
+<li>Odbiorca uzyskuje dostęp do Prośby za pomocą unikalnego linku, a jeśli Użytkownik ustawił hasło – również po jego podaniu. Każda osoba znająca link (i hasło) może przesłać Dokumenty. Użytkownik odpowiada za przekazanie linku właściwej osobie.</li>
+<li>Po upływie Okresu przechowywania Dokument jest trwale usuwany: Usługodawca usuwa plik oraz jego metadane (nazwę pliku, typ, rozmiar i sumę kontrolną). W Serwisie pozostaje wyłącznie informacja, że plik został usunięty. Użytkownik oraz Odbiorca otrzymują o tym powiadomienie e-mail. Usuniętych Dokumentów nie można odtworzyć.</li>
+<li>Serwis nie jest archiwum dokumentów. Obowiązek przechowywania dokumentów wymaganych przepisami prawa (np. podatkowymi lub rachunkowymi) spoczywa na Użytkowniku, który powinien pobrać potrzebne Dokumenty przed upływem Okresu przechowywania.</li>
+</ol>
+
+<h2>§ 7. Obowiązki Użytkowników i Odbiorców</h2>
+<ol>
+<li>Zabronione jest korzystanie z Serwisu w sposób sprzeczny z prawem, dobrymi obyczajami lub Regulaminem, w szczególności:
+<ol type="a">
+<li>przesyłanie treści bezprawnych, w tym naruszających prawa osób trzecich;</li>
+<li>przesyłanie plików zawierających złośliwe oprogramowanie;</li>
+<li>wysyłanie Próśb do osób, z którymi Użytkownik nie pozostaje w relacji uzasadniającej taką korespondencję (spam);</li>
+<li>podejmowanie prób obejścia zabezpieczeń Serwisu lub nadmiernego obciążania jego infrastruktury.</li>
+</ol>
+</li>
+<li>Użytkownik oświadcza, że posiada podstawę prawną do przetwarzania danych osobowych Odbiorców oraz danych zawartych w Dokumentach, a także że wykonał wobec tych osób obowiązki informacyjne wynikające z RODO.</li>
+</ol>
+
+<h2>§ 8. Zgłaszanie treści nielegalnych</h2>
+<ol>
+<li>Punktem kontaktowym dla użytkowników i organów, w rozumieniu art. 11 i 12 rozporządzenia (UE) 2022/2065 (akt o usługach cyfrowych), jest adres {{ legal.email }}. Kontakt jest możliwy w języku polskim i angielskim.</li>
+<li>Każdy może zgłosić treść, którą uważa za nielegalną. Zgłoszenie powinno zawierać: uzasadnienie, dlaczego treść jest nielegalna, wskazanie treści (np. link), imię i nazwisko lub nazwę oraz adres e-mail zgłaszającego (z wyjątkiem zgłoszeń dotyczących niektórych przestępstw przeciwko dzieciom) oraz oświadczenie, że zgłoszenie jest dokonywane w dobrej wierze.</li>
+<li>Usługodawca rozpatruje zgłoszenia bez zbędnej zwłoki. W razie uznania treści za nielegalną lub sprzeczną z Regulaminem Usługodawca może ją usunąć, zablokować dostęp do niej lub zablokować Konto. Osoba, której dotyczy decyzja, otrzymuje uzasadnienie i może się od niej odwołać w terminie 14 dni, pisząc na adres {{ legal.email }}.</li>
+</ol>
+
+<h2>§ 9. Odpowiedzialność</h2>
+<ol>
+<li>Usługodawca dokłada starań, aby Serwis działał nieprzerwanie. Możliwe są przerwy techniczne, w miarę możliwości zapowiadane z wyprzedzeniem.</li>
+<li>Usługodawca nie odpowiada za treść Dokumentów przesyłanych przez Odbiorców ani za treść Próśb tworzonych przez Użytkowników.</li>
+<li>W stosunku do Użytkowników niebędących konsumentami ani przedsiębiorcami na prawach konsumenta odpowiedzialność Usługodawcy jest ograniczona do szkód rzeczywistych i nie obejmuje utraconych korzyści. Ograniczenie nie dotyczy szkód wyrządzonych umyślnie.</li>
+<li>Postanowienia Regulaminu nie wyłączają ani nie ograniczają praw konsumentów wynikających z bezwzględnie obowiązujących przepisów prawa.</li>
+</ol>
+
+<h2>§ 10. Reklamacje</h2>
+<ol>
+<li>Reklamacje dotyczące działania Serwisu można składać na adres {{ legal.email }}. Reklamacja powinna zawierać adres e-mail, opis problemu i żądanie.</li>
+<li>Usługodawca rozpatruje reklamację w terminie 14 dni od jej otrzymania i przesyła odpowiedź na adres e-mail, z którego ją wysłano.</li>
+<li>Konsument może skorzystać z pozasądowych sposobów rozpatrywania reklamacji, m.in. z pomocy miejskiego lub powiatowego rzecznika konsumentów albo wojewódzkiego inspektoratu Inspekcji Handlowej.</li>
+</ol>
+
+<h2>§ 11. Rozwiązanie umowy</h2>
+<ol>
+<li>Użytkownik może w każdej chwili rozwiązać umowę, usuwając Konto zgodnie z § 5 ust. 4.</li>
+<li>Usługodawca może rozwiązać umowę z zachowaniem 30-dniowego okresu wypowiedzenia z ważnych przyczyn, w szczególności w razie zakończenia działalności Serwisu. W razie rażącego naruszenia Regulaminu Usługodawca może rozwiązać umowę ze skutkiem natychmiastowym.</li>
+<li>Po rozwiązaniu umowy Usługodawca usuwa Konto oraz Dokumenty w terminie do 30 dni, z zastrzeżeniem danych, które musi przechowywać na podstawie przepisów prawa.</li>
+</ol>
+
+<h2>§ 12. Dane osobowe</h2>
+<ol>
+<li>Zasady przetwarzania danych osobowych przez Usługodawcę jako administratora określa <a href="{% url 'legal:privacy' %}">Polityka prywatności</a>.</li>
+<li>W zakresie danych Odbiorców i danych zawartych w Dokumentach administratorem jest Użytkownik, a Usługodawca przetwarza je w jego imieniu. Z chwilą akceptacji Regulaminu Użytkownik zawiera z Usługodawcą <a href="{% url 'legal:dpa' %}">umowę powierzenia przetwarzania danych osobowych</a>, stanowiącą Załącznik nr 1 do Regulaminu.</li>
+</ol>
+
+<h2>§ 13. Konsumenci i przedsiębiorcy na prawach konsumenta</h2>
+<ol>
+<li>Konsument oraz osoba fizyczna prowadząca działalność gospodarczą zawierająca umowę niemającą dla niej charakteru zawodowego (art. 38a ustawy o prawach konsumenta) mogą odstąpić od umowy w terminie 14 dni od jej zawarcia bez podawania przyczyny, wysyłając oświadczenie na adres {{ legal.email }}.</li>
+<li>Do osób wskazanych w ust. 1 nie stosuje się postanowień Regulaminu ograniczających odpowiedzialność Usługodawcy w zakresie wykraczającym poza przepisy prawa.</li>
+</ol>
+
+<h2>§ 14. Postanowienia końcowe</h2>
+<ol>
+<li>Usługodawca może zmienić Regulamin z ważnych przyczyn, w szczególności zmiany przepisów prawa lub zakresu usług. O zmianie Użytkownicy zostaną poinformowani drogą e-mail co najmniej 14 dni przed jej wejściem w życie. Użytkownik, który nie akceptuje zmian, może rozwiązać umowę przed ich wejściem w życie.</li>
+<li>W sprawach nieuregulowanych w Regulaminie zastosowanie mają przepisy prawa polskiego.</li>
+<li>Spory z Użytkownikami niebędącymi konsumentami ani przedsiębiorcami na prawach konsumenta rozstrzyga sąd właściwy dla siedziby Usługodawcy. Spory z konsumentami rozstrzygają sądy właściwe według przepisów ogólnych.</li>
+<li>Załącznik nr 1: <a href="{% url 'legal:dpa' %}">Umowa powierzenia przetwarzania danych osobowych</a>.</li>
+</ol>
+{% endblock %}

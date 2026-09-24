@@ -1,0 +1,7 @@
+{% load formatting %}{% autoescape off %}Dziękujemy za rejestrację w Monituj. Potwierdź adres email, aby aktywować konto:
+{{ verification_url }}
+
+Link jest ważny przez 48 godzin. Jeśli to nie Ty zakładałeś konto, zignoruj tę wiadomość.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

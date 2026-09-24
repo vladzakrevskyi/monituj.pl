@@ -1,0 +1,13 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Adres email Twojego konta został zmieniony.{% endblock %}
+{% block eyebrow %}Bezpieczeństwo konta{% endblock %}
+{% block title %}Adres email został zmieniony{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Adres email Twojego konta w Monituj został zmieniony. Ten adres – na który dostałeś tę wiadomość – nie jest już używany do logowania.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Nowy adres" value=new_email %}
+{% include "notifications/emails/_details_close.html" %}
+{% include "notifications/emails/_notice.html" with text="Jeśli to nie Ty dokonałeś tej zmiany, natychmiast skontaktuj się z nami." tone="danger" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

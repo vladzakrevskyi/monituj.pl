@@ -1,0 +1,9 @@
+{% load formatting %}{% autoescape off %}Wszystkie dokumenty są już na miejscu. Dziękujemy!
+
+Prośba: {{ request_name }}
+Status: Komplet dokumentów
+
+Przypomnienia zostały wyłączone. Pliki będą przechowywane przez {{ retention_days }} dni od przesłania, a następnie automatycznie usunięte.
+--
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
+{% endautoescape %}

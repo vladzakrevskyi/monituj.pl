@@ -1,0 +1,73 @@
+# Production stack for a single VPS. nginx on the host terminates HTTPS and
+# proxies to the web container, which listens on 127.0.0.1 only; the
+# database and Redis are not reachable from outside at all.
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+
+name: monituj
+
+x-app: &app
+  build:
+    context: .
+    args:
+      REQUIREMENTS: prod
+  image: monituj:latest
+  env_file: .env
+  environment:
+    DJANGO_SETTINGS_MODULE: config.settings.prod
+    DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    REDIS_URL: redis://redis:6379/0
+  volumes:
+    - storage:/app/storage
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_started
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  web:
+    <<: *app
+    command: >
+      sh -c "python manage.py migrate --noinput
+      && python manage.py collectstatic --noinput -v0
+      && gunicorn config.wsgi:application
+      --bind 0.0.0.0:8000 --workers 3 --timeout 120
+      --access-logfile - --error-logfile -"
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  # Sends emails and runs background jobs.
+  worker:
+    <<: *app
+    command: celery -A config worker -l info --concurrency 2
+
+  # Hourly: automatic reminders, deleting files after their retention
+  # period, removing expired demo accounts. Exactly one beat must run.
+  beat:
+    <<: *app
+    command: celery -A config beat -l info --schedule /tmp/celerybeat-schedule
+
+volumes:
+  postgres_data:
+  storage:

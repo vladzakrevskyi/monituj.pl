@@ -1,0 +1,17 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Potwierdź, że chcesz trwale usunąć konto w Monituj.{% endblock %}
+{% block eyebrow %}Usunięcie konta{% endblock %}
+{% block title %}Potwierdź usunięcie konta{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Otrzymaliśmy prośbę o usunięcie Twojego konta w Monituj. Po potwierdzeniu usuniemy je natychmiast, razem ze wszystkimi danymi:</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Klienci" value=clients_count %}
+{% include "notifications/emails/_row.html" with label="Prośby z przypomnieniami" value=requests_count %}
+{% include "notifications/emails/_row.html" with label="Przesłane pliki" value=files_count %}
+{% include "notifications/emails/_details_close.html" %}
+{% include "notifications/emails/_button.html" with url=confirm_url label="Przejdź do usunięcia konta" %}
+{% include "notifications/emails/_notice.html" with text="Tej operacji nie można cofnąć. Jeśli musisz archiwizować dokumenty klientów, pobierz je przed potwierdzeniem." tone="danger" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Link jest ważny przez godzinę i może być użyty tylko raz. Jeśli to nie Ty prosiłeś o usunięcie konta, zignoruj tę wiadomość i zmień hasło – ktoś może znać Twoje dane logowania.</p>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

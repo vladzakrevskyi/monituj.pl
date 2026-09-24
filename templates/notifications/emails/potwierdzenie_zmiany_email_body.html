@@ -1,0 +1,11 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Potwierdź nowy adres email konta.{% endblock %}
+{% block eyebrow %}Zmiana adresu email{% endblock %}
+{% block title %}Potwierdź nowy adres email{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Ktoś – mamy nadzieję, że Ty – chce używać tego adresu do logowania w Monituj. Aby to potwierdzić, kliknij przycisk poniżej.</p>
+{% include "notifications/emails/_button.html" with url=confirm_url label="Potwierdź nowy adres" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Link jest ważny przez godzinę i może być użyty tylko raz. Jeśli to nie Ty prosiłeś o tę zmianę, zignoruj wiadomość – konto pozostanie bez zmian.</p>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

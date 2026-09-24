@@ -1,0 +1,54 @@
+{% extends "base/app_base.html" %}
+{% load static formatting %}
+
+{% block title %}Panel - Monituj{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<div>
+<h1>Panel</h1>
+<p class="page-header__sub">Przegląd Twoich próśb o dokumenty i aktywności klientów.</p>
+</div>
+</div>
+
+<div class="stat-grid">
+<div class="stat-tile stat-tile--dark">
+<div class="stat-tile__value">{{ active_requests }}</div>
+<div class="stat-tile__label">Aktywne prośby</div>
+</div>
+<div class="stat-tile">
+<div class="stat-tile__value">{{ missing_documents }}</div>
+<div class="stat-tile__label">Brakujące dokumenty</div>
+</div>
+<div class="stat-tile">
+<div class="stat-tile__value">{{ delivered_documents }}</div>
+<div class="stat-tile__label">Dokumenty dostarczone</div>
+</div>
+<div class="stat-tile">
+<div class="stat-tile__value">{{ reminders_sent }}</div>
+<div class="stat-tile__label">Przypomnienia wysłane</div>
+</div>
+</div>
+
+<div class="dashboard-grid">
+<section class="card">
+<h2 class="card-title">Ostatnia aktywność</h2>
+<ul class="history-list">
+{% for entry in recent_activity %}
+<li><span class="history-time">{{ entry.created_at|dt }}</span><span>{{ entry.label_pl }}{% if entry.actor and entry.actor != user %} &mdash; {{ entry.actor.email }}{% endif %}</span></li>
+{% empty %}
+<li>Brak aktywności.</li>
+{% endfor %}
+</ul>
+</section>
+<aside class="card">
+<h2 class="card-title">Szybkie akcje</h2>
+<div class="quick-actions">
+<a class="btn btn-primary btn-block" href="{% url 'requests:create' %}">Nowe przypomnienie</a>
+<a class="btn btn-secondary btn-block" href="{% url 'clients:create' %}">Dodaj klienta</a>
+<a class="btn btn-secondary btn-block" href="{% url 'requests:list' %}">Wszystkie przypomnienia</a>
+</div>
+</aside>
+</div>
+{% endblock %}

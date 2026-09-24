@@ -1,0 +1,11 @@
+{% load formatting %}{% autoescape off %}Konto nadawcy w Monituj zostało zamknięte, dlatego ta prośba jest już nieaktualna, a link do przesyłania dokumentów przestał działać. Nie dostaniesz też kolejnych przypomnień.
+
+{% if sender_name %}Nadawca: {{ sender_name }}
+{% endif %}Prośba: {{ request_name }}
+{% if had_files %}
+Pliki przesłane przez Ciebie w ramach tej prośby zostały trwale usunięte z serwerów Monituj.
+{% endif %}
+Jeśli nadal masz przekazać te dokumenty, skontaktuj się bezpośrednio z nadawcą.
+--
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Ma ona charakter informacyjny.
+{% endautoescape %}

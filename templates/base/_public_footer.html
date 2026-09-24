@@ -1,0 +1,39 @@
+<footer class="site-footer">
+<div class="site-footer__inner">
+<div class="site-footer__brand">
+<a class="brand" href="{% url 'landing' %}"><span class="brand-mark">M</span>Monituj</a>
+<p>Monituj pilnuje Twoich dokumentów i terminów: zbiera je od klientów, sam przypomina o brakach i pokazuje, na czym stoisz.</p>
+<a class="btn btn-primary site-footer__cta" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+</div>
+<div class="site-footer__col">
+<h4>Produkt</h4>
+<a href="{% url 'pages:how-it-works' %}">Jak to działa</a>
+<a href="{% url 'pages:features' %}">Funkcje</a>
+<a href="{% url 'pages:for-whom' %}">Dla kogo</a>
+<a href="{% url 'pages:pricing' %}">Cennik</a>
+<a href="{% url 'pages:security' %}">Bezpieczeństwo</a>
+</div>
+<div class="site-footer__col">
+<h4>Pomoc</h4>
+<a href="{% url 'pages:demo' %}">Wypróbuj demo</a>
+<a href="{% url 'pages:faq' %}">Najczęstsze pytania</a>
+<a href="{% url 'pages:contact' %}">Kontakt</a>
+<a href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
+{% if user.is_authenticated %}
+<a href="{% url 'accounts:panel' %}">Panel</a>
+{% else %}
+<a href="{% url 'accounts:login' %}">Zaloguj się</a>
+{% endif %}
+</div>
+<div class="site-footer__col">
+<h4>Informacje prawne</h4>
+<a href="{% url 'legal:terms' %}">Regulamin</a>
+<a href="{% url 'legal:privacy' %}">Polityka prywatności</a>
+<a href="{% url 'legal:cookies' %}">Polityka cookies</a>
+<a href="{% url 'legal:dpa' %}">Umowa powierzenia</a>
+</div>
+</div>
+<div class="site-footer__bottom">
+<p>&copy; {% now "Y" %} Monituj. Wszystkie prawa zastrzeżone.</p>
+</div>
+</footer>

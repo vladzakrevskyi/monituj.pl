@@ -1,0 +1,53 @@
+# --- Secrets and local configuration -------------------------------------
+# Real settings (SECRET_KEY, database and SMTP passwords) never go to Git;
+# the *.example templates document what they must contain.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Uploaded files and generated data ------------------------------------
+# Client documents are personal data - they stay on the server only.
+/storage/*
+!/storage/.gitkeep
+/staticfiles/
+/media/
+/backups/
+*.dump
+*.sql
+*.sql.gz
+*.sqlite3
+celerybeat-schedule*
+celerybeat.pid
+*.log
+
+# --- Python -------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+build/
+dist/
+
+# --- Tools: tests, linters, type checking ----------------------------------------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# --- Editors and operating systems -------------------------------------------
+# IDE settings are personal (and .idea/dataSources* can hold database logins).
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Local Claude Code configuration
+.claude/

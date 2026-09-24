@@ -1,0 +1,64 @@
+{% extends "base/base.html" %}
+
+{% block layout %}
+<div class="app-shell">
+<div class="nav-scrim"></div>
+<aside class="app-sidebar" id="app-sidebar" data-nav-target>
+<div class="app-sidebar__brand">
+<a class="brand" href="{% url 'accounts:panel' %}"><span class="brand-mark">M</span>Monituj</a>
+{% include "base/_drawer_close.html" %}
+</div>
+<nav class="app-nav">
+<p class="app-nav__label">Menu</p>
+<a class="app-nav__link {% if request.path == '/panel/' %}is-active{% endif %}" href="{% url 'accounts:panel' %}">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+Panel
+</a>
+<a class="app-nav__link {% if '/klienci/' in request.path %}is-active{% endif %}" href="{% url 'clients:list' %}">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0115 0"/></svg>
+Klienci
+</a>
+<a class="app-nav__link {% if '/przypomnienia/' in request.path %}is-active{% endif %}" href="{% url 'requests:list' %}">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+Przypomnienia
+</a>
+<a class="app-nav__link {% if '/ustawienia/' in request.path %}is-active{% endif %}" href="{% url 'accounts:settings' %}">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+Ustawienia
+</a>
+</nav>
+<div class="app-nav__cta">
+<a class="btn btn-primary btn-block" href="{% url 'requests:create' %}">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+Nowe przypomnienie
+</a>
+</div>
+<div class="app-sidebar__footer">
+<div class="app-user">
+{% if demo_account %}
+<span class="app-user__avatar" aria-hidden="true">D</span>
+<span class="app-user__email">Konto demonstracyjne</span>
+{% else %}
+<span class="app-user__avatar" aria-hidden="true">{{ user.email|first }}</span>
+<span class="app-user__email" title="{{ user.email }}">{{ user.email }}</span>
+{% endif %}
+</div>
+<form method="post" action="{% url 'accounts:logout' %}">
+{% csrf_token %}
+<button type="submit" class="app-logout">Wyloguj się</button>
+</form>
+</div>
+</aside>
+<div class="app-main">
+<header class="app-topbar">
+<a class="brand" href="{% url 'accounts:panel' %}"><span class="brand-mark">M</span>Monituj</a>
+{% include "base/_nav_toggle.html" with target="#app-sidebar" %}
+</header>
+{% include "demo/_bar.html" %}
+<main class="page {% block page_class %}{% endblock %}">
+{% include "base/_messages.html" %}
+{% block content %}{% endblock %}
+</main>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% load formatting %}{% autoescape off %}Otrzymaliśmy prośbę o reset hasła do Twojego konta w Monituj. Ustaw nowe hasło:
+{{ reset_url }}
+
+Link jest ważny przez 2 godziny i może być użyty tylko raz. Jeśli to nie Ty prosiłeś o reset, zignoruj tę wiadomość.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

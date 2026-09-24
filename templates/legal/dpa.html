@@ -1,0 +1,69 @@
+{% extends "legal/base.html" %}
+
+{% block title %}Umowa powierzenia przetwarzania danych - Monituj{% endblock %}
+{% block legal_title %}Umowa powierzenia przetwarzania danych osobowych{% endblock %}
+
+{% block legal_body %}
+<p>Załącznik nr 1 do <a href="{% url 'legal:terms' %}">Regulaminu serwisu Monituj</a>, zawierany na podstawie art. 28 rozporządzenia (UE) 2016/679 („RODO”).</p>
+
+<h2>§ 1. Strony i zawarcie umowy</h2>
+<ol>
+<li>Stronami umowy są: Użytkownik Serwisu jako administrator danych (dalej: „Administrator”) oraz {{ legal.name }}, {{ legal.address }}, NIP: {{ legal.nip }}, jako podmiot przetwarzający (dalej: „Procesor”).</li>
+<li>Umowa zostaje zawarta z chwilą akceptacji Regulaminu i obowiązuje przez czas korzystania z Serwisu przez Administratora.</li>
+</ol>
+
+<h2>§ 2. Przedmiot, charakter i cel przetwarzania</h2>
+<ol>
+<li>Administrator powierza Procesorowi przetwarzanie danych osobowych w celu i zakresie niezbędnym do świadczenia usług Serwisu opisanych w Regulaminie: przechowywania danych Odbiorców, wysyłania do nich próśb i przypomnień e-mail, przyjmowania i przechowywania Dokumentów oraz ich usuwania po upływie Okresu przechowywania.</li>
+<li>Przetwarzanie obejmuje operacje: zbieranie, utrwalanie, przechowywanie, udostępnianie Administratorowi, przesyłanie wiadomości e-mail oraz usuwanie.</li>
+</ol>
+
+<h2>§ 3. Rodzaj danych i kategorie osób</h2>
+<ol>
+<li>Kategorie osób: klienci i kontrahenci Administratora, ich pracownicy i reprezentanci oraz inne osoby, których dane znajdują się w Dokumentach.</li>
+<li>Rodzaje danych: imię i nazwisko lub nazwa, adres e-mail, numer telefonu, a także wszelkie dane zawarte w Dokumentach przesłanych przez Odbiorców (np. dane identyfikacyjne, finansowe, dotyczące zatrudnienia).</li>
+<li>Administrator zobowiązuje się nie żądać za pośrednictwem Serwisu danych szczególnych kategorii (art. 9 RODO) ani danych dotyczących wyroków skazujących (art. 10 RODO), chyba że posiada do tego odrębną podstawę prawną i zapewnił jej zgodność z przepisami.</li>
+</ol>
+
+<h2>§ 4. Czas przetwarzania i usunięcie danych</h2>
+<ol>
+<li>Dokumenty są przetwarzane przez Okres przechowywania wybrany przez Administratora dla danej prośby (nie dłużej niż 365 dni od przesłania pliku), po czym Procesor trwale je usuwa.</li>
+<li>Po rozwiązaniu umowy Procesor usuwa powierzone dane w terminie do 30 dni. Dane w kopiach zapasowych są usuwane w cyklu ich rotacji, nie dłuższym niż {{ legal.backup_days }} dni. Przed rozwiązaniem umowy Administrator może pobrać Dokumenty z Serwisu.</li>
+<li>Jeżeli Administrator usunie Konto samodzielnie w ustawieniach Konta, Procesor usuwa powierzone dane niezwłocznie po potwierdzeniu usunięcia, bez oczekiwania na termin, o którym mowa w ust. 2.</li>
+</ol>
+
+<h2>§ 5. Obowiązki Procesora</h2>
+<p>Procesor zobowiązuje się:</p>
+<ol>
+<li>przetwarzać dane wyłącznie na udokumentowane polecenie Administratora. Poleceniami są Regulamin, niniejsza umowa oraz ustawienia wybrane przez Administratora w Serwisie. Procesor niezwłocznie poinformuje Administratora, jeżeli jego zdaniem polecenie narusza przepisy o ochronie danych;</li>
+<li>zapewnić, aby osoby upoważnione do przetwarzania danych zobowiązały się do zachowania ich w tajemnicy;</li>
+<li>stosować środki bezpieczeństwa, o których mowa w art. 32 RODO, w tym: szyfrowanie połączeń, kontrolę dostępu, przechowywanie plików w niepublicznym magazynie, rejestrowanie zdarzeń oraz automatyczne usuwanie danych po Okresie przechowywania;</li>
+<li>pomagać Administratorowi, w miarę możliwości i przy uwzględnieniu charakteru przetwarzania, w realizacji żądań osób, których dane dotyczą (art. 12–23 RODO), oraz w wywiązywaniu się z obowiązków określonych w art. 32–36 RODO;</li>
+<li>udostępniać Administratorowi informacje niezbędne do wykazania spełnienia obowiązków z art. 28 RODO oraz umożliwić przeprowadzenie audytu, zgodnie z § 7.</li>
+</ol>
+
+<h2>§ 6. Dalsze powierzenie (podprocesorzy)</h2>
+<ol>
+<li>Administrator udziela Procesorowi ogólnej zgody na korzystanie z usług dalszych podmiotów przetwarzających. Aktualni podprocesorzy to: dostawca hostingu – {{ legal.hosting_provider }}; dostawca wysyłki poczty e-mail – {{ legal.email_provider }}.</li>
+<li>O zamiarze dodania lub zmiany podprocesora Procesor poinformuje Administratora drogą e-mail co najmniej 14 dni wcześniej. Administrator może w tym terminie wyrazić sprzeciw, a w razie jego nieuwzględnienia rozwiązać umowę ze skutkiem natychmiastowym.</li>
+<li>Procesor nakłada na podprocesorów te same obowiązki w zakresie ochrony danych, które wynikają z niniejszej umowy, i odpowiada wobec Administratora za ich wykonanie.</li>
+</ol>
+
+<h2>§ 7. Audyt</h2>
+<ol>
+<li>Administrator może sprawdzić, czy Procesor przestrzega umowy, w pierwszej kolejności poprzez pisemne zapytania. Audyt w siedzibie Procesora jest możliwy nie częściej niż raz w roku, po zawiadomieniu z co najmniej 14-dniowym wyprzedzeniem, w godzinach pracy i w sposób niezakłócający działalności Procesora.</li>
+<li>Audytor zobowiązany jest do zachowania poufności. Koszty audytu ponosi Administrator, chyba że audyt wykaże istotne naruszenie umowy przez Procesora.</li>
+</ol>
+
+<h2>§ 8. Naruszenia ochrony danych</h2>
+<p>Procesor zawiadamia Administratora o stwierdzeniu naruszenia ochrony danych osobowych bez zbędnej zwłoki, nie później niż w ciągu 48 godzin od jego stwierdzenia. Zawiadomienie zawiera informacje, o których mowa w art. 33 ust. 3 RODO, w zakresie, w jakim są one znane Procesorowi.</p>
+
+<h2>§ 9. Obowiązki Administratora</h2>
+<p>Administrator oświadcza, że jest uprawniony do przetwarzania powierzonych danych, posiada podstawę prawną ich przetwarzania oraz wykonał wobec osób, których dane dotyczą, obowiązki informacyjne z art. 13 i 14 RODO.</p>
+
+<h2>§ 10. Odpowiedzialność i postanowienia końcowe</h2>
+<ol>
+<li>Odpowiedzialność stron za szkody wyrządzone naruszeniem przepisów o ochronie danych określa art. 82 RODO.</li>
+<li>W sprawach nieuregulowanych stosuje się Regulamin, RODO oraz przepisy prawa polskiego. W razie sprzeczności między Regulaminem a niniejszą umową w zakresie ochrony danych osobowych pierwszeństwo ma niniejsza umowa.</li>
+</ol>
+{% endblock %}

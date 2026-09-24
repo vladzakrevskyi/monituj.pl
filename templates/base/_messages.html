@@ -1,0 +1,7 @@
+{% if messages %}
+<ul class="visually-hidden" data-flash-messages>
+{% for message in messages %}
+<li data-level="{{ message.tags }}">{{ message }}</li>
+{% endfor %}
+</ul>
+{% endif %}

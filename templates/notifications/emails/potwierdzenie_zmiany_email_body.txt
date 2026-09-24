@@ -1,0 +1,7 @@
+{% load formatting %}{% autoescape off %}Ktoś – mamy nadzieję, że Ty – chce używać tego adresu do logowania w Monituj. Potwierdź nowy adres:
+{{ confirm_url }}
+
+Link jest ważny przez godzinę i może być użyty tylko raz. Jeśli to nie Ty prosiłeś o tę zmianę, zignoruj wiadomość – konto pozostanie bez zmian.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

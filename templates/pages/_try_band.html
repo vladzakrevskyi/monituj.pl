@@ -1,0 +1,44 @@
+<section class="section section--try"{% if anchor %} id="{{ anchor }}"{% endif %}>
+<div class="container">
+{% if heading %}
+<div class="section-head">
+<p class="eyebrow">Wypróbuj teraz</p>
+<h2 class="display-2">Sprawdź Monituj <strong>w dwie minuty</strong></h2>
+<p>Bez rejestracji, bez karty i bez rozmowy z handlowcem. Wybierz, jak chcesz zacząć.</p>
+</div>
+{% endif %}
+<div class="try-grid">
+<div class="try-card try-card--dark">
+<span class="try-card__tag">Najszybciej · 1 kliknięcie</span>
+<h3>Wypróbuj demo panelu</h3>
+<p>Dostajesz własne konto demonstracyjne z przykładowymi klientami i prośbami. Klikaj, akceptuj dokumenty, wysyłaj przypomnienia – nic nie zepsujesz.</p>
+<ul class="check-list">
+{% include "pages/_check.html" with text="Gotowe dane w różnych statusach" %}
+{% include "pages/_check.html" with text="Emaile nie są wysyłane" %}
+{% include "pages/_check.html" with text="Konto usuwa się samo po 24 godzinach" %}
+</ul>
+<div class="try-card__action try-card__action--stacked">
+{% if not user.is_authenticated %}<p class="try-card__note">Uruchamiając demo, akceptujesz <a href="{% url 'legal:terms' %}">Regulamin</a>.</p>{% endif %}
+{% if user.is_authenticated and not demo_account %}
+<a class="btn btn-primary btn-lg" href="{% url 'accounts:panel' %}">Przejdź do swojego panelu</a>
+{% else %}
+{% include "demo/_button.html" with cls="btn-primary btn-lg" label="Uruchom demo" %}
+{% endif %}
+</div>
+</div>
+<div class="try-card">
+<span class="try-card__tag try-card__tag--light">Na prawdziwych danych</span>
+<h3>Wyślij prośbę bez konta</h3>
+<p>Potrzebujesz dokumentów od kogoś już teraz? Utwórz jedną prawdziwą prośbę z listą, terminem i automatycznymi przypomnieniami.</p>
+<ul class="check-list">
+{% include "pages/_check.html" with text="Odbiorca dostaje link emailem" %}
+{% include "pages/_check.html" with text="Automatyczne przypomnienia o brakach" %}
+{% include "pages/_check.html" with text="Jedna prośba dziennie, bez zakładania konta" %}
+</ul>
+<div class="try-card__action">
+<a class="btn btn-dark btn-lg" href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
+</div>
+</div>
+</div>
+</div>
+</section>

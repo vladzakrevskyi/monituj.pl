@@ -1,0 +1,12 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Potwierdź zmianę hasła do konta.{% endblock %}
+{% block eyebrow %}Zmiana hasła{% endblock %}
+{% block title %}Potwierdź zmianę hasła{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Otrzymaliśmy prośbę o zmianę hasła do Twojego konta. Aby ją zatwierdzić, kliknij przycisk poniżej.</p>
+{% include "notifications/emails/_button.html" with url=confirm_url label="Potwierdź zmianę hasła" %}
+{% include "notifications/emails/_notice.html" with text="Po potwierdzeniu zostaniesz wylogowany ze wszystkich urządzeń i zalogujesz się już nowym hasłem." %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Link jest ważny przez godzinę i może być użyty tylko raz. Jeśli to nie Ty prosiłeś o zmianę, zignoruj tę wiadomość.</p>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

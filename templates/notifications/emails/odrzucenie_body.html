@@ -1,0 +1,15 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Dokument wymaga poprawy – sprawdź powód.{% endblock %}
+{% block eyebrow %}Dokument do poprawy{% endblock %}
+{% block title %}Jeden dokument wymaga ponownego przesłania{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">{% if sender_name %}<strong>{{ sender_name }}</strong>{% else %}Nadawca{% endif %} sprawdził przesłany plik i poprosił o jego poprawienie.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Dokument" value=item_name %}
+{% include "notifications/emails/_row.html" with label="Prośba" value=request_name %}
+{% include "notifications/emails/_details_close.html" %}
+{% include "notifications/emails/_notice.html" with text=reason tone="danger" %}
+{% include "notifications/emails/_button.html" with url=link label="Prześlij poprawiony dokument" %}
+{% endblock %}
+{% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}

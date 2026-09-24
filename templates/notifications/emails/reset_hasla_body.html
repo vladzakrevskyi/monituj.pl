@@ -1,0 +1,11 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Link do ustawienia nowego hasła.{% endblock %}
+{% block eyebrow %}Reset hasła{% endblock %}
+{% block title %}Ustaw nowe hasło{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Otrzymaliśmy prośbę o reset hasła do Twojego konta w Monituj.</p>
+{% include "notifications/emails/_button.html" with url=reset_url label="Ustaw nowe hasło" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Link jest ważny przez 2 godziny i może być użyty tylko raz. Jeśli to nie Ty prosiłeś o reset, zignoruj tę wiadomość – Twoje hasło się nie zmieni.</p>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

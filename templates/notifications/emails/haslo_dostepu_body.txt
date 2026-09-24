@@ -1,0 +1,15 @@
+{% load formatting %}{% autoescape off %}Prośba o dokumenty jest zabezpieczona hasłem. Użyj go po otwarciu linku z poprzedniej wiadomości.
+
+{% if sender_name %}Od: {{ sender_name }}
+{% endif %}Prośba: {{ request_name }}
+{% if deadline %}Termin: {{ deadline|dt }}
+{% endif %}
+Hasło: {{ password }}
+
+Otwórz prośbę:
+{{ link }}
+
+Nie przekazuj tego hasła osobom, które nie powinny mieć dostępu do dokumentów.
+--
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
+{% endautoescape %}

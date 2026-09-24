@@ -1,0 +1,30 @@
+{% extends "base/auth_base.html" %}
+
+{% block title %}Zarejestruj się - Monituj{% endblock %}
+
+{% block auth_title %}Zacznij zbierać <strong>dokumenty</strong> w&nbsp;kilka minut{% endblock %}
+{% block auth_points %}
+{% include "base/_auth_point.html" with text="Za darmo, bez karty kredytowej" %}
+{% include "base/_auth_point.html" with text="Konto gotowe w minute" %}
+{% include "base/_auth_point.html" with text="Pierwsza prośba o dokumenty w 5 minut" %}
+{% endblock %}
+
+{% block auth_form %}
+<h2>Zarejestruj się</h2>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+{% for field in form %}{% if field.name != "accept_terms" and field.name != "accept_privacy_policy" %}
+<p>
+{{ field.label_tag }}
+{{ field }}
+{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+{{ field.errors }}
+</p>
+{% endif %}{% endfor %}
+{% include "base/_consent_fields.html" with terms_field=form.accept_terms privacy_field=form.accept_privacy_policy with_dpa=True %}
+<button type="submit" class="btn btn-primary btn-lg btn-block">Zarejestruj się</button>
+</form>
+<div class="auth-links">
+<p>Masz już konto? <a href="{% url 'accounts:login' %}">Zaloguj się</a></p>
+</div>
+{% endblock %}

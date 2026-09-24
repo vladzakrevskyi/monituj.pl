@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Monituj{% endblock %}</title>
+<meta name="description" content="{% block meta_description %}Monituj pilnuje Twoich dokumentów i terminów: zbiera dokumenty od klientów, sam przypomina o brakach i pokazuje status wszystkiego w jednym miejscu.{% endblock %}">
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/layout.css' %}">
+<link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+<link rel="stylesheet" href="{% static 'css/tables.css' %}">
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
+<link rel="stylesheet" href="{% static 'css/alerts.css' %}">
+<link rel="stylesheet" href="{% static 'css/modal.css' %}">
+<link rel="stylesheet" href="{% static 'css/utilities.css' %}">
+{% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% block layout %}
+{% include "base/_public_header.html" %}
+<main class="page {% block page_class %}{% endblock %}">
+{% include "base/_messages.html" %}
+{% block content %}{% endblock %}
+</main>
+{% include "base/_public_footer.html" %}
+{% endblock %}
+<script src="{% static 'js/nav.js' %}"></script>
+<script src="{% static 'js/toast.js' %}"></script>
+<script src="{% static 'js/loading.js' %}"></script>
+<script src="{% static 'js/ajax_form.js' %}"></script>
+<script src="{% static 'js/modal.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

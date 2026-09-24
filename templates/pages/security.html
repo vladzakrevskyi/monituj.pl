@@ -1,0 +1,91 @@
+{% extends "pages/base_page.html" %}
+
+{% block title %}Bezpieczeństwo i RODO – Monituj{% endblock %}
+{% block meta_description %}Jak Monituj chroni dokumenty Twoich klientów: unikalne linki, hasła dostępu, prywatny magazyn plików, weryfikacja plików i automatyczne usuwanie po ustalonym czasie.{% endblock %}
+
+{% block hero_eyebrow %}Bezpieczeństwo i RODO{% endblock %}
+{% block hero_title %}Dokumenty klientów <strong>pod ochroną</strong> – i tylko tak długo, jak trzeba{% endblock %}
+{% block hero_lead %}Zbierasz dokumenty, które często zawierają dane osobowe i finansowe. Dlatego bezpieczeństwo w Monituj jest częścią procesu, a nie dodatkową opcją.{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container">
+<div class="section-head section-head--split">
+<div>
+<p class="eyebrow">Ochrona dostępu</p>
+<h2 class="display-2">Kto może zobaczyć <strong>dokumenty</strong></h2>
+</div>
+<p>Dostęp do dokumentów masz Ty oraz osoba, której przekazałeś link – i nikt więcej.</p>
+</div>
+<div class="feature-grid">
+{% include "pages/_feature.html" with icon="link" title="Unikalne linki" text="Każda prośba ma własny, losowo generowany link, którego nie da się odgadnąć." %}
+{% include "pages/_feature.html" with icon="lock" title="Hasło dostępu" text="Prośbę możesz dodatkowo zabezpieczyć hasłem. Klient dostaje je w osobnej wiadomości." %}
+{% include "pages/_feature.html" with icon="server" title="Prywatny magazyn plików" text="Pliki nie są dostępne pod publicznym adresem. Każde pobranie przechodzi kontrolę uprawnień." %}
+{% include "pages/_feature.html" with icon="file" title="Weryfikacja plików" text="Sprawdzamy rzeczywisty typ zawartości i rozmiar pliku, a nie tylko jego rozszerzenie." %}
+{% include "pages/_feature.html" with icon="shield" title="Szyfrowane połączenie" text="Cała komunikacja z Monituj odbywa się przez szyfrowane połączenie HTTPS." %}
+{% include "pages/_feature.html" with icon="key" title="Bezpieczne hasła kont" text="Hasła przechowujemy wyłącznie jako skrót algorytmem Argon2 – nikt nie zna ich treści." %}
+</div>
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container">
+<div class="statement">
+<div class="statement__copy">
+<p class="eyebrow eyebrow--light">Minimalizacja danych</p>
+<h2 class="display-2">Dokument potrzebny do sprawy – <strong>nie na zawsze</strong></h2>
+<p>Dla każdej prośby wybierasz okres przechowywania plików: 30, 90, 180 dni, rok albo własny okres, maksymalnie 365 dni. Po tym czasie Monituj trwale usuwa plik i jego metadane. W historii prośby zostaje tylko informacja, że plik został usunięty.</p>
+</div>
+<ol class="retention-steps">
+<li><strong>Klient przesyła plik</strong><span>Zaczyna się okres przechowywania</span></li>
+<li><strong>Ty pobierasz i przetwarzasz</strong><span>Dokument jest dostępny w panelu</span></li>
+<li><strong>Okres mija</strong><span>Plik i jego nazwa są trwale usuwane</span></li>
+<li><strong>Oboje dostajecie powiadomienie</strong><span>Ty i Twój klient wiecie, że dane zniknęły</span></li>
+</ol>
+</div>
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container">
+<div class="section-head">
+<p class="eyebrow">RODO</p>
+<h2 class="display-2">Jasny podział <strong>odpowiedzialności</strong></h2>
+</div>
+<div class="duo">
+<div class="duo__card">
+<h3>Ty – administrator danych</h3>
+<p>Decydujesz, jakich dokumentów potrzebujesz, od kogo i jak długo je przechowywać. Dane Twoich klientów należą do Ciebie.</p>
+</div>
+<div class="duo__card duo__card--dark">
+<h3>Monituj – podmiot przetwarzający</h3>
+<p>Przetwarzamy dane Twoich klientów wyłącznie w Twoim imieniu i zgodnie z Twoimi ustawieniami, na podstawie umowy powierzenia zawieranej wraz z Regulaminem.</p>
+</div>
+</div>
+<div class="doc-links">
+<a class="doc-link" href="{% url 'legal:dpa' %}">{% include "pages/_icon.html" with icon="file" %}<span><strong>Umowa powierzenia</strong><span>Art. 28 RODO</span></span></a>
+<a class="doc-link" href="{% url 'legal:privacy' %}">{% include "pages/_icon.html" with icon="shield" %}<span><strong>Polityka prywatności</strong><span>Jak przetwarzamy dane</span></span></a>
+<a class="doc-link" href="{% url 'legal:terms' %}">{% include "pages/_icon.html" with icon="list" %}<span><strong>Regulamin</strong><span>Zasady korzystania z usługi</span></span></a>
+<a class="doc-link" href="{% url 'legal:cookies' %}">{% include "pages/_icon.html" with icon="server" %}<span><strong>Polityka cookies</strong><span>Tylko niezbędne pliki cookies</span></span></a>
+</div>
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container">
+<div class="security-band">
+<div>
+<p class="eyebrow">Rozliczalność</p>
+<h2 class="display-2">Pełna <strong>historia zdarzeń</strong></h2>
+<p>Każda prośba ma własną historię. W razie pytań klienta albo kontroli wiesz dokładnie, co się wydarzyło i kiedy.</p>
+</div>
+<ul class="check-list check-list--large">
+{% include "pages/_check.html" with text="Wysłanie prośby i przypomnień" %}
+{% include "pages/_check.html" with text="Otwarcie linku przez klienta" %}
+{% include "pages/_check.html" with text="Przesłanie, akceptacja i odrzucenie dokumentu" %}
+{% include "pages/_check.html" with text="Usunięcie pliku – przez klienta lub po okresie przechowywania" %}
+</ul>
+</div>
+</div>
+</section>
+{% endblock %}

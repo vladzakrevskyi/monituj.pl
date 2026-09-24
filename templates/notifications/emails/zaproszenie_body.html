@@ -1,0 +1,17 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}{% if sender_name %}{{ sender_name }}{% else %}Nadawca{% endif %} czeka na Twoje dokumenty.{% endblock %}
+{% block eyebrow %}Prośba o dokumenty{% endblock %}
+{% block title %}{% if sender_name %}{{ sender_name }} prosi{% else %}Otrzymujesz prośbę{% endif %} o przesłanie dokumentów{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">{% if sender_name %}<strong>{{ sender_name }}</strong> korzysta z Monituj, aby zebrać od Ciebie potrzebne dokumenty.{% else %}Ktoś korzysta z Monituj, aby zebrać od Ciebie potrzebne dokumenty.{% endif %} Nie musisz zakładać konta – wystarczy otworzyć link i dodać pliki.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% if sender_name %}{% include "notifications/emails/_row.html" with label="Od" value=sender_name %}{% endif %}
+{% include "notifications/emails/_row.html" with label="Prośba" value=request_name %}
+{% if deadline %}{% include "notifications/emails/_row.html" with label="Termin" value=deadline|dt %}{% endif %}
+{% include "notifications/emails/_details_close.html" %}
+{% include "notifications/emails/_missing_items.html" with heading="Potrzebne dokumenty" %}
+{% include "notifications/emails/_button.html" with url=link label="Otwórz listę i prześlij dokumenty" %}
+{% if password_protected %}{% include "notifications/emails/_notice.html" with text="Link jest zabezpieczony hasłem. Hasło wyślemy Ci w osobnej wiadomości." %}{% endif %}
+{% endblock %}
+{% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}

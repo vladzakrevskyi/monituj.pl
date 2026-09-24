@@ -1,0 +1,121 @@
+{% extends "base/app_base.html" %}
+{% load static badges formatting %}
+
+{% block title %}Klienci - Monituj{% endblock %}
+{% block page_class %}page--wide{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<div>
+<h1>Klienci</h1>
+<p class="page-header__sub">Osoby i firmy, od których zbierasz dokumenty.</p>
+</div>
+<button type="button" class="btn btn-primary" data-modal-open="#create-client-dialog">Dodaj klienta</button>
+</div>
+
+<form method="get" class="filter-panel" role="search">
+<div class="search-bar">
+<div class="search-bar__field">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+{{ filters.q }}
+</div>
+<button type="submit" class="btn btn-dark">Szukaj</button>
+<button type="button" class="btn btn-secondary" data-disclosure="#client-filters" aria-controls="client-filters" aria-expanded="{% if advanced_count %}true{% else %}false{% endif %}">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</span>{% endif %}
+</button>
+</div>
+
+<div class="filter-panel__advanced" id="client-filters"{% if not advanced_count %} hidden{% endif %}>
+<div class="filter-grid filter-grid--4">
+<p>{{ filters.missing.label_tag }}{{ filters.missing }}</p>
+<p>{{ filters.activity_from.label_tag }}{{ filters.activity_from }}</p>
+<p>{{ filters.activity_to.label_tag }}{{ filters.activity_to }}</p>
+<p>{{ filters.sort.label_tag }}{{ filters.sort }}</p>
+</div>
+<div class="filter-panel__actions">
+<button type="submit" class="btn btn-primary">Zastosuj filtry</button>
+{% if has_filters %}<a class="btn btn-secondary" href="{% url 'clients:list' %}">Wyczyść wszystko</a>{% endif %}
+</div>
+</div>
+{% if filters.data.status %}<input type="hidden" name="status" value="{{ filters.data.status }}">{% endif %}
+</form>
+
+<nav class="tabs" aria-label="Status klienta">
+{% for tab in status_tabs %}
+<a class="tabs__item{% if tab.active %} is-active{% endif %}" href="?{{ tab.query }}"{% if tab.active %} aria-current="page"{% endif %}>{{ tab.label }}<span class="tabs__count">{{ tab.count }}</span></a>
+{% endfor %}
+</nav>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>Nazwa</th>
+<th>Email</th>
+<th class="cell-num" title="Aktywne prośby">Prośby</th>
+<th class="cell-num" title="Brakujące dokumenty">Braki</th>
+<th>Aktywność</th>
+<th>Status</th>
+<th class="cell-right">Akcje</th>
+</tr>
+</thead>
+<tbody id="clients-table-body">
+{% for client in page_obj.object_list %}
+<tr data-client-id="{{ client.id }}">
+<td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'clients:documents' client.id %}">{{ client.name }}</a></td>
+<td class="cell-wrap" data-label="Email">{{ client.email }}</td>
+<td class="cell-num" data-label="Aktywne prośby">
+{% if client.active_requests %}<a class="count-link" href="{% url 'requests:list' %}?client={{ client.id }}" title="Pokaż przypomnienia klienta">{{ client.active_requests }}</a>{% else %}0{% endif %}
+</td>
+<td class="cell-num" data-label="Brakujące dokumenty">
+{% if client.missing_items %}<a class="count-link count-link--alert" href="{% url 'clients:documents' client.id %}?status=brakujace" title="Pokaż brakujące dokumenty">{{ client.missing_items }}</a>{% else %}0{% endif %}
+</td>
+<td class="cell-muted" data-label="Ostatnia aktywność">{% if client.last_activity %}{{ client.last_activity|dt }}{% else %}-{% endif %}</td>
+<td data-label="Status"><span class="badge {{ client.status_code|badge_class }}">{{ client.status_label }}</span></td>
+<td class="cell-right cell-actions" data-label="Akcje">
+<div class="table-actions">
+<a class="btn btn-secondary btn-sm" href="{% url 'clients:documents' client.id %}">Dokumenty</a>
+<a class="btn btn-secondary btn-sm btn-icon" href="{% url 'clients:edit' client.id %}" title="Edytuj" aria-label="Edytuj klienta {{ client.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></a>
+<button type="button" class="btn btn-danger btn-sm btn-icon delete-client" data-client-id="{{ client.id }}" data-client-name="{{ client.name }}" title="Usuń" aria-label="Usuń klienta {{ client.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
+</div>
+</td>
+</tr>
+{% empty %}
+<tr id="clients-empty-row" class="table-empty"><td colspan="7">{% if has_filters or filters.data.status %}Brak klientów pasujących do filtrów.{% else %}Brak klientów.{% endif %}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="pagination">
+{% if page_obj.has_previous %}
+<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.previous_page_number }}">&larr; Poprzednia</a>
+{% endif %}
+<span>Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</span>
+{% if page_obj.has_next %}
+<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.next_page_number }}">Następna &rarr;</a>
+{% endif %}
+</div>
+{% endif %}
+
+<dialog id="create-client-dialog" aria-labelledby="create-client-title">
+<div class="modal__inner">
+<div class="modal__header"><h2 id="create-client-title">Dodaj klienta</h2></div>
+<form method="post" action="{% url 'clients:create' %}" novalidate data-ajax-form>
+{% csrf_token %}
+{{ create_form.as_p }}
+<div class="modal-actions">
+<button type="submit" class="btn btn-primary">Zapisz</button>
+<button type="button" class="btn btn-secondary" data-modal-close>Anuluj</button>
+</div>
+</form>
+</div>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/core.js' %}"></script>
+<script src="{% static 'js/clients.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block page_class %}page--flush{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages.css' %}">{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+<div class="container">
+<p class="eyebrow">{% block hero_eyebrow %}{% endblock %}</p>
+<h1 class="display page-hero__title">{% block hero_title %}{% endblock %}</h1>
+<p class="page-hero__lead">{% block hero_lead %}{% endblock %}</p>
+{% block hero_actions %}{% endblock %}
+</div>
+</section>
+{% block page_body %}{% endblock %}
+{% block page_cta %}{% include "pages/_cta_band.html" %}{% endblock %}
+{% endblock %}

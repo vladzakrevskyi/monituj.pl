@@ -1,0 +1,16 @@
+{% load formatting %}{% autoescape off %}Wciąż czekamy na Twoje dokumenty.
+
+{% if sender_name %}Od: {{ sender_name }}
+{% endif %}Prośba: {{ request_name }}
+{% if deadline %}Termin: {{ deadline|dt }}
+{% endif %}{% if missing_items %}
+Brakujące dokumenty:
+{% for name in missing_items %}- {{ name }}
+{% endfor %}{% endif %}
+Prześlij brakujące dokumenty:
+{{ link }}
+
+Jeśli już wszystko przesłałeś, zignoruj tę wiadomość – przypomnienia wyłączą się automatycznie, gdy komplet dokumentów dotrze.
+--
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
+{% endautoescape %}

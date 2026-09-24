@@ -1,0 +1,14 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Ktoś poprosił o zmianę adresu email Twojego konta.{% endblock %}
+{% block eyebrow %}Bezpieczeństwo konta{% endblock %}
+{% block title %}Prośba o zmianę adresu email{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Ktoś poprosił o zmianę adresu email Twojego konta w Monituj na:</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Nowy adres" value=new_email %}
+{% include "notifications/emails/_details_close.html" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Zmiana nie zostanie zastosowana, dopóki nowy adres nie zostanie potwierdzony linkiem, który do niego wysłaliśmy.</p>
+{% include "notifications/emails/_notice.html" with text="Jeśli to nie Ty prosiłeś o tę zmianę, zalecamy natychmiast zmienić hasło do konta." tone="danger" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

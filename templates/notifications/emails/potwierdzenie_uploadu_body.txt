@@ -1,0 +1,14 @@
+{% load formatting %}{% autoescape off %}Dokument dotarł – dziękujemy.
+
+Plik: {{ document_name }}
+Prośba: {{ request_name }}
+{% if missing_items %}
+Pozostało do przesłania:
+{% for name in missing_items %}- {{ name }}
+{% endfor %}{% endif %}{% if missing_items %}
+Prześlij pozostałe dokumenty:
+{{ link }}{% else %}
+To był ostatni brakujący dokument. Nie musisz nic więcej robić.{% endif %}
+--
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
+{% endautoescape %}

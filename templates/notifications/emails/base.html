@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>{{ subject }}</title>
+<style>
+@media only screen and (max-width: 520px) {
+  .email-card { padding: 28px 22px 24px !important; }
+  .email-title { font-size: 22px !important; }
+}
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#f1f1f3;-webkit-text-size-adjust:100%;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#f1f1f3;">{% block preheader %}{% endblock %}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f1f1f3;">
+<tr>
+<td align="center" style="padding:32px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<tr>
+<td style="padding:0 4px 20px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td width="36" height="36" align="center" valign="middle" style="width:36px;height:36px;background-color:#ff6b00;border-radius:8px;font-size:18px;font-weight:700;color:#0b0b0c;line-height:36px;">M</td>
+<td style="padding-left:12px;font-size:20px;font-weight:700;color:#0b0b0c;letter-spacing:-0.3px;">Monituj</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td class="email-card" style="background-color:#ffffff;border:1px solid #e4e4e8;border-radius:16px;padding:40px 40px 36px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+<tr>
+<td width="24" valign="middle" style="width:24px;"><div style="width:24px;height:3px;background-color:#ff6b00;border-radius:2px;font-size:0;line-height:0;">&nbsp;</div></td>
+<td style="padding-left:12px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#0b0b0c;">{% block eyebrow %}Monituj{% endblock %}</td>
+</tr>
+</table>
+<h1 class="email-title" style="margin:0 0 16px;font-size:26px;line-height:1.25;font-weight:700;color:#0b0b0c;letter-spacing:-0.4px;">{% block title %}{% endblock %}</h1>
+{% block content %}{% endblock %}
+</td>
+</tr>
+<tr>
+<td style="padding:24px 8px 0;font-size:13px;line-height:1.6;color:#62636d;">
+<p style="margin:0 0 8px;">{% block footer_note %}Ta wiadomość została wysłana automatycznie przez Monituj.{% endblock %}</p>
+<p style="margin:0;"><a href="{{ site_url }}" style="color:#62636d;text-decoration:underline;">monituj.pl</a> &nbsp;·&nbsp; <a href="{{ privacy_url }}" style="color:#62636d;text-decoration:underline;">Polityka prywatności</a> &nbsp;·&nbsp; <a href="{{ terms_url }}" style="color:#62636d;text-decoration:underline;">Regulamin</a></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>

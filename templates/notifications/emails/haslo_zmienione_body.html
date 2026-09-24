@@ -1,0 +1,10 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Hasło do Twojego konta zostało zmienione.{% endblock %}
+{% block eyebrow %}Bezpieczeństwo konta{% endblock %}
+{% block title %}Hasło zostało zmienione{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Hasło do Twojego konta w Monituj zostało właśnie zmienione. Wylogowaliśmy Cię ze wszystkich urządzeń – zaloguj się ponownie, używając nowego hasła.</p>
+{% include "notifications/emails/_notice.html" with text="Jeśli to nie Ty zmieniłeś hasło, natychmiast zresetuj je ponownie i skontaktuj się z nami." tone="danger" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

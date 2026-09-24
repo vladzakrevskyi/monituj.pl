@@ -1,0 +1,73 @@
+{% extends "base/base.html" %}
+{% load static badges formatting %}
+
+{% block title %}{{ request_obj.name }} - Monituj{% endblock %}
+{% block page_class %}public-page{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/public.css' %}">{% endblock %}
+
+{% block content %}
+<div class="card public-head">
+<p class="eyebrow">Prośba o dokumenty</p>
+<h1>{{ request_obj.name }}</h1>
+{% if request_obj.created_by.display_name %}<p class="text-muted">Od: <strong>{{ request_obj.created_by.display_name }}</strong></p>{% endif %}
+{% if request_obj.description %}<p class="public-head__desc">{{ request_obj.description }}</p>{% endif %}
+<div class="public-head__meta" id="request-status">
+<span class="badge {{ status_code|badge_class }}" id="request-status-label">{{ status_label }}</span>
+<span>Dostarczono: <span id="request-progress">{{ request_obj.delivered_items }} z {{ request_obj.total_items }}</span></span>
+{% if request_obj.deadline %}<span class="text-muted">Termin: {{ request_obj.deadline|dt }}</span>{% endif %}
+</div>
+</div>
+
+<h2 class="card-title mt-5">Dokumenty do przesłania</h2>
+<div id="items-list" data-token="{{ public_token }}">
+{% for item in items %}
+<div class="request-item" data-item-id="{{ item.id }}" data-status="{{ item.status }}">
+<div class="request-item__head">
+<h3>{{ item.name }}</h3>
+<span class="badge item-status-label {{ item.status|badge_class }}">{{ item.get_status_display }}</span>
+</div>
+{% if item.status == "odrzucony" and item.rejection_reason %}
+<p class="item-rejection-reason">{{ item.rejection_reason }}</p>
+{% endif %}
+
+{% if item.status == "zaakceptowany" %}
+<p class="item-accepted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Dokument zaakceptowany.</p>
+{% else %}
+<div class="uploaded-files">
+{% for document in item.own_documents %}
+{% if document.is_anonymized %}
+<p class="uploaded-file uploaded-file--anonymized">
+<span>Plik usunięty po okresie przechowywania ({{ document.anonymized_at|dt }})</span>
+</p>
+{% else %}
+<p class="uploaded-file" data-document-id="{{ document.id }}">
+<span>{{ document.original_filename }} &ndash; Dodany: {{ document.uploaded_at|dt }}</span>
+<button type="button" class="btn btn-danger btn-sm delete-document" data-document-id="{{ document.id }}">Usuń</button>
+</p>
+{% endif %}
+{% endfor %}
+</div>
+
+<div class="upload-zone" data-item-id="{{ item.id }}">
+<input type="file" class="upload-input" data-item-id="{{ item.id }}">
+<svg class="upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+<p class="upload-zone__hint">Przeciągnij plik tutaj lub</p>
+<button type="button" class="btn btn-primary upload-trigger" data-item-id="{{ item.id }}">Wybierz plik</button>
+<progress class="upload-progress progress-bar" value="0" max="100" hidden></progress>
+<p class="upload-error" role="alert"></p>
+</div>
+{% endif %}
+</div>
+{% endfor %}
+</div>
+
+<aside class="public-note">
+<p>Przesłane pliki są przechowywane przez <strong>{{ request_obj.retention_days }} dni</strong> od przesłania, a następnie trwale usuwane. Dostaniesz o tym wiadomość email.</p>
+<p>Administratorem danych zawartych w przesyłanych dokumentach jest {% if request_obj.created_by.display_name %}{{ request_obj.created_by.display_name }}{% else %}nadawca tej prośby{% endif %}. Monituj przechowuje je wyłącznie w jego imieniu. Szczegóły: <a href="{% url 'legal:privacy' %}">Polityka prywatności</a>.</p>
+</aside>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/core.js' %}"></script>
+<script src="{% static 'js/public_upload.js' %}"></script>
+{% endblock %}

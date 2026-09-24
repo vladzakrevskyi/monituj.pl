@@ -1,0 +1,8 @@
+{% if demo_account %}
+<a class="btn {{ cls|default:'btn-secondary' }}" href="{% url 'accounts:panel' %}">Wróć do demo</a>
+{% elif not user.is_authenticated %}
+<form method="post" action="{% url 'demo:start' %}" class="inline-form">
+{% csrf_token %}
+<button type="submit" class="btn {{ cls|default:'btn-secondary' }}">{{ label|default:"Wypróbuj demo" }}</button>
+</form>
+{% endif %}

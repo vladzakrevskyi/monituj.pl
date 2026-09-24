@@ -1,0 +1,14 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Pliki przesłane w ramach prośby zostały trwale usunięte.{% endblock %}
+{% block eyebrow %}Usunięcie plików{% endblock %}
+{% block title %}Twoje przesłane pliki zostały usunięte{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Minął okres przechowywania ({{ retention_days }} dni) ustalony przez nadawcę prośby. Usunęliśmy z serwerów Monituj {{ count }} {% if count == 1 %}przesłany przez Ciebie plik{% elif count < 5 %}przesłane przez Ciebie pliki{% else %}przesłanych przez Ciebie plików{% endif %}. Nie przechowujemy już ich treści ani nazw.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% if sender_name %}{% include "notifications/emails/_row.html" with label="Pliki przesłane dla" value=sender_name %}{% endif %}
+{% include "notifications/emails/_row.html" with label="Prośba" value=request_name %}
+{% include "notifications/emails/_details_close.html" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Nie musisz nic robić – ta wiadomość ma charakter informacyjny.</p>
+{% endblock %}
+{% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}

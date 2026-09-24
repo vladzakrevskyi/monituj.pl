@@ -1,0 +1,9 @@
+{% load formatting %}{% autoescape off %}Minął okres przechowywania plików ({{ retention_days }} dni) ustawiony dla prośby „{{ request_name }}”. Usunęliśmy {{ count }} {% if count == 1 %}plik{% elif count < 5 %}pliki{% else %}plików{% endif %} z naszych serwerów.
+
+Prośba i jej historia pozostają w panelu, a w miejscu plików widnieje informacja o ich usunięciu. Tych plików nie da się już pobrać ani odzyskać. Odbiorca również otrzymał powiadomienie.
+
+Zobacz prośbę w panelu:
+{{ panel_link }}
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

@@ -1,0 +1,75 @@
+{% extends "legal/base.html" %}
+
+{% block title %}Polityka prywatności - Monituj{% endblock %}
+{% block legal_title %}Polityka prywatności{% endblock %}
+
+{% block legal_body %}
+<p>Niniejsza polityka wyjaśnia, jakie dane osobowe przetwarzamy w serwisie Monituj, w jakim celu i na jakiej podstawie oraz jakie prawa Ci przysługują. Stanowi ona realizację obowiązków informacyjnych z art. 13 i 14 rozporządzenia Parlamentu Europejskiego i Rady (UE) 2016/679 (dalej: „RODO”).</p>
+
+<h2>1. Administrator danych</h2>
+<p>Administratorem Twoich danych osobowych jest {{ legal.name }}, {{ legal.address }}, NIP: {{ legal.nip }} (dalej: „my”, „Administrator”). W sprawach dotyczących danych osobowych możesz kontaktować się z nami pod adresem {{ legal.privacy_email }}. Nie wyznaczyliśmy inspektora ochrony danych.</p>
+
+<h2>2. Kiedy jesteśmy administratorem, a kiedy nie</h2>
+<ul>
+<li><strong>Jesteśmy administratorem</strong> danych osób, które zakładają Konto (Użytkowników), osób tworzących Zadanie bez konta oraz danych technicznych związanych z korzystaniem z Serwisu przez wszystkie osoby.</li>
+<li><strong>Nie jesteśmy administratorem</strong> danych Odbiorców (osób, od których Użytkownik prosi o dokumenty) ani danych zawartych w przesłanych dokumentach. Ich administratorem jest Użytkownik, który utworzył prośbę, a my przetwarzamy te dane wyłącznie w jego imieniu, na podstawie <a href="{% url 'legal:dpa' %}">umowy powierzenia</a>. Jeśli jesteś Odbiorcą, w sprawach swoich danych zwróć się w pierwszej kolejności do nadawcy prośby. Pomożemy mu zrealizować Twoje prawa.</li>
+</ul>
+
+<h2>3. Cele, podstawy prawne i okres przechowywania</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Cel</th><th>Podstawa prawna</th><th>Jak długo</th></tr></thead>
+<tbody>
+<tr><td>Założenie i prowadzenie Konta, świadczenie usług Serwisu, wysyłanie wiadomości związanych z usługą (np. potwierdzenie adresu e-mail, reset hasła)</td><td>art. 6 ust. 1 lit. b RODO (wykonanie umowy)</td><td>Do czasu usunięcia Konta – dane usuwamy niezwłocznie po potwierdzeniu usunięcia</td></tr>
+<tr><td>Obsługa Zadania bez konta, w tym ograniczenie liczby takich zadań do jednego dziennie na podstawie skrótu (hash) adresu IP</td><td>art. 6 ust. 1 lit. b RODO oraz art. 6 ust. 1 lit. f RODO (uzasadniony interes: zapobieganie nadużyciom)</td><td>Przez czas realizacji zadania i okres przechowywania dokumentów; skrót adresu IP – przez okres niezbędny do przeciwdziałania nadużyciom</td></tr>
+<tr><td>Udostępnienie konta demonstracyjnego, w tym ograniczenie liczby kont demonstracyjnych na podstawie skrótu (hash) adresu IP</td><td>art. 6 ust. 1 lit. b RODO oraz art. 6 ust. 1 lit. f RODO (uzasadniony interes: zapobieganie nadużyciom)</td><td>24 godziny – potem konto i wszystkie jego dane są usuwane automatycznie</td></tr>
+<tr><td>Zapewnienie bezpieczeństwa Serwisu, prowadzenie dziennika zdarzeń (m.in. adres IP, typ przeglądarki, czas zdarzenia)</td><td>art. 6 ust. 1 lit. f RODO (uzasadniony interes: bezpieczeństwo i rozliczalność)</td><td>Przez okres korzystania z Serwisu, a następnie do upływu terminu przedawnienia roszczeń</td></tr>
+<tr><td>Rozpatrywanie reklamacji i zgłoszeń</td><td>art. 6 ust. 1 lit. b i c RODO</td><td>Do czasu rozpatrzenia sprawy, a następnie do upływu terminu przedawnienia roszczeń</td></tr>
+<tr><td>Ustalenie, dochodzenie lub obrona roszczeń</td><td>art. 6 ust. 1 lit. f RODO</td><td>Do upływu terminu przedawnienia roszczeń</td></tr>
+<tr><td>Wypełnianie obowiązków prawnych, np. podatkowych i rachunkowych, jeśli usługi staną się odpłatne</td><td>art. 6 ust. 1 lit. c RODO</td><td>Przez okres wymagany przepisami</td></tr>
+</tbody>
+</table>
+</div>
+<p>Dokumenty przesłane przez Odbiorców przechowujemy przez okres wybrany przez Użytkownika dla danej prośby (maksymalnie 365 dni od przesłania pliku), a następnie trwale usuwamy plik i jego metadane. Użytkownik i Odbiorca otrzymują wtedy powiadomienie e-mail.</p>
+<p>Usunięcie Konta przez Użytkownika powoduje niezwłoczne i trwałe usunięcie Konta, danych Odbiorców, próśb, przypomnień, Dokumentów, historii zdarzeń i rejestru wysłanych wiadomości. Po usunięciu Konta nie przechowujemy nawet adresu e-mail Użytkownika. Dane w kopiach zapasowych są nadpisywane w cyklu ich rotacji, nie dłuższym niż {{ legal.backup_days }} dni.</p>
+
+<h2>4. Odbiorcy danych</h2>
+<p>Dane mogą być przekazywane wyłącznie podmiotom, które pomagają nam świadczyć usługi, na podstawie umów powierzenia:</p>
+<ul>
+<li>dostawcy infrastruktury serwerowej (hostingu): {{ legal.hosting_provider }};</li>
+<li>dostawcy usługi wysyłki poczty e-mail: {{ legal.email_provider }};</li>
+<li>podmiotom świadczącym nam usługi informatyczne, prawne lub księgowe – w zakresie niezbędnym do ich wykonania.</li>
+</ul>
+<p>Dane mogą zostać udostępnione organom publicznym, jeżeli wymagają tego przepisy prawa.</p>
+
+<h2>5. Przekazywanie danych poza EOG</h2>
+<p>Serwery, na których przechowujemy dane, znajdują się w: {{ legal.hosting_location }}. Jeżeli któryś z naszych dostawców przekazywałby dane poza EOG, odbywa się to wyłącznie na podstawie decyzji Komisji Europejskiej stwierdzającej odpowiedni stopień ochrony lub standardowych klauzul umownych (art. 45–46 RODO).</p>
+
+<h2>6. Twoje prawa</h2>
+<p>Przysługuje Ci prawo do:</p>
+<ul>
+<li>dostępu do swoich danych i otrzymania ich kopii (art. 15 RODO);</li>
+<li>sprostowania danych (art. 16 RODO);</li>
+<li>usunięcia danych (art. 17 RODO);</li>
+<li>ograniczenia przetwarzania (art. 18 RODO);</li>
+<li>przenoszenia danych (art. 20 RODO);</li>
+<li>wniesienia sprzeciwu wobec przetwarzania opartego na uzasadnionym interesie (art. 21 RODO);</li>
+<li>wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych, ul. Stawki 2, 00-193 Warszawa.</li>
+</ul>
+<p>Aby skorzystać z praw, napisz na adres {{ legal.privacy_email }}. Odpowiemy bez zbędnej zwłoki, nie później niż w ciągu miesiąca.</p>
+
+<h2>7. Dobrowolność podania danych</h2>
+<p>Podanie danych jest dobrowolne, ale niezbędne do założenia Konta i korzystania z Serwisu. Bez adresu e-mail nie możemy świadczyć usług.</p>
+
+<h2>8. Zautomatyzowane decyzje</h2>
+<p>Nie podejmujemy wobec Ciebie decyzji opartych wyłącznie na zautomatyzowanym przetwarzaniu, w tym profilowaniu, które wywoływałyby skutki prawne lub w podobny sposób istotnie na Ciebie wpływały. Automatyczne przypomnienia e-mail są wysyłane według ustawień wybranych przez Użytkownika.</p>
+
+<h2>9. Bezpieczeństwo</h2>
+<p>Stosujemy środki techniczne i organizacyjne odpowiednie do ryzyka, w szczególności: szyfrowane połączenia (HTTPS), przechowywanie haseł wyłącznie w postaci skrótu (algorytm Argon2), unikalne i trudne do odgadnięcia linki do próśb, opcjonalne hasła dostępu do próśb, przechowywanie plików w niepublicznym magazynie z kontrolą dostępu oraz automatyczne usuwanie dokumentów po okresie przechowywania.</p>
+
+<h2>10. Pliki cookies</h2>
+<p>Serwis używa wyłącznie niezbędnych plików cookies. Szczegóły znajdziesz w <a href="{% url 'legal:cookies' %}">Polityce cookies</a>.</p>
+
+<h2>11. Zmiany polityki</h2>
+<p>Możemy aktualizować tę politykę, np. w razie zmiany przepisów lub funkcji Serwisu. O istotnych zmianach poinformujemy Użytkowników drogą e-mail.</p>
+{% endblock %}

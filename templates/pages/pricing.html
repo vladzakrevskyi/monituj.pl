@@ -1,0 +1,61 @@
+{% extends "pages/base_page.html" %}
+
+{% block title %}Cennik – Monituj{% endblock %}
+{% block meta_description %}Monituj jest obecnie bezpłatny. Załóż konto bez karty kredytowej i korzystaj ze wszystkich funkcji.{% endblock %}
+
+{% block hero_eyebrow %}Cennik{% endblock %}
+{% block hero_title %}Obecnie <strong>bezpłatnie</strong>. Bez karty, bez zobowiązań.{% endblock %}
+{% block hero_lead %}Wszystkie funkcje Monituj są teraz dostępne za darmo. Jeśli kiedyś wprowadzimy płatne plany, dowiesz się o tym z wyprzedzeniem – i nic nie zostanie pobrane bez Twojej zgody.{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container">
+<div class="pricing">
+<div class="pricing-card pricing-card--featured">
+<p class="pricing-card__name">Konto Monituj</p>
+<p class="pricing-card__price"><strong>0 zł</strong><span>/ miesiąc</span></p>
+<p class="pricing-card__desc">Pełny panel do zbierania dokumentów od klientów.</p>
+{% if user.is_authenticated %}
+<a class="btn btn-dark btn-lg btn-block" href="{% url 'accounts:panel' %}">Przejdź do panelu</a>
+{% else %}
+<a class="btn btn-dark btn-lg btn-block" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+{% endif %}
+<ul class="check-list">
+{% include "pages/_check.html" with text="Prośby o dokumenty bez dziennego limitu" %}
+{% include "pages/_check.html" with text="Automatyczne i ręczne przypomnienia" %}
+{% include "pages/_check.html" with text="Panel ze statusami i listą braków" %}
+{% include "pages/_check.html" with text="Lista klientów, wyszukiwanie i filtry" %}
+{% include "pages/_check.html" with text="Akceptacja i odrzucanie dokumentów" %}
+{% include "pages/_check.html" with text="Hasła dostępu i automatyczne usuwanie plików" %}
+{% include "pages/_check.html" with text="Pełna historia zdarzeń" %}
+</ul>
+</div>
+<div class="pricing-card">
+<p class="pricing-card__name">Bez konta</p>
+<p class="pricing-card__price"><strong>0 zł</strong><span>/ prośba</span></p>
+<p class="pricing-card__desc">Pojedyncza prośba o dokumenty, gdy potrzebujesz ich tylko raz.</p>
+<a class="btn btn-secondary btn-lg btn-block" href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
+<ul class="check-list">
+{% include "pages/_check.html" with text="Jedna prośba dziennie" %}
+{% include "pages/_check.html" with text="Lista dokumentów, termin i hasło" %}
+{% include "pages/_check.html" with text="Automatyczne przypomnienia" %}
+{% include "pages/_check.html" with text="Bez panelu i listy klientów" %}
+</ul>
+</div>
+</div>
+<p class="pricing-note">Zgodnie z <a href="{% url 'legal:terms' %}">Regulaminem</a> o zamiarze wprowadzenia opłat poinformujemy Cię emailem co najmniej 30 dni wcześniej. Opłaty nie będą pobierane bez Twojej wyraźnej akceptacji nowych warunków.</p>
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<div class="section-head">
+<p class="eyebrow">Pytania o koszty</p>
+<h2 class="display-2">Warto <strong>wiedzieć</strong></h2>
+</div>
+<div class="faq">
+{% for item in faq %}{% if item.category == "konto" %}{% include "pages/_faq_item.html" %}{% endif %}{% endfor %}
+</div>
+</div>
+</section>
+{% endblock %}

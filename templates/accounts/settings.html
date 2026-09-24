@@ -1,0 +1,95 @@
+{% extends "base/app_base.html" %}
+
+{% block title %}Ustawienia - Monituj{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<h1>Ustawienia</h1>
+</div>
+
+<div class="card">
+<h2 class="mt-0">Dane konta</h2>
+<p class="text-muted">Ta nazwa pojawia się w prośbach o dokumenty i mailach wysyłanych do klientów.</p>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+<input type="hidden" name="form_action" value="profile">
+{% include "base/_form_flash.html" with form=profile_form %}
+<p>
+{{ profile_form.display_name.label_tag }}
+{{ profile_form.display_name }}
+{{ profile_form.display_name.errors }}
+</p>
+<button type="submit" class="btn btn-primary">Zapisz</button>
+</form>
+</div>
+
+<div class="card">
+<h2 class="mt-0">Adres email</h2>
+<p class="text-muted">Obecny adres: <strong>{{ user.email }}</strong>. Zmiana wymaga potwierdzenia na nowym adresie.</p>
+<form method="post" novalidate data-ajax-form data-reset-on-success>
+{% csrf_token %}
+<input type="hidden" name="form_action" value="email">
+{% include "base/_form_flash.html" with form=email_form %}
+<p>
+{{ email_form.new_email.label_tag }}
+{{ email_form.new_email }}
+{{ email_form.new_email.errors }}
+</p>
+<p>
+{{ email_form.current_password.label_tag }}
+{{ email_form.current_password }}
+{{ email_form.current_password.errors }}
+</p>
+<button type="submit" class="btn btn-primary">Zmień adres email</button>
+</form>
+</div>
+
+<div class="card">
+<h2 class="mt-0">Hasło</h2>
+<p class="text-muted">Zmiana wymaga potwierdzenia mailem i wyloguje Cię ze wszystkich urządzeń.</p>
+<form method="post" novalidate data-ajax-form data-reset-on-success>
+{% csrf_token %}
+<input type="hidden" name="form_action" value="password">
+{% include "base/_form_flash.html" with form=password_form %}
+<p>
+{{ password_form.current_password.label_tag }}
+{{ password_form.current_password }}
+{{ password_form.current_password.errors }}
+</p>
+<p>
+{{ password_form.new_password.label_tag }}
+{{ password_form.new_password }}
+{{ password_form.new_password.errors }}
+</p>
+<p>
+{{ password_form.new_password_confirm.label_tag }}
+{{ password_form.new_password_confirm }}
+{{ password_form.new_password_confirm.errors }}
+</p>
+<button type="submit" class="btn btn-primary">Zmień hasło</button>
+</form>
+</div>
+
+<div class="card card--danger" id="usun-konto">
+<h2 class="mt-0">Usunięcie konta</h2>
+<p class="text-muted">Usuniemy konto razem z klientami, prośbami, przypomnieniami i wszystkimi przesłanymi plikami. Tej operacji nie można cofnąć. Jeśli musisz archiwizować dokumenty klientów, pobierz je wcześniej.</p>
+<p class="text-muted">Po wpisaniu hasła wyślemy na <strong>{{ user.email }}</strong> link potwierdzający. Konto zostanie usunięte dopiero po kliknięciu w link.</p>
+<form method="post" novalidate data-ajax-form data-reset-on-success>
+{% csrf_token %}
+<input type="hidden" name="form_action" value="delete">
+{% include "base/_form_flash.html" with form=deletion_form %}
+<p>
+{{ deletion_form.current_password.label_tag }}
+{{ deletion_form.current_password }}
+{{ deletion_form.current_password.errors }}
+</p>
+<p>
+{{ deletion_form.understood.label_tag }}
+{{ deletion_form.understood }}
+{{ deletion_form.understood.errors }}
+</p>
+<button type="submit" class="btn btn-danger-solid">Usuń konto</button>
+</form>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% load formatting %}{% autoescape off %}Otrzymaliśmy prośbę o zmianę hasła do Twojego konta. Potwierdź zmianę:
+{{ confirm_url }}
+
+Po potwierdzeniu zostaniesz wylogowany ze wszystkich urządzeń i zalogujesz się już nowym hasłem. Link jest ważny przez godzinę i może być użyty tylko raz. Jeśli to nie Ty prosiłeś o zmianę, zignoruj tę wiadomość.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

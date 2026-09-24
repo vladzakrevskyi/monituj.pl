@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-monituj}
+      POSTGRES_USER: ${POSTGRES_USER:-monituj}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-monituj}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-monituj}:${POSTGRES_PASSWORD:-monituj}@db:5432/${POSTGRES_DB:-monituj}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: .
+    command: celery -A config worker -l info
+    volumes:
+      - .:/app
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-monituj}:${POSTGRES_PASSWORD:-monituj}@db:5432/${POSTGRES_DB:-monituj}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  beat:
+    build: .
+    command: celery -A config beat -l info
+    volumes:
+      - .:/app
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-monituj}:${POSTGRES_PASSWORD:-monituj}@db:5432/${POSTGRES_DB:-monituj}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:

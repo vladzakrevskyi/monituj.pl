@@ -1,0 +1,11 @@
+{% if missing_items %}
+<p style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:#62636d;">{{ heading|default:"Brakujące dokumenty" }}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+{% for name in missing_items %}
+<tr>
+<td style="padding:10px 14px;border:1px solid #e4e4e8;border-left:3px solid #ff6b00;border-radius:8px;font-size:15px;font-weight:600;color:#0b0b0c;background-color:#ffffff;">{{ name }}</td>
+</tr>
+{% if not forloop.last %}<tr><td style="height:6px;font-size:0;line-height:0;">&nbsp;</td></tr>{% endif %}
+{% endfor %}
+</table>
+{% endif %}

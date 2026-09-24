@@ -1,0 +1,114 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Wyślij prośbę o dokumenty - Monituj{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<div class="card">
+<p class="eyebrow">Bez zakładania konta</p>
+<h1>Wyślij prośbę o dokumenty</h1>
+<p class="card-lead">Bez konta można utworzyć jedno zadanie dziennie. Link do niego trafi na podany poniżej adres.</p>
+<p class="form-hint-box">Chcesz najpierw zobaczyć, jak wygląda panel z listą klientów i statusami? <a href="{% url 'pages:demo' %}">Wypróbuj demo bez rejestracji</a>.</p>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+{% include "base/_form_flash.html" %}
+
+<p class="form-divider form-divider--first">Klient</p>
+<div class="field-row">
+<p>
+{{ form.client_name.label_tag }}
+{{ form.client_name }}
+{{ form.client_name.errors }}
+</p>
+<p>
+{{ form.client_email.label_tag }}
+{{ form.client_email }}
+{{ form.client_email.errors }}
+</p>
+</div>
+
+<p class="form-divider">Dokumenty</p>
+<p>
+{{ form.name.label_tag }}
+{{ form.name }}
+{{ form.name.errors }}
+</p>
+<p>
+{{ form.description.label_tag }}
+{{ form.description }}
+{{ form.description.errors }}
+</p>
+
+<div class="item-builder">
+<label for="item-name-input">Lista dokumentów</label>
+<div class="item-input-row" data-error-for="items">
+<input type="text" id="item-name-input" placeholder="Np. Faktury sprzedaży">
+<button type="button" id="add-item-button" class="btn btn-dark">Dodaj</button>
+</div>
+{{ form.items.errors }}
+<ul id="item-list" class="item-list"></ul>
+{{ posted_items|json_script:"posted-items-data" }}
+</div>
+
+<div class="field-row">
+<p>
+{{ form.deadline.label_tag }}
+{{ form.deadline }}
+{{ form.deadline.errors }}
+</p>
+<p>
+{{ form.password.label_tag }}
+{{ form.password }}
+<small class="help-text">{{ form.password.help_text }}</small>
+{{ form.password.errors }}
+</p>
+</div>
+
+<p class="form-divider">Przypomnienia</p>
+<p>
+<label>{{ form.reminders_enabled }} {{ form.reminders_enabled.label }}</label>
+</p>
+<div class="field-row">
+<p>
+{{ form.first_reminder_after_days.label_tag }}
+{{ form.first_reminder_after_days }}
+</p>
+<p>
+{{ form.reminder_frequency_days.label_tag }}
+{{ form.reminder_frequency_days }}
+</p>
+<p>
+{{ form.max_reminders.label_tag }}
+{{ form.max_reminders }}
+</p>
+<p>
+{{ form.reminder_send_hour.label_tag }}
+{{ form.reminder_send_hour }}
+</p>
+</div>
+
+<p class="form-divider">Przechowywanie plików</p>
+<p class="text-muted form-hint">Po tym czasie od przesłania pliki zostaną trwale usunięte z Monituj. Odbiorca dostanie o tym wiadomość. Maksymalnie 1 rok.</p>
+<div class="field-row">
+<p>
+{{ form.retention_choice.label_tag }}
+{{ form.retention_choice }}
+{{ form.retention_choice.errors }}
+</p>
+<p data-retention-custom>
+{{ form.retention_custom_days.label_tag }}
+{{ form.retention_custom_days }}
+{{ form.retention_custom_days.errors }}
+</p>
+</div>
+
+{% include "base/_consent_fields.html" with terms_field=form.accept_terms %}
+<button type="submit" class="btn btn-primary btn-lg btn-block">Utwórz i wyślij link</button>
+</form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/request_items.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base/app_base.html" %}
+
+{% block title %}Edytuj przypomnienie - Monituj{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'requests:detail' request_obj.id %}">&larr; {{ request_obj.name }}</a>
+<div class="card">
+<h1>Edytuj przypomnienie</h1>
+<p class="card-lead">Zmień nazwę, termin lub ustawienia przypomnień.</p>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+{{ form.as_p }}
+<div class="form-actions">
+<button type="submit" class="btn btn-primary btn-lg">Zapisz</button>
+<a class="btn btn-secondary btn-lg" href="{% url 'requests:detail' request_obj.id %}">Anuluj</a>
+</div>
+</form>
+</div>
+{% endblock %}

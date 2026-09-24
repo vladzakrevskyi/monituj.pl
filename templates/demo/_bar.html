@@ -1,0 +1,14 @@
+{% load formatting %}
+{% if demo_account %}
+<div class="demo-bar" role="status">
+<span class="demo-bar__tag">Demo</span>
+<p class="demo-bar__text">Przeglądasz wersję demonstracyjną z przykładowymi danymi. Emaile nie są wysyłane, a konto zostanie usunięte {{ demo_account.expires_at|dt }}.</p>
+<div class="demo-bar__actions">
+{% if demo_showcase_url %}<a class="btn btn-secondary btn-sm demo-bar__ghost" href="{{ demo_showcase_url }}" target="_blank" rel="noopener">Zobacz oczami klienta</a>{% endif %}
+<form method="post" action="{% url 'demo:end' %}" class="inline-form">
+{% csrf_token %}
+<button type="submit" class="btn btn-primary btn-sm">Załóż własne konto</button>
+</form>
+</div>
+</div>
+{% endif %}

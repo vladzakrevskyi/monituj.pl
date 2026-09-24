@@ -1,0 +1,137 @@
+{% extends "pages/base_page.html" %}
+
+{% block title %}Jak to działa – Monituj{% endblock %}
+{% block meta_description %}Zobacz, jak Monituj prowadzi prośbę o dokumenty od pierwszej wiadomości do kompletu: lista, link dla klienta, automatyczne przypomnienia, akceptacja i usuwanie plików.{% endblock %}
+
+{% block hero_eyebrow %}Jak to działa{% endblock %}
+{% block hero_title %}Od „potrzebuję dokumentów” do <strong>„mam komplet”</strong>{% endblock %}
+{% block hero_lead %}Monituj prowadzi każdą prośbę według tego samego procesu. Ty ustawiasz ją raz – system pilnuje terminów, przypomina klientowi i pokazuje, na jakim etapie jesteś.{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<ol class="timeline">
+<li class="timeline__step">
+<span class="timeline__num">1</span>
+<div class="timeline__body">
+<h2>Dodajesz klienta</h2>
+<p>Nazwa i adres email wystarczą. Dane nowego klienta możesz też wpisać bezpośrednio przy tworzeniu prośby – Monituj sam doda go do listy klientów.</p>
+</div>
+</li>
+<li class="timeline__step">
+<span class="timeline__num">2</span>
+<div class="timeline__body">
+<h2>Tworzysz prośbę o dokumenty</h2>
+<p>W jednym formularzu określasz wszystko, czego potrzebujesz:</p>
+<ul class="check-list">
+{% include "pages/_check.html" with text="listę dokumentów – każdy z osobnym statusem" %}
+{% include "pages/_check.html" with text="termin, widoczny dla Ciebie i dla klienta" %}
+{% include "pages/_check.html" with text="opcjonalne hasło dostępu do prośby" %}
+{% include "pages/_check.html" with text="harmonogram automatycznych przypomnień" %}
+{% include "pages/_check.html" with text="okres przechowywania plików – maksymalnie rok" %}
+</ul>
+</div>
+</li>
+<li class="timeline__step">
+<span class="timeline__num">3</span>
+<div class="timeline__body">
+<h2>Klient dostaje jeden link</h2>
+<p>Wiadomość zawiera listę potrzebnych dokumentów, termin i przycisk do przesłania plików. Klient otwiera link w przeglądarce – bez zakładania konta i bez instalacji – i dodaje pliki do {{ max_upload_mb }} MB każdy. Po każdym przesłaniu dostaje potwierdzenie z informacją, czego jeszcze brakuje.</p>
+</div>
+</li>
+<li class="timeline__step">
+<span class="timeline__num">4</span>
+<div class="timeline__body">
+<h2>Monituj pilnuje terminu</h2>
+<p>Status każdego dokumentu aktualizuje się na bieżąco. Przypomnienia wysyłają się same według ustawionego harmonogramu, a w panelu widzisz dokładne daty kolejnych. Potrzebujesz przypomnieć wcześniej? Jedno kliknięcie.</p>
+</div>
+</li>
+<li class="timeline__step">
+<span class="timeline__num">5</span>
+<div class="timeline__body">
+<h2>Sprawdzasz i zamykasz</h2>
+<p>Akceptujesz dokumenty albo odrzucasz je z podaniem powodu – klient dostaje wiadomość, co poprawić, i może od razu przesłać nową wersję. Gdy dotrze komplet, klient otrzymuje potwierdzenie, a przypomnienia wyłączają się same.</p>
+</div>
+</li>
+<li class="timeline__step">
+<span class="timeline__num">6</span>
+<div class="timeline__body">
+<h2>Pliki znikają po czasie</h2>
+<p>Po okresie przechowywania ustawionym dla prośby pliki są trwale usuwane. Ty i Twój klient dostajecie o tym powiadomienie, a w historii zostaje tylko informacja o usunięciu.</p>
+</div>
+</li>
+</ol>
+</div>
+</section>
+
+<section class="panel-section">
+<div class="container">
+<div class="section-head">
+<p class="eyebrow">Przykładowy harmonogram</p>
+<h2 class="display-2">Przypomnienia, <strong>o których nie musisz pamiętać</strong></h2>
+<p>Domyślne ustawienia: pierwsze przypomnienie po 2 dniach, kolejne co 3 dni, maksymalnie 3 razy, o 9:00. Każdą z tych wartości zmienisz dla konkretnej prośby.</p>
+</div>
+<ol class="schedule-rail">
+<li class="schedule-rail__item schedule-rail__item--start">
+<span class="schedule-rail__day">Dzień 0</span>
+<span class="schedule-rail__dot"></span>
+<strong>Prośba wysłana</strong>
+<span>Klient dostaje link i listę dokumentów</span>
+</li>
+<li class="schedule-rail__item">
+<span class="schedule-rail__day">Dzień 2 · 9:00</span>
+<span class="schedule-rail__dot"></span>
+<strong>1. przypomnienie</strong>
+<span>Z aktualną listą braków</span>
+</li>
+<li class="schedule-rail__item">
+<span class="schedule-rail__day">Dzień 5 · 9:00</span>
+<span class="schedule-rail__dot"></span>
+<strong>2. przypomnienie</strong>
+<span>Tylko jeśli czegoś wciąż brakuje</span>
+</li>
+<li class="schedule-rail__item">
+<span class="schedule-rail__day">Dzień 8 · 9:00</span>
+<span class="schedule-rail__dot"></span>
+<strong>3. przypomnienie</strong>
+<span>Ostatnie w tym harmonogramie</span>
+</li>
+<li class="schedule-rail__item schedule-rail__item--end">
+<span class="schedule-rail__day">Komplet</span>
+<span class="schedule-rail__dot"></span>
+<strong>Przypomnienia stop</strong>
+<span>Wyłączają się same, gdy wszystko dotrze</span>
+</li>
+</ol>
+</div>
+</section>
+
+<section class="section">
+<div class="container">
+<div class="section-head">
+<p class="eyebrow">Dwie perspektywy</p>
+<h2 class="display-2">Prosto dla Ciebie, <strong>jeszcze prościej dla klienta</strong></h2>
+</div>
+<div class="duo">
+<div class="duo__card">
+<h3>Ty widzisz</h3>
+<ul class="check-list check-list--large">
+{% include "pages/_check.html" with text="Wszystkie prośby i ich statusy w jednym panelu" %}
+{% include "pages/_check.html" with text="Klientów, u których czegoś brakuje" %}
+{% include "pages/_check.html" with text="Daty kolejnych przypomnień" %}
+{% include "pages/_check.html" with text="Historię: kto, co i kiedy przesłał" %}
+</ul>
+</div>
+<div class="duo__card duo__card--dark">
+<h3>Twój klient widzi</h3>
+<ul class="check-list check-list--large">
+{% include "pages/_check.html" with text="Jedną listę tego, co ma przesłać" %}
+{% include "pages/_check.html" with text="Termin i nadawcę prośby" %}
+{% include "pages/_check.html" with text="Potwierdzenie każdego przesłanego pliku" %}
+{% include "pages/_check.html" with text="Powód, jeśli dokument trzeba poprawić" %}
+</ul>
+</div>
+</div>
+</div>
+</section>
+{% endblock %}

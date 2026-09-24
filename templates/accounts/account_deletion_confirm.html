@@ -1,0 +1,22 @@
+{% extends "base/base.html" %}
+
+{% block title %}Usuń konto - Monituj{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card card--danger">
+<h1>Usunąć konto na zawsze?</h1>
+<p class="text-muted">Konto <strong>{{ account_email }}</strong> zostanie usunięte natychmiast, razem ze wszystkimi danymi:</p>
+<ul class="deletion-summary">
+<li><span>Klienci</span><strong>{{ clients_count }}</strong></li>
+<li><span>Prośby z przypomnieniami</span><strong>{{ requests_count }}</strong></li>
+<li><span>Przesłane pliki</span><strong>{{ files_count }}</strong></li>
+</ul>
+<p class="text-muted">Automatyczne przypomnienia przestaną być wysyłane, a linki do przesyłania dokumentów przestaną działać. Odbiorcy otwartych próśb dostaną wiadomość, że prośba jest nieaktualna. Tej operacji nie można cofnąć.</p>
+<form method="post">
+{% csrf_token %}
+<button type="submit" class="btn btn-danger-solid btn-block">Usuń konto i wszystkie dane</button>
+</form>
+<p class="mb-0 mt-5 text-muted">Nie chcesz usuwać konta? Po prostu zamknij tę stronę – nic się nie zmieni.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base/app_base.html" %}
+{% load badges formatting %}
+
+{% block title %}Przypomnienia - Monituj{% endblock %}
+{% block page_class %}page--wide{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<div>
+<h1>Przypomnienia</h1>
+<p class="page-header__sub">Wszystkie prośby o dokumenty i ich aktualny status.</p>
+</div>
+<a class="btn btn-primary" href="{% url 'requests:create' %}">Nowe przypomnienie</a>
+</div>
+
+<form method="get" class="filter-panel" role="search">
+<div class="search-bar">
+<div class="search-bar__field">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+{{ filters.q }}
+</div>
+<button type="submit" class="btn btn-dark">Szukaj</button>
+<button type="button" class="btn btn-secondary" data-disclosure="#advanced-filters" aria-controls="advanced-filters" aria-expanded="{% if advanced_count %}true{% else %}false{% endif %}">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</span>{% endif %}
+</button>
+</div>
+
+<div class="filter-panel__advanced" id="advanced-filters"{% if not advanced_count %} hidden{% endif %}>
+<div class="filter-grid">
+<p>{{ filters.client.label_tag }}{{ filters.client }}</p>
+<p>{{ filters.deadline_from.label_tag }}{{ filters.deadline_from }}</p>
+<p>{{ filters.deadline_to.label_tag }}{{ filters.deadline_to }}</p>
+<p>{{ filters.reminders.label_tag }}{{ filters.reminders }}</p>
+<p>{{ filters.sort.label_tag }}{{ filters.sort }}</p>
+</div>
+<div class="filter-panel__actions">
+<button type="submit" class="btn btn-primary">Zastosuj filtry</button>
+{% if has_filters %}<a class="btn btn-secondary" href="{% url 'requests:list' %}">Wyczyść wszystko</a>{% endif %}
+</div>
+</div>
+{% if filters.data.status %}<input type="hidden" name="status" value="{{ filters.data.status }}">{% endif %}
+</form>
+
+<nav class="tabs" aria-label="Status">
+{% for tab in status_tabs %}
+<a class="tabs__item{% if tab.active %} is-active{% endif %}" href="?{{ tab.query }}"{% if tab.active %} aria-current="page"{% endif %}>{{ tab.label }}<span class="tabs__count">{{ tab.count }}</span></a>
+{% endfor %}
+</nav>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>Nazwa</th>
+<th>Klient</th>
+<th>Termin</th>
+<th>Postęp</th>
+<th>Przypomnienia</th>
+<th>Status</th>
+<th class="cell-right">Akcje</th>
+</tr>
+</thead>
+<tbody>
+{% for request_obj in page_obj.object_list %}
+<tr>
+<td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'requests:detail' request_obj.id %}">{{ request_obj.name }}</a></td>
+<td data-label="Klient"><a class="link-plain" href="{% url 'clients:documents' request_obj.client.id %}">{{ request_obj.client.name }}</a></td>
+<td class="cell-muted" data-label="Termin">{% if request_obj.deadline %}{{ request_obj.deadline|dt }}{% else %}Bez terminu{% endif %}</td>
+<td data-label="Postęp">
+<div class="progress-cell">
+<progress class="progress-bar" value="{{ request_obj.delivered_items }}" max="{{ request_obj.total_items|default:1 }}"></progress>
+<span>{{ request_obj.delivered_items }}/{{ request_obj.total_items }}</span>
+</div>
+</td>
+<td class="cell-muted" data-label="Przypomnienia">{% if request_obj.reminders_enabled %}Włączone{% else %}Wyłączone{% endif %}</td>
+<td data-label="Status"><span class="badge {{ request_obj.status_code|badge_class }}">{{ request_obj.status_label }}</span></td>
+<td class="cell-right cell-actions" data-label="Akcje">
+<div class="table-actions">
+<a class="btn btn-secondary btn-sm" href="{% url 'requests:detail' request_obj.id %}">Otwórz</a>
+</div>
+</td>
+</tr>
+{% empty %}
+<tr class="table-empty"><td colspan="7">{% if has_filters or filters.data.status %}Brak przypomnień pasujących do filtrów.{% else %}Brak przypomnień.{% endif %}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="pagination">
+{% if page_obj.has_previous %}
+<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.previous_page_number }}">&larr; Poprzednia</a>
+{% endif %}
+<span>Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</span>
+{% if page_obj.has_next %}
+<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.next_page_number }}">Następna &rarr;</a>
+{% endif %}
+</div>
+{% endif %}
+{% endblock %}

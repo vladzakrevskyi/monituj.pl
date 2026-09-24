@@ -1,0 +1,9 @@
+{% load formatting %}{% autoescape off %}Adres email Twojego konta w Monituj został zmieniony na:
+{{ new_email }}
+
+Ten adres – na który dostałeś tę wiadomość – nie jest już używany do logowania.
+
+Jeśli to nie Ty dokonałeś tej zmiany, natychmiast skontaktuj się z nami.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

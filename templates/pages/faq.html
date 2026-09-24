@@ -1,0 +1,24 @@
+{% extends "pages/base_page.html" %}
+
+{% block title %}Najczęstsze pytania – Monituj{% endblock %}
+{% block meta_description %}Odpowiedzi na najczęstsze pytania o Monituj: przypomnienia, konto klienta, bezpieczeństwo, przechowywanie dokumentów i koszty.{% endblock %}
+
+{% block hero_eyebrow %}FAQ{% endblock %}
+{% block hero_title %}Najczęstsze <strong>pytania</strong>{% endblock %}
+{% block hero_lead %}Nie znalazłeś odpowiedzi? Napisz do nas – odpowiemy najszybciej, jak to możliwe.{% endblock %}
+{% block hero_actions %}<a class="btn btn-secondary btn-lg" href="{% url 'pages:contact' %}">Skontaktuj się z nami</a>{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container container--narrow">
+{% for code, label in faq_categories %}
+<div class="faq-group" id="{{ code }}">
+<h2>{{ label }}</h2>
+<div class="faq">
+{% for item in faq %}{% if item.category == code %}{% include "pages/_faq_item.html" %}{% endif %}{% endfor %}
+</div>
+</div>
+{% endfor %}
+</div>
+</section>
+{% endblock %}

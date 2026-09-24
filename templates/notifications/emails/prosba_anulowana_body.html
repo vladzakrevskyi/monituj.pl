@@ -1,0 +1,15 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Nie musisz już przesyłać dokumentów w ramach tej prośby.{% endblock %}
+{% block eyebrow %}Prośba nieaktualna{% endblock %}
+{% block title %}Prośba o dokumenty jest nieaktualna{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Konto nadawcy w Monituj zostało zamknięte, dlatego ta prośba jest już nieaktualna, a link do przesyłania dokumentów przestał działać. Nie dostaniesz też kolejnych przypomnień.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% if sender_name %}{% include "notifications/emails/_row.html" with label="Nadawca" value=sender_name %}{% endif %}
+{% include "notifications/emails/_row.html" with label="Prośba" value=request_name %}
+{% include "notifications/emails/_details_close.html" %}
+{% if had_files %}{% include "notifications/emails/_notice.html" with text="Pliki przesłane przez Ciebie w ramach tej prośby zostały trwale usunięte z serwerów Monituj." %}{% endif %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Jeśli nadal masz przekazać te dokumenty, skontaktuj się bezpośrednio z nadawcą.</p>
+{% endblock %}
+{% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Ma ona charakter informacyjny.{% endblock %}

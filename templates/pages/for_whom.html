@@ -1,0 +1,46 @@
+{% extends "pages/base_page.html" %}
+
+{% block title %}Dla kogo – Monituj{% endblock %}
+{% block meta_description %}Monituj dla biur rachunkowych, kancelarii, działów kadr, pośredników i firm usługowych – wszędzie tam, gdzie praca czeka na dokumenty od klientów.{% endblock %}
+
+{% block hero_eyebrow %}Dla kogo{% endblock %}
+{% block hero_title %}Dla firm, w których praca <strong>czeka na dokumenty</strong>{% endblock %}
+{% block hero_lead %}Branże się różnią, problem jest ten sam: ktoś musi zebrać dokumenty od innych osób, na czas i w komplecie. Zobacz, jak Monituj porządkuje ten proces w różnych firmach.{% endblock %}
+{% block hero_actions %}
+<nav class="chip-nav" aria-label="Branże">
+{% for segment in segments %}<a class="chip" href="#{{ segment.slug }}">{{ segment.title }}</a>{% endfor %}
+</nav>
+{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container">
+{% for segment in segments %}
+<article class="segment{% if forloop.counter|divisibleby:2 %} segment--reverse{% endif %}" id="{{ segment.slug }}">
+<div class="segment__copy">
+<span class="segment__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ segment.icon|safe }}</svg></span>
+<h2>{{ segment.title }}</h2>
+<p class="segment__label">Problem</p>
+<p>{{ segment.problem }}</p>
+<p class="segment__label">Jak pomaga Monituj</p>
+<p>{{ segment.solution }}</p>
+</div>
+<div class="segment__example" aria-label="Przykładowa lista dokumentów">
+<p class="segment__example-head">Przykładowa prośba</p>
+<ul class="segment__list">
+{% for example in segment.examples %}
+<li><span>{{ example }}</span><span class="badge {% if forloop.counter <= 2 %}badge--complete{% elif forloop.counter == 3 %}badge--progress{% else %}badge--missing{% endif %}">{% if forloop.counter <= 2 %}Zaakceptowany{% elif forloop.counter == 3 %}Dostarczony{% else %}Brak{% endif %}</span></li>
+{% endfor %}
+</ul>
+<p class="segment__example-foot">Następne przypomnienie wyśle się automatycznie.</p>
+</div>
+</article>
+{% endfor %}
+
+<div class="note-card">
+<h2>Nie widzisz swojej branży?</h2>
+<p>Jeśli regularnie zbierasz dokumenty od klientów, pracowników lub kontrahentów – Monituj sprawdzi się także u Ciebie. Lista dokumentów, termin i przypomnienia działają tak samo w każdej branży.</p>
+</div>
+</div>
+</section>
+{% endblock %}

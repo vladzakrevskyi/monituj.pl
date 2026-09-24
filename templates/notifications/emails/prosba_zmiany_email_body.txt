@@ -1,0 +1,9 @@
+{% load formatting %}{% autoescape off %}Ktoś poprosił o zmianę adresu email Twojego konta w Monituj na:
+{{ new_email }}
+
+Zmiana nie zostanie zastosowana, dopóki nowy adres nie zostanie potwierdzony linkiem, który do niego wysłaliśmy.
+
+Jeśli to nie Ty prosiłeś o tę zmianę, zalecamy natychmiast zmienić hasło do konta.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

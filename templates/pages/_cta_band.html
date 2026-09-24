@@ -1,0 +1,18 @@
+<section class="section">
+<div class="container">
+<div class="cta-band">
+<div>
+<h2 class="display-2">Przestań pamiętać <strong>za klientów</strong></h2>
+<p>Załóż konto i wyślij pierwszą prośbę o dokumenty w kilka minut. Resztą zajmie się Monituj.</p>
+</div>
+<div class="cta-band__actions">
+{% if user.is_authenticated %}
+<a class="btn btn-dark btn-lg" href="{% url 'accounts:panel' %}">Przejdź do panelu</a>
+{% else %}
+<a class="btn btn-dark btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+<a class="cta-band__link" href="{% url 'pages:demo' %}">albo najpierw wypróbuj demo &rarr;</a>
+{% endif %}
+</div>
+</div>
+</div>
+</section>

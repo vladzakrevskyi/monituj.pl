@@ -1,0 +1,151 @@
+{% extends "base/app_base.html" %}
+{% load static badges formatting %}
+
+{% block title %}{{ request_obj.name }} - Monituj{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'requests:list' %}">&larr; Przypomnienia</a>
+<div class="page-header">
+<div class="page-header__title">
+<h1>{{ request_obj.name }}</h1>
+<span class="badge {{ status_code|badge_class }}">{{ status_label }}</span>
+</div>
+<div class="page-header__actions">
+<a class="btn btn-secondary" href="{% url 'requests:edit' request_obj.id %}">Edytuj</a>
+</div>
+</div>
+
+<div class="card mb-5">
+<div class="meta-grid">
+<div>
+<span class="meta__label">Klient</span>
+<span class="meta__value">{{ request_obj.client.name }}</span>
+<span class="meta__sub">{{ request_obj.client.email }}</span>
+</div>
+<div>
+<span class="meta__label">Termin</span>
+<span class="meta__value">{% if request_obj.deadline %}{{ request_obj.deadline|dt }}{% else %}Bez terminu{% endif %}</span>
+</div>
+<div>
+<span class="meta__label">Dostęp</span>
+{% if request_obj.is_password_protected %}
+<span class="meta__value">Zabezpieczony hasłem</span>
+{% else %}
+<span class="meta__value">Bez hasła</span>
+{% endif %}
+</div>
+<div>
+<span class="meta__label">Przechowywanie plików</span>
+<span class="meta__value">{{ request_obj.retention_days }} dni</span>
+<span class="meta__sub">od przesłania, potem pliki są usuwane</span>
+</div>
+</div>
+<div class="meta-progress">
+<div class="meta-progress__row">
+<span>Postęp</span>
+<span class="text-muted">{{ request_obj.delivered_items }} z {{ request_obj.total_items }} dokumentów dostarczonych</span>
+</div>
+<progress class="progress-bar" value="{{ request_obj.delivered_items }}" max="{{ request_obj.total_items|default:1 }}"></progress>
+</div>
+</div>
+
+<section class="card card--flush mb-5">
+<div class="card__header"><h2>Lista dokumentów</h2></div>
+<div class="table-scroll">
+<table data-request-id="{{ request_obj.id }}">
+<thead>
+<tr><th>Dokument</th><th>Status</th><th>Pliki</th><th class="cell-right">Akcje</th></tr>
+</thead>
+<tbody id="items-table-body">
+{% for item in items %}
+<tr data-item-id="{{ item.id }}" data-status="{{ item.status }}">
+<td class="cell-strong" data-label="Dokument">{{ item.name }}</td>
+<td data-label="Status"><span class="badge item-status-label {{ item.status|badge_class }}">{{ item.get_status_display }}</span><span class="cell-note item-rejection"{% if not item.rejection_reason %} hidden{% endif %}>{{ item.rejection_reason }}</span></td>
+<td data-label="Pliki">
+<ul class="file-list">
+{% for document in item.documents.all %}
+{% include "documents/_file_link.html" %}
+{% empty %}
+<li class="text-faint">&ndash;</li>
+{% endfor %}
+</ul>
+</td>
+<td class="cell-right cell-actions" data-label="Akcje">
+{% if item.status == "dostarczony" %}
+<div class="table-actions">
+<button type="button" class="btn btn-primary btn-sm accept-item" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">Zaakceptuj</button>
+<button type="button" class="btn btn-danger btn-sm reject-item" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">Odrzuć</button>
+</div>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</section>
+
+<div class="split">
+<section class="card">
+<h2 class="card-title">Historia</h2>
+<ul class="history-list">
+{% for entry in history %}
+<li><span class="history-time">{{ entry.created_at|dt }}</span><span>{{ entry.label_pl }}</span></li>
+{% empty %}
+<li>Brak zdarzeń.</li>
+{% endfor %}
+</ul>
+</section>
+
+<div class="stack">
+<section class="card">
+<h2 class="card-title">Publiczny link</h2>
+<p><a href="{{ public_url }}"><code>{{ public_url }}</code></a></p>
+<form id="send-link-form" data-request-id="{{ request_obj.id }}" novalidate>
+<p class="mb-0">
+<label for="send-link-email">Wyślij link emailem</label>
+<input type="email" id="send-link-email" name="email" value="{{ request_obj.client.email }}">
+</p>
+<button type="submit" class="btn btn-dark btn-block mt-5">Wyślij link</button>
+</form>
+</section>
+
+<section class="card">
+<h2 class="card-title">Przypomnienia</h2>
+{% if request_obj.reminders_enabled %}
+<p class="text-muted">Automatyczne: pierwsze po {{ request_obj.first_reminder_after_days }} dniach, potem co {{ request_obj.reminder_frequency_days }} dni o {{ request_obj.reminder_send_hour }}:00. Wysłano {{ automatic_sent }} z {{ request_obj.max_reminders }}.</p>
+{% if planned_reminders %}
+<p class="list-label">Zaplanowane</p>
+<ol class="schedule-list">
+{% for send_at in planned_reminders %}
+<li{% if forloop.first %} class="is-next"{% endif %}>
+<span class="schedule-list__date">{{ send_at|dt }}</span>
+{% if forloop.first %}<span class="schedule-list__tag">Następne</span>{% endif %}
+</li>
+{% endfor %}
+</ol>
+{% elif status_code == "kompletny" %}
+<p class="schedule-empty">Wszystkie dokumenty są dostarczone, kolejne przypomnienia nie będą wysyłane.</p>
+{% else %}
+<p class="schedule-empty">Wykorzystano limit automatycznych przypomnień.</p>
+{% endif %}
+{% else %}
+<p class="text-muted">Automatyczne przypomnienia są wyłączone. Możesz je włączyć w edycji przypomnienia.</p>
+{% endif %}
+<button type="button" class="btn btn-secondary btn-block mt-5" id="send-reminder" data-request-id="{{ request_obj.id }}">Wyślij przypomnienie teraz</button>
+<p class="list-label mt-5">Wysłane</p>
+<ul id="reminders-history" class="history-list history-list--compact">
+{% for reminder in reminders %}
+<li><span class="history-time">{{ reminder.sent_at|dt }}</span><span>{{ reminder.get_kind_display }}{% if reminder.triggered_by %} ({{ reminder.triggered_by.email }}){% endif %}</span></li>
+{% empty %}
+<li>Brak wysłanych przypomnień.</li>
+{% endfor %}
+</ul>
+</section>
+</div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/core.js' %}"></script>
+<script src="{% static 'js/request_detail.js' %}"></script>
+{% endblock %}
