@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from apps.accounts.models import AccountToken, AccountTokenPurpose, User
 from apps.common.security import generate_public_token, hash_token
+from tests.conftest import page_text
 
 VALID_PASSWORD = "Sup3r-Secret-Pass!23"
 
@@ -86,7 +87,14 @@ def test_verify_email_view_accepts_valid_token(client):
         expires_at=timezone.now() + timedelta(hours=1),
     )
 
-    response = client.get(reverse("accounts:verify-email", args=[raw_token]))
+    url = reverse("accounts:verify-email", args=[raw_token])
+
+    # Opening the link (as mail scanners do) changes nothing yet.
+    assert "Potwierdź i przejdź do panelu" in page_text(client.get(url))
+    user.refresh_from_db()
+    assert user.is_email_verified is False
+
+    response = client.post(url)
 
     # Confirming the address logs straight in.
     assert response.url == reverse("accounts:panel")

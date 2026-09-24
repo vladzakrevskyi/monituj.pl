@@ -383,7 +383,12 @@ def test_email_links_expire_but_offer_a_fresh_one(client):
 
     assert page.status_code == 404
     assert "Wyślij mi nowy link" in page_text(page)
-    BrowserClient().post(reverse("accounts:guest-link-request"), {"email": owner.email})
+    # Whoever holds an old link never learns the address behind it.
+    assert owner.email not in page.content.decode()
+    signed = re.search(r'name="signed" value="([^"]+)"', page.content.decode())[1]
+    with patch("django.core.signing.time.time", return_value=later):
+        BrowserClient().post(reverse("accounts:guest-link-request"), {"signed": signed})
+    assert mail.outbox[-1].to == [owner.email]
     assert f"/dostep/{owner.guest_access.token}/" in mail.outbox[-1].body
 
 
@@ -424,3 +429,15 @@ def test_a_link_never_silently_swaps_the_signed_in_account(client, user):
     assert client.get(reverse("accounts:panel")).context["user"] == user
     client.post(guest_panel_url(owner))
     assert client.get(reverse("accounts:panel")).context["user"] == owner
+
+
+@pytest.mark.django_db
+def test_the_form_cannot_rename_an_existing_account(client, user):
+    User.objects.filter(pk=user.pk).update(
+        display_name="", email_verified_at=timezone.now()
+    )
+
+    _submit(client, sender_email=user.email, sender_name="Kancelaria Oszust")
+
+    user.refresh_from_db()
+    assert user.display_name == ""

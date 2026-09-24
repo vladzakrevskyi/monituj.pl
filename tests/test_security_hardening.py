@@ -56,7 +56,9 @@ def test_unconfirmed_account_cannot_log_in_but_gets_the_link_again(client):
 
 
 @pytest.mark.django_db
-def test_registering_again_takes_over_an_unconfirmed_empty_account(client):
+def test_registering_an_unconfirmed_address_never_sets_the_password(client):
+    """Whoever fills in the form must not choose the password of an account
+    someone else will confirm - the inbox owner gets a set-password link."""
     squatter = User.objects.create_user(email="anna@example.com", password="Inne-9!x")
 
     response = client.post(
@@ -73,7 +75,9 @@ def test_registering_again_takes_over_an_unconfirmed_empty_account(client):
 
     assert response.status_code == 200
     squatter.refresh_from_db()
-    assert squatter.check_password(PASSWORD)
+    assert squatter.check_password("Inne-9!x")
+    assert not squatter.check_password(PASSWORD)
+    assert "/reset-hasla/" in mail.outbox[-1].body
 
 
 @pytest.mark.django_db
@@ -209,3 +213,64 @@ def test_guest_confirmation_link_uses_the_configured_site_address(client, settin
 
     assert "https://monituj.pl/wyslij-prosbe/potwierdz/" in mail.outbox[0].body
     assert Request.objects.exists()
+
+
+@pytest.mark.django_db
+def test_new_accounts_have_a_lower_daily_email_limit(verified, monkeypatch):
+    from datetime import timedelta
+
+    from apps.common.exceptions import RateLimitedAppError
+    from apps.requests import services
+
+    monkeypatch.setattr(services, "OUTBOUND_PER_DAY_NEW_ACCOUNT", 2)
+    monkeypatch.setattr(services, "OUTBOUND_PER_DAY", 100)
+    client_obj = verified.clients.create(name="Jan", email="jan@example.com")
+
+    def send(name):
+        return RequestService.create(
+            owner=verified,
+            client_id=client_obj.pk,
+            name=name,
+            description="",
+            deadline=None,
+            item_names=["A"],
+        )
+
+    send("A")
+    send("B")
+    with pytest.raises(RateLimitedAppError):
+        send("C")
+    # Refused before anything was stored or sent.
+    assert not Request.objects.filter(name="C").exists()
+
+    User.objects.filter(pk=verified.pk).update(
+        date_joined=timezone.now() - timedelta(days=30)
+    )
+    verified.refresh_from_db()
+    send("D")
+
+
+def test_company_name_cannot_carry_line_breaks():
+    from apps.accounts.forms import ProfileForm
+
+    form = ProfileForm(data={"display_name": "Biuro\r\nBcc: x@y.pl"})
+
+    assert form.is_valid()
+    assert form.cleaned_data["display_name"] == "Biuro Bcc: x@y.pl"
+
+
+@pytest.mark.django_db
+def test_old_throttle_records_are_cleaned_up():
+    from datetime import timedelta
+
+    from apps.common.models import ThrottleEvent
+    from apps.common.tasks import delete_old_throttle_events
+
+    old = ThrottleEvent.objects.create(key="x")
+    ThrottleEvent.objects.filter(pk=old.pk).update(
+        created_at=timezone.now() - timedelta(days=2)
+    )
+    ThrottleEvent.objects.create(key="y")
+
+    assert delete_old_throttle_events() == 1
+    assert list(ThrottleEvent.objects.values_list("key", flat=True)) == ["y"]

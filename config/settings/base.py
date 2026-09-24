@@ -157,6 +157,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.requests.tasks.delete_unconfirmed_requests",
         "schedule": 3600.0,
     },
+    "delete-old-throttle-events": {
+        "task": "apps.common.tasks.delete_old_throttle_events",
+        "schedule": 3600.0,
+    },
     "delete-expired-demo-accounts": {
         "task": "apps.demo.tasks.delete_expired_demo_accounts",
         "schedule": 3600.0,

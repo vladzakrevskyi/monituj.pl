@@ -7,7 +7,7 @@
 <div class="card">
 {% if sent %}
 <h1>Sprawdź skrzynkę</h1>
-<p class="mb-0">Jeśli dla adresu <strong>{{ email }}</strong> istnieje panel bez hasła, właśnie wysłaliśmy do niego stały link. Zajrzyj też do folderu spam.</p>
+<p class="mb-0">{% if email %}Jeśli dla adresu <strong>{{ email }}</strong> istnieje panel bez hasła, właśnie wysłaliśmy do niego stały link.{% else %}Wysłaliśmy nowy stały link do panelu na adres przypisany do konta.{% endif %} Zajrzyj też do folderu spam.</p>
 {% else %}
 <h1>Link do Twojego panelu</h1>
 <p class="text-muted">Wysyłałeś prośby bez zakładania konta? Podaj adres, z którego je wysyłałeś – wyślemy na niego stały link do panelu.</p>

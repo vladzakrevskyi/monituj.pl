@@ -64,9 +64,13 @@ deploy/           konfiguracja nginx, szablon .env dla produkcji, skrypt kopii z
 tests/            testy (pytest)
 ```
 
-### CI
+### Kontrola zależności
 
-Przy każdym pushu i pull requeście GitHub Actions (`.github/workflows/ci.yml`) uruchamia ruff, sprawdza migracje, puszcza testy i skanuje zależności narzędziem `pip-audit`. Dependabot co tydzień proponuje aktualizacje pakietów i obrazów Dockera.
+Dependabot (`.github/dependabot.yml`) co tydzień proponuje aktualizacje pakietów i obrazów Dockera. Znane podatności w zależnościach sprawdzisz lokalnie:
+
+```bash
+pip-audit -r requirements/prod.txt
+```
 
 ### Zadania w tle (Celery beat)
 
@@ -76,6 +80,7 @@ Przy każdym pushu i pull requeście GitHub Actions (`.github/workflows/ci.yml`)
 | `anonymize_expired_documents` | Usuwa pliki po okresie przechowywania i powiadamia obie strony |
 | `delete_unconfirmed_requests` | Usuwa prośby bez konta niepotwierdzone w ciągu 48 godzin (i konta bez hasła utworzone tylko dla nich) |
 | `delete_expired_demo_accounts` | Usuwa konta demo starsze niż 24 godziny |
+| `delete_old_throttle_events` | Czyści stare wpisy limitów (logowanie, e-maile, przesyłanie plików) |
 
 Bez działających kontenerów `worker` i `beat` strona działa, ale przypomnienia nie są wysyłane, a pliki nie są usuwane po terminie. Na produkcji oba uruchamiają się automatycznie razem ze stroną.
 

@@ -127,22 +127,42 @@ def test_recipient_page_points_account_holders_to_their_panel(client, firm, memb
 
 
 @pytest.mark.django_db
-def test_verified_recipient_skips_the_password_and_sees_all_their_files(firm):
+def test_recipient_page_link_alone_grants_no_extra_access(firm):
+    """The recipient page's address is in every email to the recipient, and
+    emails get forwarded - it must not open passwords or files."""
     request_obj = _send(firm, "jan@example.com", "Z hasłem", password="Tajne-9!")
     path = _portal_path("jan@example.com")
-    item = request_obj.items.get()
-    UploadDocumentService.upload_for_item(item, make_pdf_upload(name="umowa.pdf"))
+    UploadDocumentService.upload_for_item(
+        request_obj.items.get(), make_pdf_upload(name="umowa.pdf")
+    )
     detail = reverse("public:request-detail", args=[request_obj.public_token])
+    forwarded = BrowserClient()
 
-    stranger = page_text(BrowserClient().get(detail))
-    recipient = BrowserClient()
-    recipient.get(path)
-    own_view = page_text(recipient.get(detail))
+    listing = page_text(forwarded.get(path + "?widok=wszystkie"))
+    gate = page_text(forwarded.get(detail))
 
-    assert "Podaj hasło" in stranger
+    assert "Z hasłem" in listing
+    assert "Podaj hasło" in gate
+    assert "umowa.pdf" not in gate
+
+
+@pytest.mark.django_db
+def test_signed_in_recipient_skips_the_password_and_sees_all_their_files(firm, member):
+    request_obj = _send(firm, member.email, "Z hasłem", password="Tajne-9!")
+    document = UploadDocumentService.upload_for_item(
+        request_obj.items.get(), make_pdf_upload(name="umowa.pdf")
+    )
+    browser = BrowserClient()
+    browser.force_login(member)
+
+    own_view = page_text(
+        browser.get(reverse("public:request-detail", args=[request_obj.public_token]))
+    )
+    download = browser.get(reverse("documents_api:download", args=[document.pk]))
+
     assert "umowa.pdf" in own_view
-    # Files sent from another browser are shown but can't be deleted here.
     assert "delete-document" not in own_view
+    assert download.status_code == 200
 
 
 @pytest.mark.django_db
@@ -178,16 +198,21 @@ def test_request_remembers_the_senders_zone(member):
 
 
 @pytest.mark.django_db
-def test_recipient_zone_is_learned_when_they_open_their_link(firm):
+def test_recipient_zone_is_learned_on_their_own_page_only(firm):
     request_obj = _send(firm, "jan@example.com", "Dokumenty")
-    browser = BrowserClient()
-    browser.cookies["tz"] = "America/Chicago"
+    path = _portal_path("jan@example.com")
+    stranger = BrowserClient()
+    stranger.cookies["tz"] = "Asia/Tokyo"
+    recipient = BrowserClient()
+    recipient.cookies["tz"] = "America/Chicago"
 
-    browser.get(reverse("public:request-detail", args=[request_obj.public_token]))
+    stranger.get(reverse("public:request-detail", args=[request_obj.public_token]))
+    assert RecipientAccess.objects.get(email="jan@example.com").timezone == ""
+    recipient.get(path)
 
-    access = RecipientAccess.objects.get(email="jan@example.com")
-    assert access.timezone == "America/Chicago"
-    assert Request.objects.get(pk=request_obj.pk)
+    assert RecipientAccess.objects.get(email="jan@example.com").timezone == (
+        "America/Chicago"
+    )
 
 
 @pytest.mark.django_db

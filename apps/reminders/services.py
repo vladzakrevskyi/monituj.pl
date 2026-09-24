@@ -11,7 +11,12 @@ from apps.notifications.services import EmailService
 from apps.reminders.models import Reminder, ReminderKind
 from apps.reminders.schedule import due_dates
 from apps.requests.models import Request
-from apps.requests.services import RequestStatus, compute_status, with_stats
+from apps.requests.services import (
+    RequestStatus,
+    compute_status,
+    consume_outbound_email,
+    with_stats,
+)
 
 # One manual reminder an hour per request is plenty for a person and stops
 # the button from being used to flood someone's inbox.
@@ -46,6 +51,7 @@ class ReminderService:
                 code="REMINDER_TOO_SOON",
             )
 
+        consume_outbound_email(request_obj.created_by)
         sequence_number = Reminder.objects.filter(request=request_obj).count() + 1
         reminder = Reminder.objects.create(
             request=request_obj,

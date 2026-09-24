@@ -38,6 +38,12 @@ GUEST_DAILY_LIMIT_MESSAGE = (
 )
 # Far above what an office sends in a day; stops a script, not a person.
 REQUESTS_PER_DAY = 200
+# Emails an account sends to other people per day (invitations, links sent
+# by hand, manual reminders). New accounts start lower: that's where spam
+# accounts come from, and a new office rarely needs more on day one.
+OUTBOUND_PER_DAY = 300
+OUTBOUND_PER_DAY_NEW_ACCOUNT = 50
+NEW_ACCOUNT_AGE = timedelta(days=7)
 PASSWORD_FAILURES = 10
 CLOSED_MESSAGE = "Ta prośba została zamknięta – nie można już przesyłać plików."
 # How long a request sent through the public form waits for its sender to
@@ -99,6 +105,19 @@ def _reserve_daily_anonymous_request_slot(django_request) -> None:
         raise RateLimitedAppError(
             DAILY_LIMIT_MESSAGE, code="DAILY_LIMIT_REACHED"
         ) from exc
+
+
+def consume_outbound_email(owner) -> None:
+    """Counts one email the account sends to someone else."""
+    is_new = owner.date_joined > timezone.now() - NEW_ACCOUNT_AGE
+    throttle.consume(
+        f"outbound:{owner.pk}",
+        OUTBOUND_PER_DAY_NEW_ACCOUNT if is_new else OUTBOUND_PER_DAY,
+        throttle.DAY,
+        "Dzisiejszy limit wysyłanych wiadomości został wykorzystany. Spróbuj "
+        "ponownie jutro albo napisz do nas, jeśli potrzebujesz większego limitu.",
+        code="OUTBOUND_LIMIT_REACHED",
+    )
 
 
 def check_guest_daily_limit(owner) -> None:
@@ -285,6 +304,7 @@ class RequestService:
 
     @staticmethod
     def send_invitation(request_obj, to_email, actor=None, django_request=None):
+        consume_outbound_email(request_obj.created_by)
         link = absolute_url(f"/d/{request_obj.public_token}/")
         EmailService.send(
             EmailTemplate.INVITATION,

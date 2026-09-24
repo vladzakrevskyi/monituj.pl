@@ -84,15 +84,28 @@ def verification_sent(request):
         "base/message.html",
         {
             "title": "Sprawdź swoją skrzynkę",
-            "message": "Wysłaliśmy link weryfikacyjny na podany adres email.",
+            "message": (
+                "Wysłaliśmy wiadomość z linkiem na podany adres. Kliknij go, "
+                "aby dokończyć zakładanie konta."
+            ),
         },
     )
 
 
+@require_http_methods(["GET", "POST"])
 def verify_email(request, token):
-    """The link proves the address, so it also logs straight in - no need to
-    type the password again right after registering."""
+    """The link proves the address and logs straight in. Opening it only
+    shows a button: mail scanners that open links must not use up the link
+    (or log themselves in), and a link someone else sent you must not
+    silently swap the account you're signed in to."""
     try:
+        if request.method == "GET":
+            user = VerificationService.pending_user(token)
+            return render(
+                request,
+                "accounts/verify_email.html",
+                {"account_email": user.email},
+            )
         user = VerificationService.verify(token, request=request)
     except ApplicationError as exc:
         return render(
@@ -504,13 +517,14 @@ def guest_email_access(request, signed):
     try:
         user = GuestAccessService.user_for_email_link(signed)
     except ApplicationError as exc:
-        expired_for = getattr(exc, "user", None)
         return render(
             request,
             "accounts/guest_link_expired.html",
             {
                 "message": exc.message,
-                "email": expired_for.email if expired_for else "",
+                # The expired link itself asks for a new one - the address
+                # it belongs to is never shown to whoever holds the link.
+                "signed": signed if getattr(exc, "user", None) else "",
             },
             status=404,
         )
@@ -523,9 +537,13 @@ def guest_link_request(request):
     sent = False
     error = ""
     email = request.POST.get("email", "").strip() if request.method == "POST" else ""
+    signed = request.POST.get("signed", "") if request.method == "POST" else ""
     if request.method == "POST":
         try:
-            GuestAccessService.send_access_link(email, request=request)
+            if signed:
+                GuestAccessService.resend_for_expired_link(signed, request=request)
+            else:
+                GuestAccessService.send_access_link(email, request=request)
             sent = True
         except ApplicationError as exc:
             error = exc.message

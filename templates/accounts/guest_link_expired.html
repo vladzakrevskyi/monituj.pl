@@ -7,13 +7,13 @@
 <div class="card">
 <h1>Ten link już nie działa</h1>
 <p>{{ message }}</p>
-{% if email %}
+{% if signed %}
 <form method="post" action="{% url 'accounts:guest-link-request' %}">
 {% csrf_token %}
-<input type="hidden" name="email" value="{{ email }}">
+<input type="hidden" name="signed" value="{{ signed }}">
 <button type="submit" class="btn btn-primary btn-block">Wyślij mi nowy link do panelu</button>
 </form>
-<p class="text-muted mb-0 mt-5">Link przyjdzie na {{ email }}.</p>
+<p class="text-muted mb-0 mt-5">Link przyjdzie na adres, na który wysłaliśmy wiadomość z tym linkiem.</p>
 {% else %}
 <p class="mb-0"><a class="btn btn-primary btn-block" href="{% url 'accounts:guest-link-request' %}">Poproś o nowy link do panelu</a></p>
 {% endif %}

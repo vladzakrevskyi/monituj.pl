@@ -54,9 +54,8 @@ def _sender_account(email, display_name, timezone_name=None):
         return user
     if not user.is_active or hasattr(user, "demo_account"):
         raise ValidationAppError(SENDER_UNAVAILABLE_MESSAGE, code="SENDER_UNAVAILABLE")
-    if not user.display_name and display_name:
-        user.display_name = display_name
-        user.save(update_fields=["display_name"])
+    # An existing account keeps its own name: anyone can type any address
+    # into this form, so it must not change what that account's clients see.
     return user
 
 
@@ -157,10 +156,12 @@ class GuestRequestService:
                     fields.append("password")
                 owner.save(update_fields=fields)
                 GuestAccess.objects.get_or_create(user=owner)
+            # Inside the transaction: if sending is refused (daily limit),
+            # the request stays unconfirmed instead of silently unsent.
+            RequestService.deliver(
+                request_obj, password, actor=owner, request=django_request
+            )
 
-        RequestService.deliver(
-            request_obj, password, actor=owner, request=django_request
-        )
         if first_confirmation and hasattr(owner, "guest_access"):
             EmailService.send(
                 EmailTemplate.GUEST_PANEL_ACCESS,

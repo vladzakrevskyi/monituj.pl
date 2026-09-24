@@ -5,7 +5,6 @@ recipient's page (/moje-prosby/<token>/) when they don't."""
 from apps.requests.models import Request
 from apps.requests.services import RequestStatus, compute_status, with_stats
 
-SESSION_KEY = "verified_recipient_emails"
 FINISHED = {RequestStatus.COMPLETE, RequestStatus.CLOSED}
 VIEWS = {
     "otwarte": "Do uzupełnienia",
@@ -57,16 +56,9 @@ def account_email(user):
     return None
 
 
-def mark_recipient_verified(django_request, email):
-    """Opening the recipient's page proves they read that inbox."""
-    emails = set(django_request.session.get(SESSION_KEY, []))
-    emails.add(email.lower())
-    django_request.session[SESSION_KEY] = sorted(emails)
-
-
 def is_verified_recipient(django_request, email):
-    email = email.lower()
+    """Whether the viewer is the recipient in person: signed in to an account
+    whose (confirmed) address the request was sent to. A link alone - even
+    the recipient page - doesn't count, since emails get forwarded."""
     user_email = account_email(django_request.user)
-    if user_email and user_email.lower() == email:
-        return True
-    return email in django_request.session.get(SESSION_KEY, [])
+    return bool(user_email) and user_email.lower() == email.lower()

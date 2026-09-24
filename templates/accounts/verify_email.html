@@ -1,0 +1,18 @@
+{% extends "base/base.html" %}
+
+{% block title %}Potwierdź adres email - Monituj{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+<h1>Potwierdź adres email</h1>
+<p>Kliknij przycisk, aby potwierdzić adres <strong>{{ account_email }}</strong> i przejść do panelu.</p>
+{% if user.is_authenticated and user.email != account_email %}
+<p class="text-muted">Jesteś teraz zalogowany jako {{ user.email }} – po potwierdzeniu przełączymy Cię na konto {{ account_email }}.</p>
+{% endif %}
+<form method="post">
+{% csrf_token %}
+<button type="submit" class="btn btn-primary btn-lg btn-block">Potwierdź i przejdź do panelu</button>
+</form>
+</div>
+{% endblock %}

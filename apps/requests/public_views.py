@@ -17,7 +17,7 @@ from apps.documents.services import GuestUploadContext
 from apps.requests import received
 from apps.requests.forms import PublicPasswordForm, PublicRequestForm
 from apps.requests.guest import GuestRequestService
-from apps.requests.links import guest_email_url, remember_recipient_timezone
+from apps.requests.links import remember_recipient_timezone
 from apps.requests.models import RecipientAccess
 from apps.requests.services import PublicAccessService, compute_status
 
@@ -29,8 +29,8 @@ def public_request_detail(request, token):
     except ApplicationError:
         raise Http404 from None
 
-    # Someone who proved they own the recipient's address (their panel or
-    # their recipient page) already got the password the same way.
+    # The recipient signed in to their own account already proved they own
+    # the address the password was mailed to.
     verified = received.is_verified_recipient(request, request_obj.client.email)
     if (
         request_obj.is_password_protected
@@ -62,11 +62,10 @@ def public_request_detail(request, token):
 
     PublicAccessService.grant_access(request_obj, request)
     PublicAccessService.mark_accessed(request_obj, request)
-    remember_recipient_timezone(request_obj.client.email, request)
     items = request_obj.items.all().order_by("id")
     session_key = request.session.session_key or ""
     # A plain link may have been forwarded, so it shows only files sent from
-    # this browser; the verified recipient sees everything they ever sent.
+    # this browser; the recipient signed in to their account sees them all.
     docs = (
         GuestUploadContext.all_documents_by_item(request_obj)
         if verified
@@ -200,19 +199,19 @@ def recipient_portal(request, token):
     if access is None:
         raise Http404
     remember_recipient_timezone(access.email, request)
-    received.mark_recipient_verified(request, access.email)
     rows, tabs = received.filtered(
         received.received_requests(access.email), request.GET.get("widok")
     )
-    account = User.objects.filter(email__iexact=access.email, is_active=True).first()
+    # Only a pointer to the panel - never a login link: this page's address
+    # is in every email to the recipient, and emails get forwarded.
+    account = User.objects.filter(
+        email__iexact=access.email, is_active=True, email_verified_at__isnull=False
+    ).first()
     account_link = None
     if account is not None and hasattr(account, "guest_access"):
-        if account.email_verified_at is not None:
-            account_link = guest_email_url(account, reverse("requests:received"))
+        account_link = reverse("accounts:guest-link-request")
     elif account is not None and not hasattr(account, "demo_account"):
-        account_link = (
-            reverse("accounts:login") + "?next=" + reverse("requests:received")
-        )
+        account_link = reverse("accounts:login")
     return render(
         request,
         "public/recipient_portal.html",

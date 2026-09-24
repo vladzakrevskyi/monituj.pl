@@ -94,6 +94,10 @@ class ProfileForm(forms.Form):
         max_length=255,
     )
 
+    def clean_display_name(self):
+        # Used in email subjects, where a line break stops the email entirely.
+        return " ".join(self.cleaned_data["display_name"].split())
+
 
 class PasswordChangeForm(forms.Form):
     current_password = forms.CharField(

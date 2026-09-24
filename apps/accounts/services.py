@@ -58,14 +58,12 @@ class GuestOwnerService:
         return user
 
 
-def _is_unclaimed(user):
+def _is_unconfirmed(user):
     return (
         user.email_verified_at is None
         and user.is_active
         and not hasattr(user, "guest_access")
         and not hasattr(user, "demo_account")
-        and not user.requests.exists()
-        and not user.clients.exists()
     )
 
 
@@ -96,11 +94,15 @@ class RegistrationService:
                 "logowania.",
                 code="EMAIL_TAKEN",
             )
-        # An account nobody ever confirmed proves nothing about who owns the
-        # address - e.g. someone registered it to block the real owner. It
-        # can't be used and holds no data, so registering again takes it over.
-        unclaimed = existing is not None and _is_unclaimed(existing)
-        if existing is not None and not unclaimed:
+        if existing is not None and _is_unconfirmed(existing):
+            # Someone registered this address and never confirmed it - maybe
+            # the owner themselves, maybe someone blocking them. Nothing here
+            # changes the account (a password chosen by whoever filled in the
+            # form must never apply); the owner of the inbox gets a link to
+            # set their own password, which also confirms the address.
+            PasswordResetService.request_reset(existing.email)
+            return existing
+        if existing is not None:
             raise ValidationAppError(
                 "Konto z tym adresem email już istnieje.", code="EMAIL_TAKEN"
             )
@@ -112,25 +114,12 @@ class RegistrationService:
         _validate_password_strength(password)
 
         now = timezone.now()
-        if unclaimed:
-            user = existing
-            user.set_password(password)
-            user.terms_accepted_at = now
-            user.privacy_policy_accepted_at = now
-            user.save(
-                update_fields=[
-                    "password",
-                    "terms_accepted_at",
-                    "privacy_policy_accepted_at",
-                ]
-            )
-        else:
-            user = User.objects.create_user(
-                email=email,
-                password=password,
-                terms_accepted_at=now,
-                privacy_policy_accepted_at=now,
-            )
+        user = User.objects.create_user(
+            email=email,
+            password=password,
+            terms_accepted_at=now,
+            privacy_policy_accepted_at=now,
+        )
         AuditService.log(
             AuditEvent.USER_REGISTERED, actor=user, target=user, request=request
         )
@@ -154,6 +143,22 @@ class VerificationService:
             to_email=user.email,
             context={"verification_url": verification_url},
         )
+
+    @staticmethod
+    def pending_user(raw_token):
+        token = (
+            AccountToken.objects.select_related("user")
+            .filter(
+                token_hash=hash_token(raw_token),
+                purpose=AccountTokenPurpose.EMAIL_VERIFICATION,
+            )
+            .first()
+        )
+        if token is None or not token.is_valid:
+            raise ValidationAppError(
+                "Link jest nieprawidłowy lub wygasł.", code="INVALID_TOKEN"
+            )
+        return token.user
 
     @staticmethod
     def verify(raw_token, request=None):
@@ -699,6 +704,29 @@ class GuestAccessService:
             email__iexact=email, is_active=True, email_verified_at__isnull=False
         ).first()
         if user is None or not hasattr(user, "guest_access"):
+            return
+        key = f"access-link:{user.pk}"
+        if throttle.is_limited(key, ACCESS_LINKS_PER_EMAIL_HOUR, throttle.HOUR):
+            return
+        throttle.record(key)
+        GuestAccessService._mail_access_link(user)
+
+    @staticmethod
+    def resend_for_expired_link(signed, request=None):
+        """ "Send me a fresh link" from an expired 14-day link: the old link
+        itself identifies the account, so the page never shows the address."""
+        if request is not None:
+            throttle.consume(
+                throttle.ip_key("access-link", request),
+                ACCESS_LINKS_PER_IP_HOUR,
+                throttle.HOUR,
+            )
+        try:
+            GuestAccessService.user_for_email_link(signed)
+            return  # Still valid: nothing to resend.
+        except ValidationAppError as exc:
+            user = getattr(exc, "user", None)
+        if user is None:
             return
         key = f"access-link:{user.pk}"
         if throttle.is_limited(key, ACCESS_LINKS_PER_EMAIL_HOUR, throttle.HOUR):
