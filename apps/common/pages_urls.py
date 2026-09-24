@@ -1,6 +1,7 @@
 from django.urls import path
 
 from apps.common import pages
+from apps.contact.views import contact
 
 app_name = "pages"
 
@@ -11,6 +12,6 @@ urlpatterns = [
     path("bezpieczenstwo/", pages.security, name="security"),
     path("cennik/", pages.pricing, name="pricing"),
     path("faq/", pages.faq, name="faq"),
-    path("kontakt/", pages.contact, name="contact"),
+    path("kontakt/", contact, name="contact"),
     path("demo/", pages.demo, name="demo"),
 ]

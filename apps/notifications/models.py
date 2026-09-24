@@ -26,6 +26,11 @@ class EmailTemplate(models.TextChoices):
     )
     ACCOUNT_DELETED = "konto_usuniete", "Konto usunięte"
     REQUEST_CANCELLED = "prosba_anulowana", "Prośba anulowana"
+    CONTACT_MESSAGE = "kontakt_wiadomosc", "Formularz kontaktowy"
+    CONTACT_CONFIRMATION = (
+        "kontakt_potwierdzenie",
+        "Formularz kontaktowy (potwierdzenie)",
+    )
 
 
 class EmailStatus(models.TextChoices):

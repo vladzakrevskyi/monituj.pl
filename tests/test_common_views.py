@@ -105,6 +105,10 @@ def test_every_email_is_sent_as_html_with_text_fallback(request_record, request_
                 "verification_url": "http://x/v/",
                 "reset_url": "http://x/r/",
                 "confirm_url": "http://x/c/",
+                "contact_name": "Jan Kowalski",
+                "contact_email": "jan@example.com",
+                "contact_topic": "Pytanie o Monituj",
+                "contact_message": "Dzień dobry,\ndruga linia.",
             },
             request=request_record,
         )

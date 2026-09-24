@@ -29,12 +29,15 @@ INSTALLED_APPS = [
     "apps.notifications",
     "apps.audit",
     "apps.demo",
+    "apps.contact",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "apps.common.middleware.RequestIDMiddleware",
     "apps.common.middleware.SecurityHeadersMiddleware",
+    # After the security headers, so the maintenance page gets them too.
+    "apps.common.maintenance.MaintenanceModeMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -59,6 +62,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.demo.context_processors.demo",
+                "apps.common.context_processors.site",
             ],
         },
     },
@@ -167,9 +171,18 @@ MAILERS = {
         },
     },
 }
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@monituj.pl")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Monituj <no-reply@monituj.pl>")
+# Contact form messages go here, and replies to any email land here unless
+# a message is better answered by someone else (see EmailService).
+CONTACT_EMAIL = env("CONTACT_EMAIL", default="kontakt@monituj.pl")
 
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
+
+# Maintenance mode: MAINTENANCE_MODE=True shows everyone a "prace techniczne"
+# page, except the addresses (or ranges like 10.0.0.0/24) listed, comma
+# separated, in MAINTENANCE_ALLOWED_IPS.
+MAINTENANCE_MODE = env.bool("MAINTENANCE_MODE", default=False)
+MAINTENANCE_ALLOWED_IPS = env.list("MAINTENANCE_ALLOWED_IPS", default=[])
 
 LOGGING = logging_conf.LOGGING
 

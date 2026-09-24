@@ -26,8 +26,10 @@ def legal_context():
         context[key] = value or format_html(
             '<mark class="legal-todo">[uzupełnij: {}]</mark>', label
         )
-    if not entity.get("privacy_email") and entity.get("email"):
-        context["privacy_email"] = entity["email"]
+    if not entity.get("email"):
+        context["email"] = settings.CONTACT_EMAIL
+    if not entity.get("privacy_email"):
+        context["privacy_email"] = context["email"]
     return context
 
 

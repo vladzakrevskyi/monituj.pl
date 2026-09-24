@@ -56,9 +56,21 @@ def _is_demo(to_email, request):
     return request is not None and is_demo_user(request.created_by)
 
 
+def _default_reply_to(to_email, request):
+    """Emails come from the no-reply address, so Reply-To decides where an
+    answer lands. A client answering a request email is talking to the firm
+    that asked for the documents; everything else goes to the Monituj team."""
+    if request is not None and to_email.lower() == request.client.email.lower():
+        owner = request.created_by
+        # The shared account behind no-account requests is inactive.
+        if owner.is_active and owner.email:
+            return [owner.email]
+    return [settings.CONTACT_EMAIL]
+
+
 class EmailService:
     @staticmethod
-    def send(template, to_email, context=None, request=None, log=True):
+    def send(template, to_email, context=None, request=None, log=True, reply_to=None):
         """Renders and sends one email. log=False sends without leaving an
         EmailLog row - used when the data it would describe is being erased."""
         full_context = _base_context()
@@ -93,7 +105,11 @@ class EmailService:
 
         try:
             message = EmailMultiAlternatives(
-                subject, text_body, settings.DEFAULT_FROM_EMAIL, [to_email]
+                subject,
+                text_body,
+                settings.DEFAULT_FROM_EMAIL,
+                [to_email],
+                reply_to=reply_to or _default_reply_to(to_email, request),
             )
             message.attach_alternative(html_body, "text/html")
             message.send(using="default")

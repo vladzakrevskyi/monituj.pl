@@ -1,7 +1,6 @@
 from django.shortcuts import render
 
 from apps.common.content import FAQ, FAQ_CATEGORIES, SEGMENTS
-from apps.common.legal import legal_context
 from apps.documents.validation import MAX_UPLOAD_SIZE
 
 
@@ -27,5 +26,4 @@ security = _page(
 )
 pricing = _page("pages/pricing.html")
 faq = _page("pages/faq.html")
-contact = _page("pages/contact.html", lambda: {"legal": legal_context()})
 demo = _page("pages/demo.html")

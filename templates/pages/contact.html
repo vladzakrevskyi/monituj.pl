@@ -1,7 +1,7 @@
 {% extends "pages/base_page.html" %}
 
 {% block title %}Kontakt – Monituj{% endblock %}
-{% block meta_description %}Skontaktuj się z zespołem Monituj: pytania o produkt, sprawy danych osobowych i zgłoszenia nadużyć.{% endblock %}
+{% block meta_description %}Skontaktuj się z zespołem Monituj: pytania o produkt, pomoc, sprawy danych osobowych i zgłoszenia nadużyć.{% endblock %}
 
 {% block hero_eyebrow %}Kontakt{% endblock %}
 {% block hero_title %}Porozmawiajmy o <strong>Twoim procesie</strong>{% endblock %}
@@ -10,25 +10,70 @@
 {% block page_body %}
 <section class="section section--flush-top">
 <div class="container">
-<div class="contact-grid">
+<div class="contact-layout">
+<div class="contact-form-card">
+<h2>Napisz wiadomość</h2>
+<p class="contact-form-card__lead">Odpowiemy na adres, który podasz. Potwierdzenie otrzymania wyślemy od razu.</p>
+<form method="post" novalidate data-ajax-form data-replace-on-success>
+{% csrf_token %}
+{% include "base/_form_flash.html" with form=form %}
+<div class="field-row">
+<p>
+{{ form.name.label_tag }}
+{{ form.name }}
+{{ form.name.errors }}
+</p>
+<p>
+{{ form.email.label_tag }}
+{{ form.email }}
+{{ form.email.errors }}
+</p>
+</div>
+<div class="field-row">
+<p>
+{{ form.company.label_tag }}
+{{ form.company }}
+{{ form.company.errors }}
+</p>
+<p>
+{{ form.topic.label_tag }}
+{{ form.topic }}
+{{ form.topic.errors }}
+</p>
+</div>
+<p>
+{{ form.message.label_tag }}
+{{ form.message }}
+{{ form.message.errors }}
+</p>
+<p class="contact-trap" aria-hidden="true">
+<label for="id_website">Nie wypełniaj tego pola</label>
+<input type="text" name="website" id="id_website" tabindex="-1" autocomplete="off">
+</p>
+<button type="submit" class="btn btn-primary btn-lg">Wyślij wiadomość</button>
+<p class="contact-form-card__note">Administratorem Twoich danych jest {{ legal.name }}. Przetwarzamy je wyłącznie po to, by odpowiedzieć na wiadomość. Więcej w <a href="{% url 'legal:privacy' %}">Polityce prywatności</a>.</p>
+</form>
+</div>
+
+<aside class="contact-side">
 <div class="contact-card contact-card--dark">
 {% include "pages/_icon.html" with icon="mail" %}
-<h2>Pytania i pomoc</h2>
+<h2>Wolisz email?</h2>
 <p>Pytania o produkt, pomoc przy konfiguracji, reklamacje.</p>
-<p class="contact-card__value">{{ legal.email }}</p>
+<a class="contact-card__value" href="mailto:{{ contact_email }}">{{ contact_email }}</a>
 </div>
 <div class="contact-card">
 {% include "pages/_icon.html" with icon="shield" %}
 <h2>Dane osobowe</h2>
 <p>Realizacja praw z RODO i pytania o przetwarzanie danych.</p>
-<p class="contact-card__value">{{ legal.privacy_email }}</p>
+<a class="contact-card__value" href="mailto:{{ legal.privacy_email }}">{{ legal.privacy_email }}</a>
 </div>
 <div class="contact-card">
 {% include "pages/_icon.html" with icon="x" %}
 <h2>Zgłoś nadużycie</h2>
-<p>Treści nielegalne lub naruszające Regulamin – punkt kontaktowy w rozumieniu aktu o usługach cyfrowych.</p>
-<p class="contact-card__value">{{ legal.email }}</p>
+<p>Treści nielegalne lub naruszające Regulamin – punkt kontaktowy w rozumieniu aktu o usługach cyfrowych. Wybierz temat „Zgłoszenie nadużycia”.</p>
 </div>
+</aside>
 </div>
 
 <div class="company-card">

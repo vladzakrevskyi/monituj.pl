@@ -18,6 +18,7 @@
 {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+{% if maintenance_bypass %}<div class="maintenance-bar" role="status"><strong>Tryb serwisowy włączony.</strong> Odwiedzający widzą stronę prac technicznych – Ty widzisz serwis, bo Twój adres IP jest na liście wyjątków.</div>{% endif %}
 {% block layout %}
 {% include "base/_public_header.html" %}
 <main class="page {% block page_class %}{% endblock %}">

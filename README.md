@@ -27,7 +27,8 @@ Cały interfejs, wiadomości e-mail i dokumenty prawne są w języku polskim.
 | Bez konta | `/wyslij-prosbe/` – jedna prośba dziennie bez rejestracji |
 | Demo | `/demo/` – każdy odwiedzający dostaje osobne, tymczasowe konto z przykładowymi danymi (usuwane po 24 godzinach, bez wysyłki e-maili) |
 | Konto | Rejestracja z potwierdzeniem adresu e-mail, zmiana hasła i adresu e-mail z potwierdzeniem, usunięcie konta z potwierdzeniem mailowym (wszystkie dane są usuwane od razu) |
-| E-maile | Wiadomości HTML w stylu strony oraz wersja tekstowa |
+| E-maile | Wiadomości HTML w stylu strony oraz wersja tekstowa. Wszystkie wychodzą z `no-reply@monituj.pl`; odpowiedź klienta na e-mail dotyczący prośby trafia do firmy, która o dokumenty prosi, a odpowiedzi na pozostałe wiadomości – na `kontakt@monituj.pl` |
+| Kontakt | Formularz na `/kontakt/`: wiadomość trafia na `kontakt@monituj.pl` (odpowiedź idzie prosto do nadawcy), nadawca dostaje potwierdzenie; ochrona przed botami i limit wiadomości na adres IP |
 | Dokumenty prawne | Regulamin, Polityka prywatności, Polityka cookies, Umowa powierzenia przetwarzania danych – dane firmy są pobierane ze zmiennych środowiskowych |
 
 ## Technologie
@@ -386,8 +387,10 @@ Najważniejsze zmienne:
 | `SITE_URL` | `https://monituj.pl` – na tej podstawie budowane są wszystkie linki w e-mailach |
 | `POSTGRES_PASSWORD` | Drugi wygenerowany ciąg (tylko litery i cyfry – hasło trafia do adresu URL połączenia) |
 | `EMAIL_*` | Dane SMTP. Najczęściej port 587 i `EMAIL_USE_TLS=True` |
-| `DEFAULT_FROM_EMAIL` | Nadawca, np. `Monituj <no-reply@monituj.pl>`. Domena musi być skonfigurowana u dostawcy SMTP |
+| `DEFAULT_FROM_EMAIL` | Nadawca wszystkich wiadomości, np. `Monituj <no-reply@monituj.pl>`. Domena musi być skonfigurowana u dostawcy SMTP |
+| `CONTACT_EMAIL` | `kontakt@monituj.pl` – tu trafiają wiadomości z formularza kontaktowego i odpowiedzi na e-maile systemowe. Ta skrzynka musi istnieć i odbierać pocztę |
 | `LEGAL_*` | Dane firmy. Puste wartości są wyróżniane na stronach prawnych jako „[uzupełnij: …]” |
+| `MAINTENANCE_MODE`, `MAINTENANCE_ALLOWED_IPS` | Tryb serwisowy – patrz sekcja „Tryb serwisowy” niżej. Domyślnie wyłączony |
 | `LEGAL_BACKUP_DAYS` | Liczba dni przechowywania kopii zapasowych. Musi być równa `KEEP_DAYS` w skrypcie kopii (krok 11) – ta liczba jest podana w polityce prywatności |
 
 Wartości ze spacjami (np. adres firmy) wpisuj bez cudzysłowów.
@@ -601,6 +604,23 @@ Wszystkie polecenia uruchamiasz z katalogu `/srv/monituj`.
 | Logi nginx | `sudo tail -f /var/log/nginx/error.log` |
 
 > **Nigdy nie uruchamiaj `docker compose down -v`** – flaga `-v` usuwa wolumeny, czyli bazę danych i wszystkie przesłane pliki.
+
+### Tryb serwisowy (maintenance mode)
+
+Na czas prac (np. większej migracji danych) możesz pokazać odwiedzającym stronę „Prace techniczne” (HTTP 503). W pliku `.env` ustaw:
+
+```
+MAINTENANCE_MODE=True
+MAINTENANCE_ALLOWED_IPS=83.12.34.56,2a01:4f8::1,10.0.0.0/24
+```
+
+`MAINTENANCE_ALLOWED_IPS` to lista adresów oddzielonych przecinkami – pojedyncze IPv4 i IPv6 albo całe zakresy. Osoby z tych adresów widzą serwis normalnie, z pomarańczowym paskiem przypominającym, że tryb serwisowy jest włączony. Swój adres sprawdzisz poleceniem `curl -4 ifconfig.me` (lub `-6` dla IPv6). Zmiana zaczyna działać po odtworzeniu kontenerów:
+
+```bash
+docker compose up -d
+```
+
+Wyłączenie: `MAINTENANCE_MODE=False` i ponownie `docker compose up -d`. Adres `/api/health/` działa także w trybie serwisowym. Zadania w tle (przypomnienia, usuwanie plików po terminie) nie są wstrzymywane.
 
 ### Monitoring
 

@@ -1,0 +1,10 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Dziękujemy za kontakt – odpowiemy najszybciej, jak to możliwe.{% endblock %}
+{% block eyebrow %}Kontakt{% endblock %}
+{% block title %}Dziękujemy za wiadomość{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Cześć {{ contact_name }}, otrzymaliśmy Twoją wiadomość w sprawie: <strong>{{ contact_topic }}</strong>. Odpowiemy najszybciej, jak to możliwe.</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Chcesz coś dodać? Po prostu odpowiedz na tego maila – trafi on do naszego zespołu na adres {{ team_email }}.</p>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ ktoś użył tego adresu w formularzu kontaktowym Monituj. Jeśli to nie Ty, zignoruj ją.{% endblock %}

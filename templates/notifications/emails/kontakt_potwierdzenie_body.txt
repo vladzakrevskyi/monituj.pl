@@ -1,0 +1,6 @@
+{% autoescape off %}Cześć {{ contact_name }}, otrzymaliśmy Twoją wiadomość w sprawie: {{ contact_topic }}. Odpowiemy najszybciej, jak to możliwe.
+
+Chcesz coś dodać? Po prostu odpowiedz na tego maila – trafi on do naszego zespołu na adres {{ team_email }}.
+--
+Otrzymujesz tę wiadomość, ponieważ ktoś użył tego adresu w formularzu kontaktowym Monituj. Jeśli to nie Ty, zignoruj ją.
+{% endautoescape %}

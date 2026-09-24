@@ -968,10 +968,65 @@
 
 /* Kontakt */
 
-.contact-grid {
+.contact-layout {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
   gap: var(--space-5);
+  align-items: start;
+}
+
+.contact-form-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-7);
+}
+
+.contact-form-card h2,
+.contact-form-card h1 {
+  font-size: 24px;
+  margin: 0 0 var(--space-2);
+}
+
+.contact-form-card__lead {
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-6);
+}
+
+.contact-form-card textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.contact-form-card__note {
+  margin: var(--space-5) 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+/* Honeypot for bots - moved off screen rather than display:none, which
+   some bots detect and skip. */
+.contact-trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-side {
+  display: grid;
+  gap: var(--space-5);
+}
+
+a.contact-card__value {
+  display: inline-block;
+  text-decoration: none;
+}
+
+a.contact-card__value:hover {
+  text-decoration: underline;
 }
 
 .contact-card {
@@ -1118,7 +1173,7 @@
     min-height: 0;
   }
 
-  .contact-grid {
+  .contact-layout {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -1134,6 +1189,10 @@
 
   .page-hero__lead {
     font-size: 17px;
+  }
+
+  .contact-form-card {
+    padding: var(--space-6) var(--space-5);
   }
 
   .pain-grid,

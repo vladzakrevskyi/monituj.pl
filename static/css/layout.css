@@ -315,6 +315,32 @@ body.nav-open {
   color: var(--color-text-faint);
 }
 
+.site-footer__mail {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.site-footer__mail svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+}
+
+.site-footer__mail:hover {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.site-footer__brand .site-footer__cta {
+  display: flex;
+  width: fit-content;
+}
+
 .site-footer__col h4 {
   margin: 0 0 var(--space-4);
   font-size: 12px;
@@ -944,5 +970,71 @@ body.nav-open {
 @media (max-width: 720px) {
   .demo-bar {
     padding: var(--space-3) var(--space-4);
+  }
+}
+
+/* Maintenance mode */
+.maintenance-bar {
+  padding: var(--space-2) var(--space-6);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 14px;
+  text-align: center;
+}
+
+.maintenance {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) var(--space-4);
+  background: var(--color-page);
+}
+
+.maintenance__box {
+  width: 100%;
+  max-width: 560px;
+  padding: var(--space-8) var(--space-7);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.maintenance__box .brand {
+  display: flex;
+  justify-content: center;
+}
+
+.maintenance__box .maintenance__eyebrow {
+  display: flex;
+  justify-content: center;
+  margin: var(--space-7) 0 var(--space-2);
+}
+
+.maintenance__box h1 {
+  margin: 0 0 var(--space-4);
+  font-size: 34px;
+}
+
+.maintenance__lead {
+  color: var(--color-text-muted);
+  font-size: 17px;
+}
+
+.maintenance__contact {
+  margin: var(--space-6) 0 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+  font-size: 15px;
+}
+
+@media (max-width: 560px) {
+  .maintenance__box {
+    padding: var(--space-7) var(--space-5);
+  }
+
+  .maintenance__box h1 {
+    font-size: 28px;
   }
 }

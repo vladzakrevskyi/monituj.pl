@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Prace techniczne – Monituj</title>
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/layout.css' %}">
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
+</head>
+<body class="maintenance">
+<main class="maintenance__box">
+<span class="brand"><span class="brand-mark">M</span>Monituj</span>
+<p class="eyebrow maintenance__eyebrow">Prace techniczne</p>
+<h1>Za chwilę wracamy</h1>
+<p class="maintenance__lead">Właśnie ulepszamy Monituj. Twoje dokumenty, prośby i&nbsp;przypomnienia są bezpieczne – nic nie ginie.</p>
+<p class="maintenance__lead">Spróbuj ponownie za kilka minut.</p>
+<p class="maintenance__contact">Pilna sprawa? Napisz na <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+</main>
+</body>
+</html>
