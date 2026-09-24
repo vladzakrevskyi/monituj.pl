@@ -1,8 +1,6 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title %}Monituj – pilnuje Twoich dokumentów i terminów{% endblock %}
-{% block meta_description %}Monituj zbiera dokumenty od klientów, sam przypomina o brakach i pilnuje terminów. Ty widzisz status wszystkiego w jednym miejscu.{% endblock %}
 {% block page_class %}page--flush{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages.css' %}">{% endblock %}
 
@@ -10,9 +8,9 @@
 <section class="hero">
 <div class="container hero__inner">
 <div class="hero__copy">
-<p class="eyebrow">Kontrola dokumentów i terminów dla firm</p>
+<p class="eyebrow">Zbieranie dokumentów od klientów – automatycznie</p>
 <h1 class="display">Monituj <strong>pilnuje</strong> Twoich dokumentów i&nbsp;<strong>terminów</strong></h1>
-<p class="hero__lead">Nie musisz już pamiętać, kto, co i do kiedy ma Ci przesłać. Monituj prowadzi listę brakujących dokumentów, sam przypomina klientom i pokazuje, na czym stoisz – zanim termin stanie się problemem.</p>
+<p class="hero__lead">Przestań gonić klientów o dokumenty. Nie musisz już pamiętać, kto, co i do kiedy ma Ci przesłać. Monituj prowadzi listę brakujących dokumentów, sam przypomina klientom i pokazuje, na czym stoisz – zanim termin stanie się problemem.</p>
 <div class="hero__actions">
 {% if user.is_authenticated and not demo_account %}
 <a class="btn btn-dark btn-lg" href="{% url 'accounts:panel' %}">Przejdź do panelu</a>
@@ -219,7 +217,7 @@
 </div>
 <div class="segment-grid">
 {% for segment in segments|slice:":4" %}
-<a class="segment-card" href="{% url 'pages:for-whom' %}#{{ segment.slug }}">
+<a class="segment-card" href="{% url 'pages:segment' segment.slug %}">
 <span class="segment-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{{ segment.icon|safe }}</svg></span>
 <h3>{{ segment.title }}</h3>
 <p>{{ segment.teaser }}</p>

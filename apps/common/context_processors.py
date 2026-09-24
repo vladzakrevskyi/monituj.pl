@@ -1,6 +1,7 @@
 from django.conf import settings
 
 from apps.accounts.models import is_guest_account
+from apps.common.analytics import gtm_id
 
 
 def _received_open_count(request):
@@ -19,7 +20,17 @@ def _in_panel(request):
 
 
 def site(request):
+    from apps.common import seo
+    from apps.common.content import SEGMENTS
+
     return {
+        "seo": seo.for_request(request),
+        "gtm_id": gtm_id(),
+        "footer_segments": SEGMENTS,
+        "site_verification": {
+            "google": settings.GOOGLE_SITE_VERIFICATION,
+            "bing": settings.BING_SITE_VERIFICATION,
+        },
         "received_open_count": _received_open_count(request),
         "contact_email": settings.CONTACT_EMAIL,
         "maintenance_bypass": getattr(request, "maintenance_bypass", False),

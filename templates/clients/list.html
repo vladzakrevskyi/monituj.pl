@@ -1,7 +1,7 @@
 {% extends "base/app_base.html" %}
 {% load static badges formatting %}
 
-{% block title %}Klienci - Monituj{% endblock %}
+{% block page_name %}Klienci{% endblock %}
 {% block page_class %}page--wide{% endblock %}
 
 {% block content %}
@@ -91,11 +91,11 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 {% if page_obj.paginator.num_pages > 1 %}
 <div class="pagination">
 {% if page_obj.has_previous %}
-<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.previous_page_number }}">&larr; Poprzednia</a>
+<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.previous_page_number }}" title="Poprzednia strona">&larr; Poprzednia</a>
 {% endif %}
 <span>Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</span>
 {% if page_obj.has_next %}
-<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.next_page_number }}">Następna &rarr;</a>
+<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.next_page_number }}" title="Następna strona">Następna &rarr;</a>
 {% endif %}
 </div>
 {% endif %}

@@ -1,7 +1,7 @@
 {% extends "base/app_base.html" %}
 {% load badges formatting %}
 
-{% block title %}Przypomnienia - Monituj{% endblock %}
+{% block page_name %}Przypomnienia{% endblock %}
 {% block page_class %}page--wide{% endblock %}
 
 {% block content %}
@@ -77,7 +77,7 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 <td data-label="Status"><span class="badge {{ request_obj.status_code|badge_class }}">{{ request_obj.status_label }}</span></td>
 <td class="cell-right cell-actions" data-label="Akcje">
 <div class="table-actions">
-<a class="btn btn-secondary btn-sm" href="{% url 'requests:detail' request_obj.id %}">Otwórz</a>
+<a class="btn btn-secondary btn-sm" href="{% url 'requests:detail' request_obj.id %}" title="Otwórz prośbę: {{ request_obj.name }}">Otwórz</a>
 </div>
 </td>
 </tr>
@@ -91,11 +91,11 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 {% if page_obj.paginator.num_pages > 1 %}
 <div class="pagination">
 {% if page_obj.has_previous %}
-<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.previous_page_number }}">&larr; Poprzednia</a>
+<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.previous_page_number }}" title="Poprzednia strona">&larr; Poprzednia</a>
 {% endif %}
 <span>Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</span>
 {% if page_obj.has_next %}
-<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.next_page_number }}">Następna &rarr;</a>
+<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.next_page_number }}" title="Następna strona">Następna &rarr;</a>
 {% endif %}
 </div>
 {% endif %}

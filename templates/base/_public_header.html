@@ -2,19 +2,19 @@
 {% with view=request.resolver_match.view_name %}
 <header class="site-header">
 <div class="site-header__inner">
-<a class="brand" href="{% url 'landing' %}"><span class="brand-mark">M</span>Monituj</a>
+<a class="brand" href="{% url 'landing' %}" title="Monituj – strona główna"><span class="brand-mark">M</span>Monituj</a>
 <nav class="site-nav" id="site-nav" data-nav-target aria-label="Menu">
 <div class="drawer-head">
-<a class="brand" href="{% url 'landing' %}"><span class="brand-mark">M</span>Monituj</a>
+<a class="brand" href="{% url 'landing' %}" title="Monituj – strona główna"><span class="brand-mark">M</span>Monituj</a>
 {% include "base/_drawer_close.html" %}
 </div>
 <div class="site-nav__links">
-<a href="{% url 'pages:how-it-works' %}"{% if view == 'pages:how-it-works' %} class="is-active" aria-current="page"{% endif %}>Jak to działa</a>
-<a href="{% url 'pages:features' %}"{% if view == 'pages:features' %} class="is-active" aria-current="page"{% endif %}>Funkcje</a>
-<a href="{% url 'pages:for-whom' %}"{% if view == 'pages:for-whom' %} class="is-active" aria-current="page"{% endif %}>Dla kogo</a>
-<a href="{% url 'pages:security' %}"{% if view == 'pages:security' %} class="is-active" aria-current="page"{% endif %}>Bezpieczeństwo</a>
-<a href="{% url 'pages:pricing' %}"{% if view == 'pages:pricing' %} class="is-active" aria-current="page"{% endif %}>Cennik</a>
-<a href="{% url 'pages:demo' %}" class="site-nav__demo{% if view == 'pages:demo' %} is-active{% endif %}"{% if view == 'pages:demo' %} aria-current="page"{% endif %}>Demo</a>
+<a href="{% url 'pages:how-it-works' %}"{% if view == 'pages:how-it-works' %} class="is-active" aria-current="page"{% endif %} title="Jak działa zbieranie dokumentów od klientów – krok po kroku">Jak to działa</a>
+<a href="{% url 'pages:features' %}"{% if view == 'pages:features' %} class="is-active" aria-current="page"{% endif %} title="Funkcje: automatyczne przypomnienia, statusy i lista braków">Funkcje</a>
+<a href="{% url 'pages:for-whom' %}"{% if view == 'pages:for-whom' %} class="is-active" aria-current="page"{% endif %} title="Dla kogo: biura rachunkowe, kadry, kancelarie, pośrednicy i B2B">Dla kogo</a>
+<a href="{% url 'pages:security' %}"{% if view == 'pages:security' %} class="is-active" aria-current="page"{% endif %} title="Bezpieczne przesyłanie dokumentów i RODO">Bezpieczeństwo</a>
+<a href="{% url 'pages:pricing' %}"{% if view == 'pages:pricing' %} class="is-active" aria-current="page"{% endif %} title="Cennik – Monituj za darmo, bez karty kredytowej">Cennik</a>
+<a href="{% url 'pages:demo' %}" class="site-nav__demo{% if view == 'pages:demo' %} is-active{% endif %}"{% if view == 'pages:demo' %} aria-current="page"{% endif %} title="Wypróbuj demo Monituj bez rejestracji">Demo</a>
 </div>
 <div class="site-nav__cta">
 {% if user.is_authenticated %}

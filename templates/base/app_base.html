@@ -5,7 +5,7 @@
 <div class="nav-scrim"></div>
 <aside class="app-sidebar" id="app-sidebar" data-nav-target>
 <div class="app-sidebar__brand">
-<a class="brand" href="{% url 'accounts:panel' %}"><span class="brand-mark">M</span>Monituj</a>
+<a class="brand" href="{% url 'accounts:panel' %}" title="Monituj – przejdź do panelu"><span class="brand-mark">M</span>Monituj</a>
 {% include "base/_drawer_close.html" %}
 </div>
 <nav class="app-nav">
@@ -56,7 +56,7 @@ Nowe przypomnienie
 </aside>
 <div class="app-main">
 <header class="app-topbar">
-<a class="brand" href="{% url 'accounts:panel' %}"><span class="brand-mark">M</span>Monituj</a>
+<a class="brand" href="{% url 'accounts:panel' %}" title="Monituj – przejdź do panelu"><span class="brand-mark">M</span>Monituj</a>
 {% include "base/_nav_toggle.html" with target="#app-sidebar" %}
 </header>
 {% include "demo/_bar.html" %}

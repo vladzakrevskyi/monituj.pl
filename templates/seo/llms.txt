@@ -1,0 +1,28 @@
+{% autoescape off %}# Monituj
+
+> Monituj to polska usługa do zbierania dokumentów od klientów. Firma raz tworzy prośbę z listą potrzebnych dokumentów i terminem, klient przesyła pliki przez link – bez zakładania konta – a Monituj sam przypomina mu o brakach, aż dotrze komplet. Główna obietnica: koniec z gonieniem klientów o dokumenty.
+
+Najważniejsze fakty:
+
+- Dla kogo: biura rachunkowe, działy kadr i HR, kancelarie, pośrednicy kredytowi, nieruchomości i ubezpieczenia, firmy usługowe B2B – wszędzie, gdzie praca czeka na dokumenty od innych osób.
+- Jak działa: prośba z listą dokumentów i terminem → email z linkiem do klienta → klient przesyła pliki w przeglądarce → automatyczne przypomnienia o brakach → akceptacja lub odrzucenie z podaniem powodu → komplet.
+- Przypomnienia wychodzą o tej godzinie, o której wysłano prośbę, według strefy czasowej odbiorcy (między 8:00 a 20:00), i wyłączają się same po skompletowaniu dokumentów.
+- Odbiorca ma jeden stały link ze wszystkimi prośbami wysłanymi na jego adres, od wszystkich nadawców.
+- Bezpieczeństwo: unikalne linki, opcjonalne hasło do prośby, prywatny magazyn plików, sprawdzanie typu pliku, automatyczne usuwanie plików po wybranym okresie (maks. 365 dni), umowa powierzenia (RODO).
+- Cena: obecnie bezpłatnie, bez karty kredytowej. Jedną prośbę dziennie można wysłać nawet bez zakładania konta.
+- Język: polski. Rynek: Polska.
+
+## Strony
+
+{% for page in pages %}- [{{ page.title }}]({{ page.url }}): {{ page.description }}
+{% endfor %}
+## Branże
+
+{% for segment in segments %}- [{{ segment.title }}]({{ segment.url }}): {{ segment.teaser }}
+{% endfor %}
+## Optional
+
+- [Pełny opis Monituj dla modeli językowych]({{ site_url }}llms-full.txt): produkt, proces, branże i wszystkie odpowiedzi z FAQ w jednym pliku.
+{% for page in legal %}- [{{ page.title }}]({{ page.url }})
+{% endfor %}- Kontakt: {{ contact_email }}
+{% endautoescape %}

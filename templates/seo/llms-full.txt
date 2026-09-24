@@ -1,0 +1,67 @@
+{% autoescape off %}# Monituj – pełny opis
+
+Adres: {{ site_url }}
+Kontakt: {{ contact_email }}
+Język i rynek: polski, Polska.
+
+## Czym jest Monituj
+
+Monituj to polska aplikacja webowa do zbierania dokumentów od klientów, pracowników i kontrahentów. Rozwiązuje jeden konkretny problem: gonienie ludzi o brakujące dokumenty – dziesiątki maili i telefonów „prześlij, proszę…”, pliki rozrzucone po skrzynce i terminy, które przepadają, bo jednego dokumentu wciąż brakuje.
+
+Monituj nie jest dyskiem na pliki. Dysk i mail tylko przechowują to, co już dotarło. Monituj pilnuje, żeby dokumenty w ogóle dotarły: prowadzi listę potrzebnych dokumentów, sam przypomina o brakach i pokazuje status każdego dokumentu.
+
+## Jak to działa
+
+1. Firma tworzy prośbę: odbiorcę, listę potrzebnych dokumentów, termin i ustawienia przypomnień (po ilu dniach pierwsze, co ile dni kolejne, ile maksymalnie).
+2. Odbiorca dostaje email z unikalnym linkiem. Otwiera listę w przeglądarce i przesyła pliki – bez zakładania konta i bez instalowania czegokolwiek. Link można dodatkowo zabezpieczyć hasłem.
+3. Monituj sam wysyła przypomnienia o brakujących dokumentach – o tej godzinie, o której wysłano prośbę, według strefy czasowej odbiorcy (w godzinach 8:00–20:00). Przypomnienia wyłączają się, gdy dotrze komplet albo gdy firma zamknie prośbę.
+4. Firma przegląda dokumenty: akceptuje je albo odrzuca z podaniem powodu – odbiorca dostaje email, co poprawić, i przesyła nową wersję.
+5. Po wybranym okresie przechowywania (od 1 do 365 dni) pliki są trwale usuwane, a obie strony dostają powiadomienie.
+
+## Funkcje
+
+- Prośby o dokumenty z listą, terminem i opcjonalnym hasłem.
+- Automatyczne i ręczne przypomnienia; w panelu widać daty kolejnych przypomnień.
+- Statusy dokumentów: brak, dostarczony, zaakceptowany, odrzucony (z powodem).
+- Panel z liczbą aktywnych próśb, brakujących dokumentów i ostatnią aktywnością; lista klientów z brakami.
+- Zamykanie i ponowne otwieranie prośby.
+- Zakładka „Otrzymane”: prośby, które inni wysłali na adres użytkownika.
+- Strona odbiorcy: jeden stały link ze wszystkimi prośbami wysłanymi na jego adres, od wszystkich nadawców.
+- Prośba bez konta: jedna dziennie, potwierdzana mailem; nadawca dostaje panel pod stałym linkiem.
+- Demo: osobne konto demonstracyjne z przykładowymi danymi, usuwane po 24 godzinach.
+- Obsługiwane pliki: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX, CSV, do 20 MB na plik.
+
+## Bezpieczeństwo i RODO
+
+Każda prośba ma unikalny, trudny do odgadnięcia link. Pliki trafiają do niepublicznego magazynu z kontrolą dostępu, typ zawartości każdego pliku jest sprawdzany, połączenie jest szyfrowane, a hasła kont przechowywane jako skrót Argon2. Administratorem danych klientów jest firma korzystająca z Monituj; Monituj przetwarza je w jej imieniu na podstawie umowy powierzenia (art. 28 RODO) zawieranej wraz z Regulaminem. Pliki są usuwane automatycznie po okresie wybranym dla prośby.
+
+## Cena
+
+Obecnie korzystanie z Monituj jest bezpłatne, bez karty kredytowej. O ewentualnych płatnych planach użytkownicy dowiedzą się co najmniej 30 dni wcześniej.
+
+- Załóż konto: {{ register_url }}
+- Wyślij prośbę bez konta: {{ guest_url }}
+
+## Branże i przykładowe listy dokumentów
+{% for segment in segments %}
+### {{ segment.title }}
+
+Strona: {{ segment.url }}
+
+Problem: {{ segment.problem }}
+
+Jak pomaga Monituj: {{ segment.solution }}
+
+Przykładowe dokumenty: {{ segment.checklist|join:", " }}.
+{% endfor %}
+## Najczęstsze pytania
+{% for item in faq %}
+### {{ item.q }}
+
+{{ item.a }}
+{% endfor %}
+## Strony
+
+{% for page in pages %}- [{{ page.title }}]({{ page.url }}): {{ page.description }}
+{% endfor %}{% for page in legal %}- [{{ page.title }}]({{ page.url }})
+{% endfor %}{% endautoescape %}

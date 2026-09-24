@@ -1,7 +1,5 @@
 {% extends "pages/base_page.html" %}
 
-{% block title %}Dla kogo – Monituj{% endblock %}
-{% block meta_description %}Monituj dla biur rachunkowych, kancelarii, działów kadr, pośredników i firm usługowych – wszędzie tam, gdzie praca czeka na dokumenty od klientów.{% endblock %}
 
 {% block hero_eyebrow %}Dla kogo{% endblock %}
 {% block hero_title %}Dla firm, w których praca <strong>czeka na dokumenty</strong>{% endblock %}
@@ -24,6 +22,7 @@
 <p>{{ segment.problem }}</p>
 <p class="segment__label">Jak pomaga Monituj</p>
 <p>{{ segment.solution }}</p>
+<p><a class="link-arrow" href="{% url 'pages:segment' segment.slug %}">{{ segment.title }}: lista dokumentów i szczegóły &rarr;</a></p>
 </div>
 <div class="segment__example" aria-label="Przykładowa lista dokumentów">
 <p class="segment__example-head">Przykładowa prośba</p>

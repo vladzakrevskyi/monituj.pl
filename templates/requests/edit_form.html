@@ -1,10 +1,10 @@
 {% extends "base/app_base.html" %}
 
-{% block title %}Edytuj przypomnienie - Monituj{% endblock %}
+{% block page_name %}Edytuj przypomnienie{% endblock %}
 {% block page_class %}page--narrow{% endblock %}
 
 {% block content %}
-<a class="back-link" href="{% url 'requests:detail' request_obj.id %}">&larr; {{ request_obj.name }}</a>
+<a class="back-link" href="{% url 'requests:detail' request_obj.id %}" title="Wróć: {{ request_obj.name }}">&larr; {{ request_obj.name }}</a>
 <div class="card">
 <h1>Edytuj przypomnienie</h1>
 <p class="card-lead">Zmień nazwę, termin lub ustawienia przypomnień.</p>

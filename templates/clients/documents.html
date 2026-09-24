@@ -1,11 +1,11 @@
 {% extends "base/app_base.html" %}
 {% load badges formatting %}
 
-{% block title %}Dokumenty - {{ client.name }} - Monituj{% endblock %}
+{% block page_name %}Dokumenty klienta {{ client.name }}{% endblock %}
 {% block page_class %}page--wide{% endblock %}
 
 {% block content %}
-<a class="back-link" href="{% url 'clients:list' %}">&larr; Klienci</a>
+<a class="back-link" href="{% url 'clients:list' %}" title="Wróć: Klienci">&larr; Klienci</a>
 <div class="page-header">
 <div>
 <h1>{{ client.name }}</h1>
@@ -53,7 +53,7 @@
 <td class="cell-muted" data-label="Termin">{% if item.request.deadline %}{{ item.request.deadline|dt }}{% else %}Bez terminu{% endif %}</td>
 <td class="cell-right cell-actions" data-label="Akcje">
 <div class="table-actions">
-<a class="btn btn-secondary btn-sm" href="{% url 'requests:detail' item.request.id %}">Otwórz</a>
+<a class="btn btn-secondary btn-sm" href="{% url 'requests:detail' item.request.id %}" title="Otwórz prośbę: {{ item.request.name }}">Otwórz</a>
 </div>
 </td>
 </tr>
@@ -69,11 +69,11 @@
 {% if page_obj.paginator.num_pages > 1 %}
 <div class="pagination">
 {% if page_obj.has_previous %}
-<a href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}">&larr; Poprzednia</a>
+<a href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}" title="Poprzednia strona">&larr; Poprzednia</a>
 {% endif %}
 <span>Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</span>
 {% if page_obj.has_next %}
-<a href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}">Następna &rarr;</a>
+<a href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}" title="Następna strona">Następna &rarr;</a>
 {% endif %}
 </div>
 {% endif %}

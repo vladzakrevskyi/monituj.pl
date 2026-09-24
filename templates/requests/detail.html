@@ -1,17 +1,17 @@
 {% extends "base/app_base.html" %}
 {% load static badges formatting %}
 
-{% block title %}{{ request_obj.name }} - Monituj{% endblock %}
+{% block page_name %}{{ request_obj.name }}{% endblock %}
 
 {% block content %}
-<a class="back-link" href="{% url 'requests:list' %}">&larr; Przypomnienia</a>
+<a class="back-link" href="{% url 'requests:list' %}" title="Wróć: Przypomnienia">&larr; Przypomnienia</a>
 <div class="page-header">
 <div class="page-header__title">
 <h1>{{ request_obj.name }}</h1>
 <span class="badge {{ status_code|badge_class }}">{{ status_label }}</span>
 </div>
 <div class="page-header__actions">
-<a class="btn btn-secondary" href="{% url 'requests:edit' request_obj.id %}">Edytuj</a>
+<a class="btn btn-secondary" href="{% url 'requests:edit' request_obj.id %}" title="Edytuj prośbę: {{ request_obj.name }}">Edytuj</a>
 {% if not request_obj.awaiting_confirmation %}
 <form method="post" action="{% url 'requests:close' request_obj.id %}" class="inline-form"{% if not request_obj.is_closed %} data-confirm-close{% endif %}>
 {% csrf_token %}

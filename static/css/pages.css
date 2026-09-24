@@ -1436,3 +1436,115 @@ a.contact-card__value:hover {
   flex: none;
   width: 100%;
 }
+
+/* Breadcrumbs on subpages */
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.breadcrumbs a {
+  color: var(--color-text-muted);
+}
+
+.breadcrumbs a:hover {
+  color: var(--color-primary-text);
+}
+
+.pain-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pain-grid--three .pain-card p {
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+/* Long-form article (poradnik) */
+.article {
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.article h2 {
+  margin: var(--space-8) 0 var(--space-3);
+  font-size: 26px;
+  line-height: 1.25;
+  scroll-margin-top: 90px;
+}
+
+.article p {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text);
+}
+
+.article__toc {
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+
+.article__toc-head {
+  margin: 0 0 var(--space-2) !important;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted) !important;
+}
+
+.article__toc ol {
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: 16px;
+}
+
+.article__links {
+  padding-left: var(--space-5);
+}
+
+.article__links li {
+  margin-bottom: var(--space-2);
+}
+
+.article__summary {
+  margin-top: var(--space-8);
+  padding: var(--space-7);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+}
+
+.article__summary h2 {
+  margin-top: 0;
+}
+
+@media (max-width: 1080px) {
+  .pain-grid--three {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .article {
+    font-size: 16px;
+  }
+
+  .article h2 {
+    font-size: 22px;
+  }
+
+  .article__summary {
+    padding: var(--space-6) var(--space-5);
+  }
+}
+
+.link-arrow {
+  font-weight: 700;
+  color: var(--color-primary-text);
+}

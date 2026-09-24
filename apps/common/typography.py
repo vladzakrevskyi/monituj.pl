@@ -5,6 +5,8 @@ fixes that everywhere at once: templates, database content and emails."""
 
 import re
 
+from apps.common.link_titles import add_link_titles
+
 NBSP = " "
 
 _SHORT = (
@@ -20,7 +22,8 @@ _ORPHAN_AT_END = re.compile(rf"(?<![^\s(„\"'«])({_SHORT})[ \t\r\n]+$")
 _DASH = re.compile(r"(?<=\S)[ \t\r\n]+(?=[–—-](?:\s|$))")
 
 _TOKEN = re.compile(
-    r"<(script|style|textarea|pre|code)\b.*?</\1\s*>|<!--.*?-->|<[^>]*>",
+    # <title> too: search results show it as plain text, spaces included.
+    r"<(script|style|textarea|pre|code|title)\b.*?</\1\s*>|<!--.*?-->|<[^>]*>",
     re.S | re.I,
 )
 _INLINE_TAG = re.compile(r"</?(a|abbr|b|em|i|mark|small|span|strong|time|u)\b", re.I)
@@ -62,7 +65,8 @@ class OrphansMiddleware:
         ):
             return response
         charset = response.charset or "utf-8"
-        response.content = fix_orphans(response.content.decode(charset)).encode(charset)
+        html = add_link_titles(fix_orphans(response.content.decode(charset)))
+        response.content = html.encode(charset)
         if response.has_header("Content-Length"):
             response["Content-Length"] = str(len(response.content))
         return response

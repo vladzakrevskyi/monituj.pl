@@ -1,0 +1,120 @@
+{% extends "pages/base_page.html" %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Ścieżka">
+<a href="{% url 'landing' %}">Monituj</a><span aria-hidden="true">/</span>
+<a href="{% url 'pages:for-whom' %}">Dla kogo</a><span aria-hidden="true">/</span>
+<span aria-current="page">{{ segment.title }}</span>
+</nav>
+{% endblock %}
+{% block hero_eyebrow %}{{ segment.title }}{% endblock %}
+{% block hero_title %}{{ segment.h1 }}{% endblock %}
+{% block hero_lead %}{{ segment.lead }}{% endblock %}
+{% block hero_actions %}
+<div class="hero__actions">
+<a class="btn btn-dark btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+<a class="btn btn-secondary btn-lg" href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
+</div>
+{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container">
+<div class="section-head">
+<p class="eyebrow">Znasz to?</p>
+<h2 class="display-2">Gdzie dziś <strong>ucieka czas</strong></h2>
+</div>
+<div class="pain-grid pain-grid--three">
+{% for pain in segment.pains %}
+<div class="pain-card">
+<span class="pain-card__icon">{% include "pages/_icon.html" with icon="clock" %}</span>
+<p>{{ pain }}</p>
+</div>
+{% endfor %}
+</div>
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container">
+<article class="segment">
+<div class="segment__copy">
+<h2>Jak pomaga Monituj</h2>
+<p>{{ segment.solution }}</p>
+<ul class="check-list">
+{% for benefit in segment.benefits %}{% include "pages/_check.html" with text=benefit %}{% endfor %}
+</ul>
+</div>
+<div class="segment__example" aria-label="Przykładowa lista dokumentów">
+<p class="segment__example-head">Przykładowa lista dokumentów</p>
+<ul class="segment__list">
+{% for example in segment.checklist %}
+<li><span>{{ example }}</span><span class="badge {% if forloop.counter <= 3 %}badge--complete{% elif forloop.counter <= 5 %}badge--progress{% else %}badge--missing{% endif %}">{% if forloop.counter <= 3 %}Zaakceptowany{% elif forloop.counter <= 5 %}Dostarczony{% else %}Brak{% endif %}</span></li>
+{% endfor %}
+</ul>
+<p class="segment__example-foot">Listę dopasujesz do siebie – każdy dokument ma własny status.</p>
+</div>
+</article>
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<div class="section-head">
+<p class="eyebrow">Jak to działa</p>
+<h2 class="display-2">Trzy kroki <strong>zamiast pogoni</strong></h2>
+</div>
+<ol class="timeline">
+<li class="timeline__step">
+<span class="timeline__num">1</span>
+<div class="timeline__body">
+<h3>Wysyłasz listę dokumentów</h3>
+<p>Tworzysz prośbę z listą dokumentów i terminem. Odbiorca dostaje email z linkiem – bez zakładania konta i bez instalowania aplikacji.</p>
+</div>
+</li>
+<li class="timeline__step">
+<span class="timeline__num">2</span>
+<div class="timeline__body">
+<h3>Monituj przypomina o brakach</h3>
+<p>Przypomnienia wychodzą same, o tej godzinie, o której wysłałeś prośbę – aż dotrze komplet. Nie musisz pisać kolejnego maila „przypominam o dokumentach”.</p>
+</div>
+</li>
+<li class="timeline__step">
+<span class="timeline__num">3</span>
+<div class="timeline__body">
+<h3>Sprawdzasz i masz komplet</h3>
+<p>W panelu widzisz status każdego dokumentu. Akceptujesz albo odrzucasz z podaniem powodu – odbiorca od razu wie, co poprawić.</p>
+</div>
+</li>
+</ol>
+<div class="section-cta">
+<a class="btn btn-secondary btn-lg" href="{% url 'pages:how-it-works' %}">Zobacz cały proces</a>
+</div>
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<div class="section-head">
+<p class="eyebrow">Pytania</p>
+<h2 class="display-2">{{ segment.title }}: <strong>najczęstsze pytania</strong></h2>
+</div>
+<div class="faq">
+{% for item in segment.faq %}{% include "pages/_faq_item.html" %}{% endfor %}
+</div>
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container">
+<div class="note-card">
+<h2>Inne branże</h2>
+<p>Monituj działa tak samo wszędzie, gdzie praca czeka na dokumenty od innych osób.</p>
+<nav class="chip-nav" aria-label="Inne branże">
+{% for other in others %}<a class="chip" href="{% url 'pages:segment' other.slug %}">{{ other.title }}</a>{% endfor %}
+<a class="chip" href="{% url 'pages:guide' %}">Poradnik: jak zbierać dokumenty</a>
+</nav>
+</div>
+</div>
+</section>
+{% endblock %}

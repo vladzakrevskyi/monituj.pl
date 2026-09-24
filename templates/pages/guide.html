@@ -1,0 +1,84 @@
+{% extends "pages/base_page.html" %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Ścieżka">
+<a href="{% url 'landing' %}">Monituj</a><span aria-hidden="true">/</span>
+<span aria-current="page">Poradnik</span>
+</nav>
+{% endblock %}
+{% block hero_eyebrow %}Poradnik{% endblock %}
+{% block hero_title %}Jak zbierać dokumenty od klientów i <strong>przestać ich gonić</strong>{% endblock %}
+{% block hero_lead %}Sześć zasad, dzięki którym klienci przysyłają dokumenty na czas i w komplecie – bez dziesiątek maili „przypominam o dokumentach”. Sprawdzą się w biurze rachunkowym, dziale kadr, kancelarii i każdej firmie, która czeka na papiery od innych.{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<article class="article">
+
+<nav class="article__toc" aria-label="Spis treści">
+<p class="article__toc-head">W tym poradniku</p>
+<ol>
+<li><a href="#dlaczego">Dlaczego klienci nie przysyłają dokumentów na czas</a></li>
+<li><a href="#lista">Jedna lista zamiast wielu maili</a></li>
+<li><a href="#termin">Konkretny termin – wcześniejszy niż Twój</a></li>
+<li><a href="#przypomnienia">Przypomnienia w stałym rytmie</a></li>
+<li><a href="#przesylanie">Przesyłanie bez logowania i instalowania</a></li>
+<li><a href="#sprawdzanie">Szybka informacja zwrotna</a></li>
+<li><a href="#rodo">Bezpieczeństwo i RODO</a></li>
+<li><a href="#listy">Gotowe listy dokumentów dla branż</a></li>
+</ol>
+</nav>
+
+<h2 id="dlaczego">Dlaczego klienci nie przysyłają dokumentów na czas</h2>
+<p>Najczęściej nie ze złej woli. Klient nie pamięta dokładnie, czego od niego potrzebujesz, prośba zginęła w skrzynce między innymi wiadomościami, a termin wydaje się odległy – aż nagle jest jutro. Do tego przesłanie dokumentów bywa kłopotliwe: trzeba znaleźć właściwy mail, dołączyć pliki, sprawdzić, czy niczego nie pominął.</p>
+<p>Każda z tych przeszkód to osobna okazja, żeby odłożyć sprawę na później. Dlatego skuteczne zbieranie dokumentów polega na usuwaniu przeszkód, a nie na coraz częstszym przypominaniu.</p>
+
+<h2 id="lista">1. Jedna lista zamiast wielu maili</h2>
+<p>Wypisz wszystkie potrzebne dokumenty w jednym miejscu, każdy osobno i konkretnie: nie „dokumenty za wrzesień”, tylko „faktury sprzedaży”, „faktury kosztowe”, „wyciąg z rachunku firmowego”. Klient widzi, co dokładnie ma przygotować, a Ty możesz odhaczać dokumenty pojedynczo.</p>
+<p>Jeśli co miesiąc prosisz o to samo, używaj stałej listy. Klient szybko się jej nauczy, a Ty zobaczysz od razu, czego wciąż brakuje – zamiast przeglądać wątek z kilkunastoma odpowiedziami.</p>
+
+<h2 id="termin">2. Konkretny termin – wcześniejszy niż Twój</h2>
+<p>„Jak najszybciej” nie jest terminem. Podaj datę, a najlepiej ustaw ją kilka dni przed Twoim własnym terminem – na rozliczenie VAT, zamknięcie miesiąca, pierwszy dzień pracy nowego pracownika czy złożenie wniosku. Ten zapas to czas na poprawki, gdy dokument okaże się nieczytelny albo niewłaściwy.</p>
+
+<h2 id="przypomnienia">3. Przypomnienia w stałym rytmie</h2>
+<p>Jedna prośba rzadko wystarcza. Skuteczny rytm to na przykład: pierwsze przypomnienie po 2 dniach, kolejne co 3 dni, najwyżej trzy razy. Przypomnienie powinno zawierać tylko to, czego wciąż brakuje – klient nie musi szukać, co już wysłał.</p>
+<p>Ręczne pilnowanie takiego rytmu dla kilkudziesięciu klientów to godziny pracy w miesiącu. Dlatego warto, żeby przypomnienia wychodziły same i same się wyłączały, gdy dotrze komplet. W Monituj ustawiasz to raz przy prośbie – przypomnienia wychodzą o tej godzinie, o której wysłałeś prośbę, według zegara odbiorcy.</p>
+
+<h2 id="przesylanie">4. Przesyłanie bez logowania i instalowania</h2>
+<p>Każde konto do założenia i każda aplikacja do zainstalowania to powód, żeby klient odłożył sprawę. Najlepiej, gdy wystarczy kliknąć link, zobaczyć listę i dodać pliki – także z telefonu, robiąc zdjęcie dokumentu. Po każdym przesłaniu klient powinien dostać potwierdzenie z tym, co jeszcze zostało.</p>
+
+<h2 id="sprawdzanie">5. Szybka informacja zwrotna</h2>
+<p>Nieczytelny skan odkryty dzień przed terminem to najgorszy scenariusz. Sprawdzaj dokumenty na bieżąco i od razu dawaj znać, co jest nie tak – konkretnie: „brakuje podpisu na ostatniej stronie”, a nie „proszę przesłać jeszcze raz”. Klient poprawi dokument od ręki, póki pamięta o sprawie.</p>
+
+<h2 id="rodo">6. Bezpieczeństwo i RODO</h2>
+<p>Dokumenty klientów to często dane osobowe i finansowe. Zbieranie ich w zwykłej skrzynce mailowej oznacza kopie rozsiane po wielu miejscach bez kontroli, kto ma do nich dostęp i jak długo. Lepiej, gdy każdy klient ma własny, trudny do odgadnięcia link (w razie potrzeby z hasłem), pliki trafiają do prywatnego magazynu, a po ustalonym czasie są automatycznie usuwane. Pamiętaj też o umowie powierzenia z dostawcą narzędzia – to Ty pozostajesz administratorem danych klientów.</p>
+
+<h2 id="listy">Gotowe listy dokumentów dla branż</h2>
+<p>Przykładowe listy, od których możesz zacząć – z opisem, jak zebrać je bez pogoni:</p>
+<ul class="article__links">
+{% for segment in segments %}
+<li><a href="{% url 'pages:segment' segment.slug %}">{{ segment.title }}</a> – {{ segment.teaser }}</li>
+{% endfor %}
+</ul>
+
+<div class="article__summary">
+<h2>W skrócie</h2>
+<ul class="check-list">
+{% include "pages/_check.html" with text="jedna, konkretna lista dokumentów zamiast wielu maili" %}
+{% include "pages/_check.html" with text="termin kilka dni przed Twoim własnym" %}
+{% include "pages/_check.html" with text="przypomnienia w stałym rytmie, tylko o brakach" %}
+{% include "pages/_check.html" with text="przesyłanie przez link, bez konta i instalacji" %}
+{% include "pages/_check.html" with text="szybka, konkretna informacja o poprawkach" %}
+{% include "pages/_check.html" with text="prywatny magazyn i automatyczne usuwanie plików" %}
+</ul>
+<p>Monituj robi to wszystko za Ciebie: wysyłasz prośbę raz, a system przypomina, zbiera i pokazuje, czego jeszcze brakuje.</p>
+<div class="hero__actions">
+<a class="btn btn-dark btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+<a class="btn btn-secondary btn-lg" href="{% url 'pages:demo' %}">Wypróbuj demo</a>
+</div>
+</div>
+
+</article>
+</div>
+</section>
+{% endblock %}

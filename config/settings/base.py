@@ -188,6 +188,14 @@ CONTACT_EMAIL = env("CONTACT_EMAIL", default="kontakt@monituj.pl")
 
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
 
+# Google Tag Manager container, e.g. GTM-NWZ96857. Empty = no analytics.
+# See apps/common/analytics.py for where and when it loads.
+GTM_ID = env("GTM_ID", default="")
+
+# Search Console / Bing Webmaster Tools ownership tokens (optional).
+GOOGLE_SITE_VERIFICATION = env("GOOGLE_SITE_VERIFICATION", default="")
+BING_SITE_VERIFICATION = env("BING_SITE_VERIFICATION", default="")
+
 # Maintenance mode: MAINTENANCE_MODE=True shows everyone a "prace techniczne"
 # page, except the addresses (or ranges like 10.0.0.0/24) listed, comma
 # separated, in MAINTENANCE_ALLOWED_IPS.

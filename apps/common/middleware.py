@@ -3,11 +3,28 @@ import uuid
 
 from django.conf import settings
 
+from apps.common.analytics import content_security_policy
 from apps.common.exceptions import ApplicationError
 from apps.common.logging_context import request_id_var
 from apps.common.responses import error_response
 
 logger = logging.getLogger("monituj")
+
+PRIVATE_PREFIXES = (
+    "/panel/",
+    "/klienci/",
+    "/przypomnienia/",
+    "/otrzymane/",
+    "/ustawienia/",
+    "/d/",
+    "/moje-prosby/",
+    "/dostep/",
+    "/api/",
+    "/admin/",
+    "/wyslij-prosbe/potwierdz/",
+    "/weryfikacja-email/",
+    "/reset-hasla/",
+)
 
 
 class RequestIDMiddleware:
@@ -30,7 +47,7 @@ class SecurityHeadersMiddleware:
         self.get_response = get_response
         self.csp_header = "; ".join(
             f"{directive} {value}"
-            for directive, value in settings.CONTENT_SECURITY_POLICY.items()
+            for directive, value in content_security_policy().items()
         )
         self.permissions_policy_header = ", ".join(
             f"{feature}={value}"
@@ -41,6 +58,10 @@ class SecurityHeadersMiddleware:
         response = self.get_response(request)
         response["Content-Security-Policy"] = self.csp_header
         response["Permissions-Policy"] = self.permissions_policy_header
+        # Panel, token links and the API must never land in search results,
+        # even if such a link leaks somewhere public.
+        if request.path.startswith(PRIVATE_PREFIXES):
+            response["X-Robots-Tag"] = "noindex, nofollow"
         return response
 
 

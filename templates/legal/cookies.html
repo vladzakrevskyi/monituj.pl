@@ -1,6 +1,5 @@
 {% extends "legal/base.html" %}
 
-{% block title %}Polityka cookies - Monituj{% endblock %}
 {% block legal_title %}Polityka cookies{% endblock %}
 
 {% block legal_body %}
@@ -8,7 +7,12 @@
 <p>Pliki cookies to niewielkie pliki tekstowe zapisywane w Twojej przeglądarce przez odwiedzane strony. Administratorem Serwisu jest {{ legal.name }}.</p>
 
 <h2>2. Jakich plików cookies używamy</h2>
+{% if gtm_id %}
+<p>Serwis Monituj używa plików cookies niezbędnych do jego działania – na nie nie potrzebujemy zgody (art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. – Prawo komunikacji elektronicznej). Na stronach informacyjnych Serwisu, wyłącznie za Twoją zgodą, używamy też cookies analitycznych Google Analytics, wczytywanych przez Google Tag Manager. Nie stosujemy cookies reklamowych. Cookies analitycznych nie używamy w panelu ani na stronach z linkami do próśb.</p>
+<h3>Cookies niezbędne</h3>
+{% else %}
 <p>Serwis Monituj używa wyłącznie plików cookies niezbędnych do jego działania. Nie stosujemy cookies analitycznych, reklamowych ani plików cookies podmiotów trzecich. Dlatego nie prosimy o zgodę – zgodnie z art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. – Prawo komunikacji elektronicznej zgoda nie jest wymagana dla cookies niezbędnych do świadczenia usługi.</p>
+{% endif %}
 <div class="table-scroll">
 <table>
 <thead><tr><th>Nazwa</th><th>Cel</th><th>Czas przechowywania</th></tr></thead>
@@ -17,9 +21,23 @@
 <tr><td><code>csrftoken</code></td><td>Ochrona formularzy przed atakami typu CSRF</td><td>Do 1 roku</td></tr>
 <tr><td><code>tz</code></td><td>Strefa czasowa przeglądarki (np. „Europe/Warsaw”) – do wyświetlania dat w Twoim czasie i wysyłania przypomnień o właściwej godzinie. Nie zawiera danych, które pozwalają Cię zidentyfikować</td><td>Do 1 roku</td></tr>
 <tr><td><code>messages</code></td><td>Wyświetlenie jednorazowego komunikatu po wykonaniu akcji (np. „Zmiany zostały zapisane”)</td><td>Do wyświetlenia komunikatu</td></tr>
+{% if gtm_id %}<tr><td><code>monituj-analytics-consent</code> (pamięć przeglądarki)</td><td>Zapamiętanie Twojej decyzji w sprawie cookies analitycznych</td><td>Do zmiany decyzji albo wyczyszczenia danych przeglądarki</td></tr>{% endif %}
 </tbody>
 </table>
 </div>
+{% if gtm_id %}
+<h3>Cookies analityczne – tylko za zgodą</h3>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Nazwa</th><th>Dostawca i cel</th><th>Czas przechowywania</th></tr></thead>
+<tbody>
+<tr><td><code>_ga</code></td><td>Google Analytics (Google Ireland Ltd.) – rozróżnianie odwiedzających do anonimowych statystyk odwiedzin</td><td>Do 2 lat</td></tr>
+<tr><td><code>_ga_*</code></td><td>Google Analytics – utrzymanie stanu sesji w statystykach</td><td>Do 2 lat</td></tr>
+</tbody>
+</table>
+</div>
+<p>Zgodę możesz w każdej chwili wycofać albo zmienić, klikając „Ustawienia cookies” w stopce strony. Po wycofaniu zgody usuwamy cookies analityczne z Twojej przeglądarki. Wycofanie zgody nie wpływa na zgodność z prawem przetwarzania przed jej wycofaniem.</p>
+{% endif %}
 
 <h2>3. Jak zarządzać plikami cookies</h2>
 <p>Możesz usunąć lub zablokować pliki cookies w ustawieniach swojej przeglądarki. Zablokowanie niezbędnych plików cookies uniemożliwi jednak logowanie do Konta i przesyłanie dokumentów.</p>

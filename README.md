@@ -64,6 +64,18 @@ deploy/           konfiguracja nginx, szablon .env dla produkcji, skrypt kopii z
 tests/            testy (pytest)
 ```
 
+### SEO
+
+- **Główna fraza:** „zbieranie dokumentów od klientów”, obok „przypomnienia o dokumentach” i „brakujące dokumenty”. Wokół tego zbudowane są tytuły, opisy, nagłówki i treści.
+- **Metadane** wszystkich publicznych stron są w jednym miejscu: `apps/common/seo.py` (opis do 155 znaków, obrazek Open Graph, dane schema.org). Każdy tytuł ma format „Nazwa strony | monituj.pl” i mieści się w 60 znakach; hasło „Przestań gonić klientów o dokumenty” jest w opisach, nagłówkach i obrazkach, nie w tytułach.
+- **Linki:** każdy `<a>` ma atrybut `title` – niejednoznaczne (logo, „Otwórz”, paginacja) opisane w szablonach, pozostałe uzupełniane automatycznie tekstem linku (`apps/common/link_titles.py`), także w e-mailach. Strona, której tam nie ma, dostaje `noindex` – nowa podstrona jest prywatna, dopóki świadomie jej nie dodasz.
+- **Treści SEO:** strony branż `/dla-kogo/<branża>/` (treść w `apps/common/content.py`, `SEGMENT_PAGES`) i poradnik `/poradnik/jak-zbierac-dokumenty-od-klientow/`.
+- **Dla wyszukiwarek:** `/robots.txt`, `/sitemap.xml`, dane strukturalne JSON-LD (Organization, WebSite, SoftwareApplication, FAQPage, BreadcrumbList, Article), nagłówek `X-Robots-Tag: noindex` dla panelu, API i linków z tokenem.
+- **Dla asystentów AI:** `/llms.txt` (skrót) i `/llms-full.txt` (pełny opis z FAQ).
+- **Ikony i podglądy:** favicony, ikony aplikacji, `site.webmanifest` i obrazki 1200×630 dla social mediów w `static/images/`. Po zmianie tekstów wygeneruj je ponownie: `.venv/bin/python scripts/brand_images.py`.
+- **Google Tag Manager:** włączany zmienną `GTM_ID` (np. `GTM-NWZ96857`). Wczytuje się tylko na publicznych stronach (nigdy w panelu ani na linkach z tokenem) i dopiero po zgodzie na cookies analityczne w banerze (Google Consent Mode v2, `static/js/consent.js`). Zgodę można zmienić linkiem „Ustawienia cookies” w stopce. Polityka cookies i prywatności same pokazują sekcje o Google Analytics, gdy GTM jest włączony. Tagi w GTM ustawiaj jako tagi Google (GA4) – własne „Custom HTML” zablokuje CSP.
+- **Po wdrożeniu:** dodaj domenę w [Google Search Console](https://search.google.com/search-console) i Bing Webmaster Tools (tokeny w `GOOGLE_SITE_VERIFICATION` / `BING_SITE_VERIFICATION`), zgłoś `https://monituj.pl/sitemap.xml` i sprawdź podgląd linku np. w debuggerze Facebooka lub LinkedIn Post Inspector. `SITE_URL` musi być adresem `https://` – z niego powstają adresy kanoniczne.
+
 ### Kontrola zależności
 
 Dependabot (`.github/dependabot.yml`) co tydzień proponuje aktualizacje pakietów i obrazów Dockera. Znane podatności w zależnościach sprawdzisz lokalnie:

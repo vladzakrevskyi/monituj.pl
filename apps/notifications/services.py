@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.common.link_titles import add_link_titles
 from apps.common.site import absolute_url
 from apps.common.typography import fix_orphans, fix_orphans_text
 from apps.notifications.models import EmailLog, EmailStatus
@@ -93,10 +94,12 @@ class EmailService:
                 f"notifications/emails/{template}_body.txt", full_context
             ).strip()
         )
-        html_body = fix_orphans(
-            render_to_string(
-                f"notifications/emails/{template}_body.html",
-                {**full_context, "subject": subject},
+        html_body = add_link_titles(
+            fix_orphans(
+                render_to_string(
+                    f"notifications/emails/{template}_body.html",
+                    {**full_context, "subject": subject},
+                )
             )
         )
 

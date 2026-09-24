@@ -31,9 +31,10 @@ FAQ = [
         "q": "Jak działają automatyczne przypomnienia?",
         "a": (
             "Dla każdej prośby ustawiasz, po ilu dniach wysłać pierwsze "
-            "przypomnienie, co ile dni je powtarzać, ile razy maksymalnie i o "
-            "której godzinie. Monituj wysyła je sam i przestaje, gdy dotrze komplet "
-            "dokumentów. W panelu widzisz dokładne daty kolejnych przypomnień."
+            "przypomnienie, co ile dni je powtarzać i ile razy maksymalnie. "
+            "Przypomnienia wychodzą o tej godzinie, o której wysłałeś prośbę – "
+            "według zegara odbiorcy – i przestają, gdy dotrze komplet dokumentów. "
+            "W panelu widzisz dokładne daty kolejnych przypomnień."
         ),
     },
     {
@@ -283,3 +284,312 @@ SEGMENTS = [
         ],
     },
 ]
+
+
+# Each industry also has its own page (/dla-kogo/<slug>/), written around
+# what people there actually search for.
+SEGMENT_PAGES = {
+    "biura-rachunkowe": {
+        "seo_name": "Dokumenty od klientów biura rachunkowego",
+        "seo_description": (
+            "Faktury, wyciągi i raporty od klientów przed terminem VAT i JPK – "
+            "bez maili i telefonów. Monituj sam przypomina klientom biura "
+            "rachunkowego o brakach."
+        ),
+        "h1": "Dokumenty od klientów biura rachunkowego – na czas, bez pogoni",
+        "lead": (
+            "Co miesiąc ta sama sytuacja: zbliża się termin rozliczenia, a "
+            "połowa klientów jeszcze nie przysłała faktur i wyciągów. Monituj "
+            "wysyła każdemu klientowi listę dokumentów za dany miesiąc i sam "
+            "przypomina o brakach – Ty tylko księgujesz to, co już dotarło."
+        ),
+        "pains": [
+            "Dziesiątki maili i telefonów „prześlij, proszę, wyciąg za wrzesień”.",
+            "Dokumenty spływają na ostatnią chwilę, w kilku wiadomościach naraz.",
+            "Trudno powiedzieć, którzy klienci są gotowi do zamknięcia miesiąca.",
+        ],
+        "benefits": [
+            "Każdy klient dostaje tę samą, jasną listę dokumentów na dany miesiąc.",
+            "Przypomnienia wychodzą same, aż dotrze komplet – nie musisz pamiętać.",
+            "W panelu od razu widzisz, kto ma braki i czego dokładnie brakuje.",
+        ],
+        "checklist": [
+            "Faktury sprzedaży",
+            "Faktury kosztowe",
+            "Wyciągi bankowe ze wszystkich rachunków",
+            "Raport kasowy",
+            "Dokumenty importu i WNT",
+            "Umowy zawarte w miesiącu",
+            "Listy obecności i dokumenty do listy płac",
+            "Potwierdzenia zapłaty podatków i ZUS",
+        ],
+        "faq": [
+            {
+                "q": "Czy mogę co miesiąc wysyłać klientom tę samą listę?",
+                "a": (
+                    "Tak. Tworzysz prośbę na dany miesiąc z listą dokumentów i "
+                    "terminem przed Twoim terminem rozliczenia. Klient zawsze "
+                    "dostaje tę samą, przewidywalną listę, a Ty widzisz, kto ją "
+                    "już zamknął."
+                ),
+            },
+            {
+                "q": "Czy klient biura musi instalować aplikację albo zakładać konto?",
+                "a": (
+                    "Nie. Klient dostaje email z linkiem, otwiera listę w "
+                    "przeglądarce i przesyła pliki – także z telefonu, np. zdjęcie "
+                    "faktury. Wszystkie prośby od Twojego biura ma pod jednym "
+                    "stałym linkiem."
+                ),
+            },
+            {
+                "q": "Co z danymi klientów biura i RODO?",
+                "a": (
+                    "Administratorem danych jest Twoje biuro, a Monituj przetwarza "
+                    "je w Twoim imieniu na podstawie umowy powierzenia. Pliki są "
+                    "automatycznie usuwane po okresie, który ustawisz – pobierz je "
+                    "wcześniej do swojego programu księgowego."
+                ),
+            },
+        ],
+    },
+    "kadry": {
+        "seo_name": "Dokumenty do akt nowego pracownika",
+        "seo_description": (
+            "Świadectwa pracy, badania, kwestionariusz osobowy – komplet do akt "
+            "przed pierwszym dniem pracy. Monituj sam przypomina o brakach."
+        ),
+        "h1": "Komplet dokumentów od nowego pracownika przed pierwszym dniem",
+        "lead": (
+            "Nowy pracownik to lista dokumentów, które muszą trafić do akt "
+            "osobowych, zanim zacznie pracę. Zamiast pilnować tego mailami i "
+            "telefonami, wysyłasz mu jeden link z listą – Monituj przypomina o "
+            "brakach, a Ty widzisz, czego jeszcze brakuje w aktach."
+        ),
+        "pains": [
+            "Pracownik obiecuje dosłać dokumenty „w poniedziałek” – i zapomina.",
+            "Skany przychodzą na różne skrzynki, część jest nieczytelna.",
+            "Przed pierwszym dniem pracy nie wiadomo, czy akta są kompletne.",
+        ],
+        "benefits": [
+            "Jedna lista dokumentów dla każdej nowej osoby – zawsze ten sam proces.",
+            "Nieczytelny skan odrzucasz jednym kliknięciem z informacją, co poprawić.",
+            "Widzisz komplet akt przed pierwszym dniem pracy, bez szukania w poczcie.",
+        ],
+        "checklist": [
+            "Kwestionariusz osobowy",
+            "Świadectwa pracy z poprzednich miejsc",
+            "Orzeczenie lekarskie o zdolności do pracy",
+            "Zaświadczenie o szkoleniu BHP",
+            "Dyplomy i certyfikaty",
+            "Numer rachunku bankowego do wynagrodzenia",
+            "Oświadczenie do celów podatkowych (PIT-2)",
+            "Dane członków rodziny do ZUS",
+        ],
+        "faq": [
+            {
+                "q": "Czy mogę wysłać listę dokumentów przed podpisaniem umowy?",
+                "a": (
+                    "Tak. Prośbę wysyłasz, kiedy chcesz – na przykład zaraz po "
+                    "przyjęciu oferty. Ustawiasz termin przed pierwszym dniem "
+                    "pracy, a przypomnienia wychodzą same."
+                ),
+            },
+            {
+                "q": "Jak chronione są dokumenty pracowników?",
+                "a": (
+                    "Każda prośba ma unikalny link, który możesz dodatkowo "
+                    "zabezpieczyć hasłem. Pliki trafiają do prywatnego magazynu i "
+                    "są automatycznie usuwane po okresie, który ustawisz – "
+                    "zdążysz przenieść je do akt."
+                ),
+            },
+            {
+                "q": "Czy pracownik musi zakładać konto?",
+                "a": (
+                    "Nie. Otwiera link z maila i przesyła pliki w przeglądarce, "
+                    "także z telefonu. Po każdym przesłaniu dostaje potwierdzenie "
+                    "z listą tego, co jeszcze zostało."
+                ),
+            },
+        ],
+    },
+    "kancelarie": {
+        "seo_name": "Dokumenty od klientów kancelarii prawnej",
+        "seo_description": (
+            "Pełnomocnictwa, umowy, dowody – komplet dokumentów do sprawy w "
+            "jednym miejscu, z historią wpływu. Monituj przypomina klientom "
+            "kancelarii o brakach."
+        ),
+        "h1": "Komplet dokumentów do sprawy – bez dopytywania klienta",
+        "lead": (
+            "Do sprawy potrzebujesz kompletu dokumentów, a klient przysyła je na "
+            "raty, różnymi kanałami. Monituj zbiera je w jednej prośbie, z "
+            "terminem, statusem każdego dokumentu i historią tego, kiedy co "
+            "wpłynęło."
+        ),
+        "pains": [
+            "Dokumenty do sprawy przychodzą mailem, komunikatorem i pocztą.",
+            "Trudno ustalić, co już jest, a czego wciąż brakuje przed terminem.",
+            "Przypominanie klientowi zabiera czas, który powinien iść na sprawę.",
+        ],
+        "benefits": [
+            "Jedna prośba na sprawę z listą, terminem i opcjonalnym hasłem dostępu.",
+            "Każdy dokument ma status, a historia pokazuje, kiedy co wpłynęło.",
+            "Przypomnienia wysyłają się same – do skutku albo do zamknięcia prośby.",
+        ],
+        "checklist": [
+            "Pełnomocnictwo",
+            "Umowy i aneksy",
+            "Korespondencja z drugą stroną",
+            "Odpis z KRS lub wpis do CEIDG",
+            "Dokumenty dowodowe",
+            "Faktury i potwierdzenia płatności",
+            "Dokument tożsamości (skan)",
+        ],
+        "faq": [
+            {
+                "q": "Czy mogę zabezpieczyć prośbę hasłem?",
+                "a": (
+                    "Tak. Hasło wysyłamy klientowi osobną wiadomością, a bez niego "
+                    "link do prośby się nie otworzy."
+                ),
+            },
+            {
+                "q": "Skąd wiem, kiedy klient przesłał dokument?",
+                "a": (
+                    "Każda prośba ma historię zdarzeń: otwarcie linku, przesłanie "
+                    "pliku, akceptacja, odrzucenie, przypomnienia – z datą i "
+                    "godziną."
+                ),
+            },
+            {
+                "q": "Co, jeśli dokument jest niekompletny?",
+                "a": (
+                    "Odrzucasz go z podaniem powodu. Klient dostaje email z "
+                    "informacją, co poprawić, i przesyła nową wersję pod tym "
+                    "samym linkiem."
+                ),
+            },
+        ],
+    },
+    "posrednictwo": {
+        "seo_name": "Dokumenty do kredytu i ubezpieczenia",
+        "seo_description": (
+            "Zaświadczenia, wyciągi i dokumenty nieruchomości do wniosku – w "
+            "komplecie i na czas. Monituj sam przypomina klientowi, czego "
+            "jeszcze brakuje."
+        ),
+        "h1": "Wniosek kredytowy rusza, gdy dotrze komplet dokumentów",
+        "lead": (
+            "Wniosek stoi, bo klient nie przysłał jednego zaświadczenia – a "
+            "każdy dzień zwłoki to ryzyko, że transakcja się opóźni. Monituj "
+            "wysyła klientowi listę dokumentów do wniosku i przypomina o brakach, "
+            "a Ty wiesz, kiedy możesz ruszać."
+        ),
+        "pains": [
+            "Wniosek czeka tygodniami na jedno zaświadczenie o dochodach.",
+            "Klient nie wie, które dokumenty już przesłał, a których brakuje.",
+            "Każdy telefon z przypomnieniem to czas odebrany innym klientom.",
+        ],
+        "benefits": [
+            "Lista dokumentów do wniosku z terminem i automatycznymi przypomnieniami.",
+            "Klient na bieżąco widzi, co już przesłał i czego jeszcze brakuje.",
+            "Ty widzisz komplet w panelu i od razu składasz wniosek.",
+        ],
+        "checklist": [
+            "Zaświadczenie o zatrudnieniu i dochodach",
+            "Wyciągi z konta za ostatnie 3–6 miesięcy",
+            "Umowa przedwstępna lub rezerwacyjna",
+            "Odpis księgi wieczystej",
+            "Akt notarialny",
+            "Dotychczasowa polisa",
+            "Dokumenty dochodowe firmy (PIT, KPiR)",
+        ],
+        "faq": [
+            {
+                "q": "Czy klient może przesłać dokumenty z telefonu?",
+                "a": (
+                    "Tak. Link działa w każdej przeglądarce, także na telefonie – "
+                    "klient może od razu zrobić zdjęcie dokumentu i je przesłać."
+                ),
+            },
+            {
+                "q": "Jak często klient dostaje przypomnienia?",
+                "a": (
+                    "Tak, jak ustawisz: np. pierwsze po 2 dniach, potem co 3 dni, "
+                    "maksymalnie 3 razy. Przypomnienia wyłączają się same, gdy "
+                    "dotrze komplet."
+                ),
+            },
+            {
+                "q": "Jak długo przechowywane są dokumenty klienta?",
+                "a": (
+                    "Tyle, ile ustawisz dla prośby – maksymalnie rok. Potem pliki "
+                    "są trwale usuwane, a Ty i klient dostajecie powiadomienie."
+                ),
+            },
+        ],
+    },
+    "b2b": {
+        "seo_name": "Dokumenty przy onboardingu klienta B2B",
+        "seo_description": (
+            "Umowy, dane rejestrowe, pełnomocnictwa – ta sama lista dokumentów "
+            "dla każdego nowego klienta, z terminem i automatycznymi "
+            "przypomnieniami."
+        ),
+        "h1": "Onboarding klienta bez blokujących braków w dokumentach",
+        "lead": (
+            "Rozpoczęcie współpracy blokuje brak jednego dokumentu, a o brakach "
+            "dowiadujesz się dopiero przy realizacji. Z Monituj każdy nowy klient "
+            "dostaje tę samą listę dokumentów z terminem, a przypomnienia "
+            "pilnują reszty."
+        ),
+        "pains": [
+            "Start projektu przesuwa się, bo brakuje podpisanej umowy lub danych.",
+            "Każdy handlowiec zbiera dokumenty po swojemu, w swojej skrzynce.",
+            "O brakach dowiadujesz się, gdy jest już za późno.",
+        ],
+        "benefits": [
+            "Standardowa lista dokumentów dla każdego nowego klienta.",
+            "Ten sam proces w całej firmie, niezależnie od tego, kto prowadzi klienta.",
+            "Przypomnienia wychodzą same, a Ty widzisz braki przed startem projektu.",
+        ],
+        "checklist": [
+            "Podpisana umowa i załączniki",
+            "Dane rejestrowe firmy (KRS/CEIDG, NIP)",
+            "Pełnomocnictwa i reprezentacja",
+            "Certyfikaty i uprawnienia",
+            "Formularz onboardingowy",
+            "Dane do faktur i kontakt do księgowości",
+        ],
+        "faq": [
+            {
+                "q": "Czy mogę używać tej samej listy dla każdego klienta?",
+                "a": (
+                    "Tak. Każdą prośbę tworzysz z tą samą, sprawdzoną listą "
+                    "dokumentów – dzięki temu onboarding wygląda tak samo "
+                    "niezależnie od tego, kto go prowadzi."
+                ),
+            },
+            {
+                "q": "Czy kontrahent musi się rejestrować?",
+                "a": (
+                    "Nie. Dostaje email z linkiem i przesyła dokumenty w "
+                    "przeglądarce. Wszystkie prośby od Twojej firmy ma pod jednym "
+                    "stałym linkiem."
+                ),
+            },
+            {
+                "q": "Czy widzę, które dokumenty są jeszcze do sprawdzenia?",
+                "a": (
+                    "Tak. Każdy dokument ma status: brak, dostarczony, "
+                    "zaakceptowany albo odrzucony z podanym powodem."
+                ),
+            },
+        ],
+    },
+}
+
+for _segment in SEGMENTS:
+    _segment.update(SEGMENT_PAGES[_segment["slug"]])

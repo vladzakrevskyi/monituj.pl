@@ -1,7 +1,7 @@
 {% extends "base/base.html" %}
 {% load static badges formatting %}
 
-{% block title %}{{ request_obj.name }} - Monituj{% endblock %}
+{% block page_name %}{{ request_obj.name }}{% endblock %}
 {% block page_class %}public-page{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/public.css' %}">{% endblock %}
 

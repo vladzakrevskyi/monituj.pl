@@ -1,9 +1,9 @@
 <footer class="site-footer">
 <div class="site-footer__inner">
 <div class="site-footer__brand">
-<a class="brand" href="{% url 'landing' %}"><span class="brand-mark">M</span>Monituj</a>
+<a class="brand" href="{% url 'landing' %}" title="Monituj – strona główna"><span class="brand-mark">M</span>Monituj</a>
 <p>Monituj pilnuje Twoich dokumentów i terminów: zbiera je od klientów, sam przypomina o brakach i pokazuje, na czym stoisz.</p>
-<a class="site-footer__mail" href="mailto:{{ contact_email }}">{% include "pages/_icon.html" with icon="mail" %}{{ contact_email }}</a>
+<a class="site-footer__mail" href="mailto:{{ contact_email }}" title="Napisz na {{ contact_email }}">{% include "pages/_icon.html" with icon="mail" %}{{ contact_email }}</a>
 <a class="btn btn-primary site-footer__cta" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
 </div>
 <div class="site-footer__col">
@@ -13,7 +13,12 @@
 <a href="{% url 'pages:for-whom' %}">Dla kogo</a>
 <a href="{% url 'pages:pricing' %}">Cennik</a>
 <a href="{% url 'pages:security' %}">Bezpieczeństwo</a>
+<a href="{% url 'pages:guide' %}">Poradnik: jak zbierać dokumenty</a>
 </div>
+<div class="site-footer__col">
+<h4>Branże</h4>
+{% for item in footer_segments %}<a href="{% url 'pages:segment' item.slug %}">{{ item.title }}</a>
+{% endfor %}</div>
 <div class="site-footer__col">
 <h4>Pomoc</h4>
 <a href="{% url 'pages:demo' %}">Wypróbuj demo</a>
@@ -35,6 +40,6 @@
 </div>
 </div>
 <div class="site-footer__bottom">
-<p>&copy; {% now "Y" %} Monituj. Wszystkie prawa zastrzeżone.</p>
+<p>&copy; {% now "Y" %} Monituj. Wszystkie prawa zastrzeżone.{% if gtm_id and seo.indexable %} <button type="button" class="site-footer__cookies" data-cookie-settings>Ustawienia cookies</button>{% endif %}</p>
 </div>
 </footer>

@@ -1,11 +1,40 @@
 <!DOCTYPE html>
-{% load static %}
+{% load static seo_tags %}
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}Monituj{% endblock %}</title>
-<meta name="description" content="{% block meta_description %}Monituj pilnuje Twoich dokumentów i terminów: zbiera dokumenty od klientów, sam przypomina o brakach i pokazuje status wszystkiego w jednym miejscu.{% endblock %}">
+<title>{% block title %}{% block page_name %}{{ seo.page_name }}{% endblock %} | monituj.pl{% endblock %}</title>
+<meta name="description" content="{% block meta_description %}{{ seo.description }}{% endblock %}">
+<meta name="robots" content="{{ seo.robots }}">
+{% if seo.indexable %}<link rel="canonical" href="{{ seo.canonical }}">
+<link rel="alternate" hreflang="pl" href="{{ seo.canonical }}">
+<link rel="alternate" hreflang="x-default" href="{{ seo.canonical }}">
+{% endif %}<meta property="og:site_name" content="Monituj">
+<meta property="og:locale" content="pl_PL">
+<meta property="og:type" content="{{ seo.og_type }}">
+<meta property="og:title" content="{{ seo.title }}">
+<meta property="og:description" content="{{ seo.description }}">
+<meta property="og:url" content="{{ seo.canonical }}">
+<meta property="og:image" content="{{ seo.og_image }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ seo.og_image_alt }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ seo.title }}">
+<meta name="twitter:description" content="{{ seo.description }}">
+<meta name="twitter:image" content="{{ seo.og_image }}">
+<meta name="theme-color" content="#0b0b0c">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="{% static 'images/brand/favicon.svg' %}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{% static 'images/brand/apple-touch-icon.png' %}">
+<link rel="manifest" href="/site.webmanifest">
+{% if site_verification.google %}<meta name="google-site-verification" content="{{ site_verification.google }}">
+{% endif %}{% if site_verification.bing %}<meta name="msvalidate.01" content="{{ site_verification.bing }}">
+{% endif %}{% for block in seo.jsonld %}{{ block|ld_json }}
+{% endfor %}{% if gtm_id and seo.indexable %}<script src="{% static 'js/consent.js' %}" data-gtm-id="{{ gtm_id }}" data-policy-url="{% url 'legal:cookies' %}"></script>
+{% endif %}
 <link rel="stylesheet" href="{% static 'css/base.css' %}">
 <link rel="stylesheet" href="{% static 'css/layout.css' %}">
 <link rel="stylesheet" href="{% static 'css/buttons.css' %}">

@@ -1,10 +1,10 @@
 {% extends "base/app_base.html" %}
 
-{% block title %}{% if mode == "edit" %}Edytuj klienta{% else %}Dodaj klienta{% endif %} - Monituj{% endblock %}
+{% block page_name %}{% if mode == "edit" %}Edytuj klienta{% else %}Dodaj klienta{% endif %}{% endblock %}
 {% block page_class %}page--narrow{% endblock %}
 
 {% block content %}
-<a class="back-link" href="{% url 'clients:list' %}">&larr; Klienci</a>
+<a class="back-link" href="{% url 'clients:list' %}" title="Wróć: Klienci">&larr; Klienci</a>
 <div class="card">
 <h1>{% if mode == "edit" %}Edytuj klienta{% else %}Dodaj klienta{% endif %}</h1>
 <p class="card-lead">Dane kontaktowe, na które wyślemy prośbę o dokumenty.</p>
