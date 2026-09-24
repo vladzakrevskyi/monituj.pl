@@ -18,6 +18,7 @@ PRIVATE_PREFIXES = (
     "/logowanie/google/",
     "/rejestracja/google/",
     "/powiadomienia/",
+    "/akceptacja-dokumentow/",
     "/ustawienia/",
     "/d/",
     "/moje-prosby/",

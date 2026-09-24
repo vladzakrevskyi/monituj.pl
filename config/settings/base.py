@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "apps.documents",
     "apps.reminders",
     "apps.notifications",
+    "apps.consents",
     "apps.audit",
     "apps.demo",
     "apps.contact",
@@ -46,6 +47,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.common.middleware.ApiExceptionMiddleware",
+    # Keeps the panel closed until changed Terms are accepted.
+    "apps.consents.middleware.LegalAcceptanceMiddleware",
     "apps.common.typography.OrphansMiddleware",
 ]
 
@@ -165,6 +168,10 @@ CELERY_BEAT_SCHEDULE = {
     "delete-old-throttle-events": {
         "task": "apps.common.tasks.delete_old_throttle_events",
         "schedule": 3600.0,
+    },
+    "delete-old-cookie-consents": {
+        "task": "apps.consents.tasks.delete_old_cookie_consents",
+        "schedule": 86400.0,
     },
     "delete-expired-demo-accounts": {
         "task": "apps.demo.tasks.delete_expired_demo_accounts",

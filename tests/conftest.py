@@ -40,6 +40,13 @@ def _isolate_document_storage(tmp_path, monkeypatch):
     monkeypatch.setitem(private_storage.__dict__, "base_location", str(tmp_path))
 
 
+@pytest.fixture(autouse=True)
+def _no_published_legal_version(settings):
+    """Tests don't depend on the local .env: no documents version unless a
+    test sets one (tests/test_consents.py)."""
+    settings.LEGAL_ENTITY = {**settings.LEGAL_ENTITY, "effective_date": ""}
+
+
 @pytest.fixture
 def user(db):
     return User.objects.create_user(email="owner@example.com", password="s3cr3t-pass!")

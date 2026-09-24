@@ -1,0 +1,23 @@
+{% extends "base/base.html" %}
+
+{% block page_name %}Nowe dokumenty{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+<h1>Zaktualizowaliśmy dokumenty</h1>
+<p>Od {{ effective_date }} obowiązują nowe wersje dokumentów Monituj. Przeczytaj je i zaakceptuj, aby dalej korzystać z panelu:</p>
+<ul>
+<li><a href="{% url 'legal:terms' %}" target="_blank" rel="noopener">Regulamin</a></li>
+<li><a href="{% url 'legal:dpa' %}" target="_blank" rel="noopener">Umowa powierzenia przetwarzania danych</a></li>
+<li><a href="{% url 'legal:privacy' %}" target="_blank" rel="noopener">Polityka prywatności</a></li>
+</ul>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+<input type="hidden" name="next" value="{{ next }}">
+{% include "base/_consent_fields.html" with terms_field=form.accept_terms privacy_field=form.accept_privacy_policy with_dpa=True %}
+<button type="submit" class="btn btn-primary btn-lg btn-block">Akceptuję i przechodzę dalej</button>
+</form>
+<p class="text-muted mt-5 mb-0">Nie zgadzasz się? Możesz pobrać dokumenty klientów i <a href="{% url 'accounts:settings' %}#usun-konto">usunąć konto w Ustawieniach</a>.</p>
+</div>
+{% endblock %}

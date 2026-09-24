@@ -220,7 +220,10 @@ class PublicRequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form
         return " ".join(self.cleaned_data["sender_name"].split())
 
     accept_terms = forms.BooleanField(
-        label="Akceptuję Regulamin i Politykę prywatności",
+        label=(
+            "Akceptuję Regulamin wraz z umową powierzenia przetwarzania danych "
+            "i Politykę prywatności"
+        ),
         required=True,
         error_messages={
             "required": "Musisz zaakceptować regulamin i politykę prywatności."

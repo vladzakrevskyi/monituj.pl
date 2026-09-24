@@ -87,7 +87,8 @@ NECESSARY_COOKIES = [
 CONSENT_STORAGE_KEY = "monituj-consent"
 CONSENT_COOKIE = (
     f"{CONSENT_STORAGE_KEY} (pamięć przeglądarki)",
-    "Zapamiętanie Twojego wyboru w sprawie cookies",
+    "Zapamiętanie Twojego wyboru w sprawie cookies i losowego identyfikatora "
+    "tej decyzji (służy do rejestru zgód, nie pozwala Cię zidentyfikować)",
     "12 miesięcy albo do zmiany wyboru",
 )
 

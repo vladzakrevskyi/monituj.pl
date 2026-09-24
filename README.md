@@ -96,6 +96,7 @@ pip-audit -r requirements/prod.txt
 | `send_upload_emails` (co minutę) | Wysyła nadawcy e-mail o nowych dokumentach – gdy klient przestanie przesyłać pliki na minutę, jeden e-mail zbiera wszystkie (najpóźniej po 10 minutach). Pomija dokumenty, które nadawca już zobaczył w panelu, i prośby zakończone e-mailem „komplet dokumentów” |
 | `anonymize_expired_documents` | Usuwa pliki po okresie przechowywania i powiadamia obie strony |
 | `delete_unconfirmed_requests` | Usuwa prośby bez konta niepotwierdzone w ciągu 48 godzin (i konta bez hasła utworzone tylko dla nich) |
+| `delete_old_cookie_consents` (raz dziennie) | Usuwa wpisy rejestru zgód na cookies starsze niż 3 lata |
 | `delete_expired_demo_accounts` | Usuwa konta demo starsze niż 24 godziny |
 | `delete_old_throttle_events` | Czyści stare wpisy limitów (logowanie, e-maile, przesyłanie plików) |
 
@@ -420,6 +421,7 @@ Najważniejsze zmienne:
 | `CONTACT_EMAIL` | `kontakt@monituj.pl` – tu trafiają wiadomości z formularza kontaktowego i odpowiedzi na e-maile systemowe. Ta skrzynka musi istnieć i odbierać pocztę |
 | `LEGAL_*` | Dane firmy. Puste wartości są wyróżniane na stronach prawnych jako „[uzupełnij: …]” |
 | `MAINTENANCE_MODE`, `MAINTENANCE_ALLOWED_IPS` | Tryb serwisowy – patrz sekcja „Tryb serwisowy” niżej. Domyślnie wyłączony |
+| `LEGAL_EFFECTIVE_DATE` | Data wejścia w życie Regulaminu, Polityki prywatności i umowy powierzenia, np. `2026-10-01` albo `01.10.2026`. To zarazem wersja dokumentów: przy każdej akceptacji zapisujemy, której wersji dotyczyła |
 | `LEGAL_BACKUP_DAYS` | Liczba dni przechowywania kopii zapasowych u hostingu (krok 11), np. `7` – ta liczba jest podana w polityce prywatności |
 | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | Logowanie przez Google (opcjonalnie, zob. „Logowanie przez Google” w kroku 10). Puste = przyciski Google się nie pokazują |
 
@@ -618,6 +620,30 @@ docker compose up -d
 ```
 
 Wyłączenie: `MAINTENANCE_MODE=False` i ponownie `docker compose up -d`. Adres `/api/health/` działa także w trybie serwisowym. Zadania w tle (przypomnienia, usuwanie plików po terminie) nie są wstrzymywane.
+
+### Zmiana dokumentów prawnych
+
+Każda akceptacja Regulaminu (z umową powierzenia) i Polityki prywatności jest zapisywana w tabeli `LegalAcceptance`: wersja (`LEGAL_EFFECTIVE_DATE`), data, sposób (rejestracja hasłem, Google, prośba bez konta, akceptacja nowej wersji), adres IP i przeglądarka. Podgląd: `/admin/` → „Zgody i akceptacje” (tylko do odczytu).
+
+Gdy zmieniasz dokumenty:
+
+1. Zmień treść w `templates/legal/` i ustaw `LEGAL_EFFECTIVE_DATE` na datę **co najmniej 14 dni w przód** (tak obiecuje Regulamin). Wdróż – nowa treść jest od razu widoczna na stronie.
+2. Wyślij wszystkim użytkownikom informację o zmianach:
+
+```bash
+docker compose exec web python manage.py notify_legal_update --changes "Krótko: co się zmienia." --dry-run
+```
+
+```bash
+docker compose exec web python manage.py notify_legal_update --changes "Krótko: co się zmienia."
+```
+
+   Polecenie można uruchomić ponownie – nikt nie dostanie maila dwa razy o tej samej wersji.
+3. Od tej daty każdy zalogowany użytkownik przed wejściem do panelu zobaczy stronę „Zaktualizowaliśmy dokumenty” i musi je zaakceptować (Ustawienia – w tym usunięcie konta – pozostają dostępne). Konta demo są pomijane.
+
+Po pierwszym ustawieniu `LEGAL_EFFECTIVE_DATE` o akceptację zostaną poproszeni także użytkownicy zarejestrowani wcześniej – wtedy powstaje dla nich zapis z wersją.
+
+Decyzje z banera cookies trafiają do anonimowego rejestru `CookieConsent` (losowy identyfikator z przeglądarki, wybór, wersja banera, data – bez IP). Wpisy starsze niż 3 lata usuwa zadanie `delete_old_cookie_consents`.
 
 ### Monitoring
 

@@ -115,7 +115,7 @@
 </p>
 </div>
 
-{% include "base/_consent_fields.html" with terms_field=form.accept_terms %}
+{% include "base/_consent_fields.html" with terms_field=form.accept_terms with_dpa=True %}
 <button type="submit" class="btn btn-primary btn-lg btn-block">Dalej – potwierdź mailem</button>
 <p class="form-hint-after">Prośba trafi do odbiorcy dopiero po kliknięciu linku, który wyślemy na Twój adres.</p>
 </form>

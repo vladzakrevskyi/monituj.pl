@@ -7,6 +7,7 @@
 (function () {
   const script = document.currentScript;
   const gtmId = script.dataset.gtmId;
+  const logUrl = script.dataset.logUrl;
   const configBlock = document.getElementById("cookie-consent-config");
   if (!gtmId || !configBlock) return;
   const config = JSON.parse(configBlock.textContent);
@@ -35,28 +36,58 @@
   });
   gtag("consent", "default", defaults);
 
-  function read() {
+  function stored() {
     try {
-      const saved = JSON.parse(window.localStorage.getItem(config.storageKey));
-      // A new tool or an old answer means asking again.
-      if (!saved || saved.version !== config.version) return null;
-      if (!(Date.now() - saved.at < MAX_AGE)) return null;
-      return saved.choices;
+      return JSON.parse(window.localStorage.getItem(config.storageKey)) || {};
     } catch {
-      return null;
+      return {};
     }
   }
 
+  function read() {
+    const saved = stored();
+    // A new tool or an old answer means asking again.
+    if (saved.version !== config.version) return null;
+    if (!(Date.now() - saved.at < MAX_AGE)) return null;
+    return saved.choices;
+  }
+
+  // A random id for this browser's decisions, so the consent register on the
+  // server can show what was chosen and when - without any personal data.
+  function consentId() {
+    const known = stored().id;
+    if (typeof known === "string" && /^[0-9a-f-]{36}$/.test(known)) return known;
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+    const bytes = window.crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+
   function remember(choices) {
+    const id = consentId();
     try {
       window.localStorage.setItem(
         config.storageKey,
-        JSON.stringify({ version: config.version, at: Date.now(), choices })
+        JSON.stringify({ id, version: config.version, at: Date.now(), choices })
       );
       window.localStorage.removeItem(LEGACY_KEY);
     } catch {
       // Private mode: the banner simply shows again next time.
     }
+    if (!logUrl) return;
+    // keepalive: withdrawing consent reloads the page right after this.
+    window
+      .fetch(logUrl, {
+        method: "POST",
+        keepalive: true,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, version: config.version, choices }),
+      })
+      .catch(() => {});
   }
 
   let loaded = false;

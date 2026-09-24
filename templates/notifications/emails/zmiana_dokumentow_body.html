@@ -1,0 +1,13 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Od {{ effective_date }} obowiązują nowe wersje dokumentów Monituj.{% endblock %}
+{% block eyebrow %}Zmiany w dokumentach{% endblock %}
+{% block title %}Nowy Regulamin od {{ effective_date }}{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Od <strong>{{ effective_date }}</strong> obowiązują nowe wersje dokumentów Monituj.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Co się zmienia" value=changes %}
+{% include "notifications/emails/_details_close.html" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Nowe dokumenty są już dostępne: <a href="{{ terms_url }}" style="color:#c24e00;">Regulamin</a>, <a href="{{ dpa_url }}" style="color:#c24e00;">Umowa powierzenia przetwarzania danych</a> i <a href="{{ privacy_url }}" style="color:#c24e00;">Polityka prywatności</a>.</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Od {{ effective_date }} przy pierwszym wejściu do panelu poprosimy Cię o ich akceptację. Jeśli się nie zgadzasz, możesz wcześniej pobrać dokumenty klientów i usunąć konto w <a href="{{ settings_url }}" style="color:#c24e00;">Ustawieniach</a>.</p>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ masz konto w Monituj.{% endblock %}

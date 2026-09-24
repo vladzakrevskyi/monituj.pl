@@ -2,6 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 
 from apps.audit.models import AuditEvent, AuditLog
+from apps.common.security import get_client_ip
 
 EVENT_LABELS_PL = {
     AuditEvent.USER_REGISTERED: "Zarejestrowano konto",
@@ -42,10 +43,9 @@ def translate_event(event_code):
 
 
 def _client_ip(request):
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR")
+    # The same trusted source as everywhere else: the address nginx saw, not
+    # the first X-Forwarded-For entry, which the client can write itself.
+    return get_client_ip(request) or None
 
 
 class AuditService:

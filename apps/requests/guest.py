@@ -18,6 +18,8 @@ from apps.clients.services import ClientService
 from apps.common.exceptions import ValidationAppError
 from apps.common.site import absolute_url
 from apps.common.timezones import browser_timezone
+from apps.consents.models import AcceptanceMethod
+from apps.consents.services import record_acceptance
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
 from apps.requests.links import guest_panel_url
@@ -35,7 +37,7 @@ INVALID_LINK_MESSAGE = (
 SENDER_UNAVAILABLE_MESSAGE = "Z tego adresu nie można wysłać prośby."
 
 
-def _sender_account(email, display_name, timezone_name=None):
+def _sender_account(email, display_name, timezone_name=None, django_request=None):
     """The account a public-form request belongs to. A new address gets a
     passwordless account; an existing one (with or without password) is
     reused - which is safe because nothing is sent until the owner of the
@@ -51,6 +53,9 @@ def _sender_account(email, display_name, timezone_name=None):
             timezone=timezone_name or settings.TIME_ZONE,
         )
         GuestAccess.objects.create(user=user)
+        # The form's checkbox: the Terms with the data processing agreement
+        # and the Privacy policy. An existing account accepted them before.
+        record_acceptance(user, AcceptanceMethod.GUEST_REQUEST, django_request)
         return user
     if not user.is_active or hasattr(user, "demo_account"):
         raise ValidationAppError(SENDER_UNAVAILABLE_MESSAGE, code="SENDER_UNAVAILABLE")
@@ -69,7 +74,10 @@ class GuestRequestService:
         _reserve_daily_anonymous_request_slot(django_request)
         data = form.cleaned_data
         owner = _sender_account(
-            data["sender_email"], data["sender_name"], browser_timezone(django_request)
+            data["sender_email"],
+            data["sender_name"],
+            browser_timezone(django_request),
+            django_request,
         )
         client = ClientService.get_or_create_by_email(
             owner=owner,

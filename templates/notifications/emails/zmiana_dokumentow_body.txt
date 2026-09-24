@@ -1,0 +1,15 @@
+{% autoescape off %}Od {{ effective_date }} obowiązują nowe wersje dokumentów Monituj.
+
+Co się zmienia:
+{{ changes }}
+
+Nowe dokumenty są już dostępne:
+Regulamin: {{ terms_url }}
+Umowa powierzenia przetwarzania danych: {{ dpa_url }}
+Polityka prywatności: {{ privacy_url }}
+
+Od {{ effective_date }} przy pierwszym wejściu do panelu poprosimy Cię o ich akceptację. Jeśli się nie zgadzasz, możesz wcześniej pobrać dokumenty klientów i usunąć konto w Ustawieniach:
+{{ settings_url }}
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

@@ -37,6 +37,8 @@ from apps.audit.services import AuditService
 from apps.common import throttle
 from apps.common.exceptions import ValidationAppError
 from apps.common.site import absolute_url
+from apps.consents.models import AcceptanceMethod
+from apps.consents.services import record_acceptance
 from apps.demo.models import is_demo_user
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
@@ -281,6 +283,7 @@ class GoogleAuthService:
             request=request,
             metadata={"method": "google"},
         )
+        record_acceptance(user, AcceptanceMethod.GOOGLE, request)
         return user, account
 
     @staticmethod

@@ -19,6 +19,8 @@ from apps.common import throttle
 from apps.common.exceptions import RateLimitedAppError, ValidationAppError
 from apps.common.security import generate_public_token, hash_token
 from apps.common.site import absolute_url
+from apps.consents.models import AcceptanceMethod
+from apps.consents.services import record_acceptance
 from apps.documents.models import Document
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import NOT_DELIVERED, EmailService
@@ -123,6 +125,7 @@ class RegistrationService:
         AuditService.log(
             AuditEvent.USER_REGISTERED, actor=user, target=user, request=request
         )
+        record_acceptance(user, AcceptanceMethod.REGISTRATION, request)
         VerificationService.send_verification_email(user)
         return user
 

@@ -34,7 +34,7 @@
 {% endif %}{% if site_verification.bing %}<meta name="msvalidate.01" content="{{ site_verification.bing }}">
 {% endif %}{% for block in seo.jsonld %}{{ block|ld_json }}
 {% endfor %}{% if cookie_consent.enabled and seo.indexable %}{{ cookie_consent.config|json_script:"cookie-consent-config" }}
-<script src="{% static 'js/consent.js' %}" data-gtm-id="{{ gtm_id }}"></script>
+<script src="{% static 'js/consent.js' %}" data-gtm-id="{{ gtm_id }}" data-log-url="{% url 'consents:cookie-consent' %}"></script>
 {% endif %}
 <link rel="stylesheet" href="{% static 'css/base.css' %}">
 <link rel="stylesheet" href="{% static 'css/layout.css' %}">

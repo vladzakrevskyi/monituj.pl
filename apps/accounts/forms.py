@@ -1,5 +1,7 @@
 from django import forms
 
+from apps.consents.forms import LegalAcceptanceForm
+
 REQUIRED_MESSAGE = "To pole jest wymagane."
 
 
@@ -41,17 +43,8 @@ class RegistrationForm(forms.Form):
         return cleaned_data
 
 
-class GoogleSignupForm(forms.Form):
-    accept_terms = forms.BooleanField(
-        label="Akceptuję Regulamin wraz z umową powierzenia przetwarzania danych",
-        required=True,
-        error_messages={"required": "Musisz zaakceptować regulamin."},
-    )
-    accept_privacy_policy = forms.BooleanField(
-        label="Zapoznałem się z Polityką prywatności",
-        required=True,
-        error_messages={"required": "Musisz zaakceptować politykę prywatności."},
-    )
+class GoogleSignupForm(LegalAcceptanceForm):
+    pass
 
 
 class LoginForm(forms.Form):
