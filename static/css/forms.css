@@ -236,6 +236,20 @@ input[type="checkbox"][aria-invalid="true"] {
   }
 }
 
+/* Long consent texts: the box lines up with the first line, not the middle. */
+form p.consent:has(> input[type="checkbox"]) {
+  align-items: flex-start;
+}
+
+form p.consent > input[type="checkbox"] {
+  margin-top: 1px;
+}
+
+.consent__required {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
 .consent label {
   flex: 1;
   min-width: 0;

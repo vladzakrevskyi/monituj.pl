@@ -45,6 +45,7 @@ class ContactService:
             "contact_topic": form.topic_label(),
             "contact_message": data["message"],
             "team_email": settings.CONTACT_EMAIL,
+            "consent_at": now,
         }
         EmailService.send(
             EmailTemplate.CONTACT_MESSAGE,

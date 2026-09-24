@@ -9,6 +9,8 @@
 {% include "notifications/emails/_row.html" with label="Imię i nazwisko" value=contact_name %}
 {% include "notifications/emails/_row.html" with label="Adres email" value=contact_email %}
 {% if contact_company %}{% include "notifications/emails/_row.html" with label="Firma" value=contact_company %}{% endif %}
+{% include "notifications/emails/_row.html" with label="Zgoda na przetwarzanie danych" value="Tak – zaznaczona w formularzu" %}
+{% if consent_at %}{% include "notifications/emails/_row.html" with label="Wysłano" value=consent_at|dt %}{% endif %}
 {% include "notifications/emails/_details_close.html" %}
 {% include "notifications/emails/_message.html" with text=contact_message %}
 {% include "notifications/emails/_notice.html" with text="Kliknij „Odpowiedz” – odpowiedź trafi bezpośrednio do nadawcy wiadomości." %}

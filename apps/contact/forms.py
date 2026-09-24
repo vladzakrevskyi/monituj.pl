@@ -50,6 +50,15 @@ class ContactForm(forms.Form):
             "max_length": "Wiadomość może mieć najwyżej 5000 znaków.",
         },
     )
+    consent = forms.BooleanField(
+        label=(
+            "Wyrażam zgodę na przetwarzanie moich danych osobowych podanych "
+            "w formularzu w celu udzielenia odpowiedzi na wiadomość."
+        ),
+        error_messages={
+            "required": "Zaznacz zgodę na przetwarzanie danych, aby wysłać wiadomość."
+        },
+    )
     # Honeypot: hidden from people, but bots fill in every field they find.
     website = forms.CharField(required=False)
 

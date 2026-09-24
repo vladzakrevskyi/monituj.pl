@@ -50,8 +50,13 @@
 <label for="id_website">Nie wypełniaj tego pola</label>
 <input type="text" name="website" id="id_website" tabindex="-1" autocomplete="off">
 </p>
+<p class="consent">
+<label for="{{ form.consent.id_for_label }}">Wyrażam zgodę na przetwarzanie moich danych osobowych podanych w formularzu w celu udzielenia odpowiedzi na wiadomość. Zgodę mogę w każdej chwili wycofać. <span class="consent__required">(wymagane)</span></label>
+{{ form.consent }}
+{{ form.consent.errors }}
+</p>
 <button type="submit" class="btn btn-primary btn-lg">Wyślij wiadomość</button>
-<p class="contact-form-card__note">Administratorem Twoich danych jest {{ legal.name }}. Przetwarzamy je wyłącznie po to, by odpowiedzieć na wiadomość. Więcej w <a href="{% url 'legal:privacy' %}">Polityce prywatności</a>.</p>
+<p class="contact-form-card__note">Administratorem Twoich danych jest {{ legal.name }}. Przetwarzamy je na podstawie Twojej zgody wyłącznie po to, by odpowiedzieć na wiadomość. Wycofanie zgody nie wpływa na zgodność z prawem przetwarzania przed jej wycofaniem. Więcej w <a href="{% url 'legal:privacy' %}">Polityce prywatności</a>.</p>
 </form>
 </div>
 

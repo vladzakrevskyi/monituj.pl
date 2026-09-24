@@ -1,10 +1,11 @@
-{% autoescape off %}Nowa wiadomość z formularza kontaktowego.
+{% load formatting %}{% autoescape off %}Nowa wiadomość z formularza kontaktowego.
 
 Temat: {{ contact_topic }}
 Imię i nazwisko: {{ contact_name }}
 Adres email: {{ contact_email }}
 {% if contact_company %}Firma: {{ contact_company }}
-{% endif %}
+{% endif %}Zgoda na przetwarzanie danych: tak{% if consent_at %} ({{ consent_at|dt }}){% endif %}
+
 {{ contact_message }}
 
 Kliknij „Odpowiedz” – odpowiedź trafi bezpośrednio do nadawcy na adres {{ contact_email }}.

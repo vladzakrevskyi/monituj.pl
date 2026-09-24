@@ -18,6 +18,7 @@ def _message(**overrides):
         "topic": "wspolpraca",
         "message": "Dzień dobry,\nchcemy wdrożyć Monituj w biurze.",
         "website": "",
+        "consent": "on",
     }
     data.update(overrides)
     return data
@@ -77,6 +78,26 @@ def test_invalid_fields_are_reported_under_the_inputs(client):
     fields = response.json()["error"]["fields"]
     assert set(fields) == {"email", "message"}
     assert mail.outbox == []
+
+
+@pytest.mark.django_db
+def test_message_is_not_sent_without_consent(client):
+    data = _message()
+    del data["consent"]
+
+    response = client.post(reverse("pages:contact"), data, **AJAX)
+
+    assert response.status_code == 400
+    assert list(response.json()["error"]["fields"]) == ["consent"]
+    assert mail.outbox == []
+
+
+@pytest.mark.django_db
+def test_team_email_records_the_consent(client):
+    client.post(reverse("pages:contact"), _message(), **AJAX)
+
+    team = next(m for m in mail.outbox if m.to == ["kontakt@monituj.pl"])
+    assert "Zgoda na przetwarzanie danych: tak" in team.body.replace("\u00a0", " ")
 
 
 @pytest.mark.django_db
