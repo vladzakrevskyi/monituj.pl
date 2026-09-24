@@ -133,6 +133,34 @@ def test_public_delete_denied_for_different_session(client, request_item):
 
 
 @pytest.mark.django_db
+def test_recipient_can_download_the_file_they_sent(client, request_item):
+    from django.test import Client as DjangoTestClient
+
+    request_obj = request_item.request
+    page_url = reverse("public:request-detail", args=[request_obj.public_token])
+    _visit_public_page(client, request_obj)
+    upload_url = reverse(
+        "documents_api:upload", args=[request_obj.public_token, request_item.pk]
+    )
+    document = client.post(upload_url, {"file": make_pdf_upload()}).json()["data"][
+        "document"
+    ]
+    download_url = reverse("documents_api:download", args=[document["id"]])
+
+    page = client.get(page_url).content.decode()
+    response = client.get(download_url)
+
+    assert document["download_url"] == download_url
+    assert f'href="{download_url}" download' in page
+    assert response.status_code == 200
+    assert "attachment" in response["Content-Disposition"]
+    # Someone else with the same link sees neither the file nor its link.
+    stranger = DjangoTestClient()
+    assert download_url not in stranger.get(page_url).content.decode()
+    assert stranger.get(download_url).status_code == 403
+
+
+@pytest.mark.django_db
 def test_download_requires_authorization(client, request_item):
     document = UploadDocumentService.upload_for_item(request_item, make_pdf_upload())
     url = reverse("documents_api:download", args=[document.pk])

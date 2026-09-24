@@ -2,6 +2,7 @@ import json
 import mimetypes
 
 from django.http import FileResponse
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from apps.common import throttle
@@ -58,6 +59,7 @@ def public_upload_item(request, token, item_id):
             "document": {
                 "id": document.pk,
                 "original_filename": document.original_filename,
+                "download_url": reverse("documents_api:download", args=[document.pk]),
                 "uploaded_at": document.uploaded_at.isoformat(),
                 "uploaded_at_display": format_datetime(document.uploaded_at),
             },

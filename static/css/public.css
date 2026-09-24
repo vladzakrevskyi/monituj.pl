@@ -107,6 +107,38 @@
   overflow-wrap: anywhere;
 }
 
+.uploaded-file__link {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-strong);
+  text-underline-offset: 3px;
+}
+
+.uploaded-file__link:hover {
+  color: var(--color-primary-text);
+  text-decoration-color: currentColor;
+}
+
+.uploaded-file__link svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+.uploaded-file__date {
+  display: block;
+  margin-top: 2px;
+  padding-left: calc(16px + var(--space-2));
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
 .upload-zone {
   display: flex;
   flex-direction: column;

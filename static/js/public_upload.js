@@ -4,6 +4,8 @@
   const token = itemsList.dataset.token;
 
   const DELIVERED = new Set(["dostarczony", "zaakceptowany"]);
+  const DOWNLOAD_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>';
 
   function updateOverallProgress() {
     const items = itemsList.querySelectorAll(".request-item");
@@ -35,9 +37,20 @@
     const row = document.createElement("p");
     row.className = "uploaded-file";
     row.dataset.documentId = doc.id;
-    const name = document.createElement("span");
-    name.textContent = `${doc.original_filename} – Dodany: ${doc.uploaded_at_display}`;
-    row.appendChild(name);
+    const info = document.createElement("span");
+    info.className = "uploaded-file__info";
+    const link = document.createElement("a");
+    link.className = "uploaded-file__link";
+    link.href = doc.download_url;
+    link.download = "";
+    link.title = `Pobierz plik ${doc.original_filename}`;
+    link.innerHTML = DOWNLOAD_ICON;
+    link.append(doc.original_filename);
+    const date = document.createElement("span");
+    date.className = "uploaded-file__date";
+    date.textContent = `Dodany: ${doc.uploaded_at_display}`;
+    info.append(link, " ", date);
+    row.appendChild(info);
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "btn btn-danger btn-sm delete-document";

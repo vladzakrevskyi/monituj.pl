@@ -44,7 +44,7 @@
 </p>
 {% else %}
 <p class="uploaded-file" data-document-id="{{ document.id }}">
-<span>{{ document.original_filename }} &ndash; Dodany: {{ document.uploaded_at|dt }}</span>
+<span class="uploaded-file__info"><a class="uploaded-file__link" href="{% url 'documents_api:download' document.id %}" download title="Pobierz plik {{ document.original_filename }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>{{ document.original_filename }}</a> <span class="uploaded-file__date">Dodany: {{ document.uploaded_at|dt }}</span></span>
 {% if not request_obj.is_closed and document.can_delete %}<button type="button" class="btn btn-danger btn-sm delete-document" data-document-id="{{ document.id }}">Usuń</button>{% endif %}
 </p>
 {% endif %}
