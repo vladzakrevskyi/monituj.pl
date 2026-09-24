@@ -12,6 +12,14 @@
 </div>
 </div>
 
+{% if received_open_count %}
+<a class="received-banner" href="{% url 'requests:received' %}">
+<span class="received-banner__count">{{ received_open_count }}</span>
+<span><strong>{% if received_open_count == 1 %}Ktoś czeka na Twoje dokumenty.{% else %}Inni czekają na Twoje dokumenty.{% endif %}</strong> Zobacz prośby, które otrzymałeś, i prześlij pliki.</span>
+<span class="received-banner__arrow" aria-hidden="true">&rarr;</span>
+</a>
+{% endif %}
+
 <div class="stat-grid">
 <div class="stat-tile stat-tile--dark">
 <div class="stat-tile__value">{{ active_requests }}</div>

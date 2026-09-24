@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytest
@@ -66,7 +66,6 @@ def test_automatic_reminder_not_due_yet(request_record):
 @pytest.mark.django_db
 def test_automatic_reminder_sends_when_due_and_past_send_hour(request_record):
     request_record.first_reminder_after_days = 2
-    request_record.reminder_send_hour = 0
     request_record.save()
     Request.objects.filter(pk=request_record.pk).update(
         created_at=timezone.now() - timedelta(days=3)
@@ -82,29 +81,26 @@ def test_automatic_reminder_sends_when_due_and_past_send_hour(request_record):
 
 
 @pytest.mark.django_db
-def test_automatic_reminder_waits_for_configured_send_hour(request_record):
+def test_automatic_reminder_waits_for_the_clock_time_the_request_was_sent(
+    request_record,
+):
     request_record.first_reminder_after_days = 2
-    request_record.reminder_send_hour = 20
     request_record.save()
-    Request.objects.filter(pk=request_record.pk).update(
-        created_at=timezone.now() - timedelta(days=3)
-    )
-    morning = timezone.now().replace(hour=8, minute=0, second=0, microsecond=0)
+    sent_at = timezone.make_aware(datetime(2026, 9, 1, 14, 20))
+    Request.objects.filter(pk=request_record.pk).update(created_at=sent_at)
 
-    with patch("apps.reminders.services.timezone.now", return_value=morning):
-        sent = AutomaticReminderService.maybe_send_for_request(request_record.pk)
-    assert sent is False
+    before = timezone.make_aware(datetime(2026, 9, 3, 14, 19))
+    with patch("apps.reminders.services.timezone.now", return_value=before):
+        assert not AutomaticReminderService.maybe_send_for_request(request_record.pk)
 
-    evening = morning.replace(hour=21)
-    with patch("apps.reminders.services.timezone.now", return_value=evening):
-        sent = AutomaticReminderService.maybe_send_for_request(request_record.pk)
-    assert sent is True
+    after = timezone.make_aware(datetime(2026, 9, 3, 14, 20))
+    with patch("apps.reminders.services.timezone.now", return_value=after):
+        assert AutomaticReminderService.maybe_send_for_request(request_record.pk)
 
 
 @pytest.mark.django_db
 def test_automatic_reminder_respects_max_reminders(request_record):
     request_record.max_reminders = 1
-    request_record.reminder_send_hour = 0
     request_record.save()
     Reminder.objects.create(
         request=request_record,
@@ -124,7 +120,6 @@ def test_automatic_reminder_stops_when_complete(request_item):
     UploadDocumentService.upload_for_item(request_item, make_pdf_upload())
     DocumentReviewService.accept(request_item)
     request_obj = request_item.request
-    request_obj.reminder_send_hour = 0
     request_obj.save()
     Request.objects.filter(pk=request_obj.pk).update(
         created_at=timezone.now() - timedelta(days=30)
@@ -137,7 +132,6 @@ def test_automatic_reminder_stops_when_complete(request_item):
 @pytest.mark.django_db
 def test_automatic_reminder_respects_disabled_flag(request_record):
     request_record.reminders_enabled = False
-    request_record.reminder_send_hour = 0
     request_record.save()
     Request.objects.filter(pk=request_record.pk).update(
         created_at=timezone.now() - timedelta(days=30)
@@ -151,7 +145,6 @@ def test_automatic_reminder_respects_disabled_flag(request_record):
 def test_automatic_reminder_second_reminder_based_on_last_automatic_sent_at(
     request_record,
 ):
-    request_record.reminder_send_hour = 0
     request_record.reminder_frequency_days = 3
     request_record.save()
     Reminder.objects.create(
@@ -174,7 +167,6 @@ def test_automatic_reminder_second_reminder_based_on_last_automatic_sent_at(
 
 @pytest.mark.django_db
 def test_automatic_reminder_is_idempotent_when_called_twice_in_a_row(request_record):
-    request_record.reminder_send_hour = 0
     request_record.save()
     Request.objects.filter(pk=request_record.pk).update(
         created_at=timezone.now() - timedelta(days=30)
@@ -198,7 +190,6 @@ def test_manual_and_automatic_reminders_have_independent_sequence_counts(
     user, request_record
 ):
     ReminderService.send_manual(request_record, actor=user)
-    request_record.reminder_send_hour = 0
     request_record.save()
     Request.objects.filter(pk=request_record.pk).update(
         created_at=timezone.now() - timedelta(days=30)

@@ -256,6 +256,16 @@ class GuestDeleteService:
 
 class GuestUploadContext:
     @staticmethod
+    def all_documents_by_item(request_obj):
+        docs = Document.objects.filter(request_item__request=request_obj).order_by(
+            "-uploaded_at"
+        )
+        result: dict[int, list[Document]] = {}
+        for doc in docs:
+            result.setdefault(doc.request_item_id, []).append(doc)
+        return result
+
+    @staticmethod
     def own_documents_by_item(request_obj, session_key):
         if not session_key:
             return {}

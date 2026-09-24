@@ -16,7 +16,9 @@ from apps.common.responses import (
     is_ajax_request,
     success_response,
 )
+from apps.reminders.schedule import recipient_zone, send_clock
 from apps.reminders.services import ReminderScheduleService
+from apps.requests import received
 from apps.requests.forms import RequestEditForm, RequestFilterForm, RequestForm
 from apps.requests.services import RequestService, compute_status
 
@@ -143,6 +145,8 @@ def request_detail(request, request_id):
             "status_code": status.value,
             "public_url": request.build_absolute_uri(f"/d/{request_obj.public_token}/"),
             "planned_reminders": ReminderScheduleService.planned(request_obj),
+            "reminder_clock": send_clock(request_obj),
+            "recipient_timezone": recipient_zone(request_obj).key,
             "automatic_sent": sum(1 for r in reminders if r.kind == "automatic"),
         },
     )
@@ -186,7 +190,6 @@ def request_edit(request, request_id):
                 "first_reminder_after_days": request_obj.first_reminder_after_days,
                 "reminder_frequency_days": request_obj.reminder_frequency_days,
                 "max_reminders": request_obj.max_reminders,
-                "reminder_send_hour": request_obj.reminder_send_hour,
                 **RequestEditForm.retention_initial(request_obj.retention_days),
             }
         )
@@ -217,3 +220,22 @@ def request_close(request, request_id):
             "nie może już przesyłać plików.",
         )
     return redirect("requests:detail", request_id=request_obj.pk)
+
+
+@login_required
+def received_list(request):
+    """Requests other people sent to this account's (verified) address."""
+    email = received.account_email(request.user)
+    rows, tabs = received.filtered(
+        received.received_requests(email) if email else [], request.GET.get("widok")
+    )
+    return render(
+        request,
+        "requests/received.html",
+        {
+            "rows": rows,
+            "tabs": tabs,
+            "active_view": next(t["key"] for t in tabs if t["active"]),
+            "email_verified": bool(email),
+        },
+    )

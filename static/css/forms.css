@@ -277,3 +277,49 @@ form p.consent > input[type="checkbox"] {
   font-size: 14px;
   color: var(--color-text-muted);
 }
+
+/* Password field with a show/hide button inside it */
+.password-field {
+  position: relative;
+  display: block;
+}
+
+label > .password-field {
+  margin-top: var(--space-2);
+}
+
+.password-field > input {
+  padding-right: 52px;
+}
+
+.password-field__toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.password-field__toggle:hover {
+  color: var(--color-text);
+  background: var(--color-page);
+}
+
+.password-field__toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.password-field__toggle svg {
+  width: 20px;
+  height: 20px;
+}

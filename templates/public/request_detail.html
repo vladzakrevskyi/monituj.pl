@@ -45,7 +45,7 @@
 {% else %}
 <p class="uploaded-file" data-document-id="{{ document.id }}">
 <span>{{ document.original_filename }} &ndash; Dodany: {{ document.uploaded_at|dt }}</span>
-{% if not request_obj.is_closed %}<button type="button" class="btn btn-danger btn-sm delete-document" data-document-id="{{ document.id }}">Usuń</button>{% endif %}
+{% if not request_obj.is_closed and document.can_delete %}<button type="button" class="btn btn-danger btn-sm delete-document" data-document-id="{{ document.id }}">Usuń</button>{% endif %}
 </p>
 {% endif %}
 {% endfor %}

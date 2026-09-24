@@ -42,6 +42,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.common.timezones.TimezoneMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.common.middleware.ApiExceptionMiddleware",
@@ -143,9 +144,10 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULE = {
+    # Every 5 minutes, so reminders leave close to their planned time.
     "send-automatic-reminders": {
         "task": "apps.reminders.tasks.send_automatic_reminders",
-        "schedule": 3600.0,
+        "schedule": 300.0,
     },
     "anonymize-expired-documents": {
         "task": "apps.documents.tasks.anonymize_expired_documents",

@@ -9,6 +9,7 @@ from apps.common.exceptions import ValidationAppError
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
 from apps.reminders.models import Reminder, ReminderKind
+from apps.reminders.schedule import due_dates
 from apps.requests.models import Request
 from apps.requests.services import RequestStatus, compute_status, with_stats
 
@@ -84,18 +85,9 @@ class AutomaticReminderService:
         if count >= request_obj.max_reminders:
             return False
 
-        now = timezone.now()
-        if count == 0:
-            due_at = request_obj.created_at + timedelta(
-                days=request_obj.first_reminder_after_days
-            )
-        else:
-            last_sent = automatic_reminders.last().sent_at
-            due_at = last_sent + timedelta(days=request_obj.reminder_frequency_days)
-
-        if now < due_at:
-            return False
-        if timezone.localtime(now).hour < request_obj.reminder_send_hour:
+        sent_times = list(automatic_reminders.values_list("sent_at", flat=True))
+        (due_at,) = due_dates(request_obj, sent_times, 1)
+        if timezone.now() < due_at:
             return False
 
         Reminder.objects.create(
@@ -111,19 +103,6 @@ class AutomaticReminderService:
             request=request_obj,
         )
         return True
-
-
-def _next_send_time(due_at, send_hour, now):
-    """The hourly task sends at its first run on or after due_at once the
-    local hour has reached send_hour; mirror that to predict the send time."""
-    candidate = timezone.localtime(max(due_at, now))
-    if candidate.hour < send_hour:
-        return candidate.replace(hour=send_hour, minute=0, second=0, microsecond=0)
-    if candidate.minute or candidate.second or candidate.microsecond:
-        candidate = candidate.replace(minute=0, second=0, microsecond=0) + timedelta(
-            hours=1
-        )
-    return candidate
 
 
 class ReminderScheduleService:
@@ -142,27 +121,16 @@ class ReminderScheduleService:
         ):
             return []
 
-        sent = list(
-            Reminder.objects.filter(
-                request=request_obj, kind=ReminderKind.AUTOMATIC
-            ).order_by("sent_at")
+        sent_times = list(
+            Reminder.objects.filter(request=request_obj, kind=ReminderKind.AUTOMATIC)
+            .order_by("sent_at")
+            .values_list("sent_at", flat=True)
         )
-        remaining = request_obj.max_reminders - len(sent)
+        remaining = request_obj.max_reminders - len(sent_times)
         if remaining <= 0:
             return []
-
-        if sent:
-            due_at = sent[-1].sent_at + timedelta(
-                days=request_obj.reminder_frequency_days
-            )
-        else:
-            due_at = request_obj.created_at + timedelta(
-                days=request_obj.first_reminder_after_days
-            )
-
-        planned = []
-        for _ in range(remaining):
-            send_at = _next_send_time(due_at, request_obj.reminder_send_hour, now)
-            planned.append(send_at)
-            due_at = send_at + timedelta(days=request_obj.reminder_frequency_days)
-        return planned
+        # One that is already due goes out within minutes.
+        return [
+            timezone.localtime(max(due, now))
+            for due in due_dates(request_obj, sent_times, remaining)
+        ]

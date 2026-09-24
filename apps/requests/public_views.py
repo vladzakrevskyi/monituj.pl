@@ -4,6 +4,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from apps.accounts.models import User
 from apps.accounts.services import GuestAccessService
 from apps.common.exceptions import ApplicationError
 from apps.common.forms import add_service_error
@@ -13,10 +14,12 @@ from apps.common.responses import (
     success_response,
 )
 from apps.documents.services import GuestUploadContext
+from apps.requests import received
 from apps.requests.forms import PublicPasswordForm, PublicRequestForm
 from apps.requests.guest import GuestRequestService
-from apps.requests.models import RecipientAccess, Request
-from apps.requests.services import PublicAccessService, compute_status, with_stats
+from apps.requests.links import guest_panel_url, remember_recipient_timezone
+from apps.requests.models import RecipientAccess
+from apps.requests.services import PublicAccessService, compute_status
 
 
 @require_http_methods(["GET", "POST"])
@@ -26,8 +29,13 @@ def public_request_detail(request, token):
     except ApplicationError:
         raise Http404 from None
 
-    if request_obj.is_password_protected and not PublicAccessService.has_access(
-        request_obj, request
+    # Someone who proved they own the recipient's address (their panel or
+    # their recipient page) already got the password the same way.
+    verified = received.is_verified_recipient(request, request_obj.client.email)
+    if (
+        request_obj.is_password_protected
+        and not verified
+        and not PublicAccessService.has_access(request_obj, request)
     ):
         if request.method == "POST":
             form = PublicPasswordForm(request.POST)
@@ -48,12 +56,22 @@ def public_request_detail(request, token):
 
     PublicAccessService.grant_access(request_obj, request)
     PublicAccessService.mark_accessed(request_obj, request)
+    remember_recipient_timezone(request_obj.client.email, request)
     items = request_obj.items.all().order_by("id")
-    own_docs = GuestUploadContext.own_documents_by_item(
-        request_obj, request.session.session_key or ""
+    session_key = request.session.session_key or ""
+    # A plain link may have been forwarded, so it shows only files sent from
+    # this browser; the verified recipient sees everything they ever sent.
+    docs = (
+        GuestUploadContext.all_documents_by_item(request_obj)
+        if verified
+        else GuestUploadContext.own_documents_by_item(request_obj, session_key)
     )
     for item in items:
-        item.own_documents = own_docs.get(item.id, [])
+        item.own_documents = docs.get(item.id, [])
+        for document in item.own_documents:
+            document.can_delete = bool(
+                session_key and document.uploaded_by_session_key == session_key
+            )
 
     status = compute_status(request_obj)
     return render(
@@ -170,22 +188,33 @@ def guest_request_confirm(request, token):
 
 
 def recipient_portal(request, token):
+    """The recipient's own panel without an account: every request sent to
+    their address, open and finished, from every sender."""
     access = RecipientAccess.objects.filter(token=token).first()
     if access is None:
         raise Http404
-    requests = list(
-        with_stats(
-            Request.objects.filter(
-                client__email__iexact=access.email, awaiting_confirmation=False
-            ).select_related("created_by")
-        ).order_by("closed_at", "-created_at")
+    remember_recipient_timezone(access.email, request)
+    received.mark_recipient_verified(request, access.email)
+    rows, tabs = received.filtered(
+        received.received_requests(access.email), request.GET.get("widok")
     )
-    for request_obj in requests:
-        status = compute_status(request_obj)
-        request_obj.status_label = status.label
-        request_obj.status_code = status.value
+    account = User.objects.filter(email__iexact=access.email, is_active=True).first()
+    account_link = None
+    if account is not None and hasattr(account, "guest_access"):
+        if account.email_verified_at is not None:
+            account_link = guest_panel_url(account, reverse("requests:received"))
+    elif account is not None and not hasattr(account, "demo_account"):
+        account_link = (
+            reverse("accounts:login") + "?next=" + reverse("requests:received")
+        )
     return render(
         request,
         "public/recipient_portal.html",
-        {"recipient_email": access.email, "requests": requests},
+        {
+            "recipient_email": access.email,
+            "rows": rows,
+            "tabs": tabs,
+            "active_view": next(t["key"] for t in tabs if t["active"]),
+            "account_link": account_link,
+        },
     )

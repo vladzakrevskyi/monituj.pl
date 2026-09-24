@@ -6,6 +6,7 @@ the sender to confirm it by email - only then does the recipient hear about
 it. From the confirmation on, the sender manages all their requests in the
 normal panel, which they open with one permanent link from their inbox."""
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.urls import reverse
@@ -15,6 +16,7 @@ from apps.accounts.models import GuestAccess, User
 from apps.audit.models import AuditLog
 from apps.clients.services import ClientService
 from apps.common.exceptions import ValidationAppError
+from apps.common.timezones import browser_timezone
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
 from apps.requests.links import guest_panel_url
@@ -32,7 +34,7 @@ INVALID_LINK_MESSAGE = (
 SENDER_UNAVAILABLE_MESSAGE = "Z tego adresu nie można wysłać prośby."
 
 
-def _sender_account(email, display_name):
+def _sender_account(email, display_name, timezone_name=None):
     """The account a public-form request belongs to. A new address gets a
     passwordless account; an existing one (with or without password) is
     reused - which is safe because nothing is sent until the owner of the
@@ -45,6 +47,7 @@ def _sender_account(email, display_name):
             display_name=display_name,
             terms_accepted_at=now,
             privacy_policy_accepted_at=now,
+            timezone=timezone_name or settings.TIME_ZONE,
         )
         GuestAccess.objects.create(user=user)
         return user
@@ -65,7 +68,9 @@ class GuestRequestService:
         below doesn't burn it."""
         _reserve_daily_anonymous_request_slot(django_request)
         data = form.cleaned_data
-        owner = _sender_account(data["sender_email"], data["sender_name"])
+        owner = _sender_account(
+            data["sender_email"], data["sender_name"], browser_timezone(django_request)
+        )
         client = ClientService.get_or_create_by_email(
             owner=owner,
             email=data["client_email"],

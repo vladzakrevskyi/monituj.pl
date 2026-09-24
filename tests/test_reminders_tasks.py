@@ -20,7 +20,6 @@ def test_task_sends_reminders_for_due_requests_and_skips_others(user, client_rec
         deadline=None,
         item_names=["A"],
     )
-    due.reminder_send_hour = 0
     due.save()
     Request.objects.filter(pk=due.pk).update(
         created_at=timezone.now() - timedelta(days=30)

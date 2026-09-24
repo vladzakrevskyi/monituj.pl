@@ -20,12 +20,12 @@ Cały interfejs, wiadomości e-mail i dokumenty prawne są w języku polskim.
 | Prośby | Lista dokumentów, termin, opcjonalne hasło do linku, wybór okresu przechowywania plików (do 365 dni) |
 | Link publiczny `/d/<token>/` | Przesyłanie plików przez klienta bez konta, przeciąganie i upuszczanie, kontrola typu i rozmiaru (do 20 MB), usunięcie własnego pliku przed akceptacją |
 | Weryfikacja | Akceptacja lub odrzucenie dokumentu z podaniem powodu – klient dostaje e-mail i może przesłać plik ponownie |
-| Przypomnienia | Automatyczne według harmonogramu (pierwsze po N dniach, potem co N dni, maksymalnie N razy, o wybranej godzinie) oraz ręczne; w panelu widać daty wszystkich kolejnych przypomnień |
+| Przypomnienia | Automatyczne według harmonogramu (pierwsze po N dniach, potem co N dni, maksymalnie N razy) oraz ręczne. Wychodzą o tej godzinie, o której wysłano prośbę, według zegara odbiorcy (strefy czasowe nadawcy i odbiorcy są wykrywane z przeglądarki; noc przesuwana na 8:00–20:00). W panelu widać daty wszystkich kolejnych przypomnień |
 | Przechowywanie | Automatyczne usuwanie plików po okresie przechowywania; w historii zostaje tylko informacja „plik usunięty” |
 | Historia | Dziennik zdarzeń każdej prośby (utworzenie, otwarcie linku przez klienta, przesłanie pliku, decyzje, przypomnienia) |
 | Panel | Statystyki: aktywne prośby, brakujące i dostarczone dokumenty, wysłane przypomnienia, ostatnia aktywność |
 | Bez konta | `/wyslij-prosbe/` – jedna prośba dziennie bez rejestracji. Nadawca potwierdza prośbę linkiem z maila (dopiero wtedy trafia ona do odbiorcy) i dostaje konto bez hasła: stały link `/dostep/<token>/` otwiera zwykły panel ze wszystkimi jego prośbami. Po ustawieniu hasła limit znika |
-| Odbiorca | Jeden stały link `/moje-prosby/<token>/` z listą wszystkich próśb wysłanych na jego adres – od wszystkich nadawców; jest w każdym e-mailu do odbiorcy |
+| Odbiorca | Jeden stały link `/moje-prosby/<token>/` – panel z prośbami wysłanymi na jego adres przez wszystkich nadawców (do uzupełnienia i zakończone); jest w każdym e-mailu do odbiorcy. Użytkownik z kontem (także bez hasła) widzi te same prośby w panelu w zakładce „Otrzymane” |
 | Zamykanie | Prośbę można zamknąć (i otworzyć ponownie): przypomnienia stają, a odbiorca nie może już przesyłać plików |
 | Demo | `/demo/` – każdy odwiedzający dostaje osobne, tymczasowe konto z przykładowymi danymi (usuwane po 24 godzinach, bez wysyłki e-maili) |
 | Konto | Rejestracja z potwierdzeniem adresu e-mail, zmiana hasła i adresu e-mail z potwierdzeniem, usunięcie konta z potwierdzeniem mailowym (wszystkie dane są usuwane od razu) |
@@ -64,11 +64,11 @@ deploy/           konfiguracja nginx, szablon .env dla produkcji, skrypt kopii z
 tests/            testy (pytest)
 ```
 
-### Zadania w tle (Celery beat, co godzinę)
+### Zadania w tle (Celery beat)
 
 | Zadanie | Co robi |
 |---|---|
-| `send_automatic_reminders` | Wysyła automatyczne przypomnienia, których termin nadszedł |
+| `send_automatic_reminders` (co 5 minut) | Wysyła automatyczne przypomnienia, których termin nadszedł |
 | `anonymize_expired_documents` | Usuwa pliki po okresie przechowywania i powiadamia obie strony |
 | `delete_unconfirmed_requests` | Usuwa prośby bez konta niepotwierdzone w ciągu 48 godzin (i konta bez hasła utworzone tylko dla nich) |
 | `delete_expired_demo_accounts` | Usuwa konta demo starsze niż 24 godziny |

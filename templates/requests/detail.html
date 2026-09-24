@@ -130,7 +130,7 @@
 <section class="card">
 <h2 class="card-title">Przypomnienia</h2>
 {% if request_obj.reminders_enabled %}
-<p class="text-muted">Automatyczne: pierwsze po {{ request_obj.first_reminder_after_days }} dniach, potem co {{ request_obj.reminder_frequency_days }} dni o {{ request_obj.reminder_send_hour }}:00. Wysłano {{ automatic_sent }} z {{ request_obj.max_reminders }}.</p>
+<p class="text-muted">Automatyczne: pierwsze po {{ request_obj.first_reminder_after_days }} dniach, potem co {{ request_obj.reminder_frequency_days }} dni, o {{ reminder_clock|time:"H:i" }} czasu odbiorcy ({{ recipient_timezone }}). Wysłano {{ automatic_sent }} z {{ request_obj.max_reminders }}.</p>
 {% if planned_reminders %}
 <p class="list-label">Zaplanowane</p>
 <ol class="schedule-list">

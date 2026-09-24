@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 from django.urls import reverse
 
 from apps.common.site import absolute_url
+from apps.common.timezones import browser_timezone
 from apps.requests.models import RecipientAccess
 
 
@@ -29,3 +30,15 @@ def owner_link(user, path):
 def recipient_portal_url(email):
     access, _ = RecipientAccess.objects.get_or_create(email=email.strip().lower())
     return absolute_url(reverse("public:recipient-portal", args=[access.token]))
+
+
+def remember_recipient_timezone(email, django_request):
+    """Called when a recipient opens one of their pages: from then on their
+    reminders follow their own clock."""
+    detected = browser_timezone(django_request)
+    if not detected:
+        return
+    access, _ = RecipientAccess.objects.get_or_create(email=email.strip().lower())
+    if access.timezone != detected:
+        access.timezone = detected
+        access.save(update_fields=["timezone"])

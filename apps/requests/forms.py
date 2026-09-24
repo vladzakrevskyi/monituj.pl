@@ -54,13 +54,6 @@ class _RequestDetailsFieldsMixin(forms.Form):
     max_reminders = forms.IntegerField(
         label="Maksymalna liczba przypomnień", required=False, min_value=1, initial=3
     )
-    reminder_send_hour = forms.IntegerField(
-        label="Godzina wysyłki",
-        required=False,
-        min_value=0,
-        max_value=23,
-        initial=9,
-    )
 
     retention_choice = forms.ChoiceField(
         label="Przechowuj przesłane pliki przez",
@@ -120,9 +113,6 @@ class _RequestDetailsFieldsMixin(forms.Form):
             "reminder_frequency_days": self.cleaned_data.get("reminder_frequency_days")
             or 3,
             "max_reminders": self.cleaned_data.get("max_reminders") or 3,
-            "reminder_send_hour": self.cleaned_data.get("reminder_send_hour")
-            if self.cleaned_data.get("reminder_send_hour") is not None
-            else 9,
         }
 
 

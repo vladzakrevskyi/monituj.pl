@@ -10,6 +10,12 @@ const FormErrors = (function () {
     return ul;
   }
 
+  // Password inputs sit inside a wrapper with the show/hide button; the
+  // error goes below that wrapper, not between the input and the button.
+  function placement(anchor) {
+    return anchor.closest(".password-field") || anchor;
+  }
+
   // The error list goes right after the anchor element; a [data-error-for]
   // wrapper (e.g. the document list builder) can stand in for the input.
   function set(anchor, messages) {
@@ -18,11 +24,11 @@ const FormErrors = (function () {
       ? [anchor]
       : anchor.querySelectorAll("input:not([type=hidden]), select, textarea");
     inputs.forEach((input) => input.setAttribute("aria-invalid", "true"));
-    anchor.insertAdjacentElement("afterend", buildList(messages));
+    placement(anchor).insertAdjacentElement("afterend", buildList(messages));
   }
 
   function clearField(anchor) {
-    const next = anchor.nextElementSibling;
+    const next = placement(anchor).nextElementSibling;
     if (next && next.classList.contains("errorlist")) next.remove();
     const inputs = anchor.matches("input, select, textarea")
       ? [anchor]

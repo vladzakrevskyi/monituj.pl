@@ -6,6 +6,7 @@ app_name = "requests"
 
 urlpatterns = [
     path("przypomnienia/", views.request_list, name="list"),
+    path("otrzymane/", views.received_list, name="received"),
     path("przypomnienia/nowe/", views.request_create, name="create"),
     path("przypomnienia/<int:request_id>/", views.request_detail, name="detail"),
     path("przypomnienia/<int:request_id>/edytuj/", views.request_edit, name="edit"),

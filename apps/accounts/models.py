@@ -30,6 +30,8 @@ class User(AbstractUser):
     email_verified_at = models.DateTimeField(null=True, blank=True)
     terms_accepted_at = models.DateTimeField(null=True, blank=True)
     privacy_policy_accepted_at = models.DateTimeField(null=True, blank=True)
+    # IANA zone reported by the browser (apps.common.timezones).
+    timezone = models.CharField(max_length=64, default="Europe/Warsaw")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []  # type: ignore[misc]

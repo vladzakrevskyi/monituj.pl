@@ -28,7 +28,9 @@ class Request(TimeStampedModel):
     first_reminder_after_days = models.PositiveSmallIntegerField(default=2)
     reminder_frequency_days = models.PositiveSmallIntegerField(default=3)
     max_reminders = models.PositiveSmallIntegerField(default=3)
-    reminder_send_hour = models.PositiveSmallIntegerField(default=9)
+    # The sender's zone when the request was created: reminders go out at
+    # the clock time the request was sent (see apps.reminders.schedule).
+    sender_timezone = models.CharField(max_length=64, default="Europe/Warsaw")
 
     # A request sent through the public form waits here until its sender
     # confirms it from their inbox; nothing reaches the recipient before.
@@ -124,6 +126,8 @@ class RecipientAccess(models.Model):
     sent to that address - by any sender - in one place."""
 
     email = models.EmailField(unique=True)
+    # The recipient's zone, learned when they open one of their links.
+    timezone = models.CharField(max_length=64, blank=True)
     token = models.CharField(
         max_length=64, unique=True, editable=False, default=generate_public_token
     )

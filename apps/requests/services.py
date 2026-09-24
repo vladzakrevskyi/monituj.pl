@@ -206,6 +206,7 @@ class RequestService:
             description=description,
             deadline=deadline,
             awaiting_confirmation=awaiting_confirmation,
+            sender_timezone=owner.timezone,
             confirmation_token=(
                 generate_public_token() if awaiting_confirmation else None
             ),
