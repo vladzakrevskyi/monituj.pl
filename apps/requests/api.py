@@ -113,6 +113,11 @@ def request_detail(request, request_id):
 @require_http_methods(["POST"])
 def send_link(request, request_id):
     request_obj = RequestService.get_owned_request(request.user, request_id)
+    if request_obj.awaiting_confirmation:
+        raise ValidationAppError(
+            "Najpierw potwierdź wysłanie prośby linkiem z maila.",
+            code="AWAITING_CONFIRMATION",
+        )
     data = _parse_json_body(request)
     email = str(data.get("email", "")).strip()
 

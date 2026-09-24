@@ -8,13 +8,29 @@
 <div class="card">
 <p class="eyebrow">Bez zakładania konta</p>
 <h1>Wyślij prośbę o dokumenty</h1>
-<p class="card-lead">Bez konta można utworzyć jedno zadanie dziennie. Link do niego trafi na podany poniżej adres.</p>
+<p class="card-lead">Bez zakładania konta możesz wysłać jedną prośbę dziennie. Po potwierdzeniu mailem dostaniesz stały link do panelu, w którym zobaczysz wszystkie swoje prośby i przesłane pliki.</p>
 <p class="form-hint-box">Chcesz najpierw zobaczyć, jak wygląda panel z listą klientów i statusami? <a href="{% url 'pages:demo' %}">Wypróbuj demo bez rejestracji</a>.</p>
 <form method="post" novalidate data-ajax-form>
 {% csrf_token %}
 {% include "base/_form_flash.html" %}
 
-<p class="form-divider form-divider--first">Klient</p>
+<p class="form-divider form-divider--first">Twoje dane</p>
+<div class="field-row">
+<p>
+{{ form.sender_name.label_tag }}
+{{ form.sender_name }}
+<small class="help-text">{{ form.sender_name.help_text }}</small>
+{{ form.sender_name.errors }}
+</p>
+<p>
+{{ form.sender_email.label_tag }}
+{{ form.sender_email }}
+<small class="help-text">{{ form.sender_email.help_text }}</small>
+{{ form.sender_email.errors }}
+</p>
+</div>
+
+<p class="form-divider">Odbiorca</p>
 <div class="field-row">
 <p>
 {{ form.client_name.label_tag }}
@@ -104,7 +120,8 @@
 </div>
 
 {% include "base/_consent_fields.html" with terms_field=form.accept_terms %}
-<button type="submit" class="btn btn-primary btn-lg btn-block">Utwórz i wyślij link</button>
+<button type="submit" class="btn btn-primary btn-lg btn-block">Dalej – potwierdź mailem</button>
+<p class="form-hint-after">Prośba trafi do odbiorcy dopiero po kliknięciu linku, który wyślemy na Twój adres.</p>
 </form>
 </div>
 {% endblock %}

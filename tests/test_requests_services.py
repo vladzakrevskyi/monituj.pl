@@ -6,17 +6,13 @@ from django.core import mail
 from django.test import RequestFactory
 from django.utils import timezone
 
-from apps.accounts.services import GuestOwnerService
 from apps.audit.models import AuditEvent, AuditLog
-from apps.clients.services import ClientService
 from apps.common.exceptions import (
     NotFoundAppError,
-    RateLimitedAppError,
     ValidationAppError,
 )
 from apps.notifications.models import EmailLog, EmailTemplate
 from apps.requests.models import (
-    AnonymousRequestThrottle,
     PasswordProtectedAccess,
     Request,
     RequestItemStatus,
@@ -157,148 +153,6 @@ def test_send_invitation_can_target_an_arbitrary_email(user, client_record):
 
 
 @pytest.mark.django_db
-def test_create_public_creates_request_owned_by_the_guest_account():
-    owner = GuestOwnerService.get_or_create()
-    client = ClientService.get_or_create_by_email(
-        owner=owner, email="odbiorca@example.com", name="Odbiorca"
-    )
-
-    request_obj = RequestService.create_public(
-        owner=owner,
-        client_id=client.pk,
-        name="Zadanie bez konta",
-        description="",
-        deadline=None,
-        item_names=["A"],
-        django_request=_public_django_request(),
-    )
-
-    assert request_obj.created_by_id == owner.pk
-    assert request_obj.client_id == client.pk
-    assert any(m.to == ["odbiorca@example.com"] for m in mail.outbox)
-
-
-@pytest.mark.django_db
-def test_create_public_second_request_same_day_same_ip_is_rate_limited():
-    owner = GuestOwnerService.get_or_create()
-    client = ClientService.get_or_create_by_email(
-        owner=owner, email="odbiorca@example.com", name="Odbiorca"
-    )
-    RequestService.create_public(
-        owner=owner,
-        client_id=client.pk,
-        name="Pierwsze",
-        description="",
-        deadline=None,
-        item_names=["A"],
-        django_request=_public_django_request(),
-    )
-
-    with pytest.raises(RateLimitedAppError):
-        RequestService.create_public(
-            owner=owner,
-            client_id=client.pk,
-            name="Drugie",
-            description="",
-            deadline=None,
-            item_names=["B"],
-            django_request=_public_django_request(),
-        )
-
-    assert Request.objects.filter(created_by=owner).count() == 1
-
-
-@pytest.mark.django_db
-def test_create_public_allows_different_ip_same_day():
-    owner = GuestOwnerService.get_or_create()
-    client = ClientService.get_or_create_by_email(
-        owner=owner, email="odbiorca@example.com", name="Odbiorca"
-    )
-    RequestService.create_public(
-        owner=owner,
-        client_id=client.pk,
-        name="Pierwsze",
-        description="",
-        deadline=None,
-        item_names=["A"],
-        django_request=_public_django_request(remote_addr="10.0.0.1"),
-    )
-
-    RequestService.create_public(
-        owner=owner,
-        client_id=client.pk,
-        name="Drugie",
-        description="",
-        deadline=None,
-        item_names=["B"],
-        django_request=_public_django_request(remote_addr="10.0.0.2"),
-    )
-
-    assert Request.objects.filter(created_by=owner).count() == 2
-
-
-@pytest.mark.django_db
-def test_create_public_without_django_request_is_never_rate_limited():
-    owner = GuestOwnerService.get_or_create()
-    client = ClientService.get_or_create_by_email(
-        owner=owner, email="odbiorca@example.com", name="Odbiorca"
-    )
-
-    RequestService.create_public(
-        owner=owner,
-        client_id=client.pk,
-        name="A",
-        description="",
-        deadline=None,
-        item_names=["A"],
-    )
-    RequestService.create_public(
-        owner=owner,
-        client_id=client.pk,
-        name="B",
-        description="",
-        deadline=None,
-        item_names=["A"],
-    )
-
-    assert not AnonymousRequestThrottle.objects.exists()
-    assert Request.objects.filter(created_by=owner).count() == 2
-
-
-@pytest.mark.django_db
-def test_create_public_failed_validation_does_not_consume_daily_quota():
-    owner = GuestOwnerService.get_or_create()
-    client = ClientService.get_or_create_by_email(
-        owner=owner, email="odbiorca@example.com", name="Odbiorca"
-    )
-
-    with pytest.raises(ValidationAppError):
-        RequestService.create_public(
-            owner=owner,
-            client_id=client.pk,
-            name="Puste",
-            description="",
-            deadline=None,
-            item_names=["   ", ""],
-            django_request=_public_django_request(),
-        )
-
-    assert not AnonymousRequestThrottle.objects.exists()
-
-    request_obj = RequestService.create_public(
-        owner=owner,
-        client_id=client.pk,
-        name="Poprawne",
-        description="",
-        deadline=None,
-        item_names=["A"],
-        django_request=_public_django_request(),
-    )
-
-    assert request_obj.pk is not None
-
-
-@pytest.mark.django_db
 def test_create_rejects_empty_item_list(user, client_record):
     with pytest.raises(ValidationAppError):
         RequestService.create(
@@ -421,6 +275,8 @@ class _Stub:
         self.total_items = total_items
         self.delivered_items = delivered_items
         self.deadline = deadline
+        self.awaiting_confirmation = False
+        self.closed_at = None
 
 
 def test_compute_status_missing_when_nothing_delivered():

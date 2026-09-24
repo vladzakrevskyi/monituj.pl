@@ -195,3 +195,25 @@ def request_edit(request, request_id):
         "requests/edit_form.html",
         {"form": form, "request_obj": request_obj},
     )
+
+
+@login_required
+@require_http_methods(["POST"])
+def request_close(request, request_id):
+    try:
+        request_obj = RequestService.get_owned_request(request.user, request_id)
+    except ApplicationError:
+        raise Http404 from None
+    if request.POST.get("action") == "reopen":
+        RequestService.reopen(request_obj, actor=request.user, request=request)
+        messages.success(
+            request, "Prośba jest znowu otwarta – odbiorca może przesyłać pliki."
+        )
+    else:
+        RequestService.close(request_obj, actor=request.user, request=request)
+        messages.success(
+            request,
+            "Prośba została zamknięta. Przypomnienia nie będą wysyłane, a odbiorca "
+            "nie może już przesyłać plików.",
+        )
+    return redirect("requests:detail", request_id=request_obj.pk)

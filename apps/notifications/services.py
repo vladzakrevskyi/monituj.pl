@@ -28,16 +28,23 @@ def _base_context():
     }
 
 
-def _request_context(request):
+def _request_context(request, to_email):
     """Everything a request-related email may show: who is asking, for what,
     by when, what is still missing and where to upload or review it."""
+    from apps.requests.links import owner_link, recipient_portal_url
+
+    to_recipient = to_email.lower() == request.client.email.lower()
     return {
         "sender_name": request.created_by.display_name or "",
         "request_name": request.name,
         "deadline": request.deadline,
         "retention_days": request.retention_days,
         "link": absolute_url(f"/d/{request.public_token}/"),
-        "panel_link": absolute_url(reverse("requests:detail", args=[request.pk])),
+        "panel_link": owner_link(
+            request.created_by, reverse("requests:detail", args=[request.pk])
+        ),
+        # Every request to this address, from any sender, on one page.
+        "portal_link": recipient_portal_url(to_email) if to_recipient else "",
         "missing_items": list(
             request.items.filter(status__in=NOT_DELIVERED)
             .order_by("id")
@@ -75,7 +82,7 @@ class EmailService:
         EmailLog row - used when the data it would describe is being erased."""
         full_context = _base_context()
         if request is not None:
-            full_context.update(_request_context(request))
+            full_context.update(_request_context(request, to_email))
         full_context.update(context or {})
 
         subject = render_to_string(

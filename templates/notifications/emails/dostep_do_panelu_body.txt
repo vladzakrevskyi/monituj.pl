@@ -1,0 +1,10 @@
+{% load formatting %}{% autoescape off %}Prośba została wysłana. Oto Twój stały link do panelu Monituj – działa bez hasła i zawsze jest ten sam. Zobaczysz w nim wszystkie prośby wysłane z tego adresu:
+
+{{ access_url }}
+
+Każdy, kto ma ten link, może otworzyć Twój panel. Nie przekazuj go dalej. Jeśli chcesz logować się hasłem, ustaw je w panelu w Ustawieniach – link przestanie wtedy działać.
+
+W panelu sprawdzisz status dokumentów, pobierzesz pliki, zmienisz termin i przypomnienia, zamkniesz prośbę albo wyślesz kolejną (bez hasła – jedną dziennie).
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

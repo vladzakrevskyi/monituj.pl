@@ -8,6 +8,31 @@
 <h1>Ustawienia</h1>
 </div>
 
+{% if is_guest %}
+<div class="card card--accent" id="haslo">
+<h2 class="mt-0">Ustaw hasło</h2>
+<p class="text-muted">Twoje konto powstało przy wysyłaniu prośby bez rejestracji. Otwierasz je stałym linkiem z maila i możesz wysłać jedną prośbę dziennie. Po ustawieniu hasła logujesz się adresem <strong>{{ user.email }}</strong> i hasłem, limit znika, a stały link przestaje działać.</p>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+<input type="hidden" name="form_action" value="set_password">
+{% include "base/_form_flash.html" with form=set_password_form %}
+<div class="field-row">
+<p>
+{{ set_password_form.new_password.label_tag }}
+{{ set_password_form.new_password }}
+{{ set_password_form.new_password.errors }}
+</p>
+<p>
+{{ set_password_form.new_password_confirm.label_tag }}
+{{ set_password_form.new_password_confirm }}
+{{ set_password_form.new_password_confirm.errors }}
+</p>
+</div>
+<button type="submit" class="btn btn-primary">Ustaw hasło</button>
+</form>
+</div>
+{% endif %}
+
 <div class="card">
 <h2 class="mt-0">Dane konta</h2>
 <p class="text-muted">Ta nazwa pojawia się w prośbach o dokumenty i mailach wysyłanych do klientów.</p>
@@ -24,6 +49,7 @@
 </form>
 </div>
 
+{% if not is_guest %}
 <div class="card">
 <h2 class="mt-0">Adres email</h2>
 <p class="text-muted">Obecny adres: <strong>{{ user.email }}</strong>. Zmiana wymaga potwierdzenia na nowym adresie.</p>
@@ -71,19 +97,23 @@
 </form>
 </div>
 
+{% endif %}
+
 <div class="card card--danger" id="usun-konto">
 <h2 class="mt-0">Usunięcie konta</h2>
 <p class="text-muted">Usuniemy konto razem z klientami, prośbami, przypomnieniami i wszystkimi przesłanymi plikami. Tej operacji nie można cofnąć. Jeśli musisz archiwizować dokumenty klientów, pobierz je wcześniej.</p>
-<p class="text-muted">Po wpisaniu hasła wyślemy na <strong>{{ user.email }}</strong> link potwierdzający. Konto zostanie usunięte dopiero po kliknięciu w link.</p>
+<p class="text-muted">{% if is_guest %}Wyślemy{% else %}Po wpisaniu hasła wyślemy{% endif %} na <strong>{{ user.email }}</strong> link potwierdzający. Konto zostanie usunięte dopiero po kliknięciu w link.</p>
 <form method="post" novalidate data-ajax-form data-reset-on-success>
 {% csrf_token %}
 <input type="hidden" name="form_action" value="delete">
 {% include "base/_form_flash.html" with form=deletion_form %}
+{% if deletion_form.current_password %}
 <p>
 {{ deletion_form.current_password.label_tag }}
 {{ deletion_form.current_password }}
 {{ deletion_form.current_password.errors }}
 </p>
+{% endif %}
 <p>
 {{ deletion_form.understood.label_tag }}
 {{ deletion_form.understood }}

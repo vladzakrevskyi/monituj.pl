@@ -1,0 +1,16 @@
+{% load formatting %}{% autoescape off %}Przygotowałeś w Monituj prośbę o dokumenty. Zanim wyślemy ją do odbiorcy, potwierdź, że to Ty – dzięki temu nikt nie może wysyłać próśb w Twoim imieniu.
+
+Prośba: {{ request_name }}
+Odbiorca: {{ recipient_name }} ({{ recipient_email }})
+{% if deadline %}Termin: {{ deadline|dt }}
+{% endif %}{% if missing_items %}
+Dokumenty:
+{% for name in missing_items %}- {{ name }}
+{% endfor %}{% endif %}
+Potwierdź i wyślij prośbę:
+{{ confirm_url }}
+
+Po potwierdzeniu dostaniesz stały link do swojego panelu. Link jest ważny przez 48 godzin. Jeśli to nie Ty przygotowałeś tę prośbę, zignoruj wiadomość – nic nie zostanie wysłane.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

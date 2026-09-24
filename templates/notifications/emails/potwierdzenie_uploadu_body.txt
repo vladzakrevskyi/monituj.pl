@@ -8,7 +8,10 @@ Pozostało do przesłania:
 {% endfor %}{% endif %}{% if missing_items %}
 Prześlij pozostałe dokumenty:
 {{ link }}{% else %}
-To był ostatni brakujący dokument. Nie musisz nic więcej robić.{% endif %}
+To był ostatni brakujący dokument. Nie musisz nic więcej robić.{% endif %}{% if portal_link %}
+Wszystkie Twoje prośby o dokumenty, także od innych nadawców, w jednym miejscu:
+{{ portal_link }}
+{% endif %}
 --
 Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
 {% endautoescape %}

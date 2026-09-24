@@ -7,7 +7,9 @@ from apps.requests.models import Request
 @shared_task
 def send_automatic_reminders():
     request_ids = list(
-        Request.objects.filter(reminders_enabled=True).values_list("pk", flat=True)
+        Request.objects.filter(
+            reminders_enabled=True, awaiting_confirmation=False, closed_at__isnull=True
+        ).values_list("pk", flat=True)
     )
     sent_count = 0
     for request_id in request_ids:

@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, update_session_auth_hash
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.hashers import make_password
@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.accounts.erasure import erase_account
-from apps.accounts.models import AccountToken, AccountTokenPurpose, User
+from apps.accounts.models import AccountToken, AccountTokenPurpose, GuestAccess, User
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.common.exceptions import ValidationAppError
@@ -59,7 +59,15 @@ class GuestOwnerService:
 class RegistrationService:
     @staticmethod
     def register(email, password, accept_terms, accept_privacy_policy, request=None):
-        if User.objects.filter(email__iexact=email).exists():
+        existing = User.objects.filter(email__iexact=email).first()
+        if existing is not None and hasattr(existing, "guest_access"):
+            raise ValidationAppError(
+                "Z tego adresu wysłano już prośbę bez konta, więc masz konto bez "
+                "hasła. Ustaw hasło przez „Nie pamiętasz hasła?” na stronie "
+                "logowania.",
+                code="EMAIL_TAKEN",
+            )
+        if existing is not None:
             raise ValidationAppError(
                 "Konto z tym adresem email już istnieje.", code="EMAIL_TAKEN"
             )
@@ -193,6 +201,9 @@ class PasswordResetService:
         _validate_password_strength(new_password, user=user)
         user.set_password(new_password)
         user.save(update_fields=["password"])
+        # A passwordless account becomes a regular one: the permanent panel
+        # link stops working and the daily limit is gone.
+        GuestAccess.objects.filter(user=user).delete()
 
         token.used_at = timezone.now()
         token.save(update_fields=["used_at"])
@@ -394,7 +405,8 @@ class AccountDeletionService:
 
     @staticmethod
     def request_deletion(user, current_password, request=None):
-        if not user.check_password(current_password):
+        # Accounts without a password prove themselves by the email link alone.
+        if user.has_usable_password() and not user.check_password(current_password):
             raise ValidationAppError(
                 "Nieprawidłowe obecne hasło.", code="INVALID_CURRENT_PASSWORD"
             )
@@ -504,3 +516,39 @@ class AccountDeletionService:
             log=False,
         )
         return email
+
+
+class GuestAccessService:
+    @staticmethod
+    def set_password(user, new_password, request=None):
+        _validate_password_strength(new_password, user=user)
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+        GuestAccess.objects.filter(user=user).delete()
+        if request is not None:
+            update_session_auth_hash(request, user)
+        AuditService.log(
+            AuditEvent.PASSWORD_CHANGED, actor=user, target=user, request=request
+        )
+        return user
+
+    @staticmethod
+    def user_for(token):
+        access = (
+            GuestAccess.objects.select_related("user")
+            .filter(token=token, user__is_active=True)
+            .first()
+        )
+        if access is None or access.user.email_verified_at is None:
+            raise ValidationAppError(
+                "Ten link nie działa. Jeśli masz już hasło, zaloguj się nim.",
+                code="INVALID_TOKEN",
+            )
+        return access.user
+
+    @staticmethod
+    def login(request, user):
+        django_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        AuditService.log(
+            AuditEvent.USER_LOGIN, actor=user, target=user, request=request
+        )

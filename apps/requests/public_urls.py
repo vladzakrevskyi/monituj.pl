@@ -10,8 +10,18 @@ urlpatterns = [
         "wyslij-prosbe/", public_views.guest_request_create, name="guest-request-create"
     ),
     path(
-        "wyslij-prosbe/utworzono/<str:token>/",
-        public_views.guest_request_created,
-        name="guest-request-created",
+        "wyslij-prosbe/sprawdz-skrzynke/",
+        public_views.guest_request_sent,
+        name="guest-request-sent",
+    ),
+    path(
+        "wyslij-prosbe/potwierdz/<str:token>/",
+        public_views.guest_request_confirm,
+        name="guest-request-confirm",
+    ),
+    path(
+        "moje-prosby/<str:token>/",
+        public_views.recipient_portal,
+        name="recipient-portal",
     ),
 ]

@@ -1,0 +1,24 @@
+{% extends "base/base.html" %}
+{% load formatting %}
+
+{% block title %}Potwierdź wysłanie prośby - Monituj{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+<p class="eyebrow">Prośba bez konta</p>
+<h1>Wysłać prośbę?</h1>
+<dl class="summary-list">
+<div><dt>Prośba</dt><dd>{{ request_obj.name }}</dd></div>
+<div><dt>Od</dt><dd>{{ request_obj.created_by.display_name|default:request_obj.created_by.email }}</dd></div>
+<div><dt>Do</dt><dd>{{ request_obj.client.name }} ({{ request_obj.client.email }})</dd></div>
+{% if request_obj.deadline %}<div><dt>Termin</dt><dd>{{ request_obj.deadline|dt }}</dd></div>{% endif %}
+<div><dt>Dokumenty</dt><dd>{% for item in items %}{{ item.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd></div>
+</dl>
+<form method="post">
+{% csrf_token %}
+<button type="submit" class="btn btn-primary btn-lg btn-block">Potwierdź i wyślij prośbę</button>
+</form>
+<p class="text-muted mt-5 mb-0">Po wysłaniu przejdziesz do swojego panelu, a stały link do niego dostaniesz mailem.</p>
+</div>
+{% endblock %}

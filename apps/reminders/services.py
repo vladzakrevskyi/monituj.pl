@@ -18,6 +18,11 @@ MANUAL_REMINDER_COOLDOWN = timedelta(seconds=10)
 class ReminderService:
     @staticmethod
     def send_manual(request_obj, actor, django_request=None):
+        if request_obj.closed_at is not None or request_obj.awaiting_confirmation:
+            raise ValidationAppError(
+                "Prośba jest zamknięta – otwórz ją ponownie, aby wysłać przypomnienie.",
+                code="REQUEST_CLOSED",
+            )
         annotated = with_stats(Request.objects.filter(pk=request_obj.pk)).first()
         if compute_status(annotated) == RequestStatus.COMPLETE:
             raise ValidationAppError(
@@ -60,7 +65,12 @@ class AutomaticReminderService:
     @transaction.atomic
     def maybe_send_for_request(request_id):
         request_obj = Request.objects.select_for_update().filter(pk=request_id).first()
-        if request_obj is None or not request_obj.reminders_enabled:
+        if (
+            request_obj is None
+            or not request_obj.reminders_enabled
+            or request_obj.awaiting_confirmation
+            or request_obj.closed_at is not None
+        ):
             return False
 
         annotated = with_stats(Request.objects.filter(pk=request_id)).first()
@@ -125,7 +135,11 @@ class ReminderScheduleService:
         if not request_obj.reminders_enabled:
             return []
         annotated = with_stats(Request.objects.filter(pk=request_obj.pk)).first()
-        if compute_status(annotated) == RequestStatus.COMPLETE:
+        if compute_status(annotated) in (
+            RequestStatus.COMPLETE,
+            RequestStatus.CLOSED,
+            RequestStatus.AWAITING,
+        ):
             return []
 
         sent = list(

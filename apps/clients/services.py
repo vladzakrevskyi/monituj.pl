@@ -177,7 +177,7 @@ class ClientService:
     def delete(client, request=None):
         if client.requests.exists():
             raise ValidationAppError(
-                "Nie można usunąć klienta, który ma powiązane zadania dokumentów.",
+                "Nie można usunąć klienta, do którego wysłano prośby o dokumenty.",
                 code="CLIENT_HAS_REQUESTS",
             )
         AuditService.log(

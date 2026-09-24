@@ -1,0 +1,14 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Odbiorca przesłał wszystkie dokumenty.{% endblock %}
+{% block eyebrow %}Komplet dokumentów{% endblock %}
+{% block title %}Masz komplet dokumentów{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Odbiorca przesłał wszystkie dokumenty z prośby. Przypomnienia nie będą już wysyłane.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Prośba" value=request_name %}
+{% include "notifications/emails/_details_close.html" %}
+{% include "notifications/emails/_button.html" with url=panel_link label="Sprawdź i pobierz dokumenty" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Pliki są przechowywane przez {{ retention_days }} dni od przesłania, a potem automatycznie usuwane – pobierz je wcześniej, jeśli musisz je archiwizować.</p>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ jesteś nadawcą tej prośby w Monituj.{% endblock %}

@@ -1,9 +1,12 @@
+from datetime import timedelta
+
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.paginator import Paginator
 from django.db import IntegrityError, models, transaction
 from django.db.models import Count, Q
 from django.utils import timezone
 
+from apps.accounts.models import is_guest_account
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.clients.models import Client
@@ -12,7 +15,7 @@ from apps.common.exceptions import (
     RateLimitedAppError,
     ValidationAppError,
 )
-from apps.common.security import get_client_ip, hash_ip
+from apps.common.security import generate_public_token, get_client_ip, hash_ip
 from apps.common.site import absolute_url
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
@@ -25,9 +28,17 @@ from apps.requests.models import (
 )
 
 DAILY_LIMIT_MESSAGE = (
-    "Dzisiaj można utworzyć tylko jedno zadanie bez konta. "
-    "Spróbuj ponownie jutro albo załóż konto, aby tworzyć więcej zadań."
+    "Dzisiaj można wysłać tylko jedną prośbę bez konta. "
+    "Spróbuj ponownie jutro albo załóż konto, aby wysyłać prośby bez limitu."
 )
+GUEST_DAILY_LIMIT_MESSAGE = (
+    "Z tego adresu wysłano już dziś prośbę bez hasła. Jutro możesz wysłać "
+    "kolejną – albo ustaw hasło w ustawieniach konta, aby wysyłać bez limitu."
+)
+CLOSED_MESSAGE = "Ta prośba została zamknięta – nie można już przesyłać plików."
+# How long a request sent through the public form waits for its sender to
+# confirm it before it is deleted.
+CONFIRMATION_TTL = timedelta(hours=48)
 
 DELIVERED_STATUSES = [RequestItemStatus.DOSTARCZONY, RequestItemStatus.ZAAKCEPTOWANY]
 MISSING_STATUSES = [RequestItemStatus.BRAK, RequestItemStatus.ODRZUCONY]
@@ -43,6 +54,8 @@ class RequestStatus(models.TextChoices):
     IN_PROGRESS = "w_trakcie", "W trakcie"
     COMPLETE = "kompletny", "Kompletny"
     OVERDUE = "po_terminie", "Po terminie"
+    CLOSED = "zamkniety", "Zamknięta"
+    AWAITING = "niepotwierdzony", "Czeka na potwierdzenie"
 
 
 def with_stats(queryset):
@@ -55,6 +68,10 @@ def with_stats(queryset):
 
 
 def compute_status(request) -> str:
+    if request.awaiting_confirmation:
+        return RequestStatus.AWAITING
+    if request.closed_at:
+        return RequestStatus.CLOSED
     is_complete = (
         request.total_items > 0 and request.delivered_items == request.total_items
     )
@@ -78,6 +95,17 @@ def _reserve_daily_anonymous_request_slot(django_request) -> None:
         raise RateLimitedAppError(
             DAILY_LIMIT_MESSAGE, code="DAILY_LIMIT_REACHED"
         ) from exc
+
+
+def check_guest_daily_limit(owner) -> None:
+    """Accounts without a password may send one request a day."""
+    today_start = timezone.localtime().replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    if Request.objects.filter(created_by=owner, created_at__gte=today_start).exists():
+        raise RateLimitedAppError(
+            GUEST_DAILY_LIMIT_MESSAGE, code="GUEST_DAILY_LIMIT_REACHED"
+        )
 
 
 REQUEST_SORTS = {
@@ -141,7 +169,7 @@ class RequestService:
             )
         ).first()
         if request_obj is None:
-            raise NotFoundAppError("Nie znaleziono zadania.")
+            raise NotFoundAppError("Nie znaleziono prośby.")
         return request_obj
 
     @staticmethod
@@ -156,7 +184,12 @@ class RequestService:
         password=None,
         reminder_settings=None,
         request=None,
+        awaiting_confirmation=False,
     ):
+        """awaiting_confirmation=True stores the request without contacting
+        the recipient; GuestRequestService.confirm() sends it later."""
+        if is_guest_account(owner):
+            check_guest_daily_limit(owner)
         client = Client.objects.filter(owner=owner, pk=client_id).first()
         if client is None:
             raise NotFoundAppError("Nie znaleziono klienta.")
@@ -172,6 +205,11 @@ class RequestService:
             name=name,
             description=description,
             deadline=deadline,
+            awaiting_confirmation=awaiting_confirmation,
+            confirmation_token=(
+                generate_public_token() if awaiting_confirmation else None
+            ),
+            pending_access_password=(password or "") if awaiting_confirmation else "",
             **reminder_settings,
         )
         RequestItem.objects.bulk_create(
@@ -188,50 +226,49 @@ class RequestService:
         AuditService.log(
             AuditEvent.REQUEST_CREATED, actor=owner, target=request_obj, request=request
         )
+        if not awaiting_confirmation:
+            RequestService.deliver(request_obj, password, actor=owner, request=request)
+        return request_obj
 
+    @staticmethod
+    def deliver(request_obj, password, actor=None, request=None):
+        """Sends the recipient their link (and the access password, if any)."""
         RequestService.send_invitation(
-            request_obj, client.email, actor=owner, django_request=request
+            request_obj, request_obj.client.email, actor=actor, django_request=request
         )
         if password:
             EmailService.send(
                 EmailTemplate.ACCESS_PASSWORD,
-                to_email=client.email,
+                to_email=request_obj.client.email,
                 context={"request_name": request_obj.name, "password": password},
                 request=request_obj,
             )
 
+    @staticmethod
+    def close(request_obj, actor, request=None):
+        if request_obj.closed_at is None:
+            request_obj.closed_at = timezone.now()
+            request_obj.save(update_fields=["closed_at", "updated_at"])
+            AuditService.log(
+                AuditEvent.REQUEST_CLOSED,
+                actor=actor,
+                target=request_obj,
+                request=request,
+            )
         return request_obj
 
     @staticmethod
-    @transaction.atomic
-    def create_public(
-        owner,
-        client_id,
-        name,
-        description,
-        deadline,
-        item_names,
-        password=None,
-        reminder_settings=None,
-        django_request=None,
-    ):
-        """Same as create(), for the no-account public flow: reserves the
-        IP's daily slot first, in the same transaction, so a validation
-        failure below (e.g. an empty item list) rolls the reservation back
-        too instead of silently burning the day's quota."""
-        if django_request is not None:
-            _reserve_daily_anonymous_request_slot(django_request)
-        return RequestService.create(
-            owner=owner,
-            client_id=client_id,
-            name=name,
-            description=description,
-            deadline=deadline,
-            item_names=item_names,
-            password=password,
-            reminder_settings=reminder_settings,
-            request=django_request,
-        )
+    def reopen(request_obj, actor, request=None):
+        if request_obj.closed_at is not None:
+            request_obj.closed_at = None
+            request_obj.save(update_fields=["closed_at", "updated_at"])
+            AuditService.log(
+                AuditEvent.REQUEST_REOPENED,
+                actor=actor,
+                target=request_obj,
+                request=request,
+            )
+        return request_obj
 
     @staticmethod
     def send_invitation(request_obj, to_email, actor=None, django_request=None):
@@ -277,7 +314,9 @@ class PublicAccessService:
     @staticmethod
     def get_by_token(token):
         request_obj = with_stats(
-            Request.objects.filter(public_token=token).select_related("client")
+            Request.objects.filter(
+                public_token=token, awaiting_confirmation=False
+            ).select_related("client", "created_by")
         ).first()
         if request_obj is None:
             raise NotFoundAppError("Nie znaleziono zasobu.")
@@ -341,9 +380,12 @@ class DashboardService:
         )
 
         annotated = list(with_stats(requests_qs))
-        active_requests = sum(
-            1 for r in annotated if compute_status(r) != RequestStatus.COMPLETE
+        finished = (
+            RequestStatus.COMPLETE,
+            RequestStatus.CLOSED,
+            RequestStatus.AWAITING,
         )
+        active_requests = sum(1 for r in annotated if compute_status(r) not in finished)
 
         reminders_sent = Reminder.objects.filter(request_id__in=request_ids).count()
 

@@ -17,6 +17,7 @@ urlpatterns = [
         name="password-reset-confirm",
     ),
     path("panel/", views.dashboard, name="panel"),
+    path("dostep/<str:token>/", views.guest_access, name="guest-access"),
     path("ustawienia/", views.settings_view, name="settings"),
     path(
         "ustawienia/haslo/potwierdz/<str:token>/",

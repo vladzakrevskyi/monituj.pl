@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from apps.common.models import TimeStampedModel
+from apps.common.security import generate_public_token
 
 
 class UserManager(BaseUserManager):
@@ -71,3 +72,25 @@ class AccountToken(TimeStampedModel):
     @property
     def is_valid(self) -> bool:
         return self.used_at is None and self.expires_at > timezone.now()
+
+
+class GuestAccess(models.Model):
+    """An account created by sending a request without registering. It has
+    no password; this permanent link (mailed to the owner) logs them in.
+    Setting a password turns it into a regular account and removes the
+    link."""
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="guest_access"
+    )
+    token = models.CharField(
+        max_length=64, unique=True, editable=False, default=generate_public_token
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Guest access for {self.user_id}"
+
+
+def is_guest_account(user) -> bool:
+    return bool(user and user.is_authenticated and hasattr(user, "guest_access"))

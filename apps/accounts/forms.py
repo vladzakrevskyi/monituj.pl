@@ -140,6 +140,30 @@ class EmailChangeForm(forms.Form):
     )
 
 
+class SetPasswordForm(forms.Form):
+    """For accounts created without a password (requests sent without
+    registering): there is no current password to confirm."""
+
+    new_password = forms.CharField(
+        label="Nowe hasło",
+        widget=forms.PasswordInput,
+        error_messages={"required": REQUIRED_MESSAGE},
+    )
+    new_password_confirm = forms.CharField(
+        label="Powtórz nowe hasło",
+        widget=forms.PasswordInput,
+        error_messages={"required": REQUIRED_MESSAGE},
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get("new_password")
+        confirm = cleaned_data.get("new_password_confirm")
+        if new_password and confirm and new_password != confirm:
+            self.add_error("new_password_confirm", "Hasła nie są identyczne.")
+        return cleaned_data
+
+
 class AccountDeletionForm(forms.Form):
     current_password = forms.CharField(
         label="Obecne hasło",
@@ -154,3 +178,8 @@ class AccountDeletionForm(forms.Form):
         label_suffix="",
         error_messages={"required": "Potwierdź, że rozumiesz skutki usunięcia."},
     )
+
+    def __init__(self, *args, require_password=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not require_password:
+            del self.fields["current_password"]

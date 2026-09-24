@@ -117,6 +117,8 @@ def test_request_form_client_empty_choice_label_is_polish(user):
 def test_public_request_form_valid_with_client_name_and_email():
     form = PublicRequestForm(
         data={
+            "sender_name": "Biuro Nowak",
+            "sender_email": "biuro@example.com",
             "client_name": "Odbiorca",
             "client_email": "odbiorca@example.com",
             "name": "R",
@@ -128,12 +130,13 @@ def test_public_request_form_valid_with_client_name_and_email():
     assert form.is_valid(), form.errors
 
 
-def test_public_request_form_requires_client_name_and_email():
+def test_public_request_form_requires_sender_and_recipient():
     form = PublicRequestForm(data={"name": "R", "description": ""})
 
     assert not form.is_valid()
-    assert "client_name" in form.errors
-    assert "client_email" in form.errors
+    assert {"sender_name", "sender_email", "client_name", "client_email"} <= set(
+        form.errors
+    )
 
 
 def test_public_request_form_rejects_invalid_client_email():
@@ -164,15 +167,16 @@ def test_public_request_form_keeps_password_and_reminder_fields():
     assert "password" in form.fields
     assert "reminders_enabled" in form.fields
     assert "reminder_frequency_days" in form.fields
-    assert (
-        form.fields["client_name"].label == "Imię i nazwisko lub nazwa firmy odbiorcy"
-    )
-    assert form.fields["client_email"].label == "Email odbiorcy"
+    assert form.fields["client_name"].label == "Imię i nazwisko lub nazwa firmy"
+    assert form.fields["client_email"].label == "Adres email odbiorcy"
+    assert form.fields["sender_email"].label == "Twój adres email"
 
 
 def test_public_request_form_deadline_converted_to_end_of_day():
     form = PublicRequestForm(
         data={
+            "sender_name": "Biuro Nowak",
+            "sender_email": "biuro@example.com",
             "client_name": "Odbiorca",
             "client_email": "odbiorca@example.com",
             "name": "R",

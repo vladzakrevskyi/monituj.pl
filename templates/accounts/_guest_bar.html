@@ -1,0 +1,9 @@
+{% if guest_account %}
+<div class="demo-bar demo-bar--guest" role="status">
+<span class="demo-bar__tag">Bez hasła</span>
+<p class="demo-bar__text">Panel otwierasz stałym linkiem z maila i możesz wysłać jedną prośbę dziennie. Ustaw hasło, aby logować się normalnie i wysyłać bez limitu.</p>
+<div class="demo-bar__actions">
+<a class="btn btn-primary btn-sm" href="{% url 'accounts:settings' %}#haslo">Ustaw hasło</a>
+</div>
+</div>
+{% endif %}

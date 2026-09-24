@@ -1504,3 +1504,46 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Key-value summary (confirmation pages) */
+.summary-list {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 var(--space-6);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-page);
+}
+
+.summary-list div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.summary-list dt {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.summary-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.steps-list {
+  margin: var(--space-5) 0;
+  padding-left: var(--space-5);
+  display: grid;
+  gap: var(--space-2);
+}
+
+@media (max-width: 560px) {
+  .summary-list div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}

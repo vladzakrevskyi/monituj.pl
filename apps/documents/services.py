@@ -16,7 +16,7 @@ from apps.documents.validation import validate_upload
 from apps.notifications.models import EmailStatus, EmailTemplate
 from apps.notifications.services import EmailService
 from apps.requests.models import RequestItemStatus
-from apps.requests.services import PublicAccessService, with_stats
+from apps.requests.services import CLOSED_MESSAGE, PublicAccessService, with_stats
 
 
 def _generate_storage_key(extension: str) -> str:
@@ -27,6 +27,8 @@ def _generate_storage_key(extension: str) -> str:
 class UploadDocumentService:
     @staticmethod
     def upload_for_item(request_item, uploaded_file, django_request=None):
+        if request_item.request.closed_at is not None:
+            raise ValidationAppError(CLOSED_MESSAGE, code="REQUEST_CLOSED")
         if request_item.status == RequestItemStatus.ZAAKCEPTOWANY:
             raise ValidationAppError(
                 "Ten dokument został już zaakceptowany.", code="ITEM_ALREADY_ACCEPTED"
@@ -118,6 +120,16 @@ class UploadDocumentService:
             context={"request_name": annotated.name},
             request=annotated,
         )
+        # The sender hears about it too - the shared account behind old
+        # no-account requests is inactive and has no real mailbox.
+        owner = annotated.created_by
+        if owner.is_active:
+            EmailService.send(
+                EmailTemplate.COMPLETE_OWNER,
+                to_email=owner.email,
+                context={"request_name": annotated.name},
+                request=annotated,
+            )
 
 
 class DocumentReviewService:
@@ -218,6 +230,8 @@ class GuestDeleteService:
             raise PermissionDeniedAppError("Brak dostępu do tego zasobu.")
 
         request_item = document.request_item
+        if request_item.request.closed_at is not None:
+            raise ValidationAppError(CLOSED_MESSAGE, code="REQUEST_CLOSED")
         if request_item.status == RequestItemStatus.ZAAKCEPTOWANY:
             raise ValidationAppError(
                 "Nie można usunąć zaakceptowanego dokumentu.",

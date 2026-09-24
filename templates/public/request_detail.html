@@ -18,7 +18,10 @@
 </div>
 </div>
 
-<h2 class="card-title mt-5">Dokumenty do przesłania</h2>
+{% if request_obj.is_closed %}
+<p class="public-closed" role="status">Nadawca zamknął tę prośbę {{ request_obj.closed_at|dt }}. Przesyłanie plików jest wyłączone – jeśli masz jeszcze dokumenty, skontaktuj się bezpośrednio z nadawcą.</p>
+{% endif %}
+<h2 class="card-title mt-5">Dokumenty {% if request_obj.is_closed %}w prośbie{% else %}do przesłania{% endif %}</h2>
 <div id="items-list" data-token="{{ public_token }}">
 {% for item in items %}
 <div class="request-item" data-item-id="{{ item.id }}" data-status="{{ item.status }}">
@@ -42,12 +45,13 @@
 {% else %}
 <p class="uploaded-file" data-document-id="{{ document.id }}">
 <span>{{ document.original_filename }} &ndash; Dodany: {{ document.uploaded_at|dt }}</span>
-<button type="button" class="btn btn-danger btn-sm delete-document" data-document-id="{{ document.id }}">Usuń</button>
+{% if not request_obj.is_closed %}<button type="button" class="btn btn-danger btn-sm delete-document" data-document-id="{{ document.id }}">Usuń</button>{% endif %}
 </p>
 {% endif %}
 {% endfor %}
 </div>
 
+{% if not request_obj.is_closed %}
 <div class="upload-zone" data-item-id="{{ item.id }}">
 <input type="file" class="upload-input" data-item-id="{{ item.id }}">
 <svg class="upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
@@ -56,6 +60,7 @@
 <progress class="upload-progress progress-bar" value="0" max="100" hidden></progress>
 <p class="upload-error" role="alert"></p>
 </div>
+{% endif %}
 {% endif %}
 </div>
 {% endfor %}

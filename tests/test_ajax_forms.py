@@ -351,64 +351,6 @@ def test_request_edit_ajax_success_returns_redirect_url(client, user, client_rec
 
 
 @pytest.mark.django_db
-def test_guest_request_create_ajax_success_returns_redirect_url(client):
-    response = client.post(
-        reverse("public:guest-request-create"),
-        {
-            "client_name": "Odbiorca",
-            "client_email": "ajax-guest@example.com",
-            "name": "Zadanie ajax",
-            "description": "",
-            "items": ["A"],
-            "password": "",
-            "accept_terms": "on",
-        },
-        **AJAX_HEADERS,
-    )
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert "/wyslij-prosbe/utworzono/" in payload["data"]["redirect_url"]
-
-
-@pytest.mark.django_db
-def test_guest_request_create_ajax_rate_limited_returns_error(client):
-    client.post(
-        reverse("public:guest-request-create"),
-        {
-            "client_name": "Pierwszy",
-            "client_email": "pierwszy-ajax@example.com",
-            "name": "Pierwsze",
-            "description": "",
-            "items": ["A"],
-            "password": "",
-            "accept_terms": "on",
-        },
-    )
-
-    response = client.post(
-        reverse("public:guest-request-create"),
-        {
-            "client_name": "Drugi",
-            "client_email": "drugi-ajax@example.com",
-            "name": "Drugie",
-            "description": "",
-            "items": ["B"],
-            "password": "",
-            "accept_terms": "on",
-        },
-        **AJAX_HEADERS,
-    )
-
-    assert response.status_code == 400
-    payload = response.json()
-    assert (
-        "Dzisiaj można utworzyć tylko jedno zadanie bez konta"
-        in payload["error"]["fields"]["__all__"][0]
-    )
-
-
-@pytest.mark.django_db
 def test_password_gate_ajax_wrong_password_returns_field_error(user, client_record):
     from django.test import Client as TestClient
 

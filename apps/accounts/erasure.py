@@ -8,7 +8,7 @@ from apps.clients.models import Client
 from apps.documents.models import Document
 from apps.documents.storage import private_storage
 from apps.notifications.models import EmailLog
-from apps.requests.models import Request, RequestItem
+from apps.requests.models import RecipientAccess, Request, RequestItem
 
 
 @transaction.atomic
@@ -19,6 +19,9 @@ def erase_account(user):
     automatic reminders stop by themselves, since the hourly task only looks
     at requests that still exist."""
     requests = Request.objects.filter(created_by=user)
+    recipient_emails = set(
+        Client.objects.filter(owner=user).values_list("email", flat=True)
+    )
     items = RequestItem.objects.filter(request__in=requests)
     documents = Document.objects.filter(request_item__in=items)
     storage_keys = list(documents.values_list("storage_key", flat=True))
@@ -47,6 +50,12 @@ def erase_account(user):
     requests.delete()
     Client.objects.filter(owner=user).delete()
     user.delete()
+
+    # A recipient's "all my requests" link goes too, unless other senders
+    # still have requests for them.
+    for email in recipient_emails:
+        if not Request.objects.filter(client__email__iexact=email).exists():
+            RecipientAccess.objects.filter(email__iexact=email).delete()
 
     # Files go last and only once the database changes are certain.
     transaction.on_commit(lambda: [private_storage.delete(key) for key in storage_keys])

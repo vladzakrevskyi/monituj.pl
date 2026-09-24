@@ -1,0 +1,9 @@
+{% load formatting %}{% autoescape off %}Odbiorca przesłał wszystkie dokumenty z prośby „{{ request_name }}”. Przypomnienia nie będą już wysyłane.
+
+Sprawdź i pobierz dokumenty:
+{{ panel_link }}
+
+Pliki są przechowywane przez {{ retention_days }} dni od przesłania, a potem automatycznie usuwane – pobierz je wcześniej, jeśli musisz je archiwizować.
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

@@ -1,0 +1,18 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Jeden stały link do wszystkich Twoich próśb o dokumenty.{% endblock %}
+{% block eyebrow %}Twój panel{% endblock %}
+{% block title %}Wszystkie Twoje prośby w jednym miejscu{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Prośba została wysłana. Poniżej jest Twój stały link do panelu Monituj – działa bez hasła i zawsze jest ten sam. Zobaczysz w nim wszystkie prośby wysłane z tego adresu, także te, które wyślesz w kolejnych dniach.</p>
+{% include "notifications/emails/_button.html" with url=access_url label="Otwórz mój panel" %}
+{% include "notifications/emails/_notice.html" with text="Każdy, kto ma ten link, może otworzyć Twój panel. Nie przekazuj go dalej. Jeśli chcesz logować się hasłem, ustaw je w panelu w Ustawieniach – link przestanie wtedy działać." tone="danger" %}
+<p style="margin:0 0 8px;font-size:16px;line-height:1.6;color:#3f3f46;">W panelu możesz:</p>
+<ul style="margin:0 0 16px;padding-left:20px;font-size:16px;line-height:1.7;color:#3f3f46;">
+<li>sprawdzać, jakie dokumenty już dotarły, i pobierać pliki,</li>
+<li>akceptować lub odrzucać dokumenty,</li>
+<li>zmieniać termin i przypomnienia albo zamknąć prośbę,</li>
+<li>wysłać kolejną prośbę (bez hasła – jedną dziennie).</li>
+</ul>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ potwierdziłeś wysłanie prośby w Monituj.{% endblock %}

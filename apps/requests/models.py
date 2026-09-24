@@ -30,6 +30,17 @@ class Request(TimeStampedModel):
     max_reminders = models.PositiveSmallIntegerField(default=3)
     reminder_send_hour = models.PositiveSmallIntegerField(default=9)
 
+    # A request sent through the public form waits here until its sender
+    # confirms it from their inbox; nothing reaches the recipient before.
+    awaiting_confirmation = models.BooleanField(default=False)
+    confirmation_token = models.CharField(
+        max_length=64, unique=True, null=True, blank=True, editable=False
+    )
+    # The optional access password must be mailed to the recipient only
+    # after confirmation, so it is kept here until then and cleared at once.
+    pending_access_password = models.CharField(max_length=128, blank=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+
     retention_days = models.PositiveSmallIntegerField(
         default=DEFAULT_RETENTION_DAYS,
         validators=[MinValueValidator(1), MaxValueValidator(MAX_RETENTION_DAYS)],
@@ -48,6 +59,10 @@ class Request(TimeStampedModel):
     @property
     def is_password_protected(self) -> bool:
         return hasattr(self, "password_protected_access")
+
+    @property
+    def is_closed(self) -> bool:
+        return self.closed_at is not None
 
 
 class RequestItemStatus(models.TextChoices):
@@ -102,3 +117,17 @@ class AnonymousRequestThrottle(TimeStampedModel):
                 name="unique_anonymous_request_per_day",
             )
         ]
+
+
+class RecipientAccess(models.Model):
+    """One permanent link per recipient email address, showing every request
+    sent to that address - by any sender - in one place."""
+
+    email = models.EmailField(unique=True)
+    token = models.CharField(
+        max_length=64, unique=True, editable=False, default=generate_public_token
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email

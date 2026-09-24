@@ -183,17 +183,31 @@ class RequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form):
 
 
 class PublicRequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form):
-    """Lets an unauthenticated visitor create a request without an account:
-    the recipient is identified by name+email directly, since there is no
-    saved client list to pick from."""
+    """Lets a visitor send a request without registering. Besides the
+    recipient, it asks for the sender: their address receives the
+    confirmation link and then the permanent link to their panel."""
 
+    sender_name = forms.CharField(
+        label="Twoje imię i nazwisko lub nazwa firmy",
+        max_length=255,
+        help_text="Odbiorca zobaczy, od kogo jest prośba.",
+        error_messages={"required": REQUIRED_MESSAGE},
+    )
+    sender_email = forms.EmailField(
+        label="Twój adres email",
+        help_text="Wyślemy tu link do potwierdzenia, a potem stały link do panelu.",
+        error_messages={
+            "required": REQUIRED_MESSAGE,
+            "invalid": "Nieprawidłowy adres email.",
+        },
+    )
     client_name = forms.CharField(
-        label="Imię i nazwisko lub nazwa firmy odbiorcy",
+        label="Imię i nazwisko lub nazwa firmy",
         max_length=255,
         error_messages={"required": REQUIRED_MESSAGE},
     )
     client_email = forms.EmailField(
-        label="Email odbiorcy",
+        label="Adres email odbiorcy",
         error_messages={
             "required": REQUIRED_MESSAGE,
             "invalid": "Nieprawidłowy adres email.",
@@ -205,6 +219,11 @@ class PublicRequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form
         widget=forms.PasswordInput,
         help_text="Zostaw puste, aby nie zabezpieczać linku hasłem.",
     )
+
+    def clean_sender_name(self):
+        # Shown in email subjects and headers, where line breaks can't go.
+        return " ".join(self.cleaned_data["sender_name"].split())
+
     accept_terms = forms.BooleanField(
         label="Akceptuję Regulamin i Politykę prywatności",
         required=True,
@@ -236,6 +255,7 @@ class RequestFilterForm(forms.Form):
         ("w_trakcie", "W trakcie"),
         ("kompletny", "Kompletne"),
         ("po_terminie", "Po terminie"),
+        ("zamkniety", "Zamknięte"),
     ]
     REMINDER_CHOICES = [
         ("", "Wszystkie"),

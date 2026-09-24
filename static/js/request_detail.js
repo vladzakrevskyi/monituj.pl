@@ -138,3 +138,21 @@
     });
   }
 })();
+
+// Closing a request is a real change for the recipient - ask first.
+document.querySelectorAll("form[data-confirm-close]").forEach((form) => {
+  form.addEventListener("submit", async (event) => {
+    if (form.dataset.confirmed) return;
+    event.preventDefault();
+    const confirmed = await Modal.confirm({
+      title: "Zamknąć prośbę?",
+      message:
+        "Odbiorca nie będzie mógł przesyłać plików, a przypomnienia przestaną być wysyłane. Przesłane pliki zostaną w panelu. Prośbę możesz później otworzyć ponownie.",
+      confirmLabel: "Zamknij prośbę",
+      danger: true,
+    });
+    if (!confirmed) return;
+    form.dataset.confirmed = "1";
+    form.requestSubmit();
+  });
+});

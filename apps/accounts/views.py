@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 
 from apps.accounts.forms import (
@@ -13,11 +14,14 @@ from apps.accounts.forms import (
     PasswordResetRequestForm,
     ProfileForm,
     RegistrationForm,
+    SetPasswordForm,
 )
+from apps.accounts.models import is_guest_account
 from apps.accounts.services import (
     AccountDeletionService,
     AuthenticationService,
     EmailChangeService,
+    GuestAccessService,
     PasswordChangeService,
     PasswordResetService,
     ProfileService,
@@ -197,7 +201,11 @@ def settings_view(request):
     # HTML ids (and label targets) unique on the settings page.
     password_form = PasswordChangeForm(auto_id="id_password_%s")
     email_form = EmailChangeForm(auto_id="id_email_%s")
-    deletion_form = AccountDeletionForm(auto_id="id_delete_%s")
+    guest = is_guest_account(request.user)
+    set_password_form = SetPasswordForm(auto_id="id_set_%s")
+    deletion_form = AccountDeletionForm(
+        auto_id="id_delete_%s", require_password=not guest
+    )
 
     if request.method == "POST" and is_demo_user(request.user):
         if is_ajax_request(request):
@@ -280,13 +288,41 @@ def settings_view(request):
                     )
             if ajax:
                 return ajax_form_error_response(email_form)
+        elif action == "set_password" and guest:
+            set_password_form = SetPasswordForm(request.POST, auto_id="id_set_%s")
+            if set_password_form.is_valid():
+                try:
+                    GuestAccessService.set_password(
+                        request.user,
+                        set_password_form.cleaned_data["new_password"],
+                        request=request,
+                    )
+                    success_message = (
+                        "Hasło zostało ustawione. Od teraz logujesz się adresem "
+                        "email i hasłem, bez dziennego limitu próśb."
+                    )
+                    # The page changes shape (no more guest cards), so reload.
+                    messages.success(request, success_message)
+                    if ajax:
+                        return success_response(
+                            {"redirect_url": reverse("accounts:settings")}
+                        )
+                    return redirect("accounts:settings")
+                except ApplicationError as exc:
+                    add_service_error(
+                        set_password_form, exc, {"WEAK_PASSWORD": "new_password"}
+                    )
+            if ajax:
+                return ajax_form_error_response(set_password_form)
         elif action == "delete":
-            deletion_form = AccountDeletionForm(request.POST, auto_id="id_delete_%s")
+            deletion_form = AccountDeletionForm(
+                request.POST, auto_id="id_delete_%s", require_password=not guest
+            )
             if deletion_form.is_valid():
                 try:
                     AccountDeletionService.request_deletion(
                         request.user,
-                        deletion_form.cleaned_data["current_password"],
+                        deletion_form.cleaned_data.get("current_password", ""),
                         request=request,
                     )
                     success_message = (
@@ -314,6 +350,8 @@ def settings_view(request):
             "password_form": password_form,
             "email_form": email_form,
             "deletion_form": deletion_form,
+            "set_password_form": set_password_form,
+            "is_guest": guest,
         },
     )
 
@@ -401,3 +439,25 @@ def account_deletion_confirm(request, token):
             **AccountDeletionService.summary(user),
         },
     )
+
+
+def guest_access(request, token):
+    """The permanent link of an account without a password: logs in and
+    opens the panel (or the page named in ?next=)."""
+    try:
+        user = GuestAccessService.user_for(token)
+    except ApplicationError as exc:
+        return render(
+            request,
+            "base/message.html",
+            {"title": "Link nie działa", "message": exc.message},
+            status=404,
+        )
+    if request.user != user:
+        GuestAccessService.login(request, user)
+    target = request.GET.get("next", "")
+    if not url_has_allowed_host_and_scheme(
+        target, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        target = reverse("accounts:panel")
+    return redirect(target)

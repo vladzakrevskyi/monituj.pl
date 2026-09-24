@@ -77,7 +77,11 @@ def test_upload_sends_complete_email_once_all_items_delivered(user, client_recor
 
     UploadDocumentService.upload_for_item(items[1], make_pdf_upload(name="b.pdf"))
     complete_emails = [m for m in mail.outbox if "Komplet" in (m.subject or "")]
-    assert len(complete_emails) == 1
+    # One thank-you to the recipient, one "you have everything" to the sender.
+    assert sorted(m.to[0] for m in complete_emails) == [
+        client_record.email,
+        user.email,
+    ]
 
 
 @pytest.mark.django_db

@@ -11,6 +11,9 @@ Otwórz listę i prześlij dokumenty:
 {{ link }}
 {% if password_protected %}
 Link jest zabezpieczony hasłem. Hasło wyślemy Ci w osobnej wiadomości.
+{% endif %}{% if portal_link %}
+Wszystkie Twoje prośby o dokumenty, także od innych nadawców, w jednym miejscu:
+{{ portal_link }}
 {% endif %}
 --
 Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.

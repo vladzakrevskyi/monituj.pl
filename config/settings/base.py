@@ -151,6 +151,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.documents.tasks.anonymize_expired_documents",
         "schedule": 3600.0,
     },
+    "delete-unconfirmed-requests": {
+        "task": "apps.requests.tasks.delete_unconfirmed_requests",
+        "schedule": 3600.0,
+    },
     "delete-expired-demo-accounts": {
         "task": "apps.demo.tasks.delete_expired_demo_accounts",
         "schedule": 3600.0,

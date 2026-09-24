@@ -26,6 +26,9 @@ class EmailTemplate(models.TextChoices):
     )
     ACCOUNT_DELETED = "konto_usuniete", "Konto usunięte"
     REQUEST_CANCELLED = "prosba_anulowana", "Prośba anulowana"
+    GUEST_REQUEST_CONFIRM = "potwierdzenie_prosby", "Potwierdzenie prośby bez konta"
+    GUEST_PANEL_ACCESS = "dostep_do_panelu", "Dostęp do panelu bez hasła"
+    COMPLETE_OWNER = "komplet_wlasciciel", "Komplet dokumentów (nadawca)"
     CONTACT_MESSAGE = "kontakt_wiadomosc", "Formularz kontaktowy"
     CONTACT_CONFIRMATION = (
         "kontakt_potwierdzenie",

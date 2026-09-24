@@ -1,0 +1,39 @@
+{% extends "base/base.html" %}
+{% load static badges formatting %}
+
+{% block title %}Moje prośby o dokumenty - Monituj{% endblock %}
+{% block page_class %}public-page{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/public.css' %}">{% endblock %}
+
+{% block content %}
+<div class="card public-head">
+<p class="eyebrow">Moje prośby o dokumenty</p>
+<h1>Wszystkie prośby w jednym miejscu</h1>
+<p class="text-muted mb-0">Prośby o dokumenty wysłane na adres <strong>{{ recipient_email }}</strong> – od wszystkich nadawców. Zachowaj ten link: zawsze jest ten sam, a nowe prośby pojawią się tu automatycznie.</p>
+</div>
+
+{% if requests %}
+<ul class="portal-list">
+{% for request_obj in requests %}
+<li class="portal-item{% if request_obj.status_code == 'zamkniety' %} portal-item--closed{% endif %}">
+<div class="portal-item__main">
+<h2>{{ request_obj.name }}</h2>
+<p class="portal-item__meta">
+{% if request_obj.created_by.display_name %}<span>Od: <strong>{{ request_obj.created_by.display_name }}</strong></span>{% endif %}
+<span>Przesłano: {{ request_obj.delivered_items }} z {{ request_obj.total_items }}</span>
+{% if request_obj.deadline %}<span>Termin: {{ request_obj.deadline|dt }}</span>{% endif %}
+</p>
+</div>
+<span class="badge {{ request_obj.status_code|badge_class }}">{{ request_obj.status_label }}</span>
+<a class="btn {% if request_obj.status_code == 'kompletny' or request_obj.status_code == 'zamkniety' %}btn-secondary{% else %}btn-primary{% endif %}" href="{% url 'public:request-detail' request_obj.public_token %}">{% if request_obj.status_code == 'kompletny' or request_obj.status_code == 'zamkniety' %}Zobacz{% else %}Prześlij dokumenty{% endif %}</a>
+</li>
+{% endfor %}
+</ul>
+{% else %}
+<div class="card"><p class="mb-0">Nie masz obecnie żadnych próśb o dokumenty.</p></div>
+{% endif %}
+
+<aside class="public-note">
+<p>Link do tej strony dostajesz w każdej wiadomości z prośbą o dokumenty. Nie przekazuj go dalej – każdy, kto go ma, zobaczy listę Twoich próśb.</p>
+</aside>
+{% endblock %}

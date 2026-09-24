@@ -15,6 +15,8 @@ const STATUS_BADGE_CLASSES = {
   dostarczony: "badge--progress",
   zaakceptowany: "badge--complete",
   odrzucony: "badge--overdue",
+  zamkniety: "badge--neutral",
+  niepotwierdzony: "badge--neutral",
 };
 
 function statusBadgeClass(code) {

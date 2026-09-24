@@ -12,8 +12,25 @@
 </div>
 <div class="page-header__actions">
 <a class="btn btn-secondary" href="{% url 'requests:edit' request_obj.id %}">Edytuj</a>
+{% if not request_obj.awaiting_confirmation %}
+<form method="post" action="{% url 'requests:close' request_obj.id %}" class="inline-form"{% if not request_obj.is_closed %} data-confirm-close{% endif %}>
+{% csrf_token %}
+{% if request_obj.is_closed %}
+<input type="hidden" name="action" value="reopen">
+<button type="submit" class="btn btn-secondary">Otwórz ponownie</button>
+{% else %}
+<button type="submit" class="btn btn-danger">Zamknij prośbę</button>
+{% endif %}
+</form>
+{% endif %}
 </div>
 </div>
+
+{% if request_obj.awaiting_confirmation %}
+<p class="alert alert--info">Ta prośba czeka na potwierdzenie linkiem z maila, który wysłaliśmy na <strong>{{ request_obj.created_by.email }}</strong>. Odbiorca jeszcze nic nie dostał. Niepotwierdzone prośby są usuwane po 48 godzinach.</p>
+{% elif request_obj.is_closed %}
+<p class="alert alert--info">Prośba zamknięta {{ request_obj.closed_at|dt }}. Odbiorca widzi ją jako zamkniętą i nie może przesyłać plików, a przypomnienia nie są wysyłane. Przesłane pliki nadal możesz pobrać.</p>
+{% endif %}
 
 <div class="card mb-5">
 <div class="meta-grid">
@@ -132,7 +149,7 @@
 {% else %}
 <p class="text-muted">Automatyczne przypomnienia są wyłączone. Możesz je włączyć w edycji przypomnienia.</p>
 {% endif %}
-<button type="button" class="btn btn-secondary btn-block mt-5" id="send-reminder" data-request-id="{{ request_obj.id }}">Wyślij przypomnienie teraz</button>
+{% if not request_obj.is_closed and not request_obj.awaiting_confirmation %}<button type="button" class="btn btn-secondary btn-block mt-5" id="send-reminder" data-request-id="{{ request_obj.id }}">Wyślij przypomnienie teraz</button>{% endif %}
 <p class="list-label mt-5">Wysłane</p>
 <ul id="reminders-history" class="history-list history-list--compact">
 {% for reminder in reminders %}

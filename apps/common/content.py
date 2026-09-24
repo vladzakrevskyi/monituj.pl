@@ -129,9 +129,11 @@ FAQ = [
         "home": False,
         "q": "Czy mogę wysłać prośbę bez zakładania konta?",
         "a": (
-            "Tak – jedną dziennie. Wypełniasz krótki formularz, a link trafia do "
-            "odbiorcy. Konto daje panel ze statusami, listę klientów i prośby bez "
-            "dziennego limitu."
+            "Tak – jedną dziennie. Wypełniasz krótki formularz, potwierdzasz go "
+            "linkiem z maila i prośba trafia do odbiorcy. Dostajesz też stały "
+            "link do panelu: zobaczysz w nim wszystkie swoje prośby, pobierzesz "
+            "pliki, zmienisz ustawienia albo zamkniesz prośbę. Gdy ustawisz "
+            "hasło, dzienny limit znika."
         ),
     },
     {

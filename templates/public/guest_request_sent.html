@@ -1,0 +1,18 @@
+{% extends "base/base.html" %}
+
+{% block title %}Sprawdź skrzynkę - Monituj{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+<p class="eyebrow">Ostatni krok</p>
+<h1>Potwierdź prośbę w mailu</h1>
+<p>Wysłaliśmy link potwierdzający{% if sender_email %} na <strong>{{ sender_email }}</strong>{% endif %}. Kliknij go, a prośba od razu trafi do odbiorcy.</p>
+<ol class="steps-list">
+<li>Otwórz maila „Potwierdź wysłanie prośby”.</li>
+<li>Kliknij <strong>Potwierdź i wyślij prośbę</strong>.</li>
+<li>Dostaniesz stały link do panelu – zapisz go, to Twój dostęp do wszystkich próśb.</li>
+</ol>
+<p class="text-muted mb-0">Nie widzisz maila? Sprawdź folder spam. Link jest ważny przez 48 godzin – niepotwierdzone prośby usuwamy.</p>
+</div>
+{% endblock %}

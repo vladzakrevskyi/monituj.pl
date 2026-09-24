@@ -1,0 +1,31 @@
+"""Permanent links that replace a login: the guest sender's panel link and
+the recipient's "all my requests" page."""
+
+from urllib.parse import urlencode
+
+from django.urls import reverse
+
+from apps.common.site import absolute_url
+from apps.requests.models import RecipientAccess
+
+
+def guest_panel_url(user, next_path=None):
+    """The one link a passwordless sender uses to open their panel - always
+    the same for the account. Optionally lands on a specific page."""
+    url = absolute_url(reverse("accounts:guest-access", args=[user.guest_access.token]))
+    if next_path:
+        url += "?" + urlencode({"next": next_path})
+    return url
+
+
+def owner_link(user, path):
+    """Where an email to a request's sender should point: straight into the
+    panel for regular accounts, through the permanent link for guests."""
+    if hasattr(user, "guest_access"):
+        return guest_panel_url(user, path)
+    return absolute_url(path)
+
+
+def recipient_portal_url(email):
+    access, _ = RecipientAccess.objects.get_or_create(email=email.strip().lower())
+    return absolute_url(reverse("public:recipient-portal", args=[access.token]))

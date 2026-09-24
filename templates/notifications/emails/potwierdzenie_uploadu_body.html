@@ -11,5 +11,6 @@
 {% include "notifications/emails/_details_close.html" %}
 {% if missing_items %}{% include "notifications/emails/_missing_items.html" with heading="Pozostało do przesłania" %}
 {% include "notifications/emails/_button.html" with url=link label="Prześlij pozostałe dokumenty" %}{% else %}<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">To był ostatni brakujący dokument. Nie musisz nic więcej robić.</p>{% endif %}
+{% include "notifications/emails/_portal.html" %}
 {% endblock %}
 {% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}

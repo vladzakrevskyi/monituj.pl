@@ -11,5 +11,6 @@
 {% include "notifications/emails/_details_close.html" %}
 {% include "notifications/emails/_notice.html" with text=reason tone="danger" %}
 {% include "notifications/emails/_button.html" with url=link label="Prześlij poprawiony dokument" %}
+{% include "notifications/emails/_portal.html" %}
 {% endblock %}
 {% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}

@@ -270,3 +270,10 @@ form p.consent > input[type="checkbox"] {
   font-size: 15px;
   margin-bottom: var(--space-6);
 }
+
+.form-hint-after {
+  margin: var(--space-3) 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}

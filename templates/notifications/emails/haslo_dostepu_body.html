@@ -12,5 +12,6 @@
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;"><tr><td align="center" style="padding:18px;background-color:#0b0b0c;border-radius:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:22px;font-weight:700;letter-spacing:2px;color:#ff6b00;">{{ password }}</td></tr></table>
 {% include "notifications/emails/_button.html" with url=link label="Otwórz prośbę" %}
 {% include "notifications/emails/_notice.html" with text="Nie przekazuj tego hasła osobom, które nie powinny mieć dostępu do dokumentów." %}
+{% include "notifications/emails/_portal.html" %}
 {% endblock %}
 {% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}

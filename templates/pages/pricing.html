@@ -33,13 +33,13 @@
 <div class="pricing-card">
 <p class="pricing-card__name">Bez konta</p>
 <p class="pricing-card__price"><strong>0 zł</strong><span>/ prośba</span></p>
-<p class="pricing-card__desc">Pojedyncza prośba o dokumenty, gdy potrzebujesz ich tylko raz.</p>
+<p class="pricing-card__desc">Prośby o dokumenty bez rejestracji – potwierdzasz je mailem, a panel otwierasz stałym linkiem.</p>
 <a class="btn btn-secondary btn-lg btn-block" href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
 <ul class="check-list">
 {% include "pages/_check.html" with text="Jedna prośba dziennie" %}
 {% include "pages/_check.html" with text="Lista dokumentów, termin i hasło" %}
 {% include "pages/_check.html" with text="Automatyczne przypomnienia" %}
-{% include "pages/_check.html" with text="Bez panelu i listy klientów" %}
+{% include "pages/_check.html" with text="Panel bez hasła – wszystkie prośby w jednym miejscu" %}
 </ul>
 </div>
 </div>

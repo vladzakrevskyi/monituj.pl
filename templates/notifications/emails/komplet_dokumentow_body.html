@@ -10,5 +10,6 @@
 {% include "notifications/emails/_row.html" with label="Status" value="Komplet dokumentów" %}
 {% include "notifications/emails/_details_close.html" %}
 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Pliki będą przechowywane przez {{ retention_days }} dni od przesłania, a następnie automatycznie usunięte.</p>
+{% include "notifications/emails/_portal.html" %}
 {% endblock %}
 {% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}

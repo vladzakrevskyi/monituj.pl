@@ -446,6 +446,11 @@ body.nav-open {
   margin-bottom: 0;
 }
 
+.card--accent {
+  border-color: #ffd4b3;
+  background: var(--color-primary-bg);
+}
+
 .card--danger {
   border-color: #f1b4b4;
 }
@@ -961,6 +966,12 @@ body.nav-open {
 .demo-bar .demo-bar__ghost:hover:not(:disabled) {
   border-color: #52525b;
   color: #fff;
+}
+
+.demo-bar--guest {
+  background: var(--color-primary-bg);
+  border-bottom: 1px solid #ffd4b3;
+  color: var(--color-text);
 }
 
 .site-nav__links a.site-nav__demo {

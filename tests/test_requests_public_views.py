@@ -1,10 +1,7 @@
 import pytest
-from django.core import mail
 from django.urls import reverse
 
-from apps.accounts.services import GUEST_OWNER_EMAIL
 from apps.audit.models import AuditEvent, AuditLog
-from apps.clients.models import Client
 from apps.requests.models import Request
 from apps.requests.services import RequestService
 from tests.conftest import page_text
@@ -153,62 +150,12 @@ def test_guest_request_create_get_renders_form(client):
 
 
 @pytest.mark.django_db
-def test_guest_request_create_creates_request_and_sends_invitation(client):
-    response = client.post(
-        reverse("public:guest-request-create"),
-        {
-            "client_name": "Odbiorca Sp. z o.o.",
-            "client_email": "odbiorca@example.com",
-            "name": "Dokumenty na koniec miesiaca",
-            "description": "",
-            "items": ["Faktura VAT"],
-            "password": "",
-            "accept_terms": "on",
-        },
-        follow=True,
-    )
-
-    assert response.status_code == 200
-    assert b"Zadanie utworzone" in response.content
-
-    request_obj = Request.objects.get(name="Dokumenty na koniec miesiaca")
-    assert request_obj.created_by.email == GUEST_OWNER_EMAIL
-    assert Client.objects.filter(
-        owner=request_obj.created_by, email="odbiorca@example.com"
-    ).exists()
-    assert any(m.to == ["odbiorca@example.com"] for m in mail.outbox)
-
-
-@pytest.mark.django_db
-def test_guest_request_create_with_password_sends_password_email(client):
-    client.post(
-        reverse("public:guest-request-create"),
-        {
-            "client_name": "Odbiorca",
-            "client_email": "odbiorca-pw@example.com",
-            "name": "Zadanie z hasłem",
-            "description": "",
-            "items": ["A"],
-            "password": "Sekretne-Haslo!1",
-            "accept_terms": "on",
-        },
-    )
-
-    request_obj = Request.objects.get(name="Zadanie z hasłem")
-    assert request_obj.is_password_protected is True
-    password_emails = [
-        m
-        for m in mail.outbox
-        if m.to == ["odbiorca-pw@example.com"] and "Sekretne-Haslo!1" in m.body
-    ]
-    assert len(password_emails) == 1
-
-
-@pytest.mark.django_db
 def test_guest_request_create_without_items_shows_error(client):
     response = client.post(
         reverse("public:guest-request-create"),
         {
+            "sender_name": "Biuro",
+            "sender_email": "biuro@example.com",
             "client_name": "Odbiorca",
             "client_email": "odbiorca@example.com",
             "name": "Bez dokumentów",
@@ -232,83 +179,3 @@ def test_guest_request_create_requires_client_name_and_email(client):
 
     assert response.status_code == 200
     assert not Request.objects.filter(name="R").exists()
-
-
-@pytest.mark.django_db
-def test_guest_request_create_second_submission_same_day_is_blocked(client):
-    client.post(
-        reverse("public:guest-request-create"),
-        {
-            "client_name": "Pierwszy",
-            "client_email": "pierwszy@example.com",
-            "name": "Pierwsze",
-            "description": "",
-            "items": ["A"],
-            "password": "",
-            "accept_terms": "on",
-        },
-    )
-
-    response = client.post(
-        reverse("public:guest-request-create"),
-        {
-            "client_name": "Drugi",
-            "client_email": "drugi@example.com",
-            "name": "Drugie",
-            "description": "",
-            "items": ["B"],
-            "password": "",
-            "accept_terms": "on",
-        },
-    )
-
-    assert response.status_code == 200
-    assert (
-        "Dzisiaj można utworzyć tylko jedno zadanie bez konta".encode()
-        in response.content
-    )
-    assert not Request.objects.filter(name="Drugie").exists()
-
-
-@pytest.mark.django_db
-def test_guest_request_create_second_submission_blocked_even_in_a_fresh_session(
-    client,
-):
-    """A brand-new test client has no cookies at all - equivalent to a fresh
-    incognito window. The daily limit must still hold because it's keyed by
-    IP, not by any client-side state."""
-    from django.test import Client as TestClient
-
-    client.post(
-        reverse("public:guest-request-create"),
-        {
-            "client_name": "Pierwszy",
-            "client_email": "pierwszy@example.com",
-            "name": "Pierwsze",
-            "description": "",
-            "items": ["A"],
-            "password": "",
-            "accept_terms": "on",
-        },
-    )
-
-    incognito_client = TestClient()
-    response = incognito_client.post(
-        reverse("public:guest-request-create"),
-        {
-            "client_name": "Drugi",
-            "client_email": "drugi@example.com",
-            "name": "Drugie",
-            "description": "",
-            "items": ["B"],
-            "password": "",
-            "accept_terms": "on",
-        },
-    )
-
-    assert response.status_code == 200
-    assert (
-        "Dzisiaj można utworzyć tylko jedno zadanie bez konta".encode()
-        in response.content
-    )
-    assert not Request.objects.filter(name="Drugie").exists()
