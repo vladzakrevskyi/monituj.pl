@@ -40,6 +40,6 @@
 </div>
 </div>
 <div class="site-footer__bottom">
-<p>&copy; {% now "Y" %} Monituj. Wszystkie prawa zastrzeżone.{% if gtm_id and seo.indexable %} <button type="button" class="site-footer__cookies" data-cookie-settings>Ustawienia cookies</button>{% endif %}</p>
+<p>&copy; {% now "Y" %} Monituj. Wszystkie prawa zastrzeżone.{% if cookie_consent.enabled and seo.indexable %} <button type="button" class="site-footer__cookies" data-cookie-settings>Ustawienia cookies</button>{% endif %}</p>
 </div>
 </footer>

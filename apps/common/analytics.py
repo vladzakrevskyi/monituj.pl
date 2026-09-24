@@ -3,8 +3,11 @@
 GTM runs only where it can't do harm and only with permission:
 - on public, indexable pages - never in the panel or on token links, whose
   addresses (/d/<token>/, reset links...) must not reach any third party;
-- only after the visitor accepts analytics cookies (Google Consent Mode v2,
-  static/js/consent.js), as Polish law requires for non-essential cookies.
+- only after the visitor accepts at least one optional cookie category
+  (Google Consent Mode v2, static/js/consent.js), as Polish law requires;
+  each tag then checks the consent of its own category.
+Which tools run inside GTM, and what the policies say about them, is set in
+apps/common/cookies.py and TRACKING_SERVICES.
 """
 
 import re
@@ -13,21 +16,6 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 GTM_PATTERN = re.compile(r"^GTM-[A-Z0-9]{4,12}$")
-
-# What GTM and Google Analytics 4 need from the browser.
-GTM_SOURCES = {
-    "script-src": ["https://www.googletagmanager.com"],
-    "img-src": [
-        "https://www.googletagmanager.com",
-        "https://*.google-analytics.com",
-    ],
-    "connect-src": [
-        "https://www.googletagmanager.com",
-        "https://*.google-analytics.com",
-        "https://*.analytics.google.com",
-    ],
-}
-
 
 def gtm_id():
     value = (getattr(settings, "GTM_ID", "") or "").strip()
@@ -38,8 +26,11 @@ def gtm_id():
 
 
 def content_security_policy():
+    from apps.common.cookies import csp_sources
+
     policy = dict(settings.CONTENT_SECURITY_POLICY)
-    if gtm_id():
-        for directive, sources in GTM_SOURCES.items():
-            policy[directive] = " ".join([policy.get(directive, ""), *sources]).strip()
+    for directive, sources in csp_sources().items():
+        # A directive the base policy leaves out falls back to default-src.
+        base = policy.get(directive, policy.get("default-src", ""))
+        policy[directive] = " ".join([base, *sources]).strip()
     return policy

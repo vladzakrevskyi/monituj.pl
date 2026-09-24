@@ -1,0 +1,58 @@
+{% comment %}Shown by static/js/consent.js; the categories and tools come from
+apps/common/cookies.py. Until the visitor decides, the page behind is dimmed and
+locked - except on the legal pages, which must stay readable before deciding.{% endcomment %}{% if cookie_lock %}<div class="cookie-overlay" data-cookie-overlay hidden></div>
+{% endif %}<div class="cookie-banner" data-cookie-banner{% if cookie_lock %} data-cookie-lock role="dialog" aria-modal="true"{% else %} role="region"{% endif %} aria-label="Zgoda na cookies" tabindex="-1" data-nosnippet hidden>
+<p class="cookie-banner__text"><strong>Pliki cookies.</strong> Za Twoją zgodą użyjemy cookies {{ cookie_consent.optional_genitive }} ({{ cookie_consent.service_names }}). Bez zgody zapiszemy tylko cookies niezbędne do działania Serwisu. Możesz też wybrać, na co się zgadzasz. <a href="{% url 'legal:cookies' %}">Polityka cookies</a></p>
+<div class="cookie-banner__actions">
+<button type="button" class="btn btn-primary btn-sm" data-consent-accept>Akceptuję wszystkie</button>
+<button type="button" class="btn btn-dark btn-sm" data-consent-reject>Odrzucam</button>
+<button type="button" class="btn btn-dark btn-sm" data-consent-customize>Ustawienia</button>
+</div>
+</div>
+
+<dialog class="cookie-dialog" data-cookie-dialog aria-labelledby="cookie-dialog-title" data-nosnippet>
+<div class="modal__inner">
+<div class="modal__header"><h2 id="cookie-dialog-title">Ustawienia cookies</h2></div>
+<p class="modal__message">Wybierz, na które pliki cookies się zgadzasz. Wybór zmienisz w każdej chwili przez „Ustawienia cookies” w stopce strony. Szczegóły: <a href="{% url 'legal:cookies' %}">Polityka cookies</a>.</p>
+<ul class="cookie-categories">
+{% for category in cookie_consent.categories %}
+<li class="cookie-category">
+<div class="cookie-category__head">
+<label class="switch">
+<input type="checkbox" role="switch" class="switch__input"{% if category.required %} checked disabled{% else %} data-consent-category="{{ category.key }}"{% endif %}>
+<span class="switch__track" aria-hidden="true"></span>
+<span class="cookie-category__name">{{ category.name }}</span>
+</label>
+{% if category.required %}<span class="cookie-category__always">Zawsze aktywne</span>{% endif %}
+</div>
+<p class="cookie-category__description">{{ category.description }}</p>
+<details class="cookie-category__details">
+{% if category.required %}
+<summary>Pliki cookies Monituj ({{ cookie_consent.necessary_cookies|length|add:1 }})</summary>
+<ul class="cookie-list">
+{% for cookie in cookie_consent.necessary_cookies %}<li><code>{{ cookie.name }}</code> – {{ cookie.purpose }}. {{ cookie.lifetime }}.</li>
+{% endfor %}<li><code>{{ cookie_consent.consent_cookie.name }}</code> – {{ cookie_consent.consent_cookie.purpose }}. {{ cookie_consent.consent_cookie.lifetime }}.</li>
+</ul>
+{% else %}
+<summary>Dostawcy i pliki cookies ({{ category.services|length }})</summary>
+{% for service in category.services %}
+<div class="cookie-service">
+<p class="cookie-service__name"><strong>{{ service.name }}</strong> – {{ service.provider }}</p>
+<p class="cookie-service__purpose">{{ service.purpose }}. <a href="{{ service.policy_url }}" target="_blank" rel="noopener noreferrer">Polityka prywatności dostawcy</a></p>
+<ul class="cookie-list">
+{% for cookie in service.cookies %}<li><code>{{ cookie.name }}</code> – {{ cookie.purpose }}. {{ cookie.lifetime }}.</li>
+{% endfor %}</ul>
+</div>
+{% endfor %}
+{% endif %}
+</details>
+</li>
+{% endfor %}
+</ul>
+<div class="cookie-dialog__actions">
+<button type="button" class="btn btn-primary" data-consent-save>Zapisz wybór</button>
+<button type="button" class="btn btn-secondary" data-consent-accept>Akceptuję wszystkie</button>
+<button type="button" class="btn btn-secondary" data-consent-reject>Odrzucam wszystkie</button>
+</div>
+</div>
+</dialog>

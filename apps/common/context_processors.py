@@ -20,12 +20,15 @@ def _in_panel(request):
 
 
 def site(request):
-    from apps.common import seo
+    from apps.common import cookies, seo
     from apps.common.content import SEGMENTS
 
     return {
         "seo": seo.for_request(request),
         "gtm_id": gtm_id(),
+        "cookie_consent": cookies.consent(),
+        # Legal pages must stay readable before deciding, so no cookie wall there.
+        "cookie_lock": getattr(request.resolver_match, "namespace", "") != "legal",
         "footer_segments": SEGMENTS,
         "site_verification": {
             "google": settings.GOOGLE_SITE_VERIFICATION,

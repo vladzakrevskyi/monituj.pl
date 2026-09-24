@@ -7,8 +7,8 @@
 <p>Pliki cookies to niewielkie pliki tekstowe zapisywane w Twojej przeglądarce przez odwiedzane strony. Administratorem Serwisu jest {{ legal.name }}.</p>
 
 <h2>2. Jakich plików cookies używamy</h2>
-{% if gtm_id %}
-<p>Serwis Monituj używa plików cookies niezbędnych do jego działania – na nie nie potrzebujemy zgody (art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. – Prawo komunikacji elektronicznej). Na stronach informacyjnych Serwisu, wyłącznie za Twoją zgodą, używamy też cookies analitycznych Google Analytics, wczytywanych przez Google Tag Manager. Nie stosujemy cookies reklamowych. Cookies analitycznych nie używamy w panelu ani na stronach z linkami do próśb.</p>
+{% if cookie_consent.enabled %}
+<p>Serwis Monituj używa plików cookies niezbędnych do jego działania – na nie nie potrzebujemy zgody (art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. – Prawo komunikacji elektronicznej). Na stronach informacyjnych Serwisu, wyłącznie za Twoją zgodą, używamy też cookies {{ cookie_consent.optional_genitive }} dostawców zewnętrznych, wczytywanych przez Google Tag Manager. Zgodę wyrażasz osobno dla każdej kategorii. Tych cookies nie używamy w panelu ani na stronach z linkami do próśb.</p>
 <h3>Cookies niezbędne</h3>
 {% else %}
 <p>Serwis Monituj używa wyłącznie plików cookies niezbędnych do jego działania. Nie stosujemy cookies analitycznych, reklamowych ani plików cookies podmiotów trzecich. Dlatego nie prosimy o zgodę – zgodnie z art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. – Prawo komunikacji elektronicznej zgoda nie jest wymagana dla cookies niezbędnych do świadczenia usługi.</p>
@@ -17,26 +17,25 @@
 <table>
 <thead><tr><th>Nazwa</th><th>Cel</th><th>Czas przechowywania</th></tr></thead>
 <tbody>
-<tr><td><code>sessionid</code></td><td>Utrzymanie sesji: logowanie do Konta oraz dostęp do prośby zabezpieczonej hasłem</td><td>Do 2 tygodni lub do wylogowania</td></tr>
-<tr><td><code>csrftoken</code></td><td>Ochrona formularzy przed atakami typu CSRF</td><td>Do 1 roku</td></tr>
-<tr><td><code>tz</code></td><td>Strefa czasowa przeglądarki (np. „Europe/Warsaw”) – do wyświetlania dat w Twoim czasie i wysyłania przypomnień o właściwej godzinie. Nie zawiera danych, które pozwalają Cię zidentyfikować</td><td>Do 1 roku</td></tr>
-<tr><td><code>messages</code></td><td>Wyświetlenie jednorazowego komunikatu po wykonaniu akcji (np. „Zmiany zostały zapisane”)</td><td>Do wyświetlenia komunikatu</td></tr>
-{% if gtm_id %}<tr><td><code>monituj-analytics-consent</code> (pamięć przeglądarki)</td><td>Zapamiętanie Twojej decyzji w sprawie cookies analitycznych</td><td>Do zmiany decyzji albo wyczyszczenia danych przeglądarki</td></tr>{% endif %}
-</tbody>
+{% for cookie in cookie_consent.necessary_cookies %}<tr><td><code>{{ cookie.name }}</code></td><td>{{ cookie.purpose }}</td><td>{{ cookie.lifetime }}</td></tr>
+{% endfor %}{% if cookie_consent.enabled %}<tr><td><code>{{ cookie_consent.consent_cookie.name }}</code></td><td>{{ cookie_consent.consent_cookie.purpose }}</td><td>{{ cookie_consent.consent_cookie.lifetime }}</td></tr>
+{% endif %}</tbody>
 </table>
 </div>
-{% if gtm_id %}
-<h3>Cookies analityczne – tylko za zgodą</h3>
+{% for category in cookie_consent.optional_categories %}
+<h3>Cookies {{ category.name|lower }} – tylko za zgodą</h3>
+<p>{{ category.description }}</p>
 <div class="table-scroll">
 <table>
 <thead><tr><th>Nazwa</th><th>Dostawca i cel</th><th>Czas przechowywania</th></tr></thead>
 <tbody>
-<tr><td><code>_ga</code></td><td>Google Analytics (Google Ireland Ltd.) – rozróżnianie odwiedzających do anonimowych statystyk odwiedzin</td><td>Do 2 lat</td></tr>
-<tr><td><code>_ga_*</code></td><td>Google Analytics – utrzymanie stanu sesji w statystykach</td><td>Do 2 lat</td></tr>
-</tbody>
+{% for service in category.services %}{% for cookie in service.cookies %}<tr><td><code>{{ cookie.name }}</code></td><td>{{ service.name }} ({{ service.provider }}) – {{ cookie.purpose }}</td><td>{{ cookie.lifetime }}</td></tr>
+{% endfor %}{% endfor %}</tbody>
 </table>
 </div>
-<p>Zgodę możesz w każdej chwili wycofać albo zmienić, klikając „Ustawienia cookies” w stopce strony. Po wycofaniu zgody usuwamy cookies analityczne z Twojej przeglądarki. Wycofanie zgody nie wpływa na zgodność z prawem przetwarzania przed jej wycofaniem.</p>
+{% endfor %}
+{% if cookie_consent.enabled %}
+<p>Pliki cookies zapisywane w domenie dostawcy (np. doubleclick.net, facebook.com) podlegają jego zasadom – linki do nich znajdziesz w „Ustawieniach cookies”. Zgodę możesz w każdej chwili wycofać albo zmienić, klikając „Ustawienia cookies” w stopce strony. Po wycofaniu zgody usuwamy z Twojej przeglądarki cookies danej kategorii zapisane w domenie Serwisu i nie wczytujemy już narzędzi tej kategorii. Wycofanie zgody nie wpływa na zgodność z prawem przetwarzania przed jej wycofaniem.</p>
 {% endif %}
 
 <h2>3. Jak zarządzać plikami cookies</h2>

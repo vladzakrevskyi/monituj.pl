@@ -1103,12 +1103,26 @@ body.nav-open {
 }
 
 /* Analytics consent (static/js/consent.js) */
+/* Until the visitor decides: page dimmed, no scrolling (static/js/consent.js). */
+.cookie-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(11, 11, 12, 0.6);
+}
+
+html.cookie-locked,
+html.cookie-locked body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 .cookie-banner {
   position: fixed;
   left: var(--space-4);
   right: var(--space-4);
   bottom: var(--space-4);
-  z-index: 60;
+  z-index: 910;
   display: flex;
   align-items: center;
   gap: var(--space-5);
@@ -1119,6 +1133,10 @@ body.nav-open {
   background: var(--color-black);
   color: #d4d4d8;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.cookie-banner:focus {
+  outline: none;
 }
 
 .cookie-banner__text {
@@ -1157,6 +1175,161 @@ body.nav-open {
   cursor: pointer;
 }
 
+.cookie-dialog {
+  max-width: 640px;
+  overflow-y: auto;
+}
+
+.cookie-categories {
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.cookie-category {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cookie-category__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cookie-category__name {
+  font-weight: 700;
+}
+
+.cookie-category__always {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+.cookie-category__description {
+  margin: var(--space-2) 0 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.cookie-category__details {
+  margin-top: var(--space-2);
+  font-size: 14px;
+}
+
+.cookie-category__details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-primary-text);
+}
+
+.cookie-service {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.cookie-service p {
+  margin: 0 0 var(--space-1);
+}
+
+.cookie-service__purpose {
+  color: var(--color-text-muted);
+}
+
+.cookie-list {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.cookie-list li + li {
+  margin-top: var(--space-1);
+}
+
+.cookie-list code {
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.cookie-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.cookie-dialog__actions .btn {
+  flex: 1 1 auto;
+}
+
+/* On/off switch built on a real checkbox, so keyboard and screen readers
+   work as with any checkbox. */
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.switch__input {
+  position: absolute;
+  opacity: 0;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.switch__track {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--color-border-strong);
+  transition: background 0.15s ease;
+}
+
+.switch__track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.switch__input:checked + .switch__track {
+  background: var(--color-primary);
+}
+
+.switch__input:checked + .switch__track::after {
+  transform: translateX(20px);
+}
+
+.switch__input:focus-visible + .switch__track {
+  outline: 2px solid var(--color-black);
+  outline-offset: 2px;
+}
+
+.switch__input:disabled,
+.switch__input:disabled ~ * {
+  cursor: default;
+}
+
+.switch__input:disabled + .switch__track {
+  opacity: 0.55;
+}
+
 @media (max-width: 720px) {
   .cookie-banner {
     flex-direction: column;
@@ -1164,7 +1337,19 @@ body.nav-open {
     gap: var(--space-3);
   }
 
+  .cookie-banner__actions {
+    flex-wrap: wrap;
+  }
+
   .cookie-banner__actions .btn {
     flex: 1;
+  }
+
+  .cookie-banner__actions .btn-primary {
+    flex-basis: 100%;
+  }
+
+  .cookie-dialog__actions .btn {
+    flex-basis: 100%;
   }
 }

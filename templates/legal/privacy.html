@@ -21,8 +21,8 @@
 <tbody>
 <tr><td>Założenie i prowadzenie Konta, świadczenie usług Serwisu, wysyłanie wiadomości związanych z usługą (np. potwierdzenie adresu e-mail, reset hasła)</td><td>art. 6 ust. 1 lit. b RODO (wykonanie umowy)</td><td>Do czasu usunięcia Konta – dane usuwamy niezwłocznie po potwierdzeniu usunięcia</td></tr>
 <tr><td>Obsługa Prośby bez konta i Konta bez hasła (adres e-mail i nazwa nadawcy, potwierdzenie wysłania, stały link do panelu), w tym ograniczenie liczby takich próśb do jednej dziennie na podstawie skrótu (hash) adresu IP. Prośby niepotwierdzone w ciągu 48 godzin są usuwane wraz z danymi nadawcy</td><td>art. 6 ust. 1 lit. b RODO oraz art. 6 ust. 1 lit. f RODO (uzasadniony interes: zapobieganie nadużyciom)</td><td>Do czasu usunięcia Konta bez hasła (dane niepotwierdzonych próśb – do 48 godzin); skrót adresu IP – przez okres niezbędny do przeciwdziałania nadużyciom</td></tr>
-{% if gtm_id %}<tr><td>Statystyki odwiedzin stron informacyjnych Serwisu (Google Analytics przez Google Tag Manager: identyfikator cookie, przybliżona lokalizacja, informacje o urządzeniu i odwiedzonych stronach)</td><td>art. 6 ust. 1 lit. a RODO (zgoda wyrażona w banerze cookies, którą można w każdej chwili wycofać)</td><td>Do wycofania zgody; dane w Google Analytics – 14 miesięcy</td></tr>
-{% endif %}<tr><td>Wysyłanie przypomnień o godzinie dopasowanej do nadawcy i Odbiorcy (strefa czasowa przeglądarki, np. „Europe/Warsaw”)</td><td>art. 6 ust. 1 lit. b RODO (wykonanie umowy) oraz art. 6 ust. 1 lit. f RODO (uzasadniony interes: wysyłanie przypomnień w porze dnia, a nie w nocy)</td><td>Tak długo jak Konto albo stały link Odbiorcy</td></tr>
+{% for category in cookie_consent.optional_categories %}<tr><td>Cookies {{ category.name|lower }} na stronach informacyjnych Serwisu, wczytywane przez Google Tag Manager: {% for service in category.services %}{{ service.name }} – {{ service.purpose }} ({{ service.data }}){% if not forloop.last %}; {% endif %}{% endfor %}</td><td>art. 6 ust. 1 lit. a RODO (zgoda wyrażona w banerze cookies osobno dla tej kategorii, którą można w każdej chwili wycofać)</td><td>Do wycofania zgody; {% for service in category.services %}{{ service.retention }}{% if not forloop.last %}; {% endif %}{% endfor %}</td></tr>
+{% endfor %}<tr><td>Wysyłanie przypomnień o godzinie dopasowanej do nadawcy i Odbiorcy (strefa czasowa przeglądarki, np. „Europe/Warsaw”)</td><td>art. 6 ust. 1 lit. b RODO (wykonanie umowy) oraz art. 6 ust. 1 lit. f RODO (uzasadniony interes: wysyłanie przypomnień w porze dnia, a nie w nocy)</td><td>Tak długo jak Konto albo stały link Odbiorcy</td></tr>
 <tr><td>Udostępnienie Odbiorcy stałego linku do listy Próśb wysłanych na jego adres e-mail, a Użytkownikowi z potwierdzonym adresem – listy Próśb otrzymanych w jego Koncie (adres e-mail Odbiorcy i losowy identyfikator linku)</td><td>art. 6 ust. 1 lit. f RODO (uzasadniony interes: wygodny dostęp Odbiorcy do jego próśb)</td><td>Dopóki istnieje co najmniej jedna Prośba wysłana na ten adres</td></tr>
 <tr><td>Udostępnienie konta demonstracyjnego, w tym ograniczenie liczby kont demonstracyjnych na podstawie skrótu (hash) adresu IP</td><td>art. 6 ust. 1 lit. b RODO oraz art. 6 ust. 1 lit. f RODO (uzasadniony interes: zapobieganie nadużyciom)</td><td>24 godziny – potem konto i wszystkie jego dane są usuwane automatycznie</td></tr>
 <tr><td>Zapewnienie bezpieczeństwa Serwisu, prowadzenie dziennika zdarzeń (m.in. adres IP, typ przeglądarki, czas zdarzenia)</td><td>art. 6 ust. 1 lit. f RODO (uzasadniony interes: bezpieczeństwo i rozliczalność)</td><td>Przez okres korzystania z Serwisu, a następnie do upływu terminu przedawnienia roszczeń</td></tr>
@@ -42,13 +42,14 @@
 <li>dostawcy infrastruktury serwerowej (hostingu): {{ legal.hosting_provider }};</li>
 <li>dostawcy usługi wysyłki poczty e-mail: {{ legal.email_provider }};</li>
 <li>podmiotom świadczącym nam usługi informatyczne, prawne lub księgowe – w zakresie niezbędnym do ich wykonania;</li>
-{% if gtm_id %}<li>Google Ireland Limited (Google Analytics, Google Tag Manager) – wyłącznie gdy wyrazisz zgodę na cookies analityczne.</li>
-{% endif %}
+{% if cookie_consent.enabled %}<li>Google Ireland Ltd. (Google Tag Manager – narzędzie, które wczytuje poniższe usługi) – wyłącznie gdy wyrazisz zgodę na co najmniej jedną kategorię cookies;</li>
+{% for service in cookie_consent.services %}<li>{{ service.provider }} ({{ service.name }}) – wyłącznie gdy wyrazisz zgodę na cookies {{ service.category_genitive }};</li>
+{% endfor %}{% endif %}
 </ul>
 <p>Dane mogą zostać udostępnione organom publicznym, jeżeli wymagają tego przepisy prawa.</p>
 
 <h2>5. Przekazywanie danych poza EOG</h2>
-<p>Serwery, na których przechowujemy dane, znajdują się w: {{ legal.hosting_location }}. Jeżeli któryś z naszych dostawców przekazywałby dane poza EOG, odbywa się to wyłącznie na podstawie decyzji Komisji Europejskiej stwierdzającej odpowiedni stopień ochrony lub standardowych klauzul umownych (art. 45–46 RODO).{% if gtm_id %} Dane z Google Analytics mogą być przekazywane do Google LLC w USA na podstawie decyzji Komisji Europejskiej z 10 lipca 2023 r. w sprawie ram ochrony danych UE–USA (EU-U.S. Data Privacy Framework).{% endif %}</p>
+<p>Serwery, na których przechowujemy dane, znajdują się w: {{ legal.hosting_location }}. Jeżeli któryś z naszych dostawców przekazywałby dane poza EOG, odbywa się to wyłącznie na podstawie decyzji Komisji Europejskiej stwierdzającej odpowiedni stopień ochrony lub standardowych klauzul umownych (art. 45–46 RODO).{% if cookie_consent.transfers %} Dane z narzędzi, na które wyrazisz zgodę w banerze cookies, mogą być przekazywane do USA ({% for service in cookie_consent.transfers %}{{ service.name }} – {{ service.transfer }}{% if not forloop.last %}; {% endif %}{% endfor %}) na podstawie decyzji Komisji Europejskiej z 10 lipca 2023 r. w sprawie ram ochrony danych UE–USA (EU-U.S. Data Privacy Framework).{% endif %}</p>
 
 <h2>6. Twoje prawa</h2>
 <p>Przysługuje Ci prawo do:</p>
@@ -73,7 +74,7 @@
 <p>Stosujemy środki techniczne i organizacyjne odpowiednie do ryzyka, w szczególności: szyfrowane połączenia (HTTPS), przechowywanie haseł wyłącznie w postaci skrótu (algorytm Argon2), unikalne i trudne do odgadnięcia linki do próśb, opcjonalne hasła dostępu do próśb, przechowywanie plików w niepublicznym magazynie z kontrolą dostępu oraz automatyczne usuwanie dokumentów po okresie przechowywania.</p>
 
 <h2>10. Pliki cookies</h2>
-<p>{% if gtm_id %}Serwis używa niezbędnych plików cookies oraz – wyłącznie za Twoją zgodą – cookies analitycznych.{% else %}Serwis używa wyłącznie niezbędnych plików cookies.{% endif %} Szczegóły znajdziesz w <a href="{% url 'legal:cookies' %}">Polityce cookies</a>.</p>
+<p>{% if cookie_consent.enabled %}Serwis używa niezbędnych plików cookies oraz – wyłącznie za Twoją zgodą – cookies {{ cookie_consent.optional_genitive }}.{% else %}Serwis używa wyłącznie niezbędnych plików cookies.{% endif %} Szczegóły znajdziesz w <a href="{% url 'legal:cookies' %}">Polityce cookies</a>.</p>
 
 <h2>11. Zmiany polityki</h2>
 <p>Możemy aktualizować tę politykę, np. w razie zmiany przepisów lub funkcji Serwisu. O istotnych zmianach poinformujemy Użytkowników drogą e-mail.</p>

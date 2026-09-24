@@ -191,6 +191,10 @@ SITE_URL = env("SITE_URL", default="http://localhost:8000")
 # Google Tag Manager container, e.g. GTM-NWZ96857. Empty = no analytics.
 # See apps/common/analytics.py for where and when it loads.
 GTM_ID = env("GTM_ID", default="")
+# Tools loaded through GTM, keys from apps/common/cookies.py SERVICES:
+# ga4, google_ads, meta_pixel, clarity, linkedin. They decide the categories in
+# the cookie banner, the policies and the CSP. Ignored without GTM_ID.
+TRACKING_SERVICES = env.list("TRACKING_SERVICES", default=["ga4"])
 
 # Search Console / Bing Webmaster Tools ownership tokens (optional).
 GOOGLE_SITE_VERIFICATION = env("GOOGLE_SITE_VERIFICATION", default="")
