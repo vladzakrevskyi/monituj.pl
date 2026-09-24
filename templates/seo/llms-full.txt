@@ -33,7 +33,7 @@ Monituj nie jest dyskiem na pliki. Dysk i mail tylko przechowują to, co już do
 
 ## Bezpieczeństwo i RODO
 
-Każda prośba ma unikalny, trudny do odgadnięcia link. Pliki trafiają do niepublicznego magazynu z kontrolą dostępu, typ zawartości każdego pliku jest sprawdzany, połączenie jest szyfrowane, a hasła kont przechowywane jako skrót Argon2. Administratorem danych klientów jest firma korzystająca z Monituj; Monituj przetwarza je w jej imieniu na podstawie umowy powierzenia (art. 28 RODO) zawieranej wraz z Regulaminem. Pliki są usuwane automatycznie po okresie wybranym dla prośby.
+Każda prośba ma unikalny, trudny do odgadnięcia link. Pliki są szyfrowane na dysku (AES-256, osobny klucz dla każdego pliku) i trafiają do niepublicznego magazynu z kontrolą dostępu, każde pobranie jest zapisywane w historii prośby, typ zawartości każdego pliku jest sprawdzany, połączenie jest szyfrowane, a hasła kont przechowywane jako skrót Argon2. Administratorem danych klientów jest firma korzystająca z Monituj; Monituj przetwarza je w jej imieniu na podstawie umowy powierzenia (art. 28 RODO) zawieranej wraz z Regulaminem. Pliki są usuwane automatycznie po okresie wybranym dla prośby.
 
 ## Cena
 

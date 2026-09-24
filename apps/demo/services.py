@@ -4,7 +4,6 @@ from datetime import datetime, time, timedelta
 
 from django.contrib.auth import login
 from django.contrib.contenttypes.models import ContentType
-from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
 
@@ -16,7 +15,7 @@ from apps.common.exceptions import RateLimitedAppError
 from apps.common.security import get_client_ip, hash_ip
 from apps.demo.models import DEMO_EMAIL_DOMAIN, DemoAccount
 from apps.documents.models import Document, DocumentStatus
-from apps.documents.storage import private_storage
+from apps.documents.storage import save_document_file
 from apps.reminders.models import Reminder, ReminderKind
 from apps.requests.models import Request, RequestItem
 from apps.requests.models import RequestItemStatus as Status
@@ -114,7 +113,7 @@ class _Seeder:
             }.get(status, DocumentStatus.UPLOADED)
             content = _pdf(name)
             key = f"demo/{secrets.token_hex(16)}.pdf"
-            private_storage.save(key, ContentFile(content))
+            encryption_fields = save_document_file(key, content)
             document = Document.objects.create(
                 request_item=item,
                 storage_key=key,
@@ -123,6 +122,7 @@ class _Seeder:
                 size=len(content),
                 checksum=hashlib.sha256(content).hexdigest(),
                 status=document_status,
+                **encryption_fields,
             )
             Document.objects.filter(pk=document.pk).update(uploaded_at=uploaded)
             self.log(AuditEvent.DOCUMENT_UPLOADED, document, uploaded)

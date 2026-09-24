@@ -106,6 +106,13 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 PRIVATE_STORAGE_ROOT = BASE_DIR / "storage"
+# Master key for encrypting uploaded documents at rest (AES-256-GCM, see
+# apps/documents/encryption.py). Generate: README 'Szyfrowanie dokumentów'.
+# Required in production. Keep a copy outside the
+# server: without it the stored documents can't be read.
+DOCUMENTS_ENCRYPTION_KEY = env("DOCUMENTS_ENCRYPTION_KEY", default="")
+# Previous master keys while rotating (comma separated) - decrypt only.
+DOCUMENTS_ENCRYPTION_OLD_KEYS = env.list("DOCUMENTS_ENCRYPTION_OLD_KEYS", default=[])
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

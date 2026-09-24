@@ -1,6 +1,5 @@
 import secrets
 
-from django.core.files.base import ContentFile
 from django.db.models import Sum
 from django.utils import timezone
 
@@ -12,7 +11,7 @@ from apps.common.exceptions import (
     ValidationAppError,
 )
 from apps.documents.models import Document, DocumentStatus
-from apps.documents.storage import private_storage
+from apps.documents.storage import private_storage, save_document_file
 from apps.documents.validation import validate_upload
 from apps.notifications.inbox import notify_upload
 from apps.notifications.models import EmailStatus, EmailTemplate
@@ -108,7 +107,7 @@ class UploadDocumentService:
         session_key,
     ):
         storage_key = _generate_storage_key(validated.extension)
-        private_storage.save(storage_key, ContentFile(validated.content))
+        encryption_fields = save_document_file(storage_key, validated.content)
 
         safe_original_name = uploaded_file_name.rsplit("/", 1)[-1].rsplit("\\", 1)[-1][
             :255
@@ -122,6 +121,7 @@ class UploadDocumentService:
             size=validated.size,
             checksum=validated.checksum,
             uploaded_by_session_key=session_key,
+            **encryption_fields,
         )
 
     @staticmethod

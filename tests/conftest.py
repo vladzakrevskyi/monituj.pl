@@ -40,6 +40,16 @@ def _isolate_document_storage(tmp_path, monkeypatch):
     monkeypatch.setitem(private_storage.__dict__, "base_location", str(tmp_path))
 
 
+TEST_ENCRYPTION_KEY = "q0uHc4t0Z5a6k8m1T2v3w4x5y6z7A8B9C0D1E2F3G4c="
+
+
+@pytest.fixture(autouse=True)
+def _documents_encrypted(settings):
+    """Like production: every stored document is encrypted."""
+    settings.DOCUMENTS_ENCRYPTION_KEY = TEST_ENCRYPTION_KEY
+    settings.DOCUMENTS_ENCRYPTION_OLD_KEYS = []
+
+
 @pytest.fixture(autouse=True)
 def _no_published_legal_version(settings):
     """Tests don't depend on the local .env: no documents version unless a

@@ -135,6 +135,9 @@ def request_detail(request, request_id):
     history = AuditService.history_for_request(request_obj)
     for entry in history:
         entry.label_pl = translate_event(entry.event)
+        by = (entry.metadata or {}).get("by")
+        if by:
+            entry.label_pl += " (Ty)" if by == "owner" else " (odbiorca)"
     status = compute_status(request_obj)
     return render(
         request,

@@ -100,8 +100,9 @@ FAQ = [
         "q": "Czy dokumenty moich klientów są bezpieczne?",
         "a": (
             "Każda prośba ma unikalny, trudny do odgadnięcia link, który możesz "
-            "dodatkowo zabezpieczyć hasłem. Pliki trafiają do niepublicznego "
-            "magazynu z kontrolą dostępu, połączenie jest szyfrowane, a hasła kont "
+            "dodatkowo zabezpieczyć hasłem. Pliki są szyfrowane na dysku (AES-256) "
+            "i leżą w niepublicznym magazynie z kontrolą dostępu, każde pobranie "
+            "trafia do historii prośby, połączenie jest szyfrowane, a hasła kont "
             "przechowujemy wyłącznie w postaci skrótu."
         ),
     },

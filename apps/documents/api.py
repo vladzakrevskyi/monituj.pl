@@ -1,15 +1,20 @@
+import io
 import json
+import logging
 import mimetypes
 
 from django.http import FileResponse
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from apps.audit.models import AuditEvent
+from apps.audit.services import AuditService
 from apps.common import throttle
 from apps.common.decorators import api_login_required
 from apps.common.exceptions import ValidationAppError
 from apps.common.formatting import format_datetime
 from apps.common.responses import error_response, success_response
+from apps.documents.encryption import DecryptionError
 from apps.documents.services import (
     UPLOADS_PER_IP_HOUR,
     DocumentAccessService,
@@ -17,9 +22,11 @@ from apps.documents.services import (
     GuestDeleteService,
     UploadDocumentService,
 )
-from apps.documents.storage import private_storage
+from apps.documents.storage import read_document_file
 from apps.requests.models import RequestItem
 from apps.requests.services import PublicAccessService, RequestService
+
+logger = logging.getLogger("monituj")
 
 
 @require_http_methods(["POST"])
@@ -81,16 +88,40 @@ def public_delete_document(request, document_id):
     )
 
 
+def _downloader(document, request):
+    """Who fetched the file, for the request's history (never their address -
+    the history is shown to the sender)."""
+    user = request.user
+    if user.is_authenticated and document.request_item.request.created_by_id == user.pk:
+        return "owner"
+    return "recipient"
+
+
 @require_http_methods(["GET"])
 def download_document(request, document_id):
     document = DocumentAccessService.get_for_download(document_id, request)
-    file_handle = private_storage.open(document.storage_key, "rb")
+    try:
+        content = read_document_file(document)
+    except DecryptionError, FileNotFoundError:
+        logger.exception("Document %s could not be read", document.pk)
+        return error_response(
+            "FILE_UNREADABLE",
+            "Nie udało się otworzyć pliku. Napisz do nas, sprawdzimy to.",
+            status=500,
+        )
+    AuditService.log(
+        AuditEvent.FILE_DOWNLOAD,
+        actor=request.user if request.user.is_authenticated else None,
+        target=document,
+        request=request,
+        metadata={"by": _downloader(document, request)},
+    )
     content_type = (
         mimetypes.guess_type(document.original_filename)[0]
         or "application/octet-stream"
     )
     response = FileResponse(
-        file_handle, as_attachment=True, filename=document.original_filename
+        io.BytesIO(content), as_attachment=True, filename=document.original_filename
     )
     response["Content-Type"] = content_type
     response["X-Content-Type-Options"] = "nosniff"

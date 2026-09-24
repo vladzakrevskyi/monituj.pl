@@ -423,6 +423,7 @@ Najważniejsze zmienne:
 | `MAINTENANCE_MODE`, `MAINTENANCE_ALLOWED_IPS` | Tryb serwisowy – patrz sekcja „Tryb serwisowy” niżej. Domyślnie wyłączony |
 | `LEGAL_EFFECTIVE_DATE` | Data wejścia w życie Regulaminu, Polityki prywatności i umowy powierzenia, np. `2026-10-01` albo `01.10.2026`. To zarazem wersja dokumentów: przy każdej akceptacji zapisujemy, której wersji dotyczyła |
 | `LEGAL_BACKUP_DAYS` | Liczba dni przechowywania kopii zapasowych u hostingu (krok 11), np. `7` – ta liczba jest podana w polityce prywatności |
+| `DOCUMENTS_ENCRYPTION_KEY` | **Wymagany.** Klucz główny szyfrujący przesłane dokumenty (zob. „Szyfrowanie dokumentów”). Wygeneruj na serwerze: `python3 -c "import os,base64;print(base64.urlsafe_b64encode(os.urandom(32)).decode())"` i **zapisz kopię poza serwerem** |
 | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | Logowanie przez Google (opcjonalnie, zob. „Logowanie przez Google” w kroku 10). Puste = przyciski Google się nie pokazują |
 
 Wartości ze spacjami (np. adres firmy) wpisuj bez cudzysłowów.
@@ -621,6 +622,29 @@ docker compose up -d
 
 Wyłączenie: `MAINTENANCE_MODE=False` i ponownie `docker compose up -d`. Adres `/api/health/` działa także w trybie serwisowym. Zadania w tle (przypomnienia, usuwanie plików po terminie) nie są wstrzymywane.
 
+### Szyfrowanie dokumentów
+
+Pliki przesłane przez klientów leżą w wolumenie Dockera `monituj_storage` (na serwerze: `/var/lib/docker/volumes/monituj_storage/_data/`) pod losowymi nazwami i są **zaszyfrowane** (AES-256-GCM, osobny klucz dla każdego pliku). Klucze plików są w bazie danych, zaszyfrowane kluczem głównym `DOCUMENTS_ENCRYPTION_KEY`, który jest tylko w `.env`. Skopiowany dysk, wolumen albo kopia zapasowa hostingu bez tego klucza jest bezużyteczna. Szczegóły: `apps/documents/encryption.py`.
+
+- **Zapisz klucz poza serwerem** (menedżer haseł). Bez niego żadnego dokumentu nie da się odczytać – nie ma „resetu”.
+- Bez klucza strona produkcyjna się nie uruchomi – to celowe.
+- Pliki zapisane przed włączeniem szyfrowania zaszyfruje polecenie (można przerwać i uruchomić ponownie):
+
+```bash
+docker compose exec web python manage.py encrypt_documents
+```
+
+- Zmiana klucza głównego (np. gdy ktoś mógł go poznać): nowy klucz wpisz w `DOCUMENTS_ENCRYPTION_KEY`, stary w `DOCUMENTS_ENCRYPTION_OLD_KEYS`, `docker compose up -d`, potem:
+
+```bash
+docker compose exec web python manage.py rewrap_document_keys
+```
+
+  Na koniec usuń stary klucz z `DOCUMENTS_ENCRYPTION_OLD_KEYS` i ponownie `docker compose up -d`.
+- Szyfrowanie chroni przed wyciekiem dysku i kopii zapasowych, nie przed przejęciem działającego serwera (klucz jest w jego `.env`) – dlatego nadal ważne są aktualizacje i zabezpieczenia z kroku 3.
+
+Każde pobranie dokumentu jest zapisywane w dzienniku zdarzeń (kto: nadawca czy odbiorca, kiedy, adres IP) i widoczne w historii prośby.
+
 ### Zmiana dokumentów prawnych
 
 Każda akceptacja Regulaminu (z umową powierzenia) i Polityki prywatności jest zapisywana w tabeli `LegalAcceptance`: wersja (`LEGAL_EFFECTIVE_DATE`), data, sposób (rejestracja hasłem, Google, prośba bez konta, akceptacja nowej wersji), adres IP i przeglądarka. Podgląd: `/admin/` → „Zgody i akceptacje” (tylko do odczytu).
@@ -670,6 +694,7 @@ Podłącz darmowy zewnętrzny monitoring dostępności (UptimeRobot, Better Stac
 - [ ] Testowy e-mail dotarł i nie trafił do spamu (SPF, DKIM i DMARC skonfigurowane).
 - [ ] Wszystkie zmienne `LEGAL_*` są uzupełnione, a Regulamin, Polityka prywatności i Umowa powierzenia zostały sprawdzone przez prawnika.
 - [ ] Kopie zapasowe u hostingu są włączone; przywracanie zostało przetestowane przynajmniej raz.
+- [ ] `DOCUMENTS_ENCRYPTION_KEY` jest ustawiony, a jego kopia leży poza serwerem.
 - [ ] `LEGAL_BACKUP_DAYS` odpowiada liczbie dni przechowywania kopii u hostingu.
 - [ ] Jeśli włączasz logowanie przez Google: aplikacja OAuth jest opublikowana, a adres przekierowania zgadza się z `SITE_URL`.
 - [ ] Skonfigurowany jest zewnętrzny monitoring `/api/health/`.

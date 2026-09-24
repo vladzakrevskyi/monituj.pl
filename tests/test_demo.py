@@ -11,7 +11,7 @@ from apps.clients.models import Client
 from apps.demo.models import DemoAccount
 from apps.demo.services import DEMO_MAX_PER_IP, DemoService
 from apps.documents.models import Document
-from apps.documents.storage import private_storage
+from apps.documents.storage import private_storage, read_document_file
 from apps.notifications.models import EmailLog, EmailStatus
 from apps.requests.models import Request
 
@@ -44,8 +44,7 @@ def test_demo_files_are_valid_pdfs(client):
     _start(client)
     document = Document.objects.first()
 
-    with private_storage.open(document.storage_key) as handle:
-        content = handle.read()
+    content = read_document_file(document)
 
     assert content.startswith(b"%PDF-1.4")
     assert content.rstrip().endswith(b"%%EOF")

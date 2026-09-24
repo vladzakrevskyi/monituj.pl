@@ -74,7 +74,7 @@
 <p>Nie podejmujemy wobec Ciebie decyzji opartych wyłącznie na zautomatyzowanym przetwarzaniu, w tym profilowaniu, które wywoływałyby skutki prawne lub w podobny sposób istotnie na Ciebie wpływały. Automatyczne przypomnienia e-mail są wysyłane według ustawień wybranych przez Użytkownika.</p>
 
 <h2>9. Bezpieczeństwo</h2>
-<p>Stosujemy środki techniczne i organizacyjne odpowiednie do ryzyka, w szczególności: szyfrowane połączenia (HTTPS), przechowywanie haseł wyłącznie w postaci skrótu (algorytm Argon2), unikalne i trudne do odgadnięcia linki do próśb, opcjonalne hasła dostępu do próśb, przechowywanie plików w niepublicznym magazynie z kontrolą dostępu oraz automatyczne usuwanie dokumentów po okresie przechowywania.</p>
+<p>Stosujemy środki techniczne i organizacyjne odpowiednie do ryzyka, w szczególności: szyfrowane połączenia (HTTPS), szyfrowanie przesłanych dokumentów na dysku algorytmem AES-256 (klucz przechowywany poza bazą danych i kopiami zapasowymi), rejestrowanie każdego pobrania dokumentu, przechowywanie haseł wyłącznie w postaci skrótu (algorytm Argon2), unikalne i trudne do odgadnięcia linki do próśb, opcjonalne hasła dostępu do próśb, przechowywanie plików w niepublicznym magazynie z kontrolą dostępu oraz automatyczne usuwanie dokumentów po okresie przechowywania.</p>
 
 <h2>10. Pliki cookies</h2>
 <p>{% if cookie_consent.enabled %}Serwis używa niezbędnych plików cookies oraz – wyłącznie za Twoją zgodą – cookies {{ cookie_consent.optional_genitive }}.{% else %}Serwis używa wyłącznie niezbędnych plików cookies.{% endif %} Szczegóły znajdziesz w <a href="{% url 'legal:cookies' %}">Polityce cookies</a>.</p>

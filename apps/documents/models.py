@@ -29,6 +29,11 @@ class Document(TimeStampedModel):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     uploaded_by_session_key = models.CharField(max_length=64, blank=True)
     anonymized_at = models.DateTimeField(null=True, blank=True)
+    # Encryption at rest (apps/documents/encryption.py): the file's own key,
+    # encrypted with the master key, and which master key that was. Empty for
+    # files stored before encryption was switched on.
+    wrapped_key = models.TextField(blank=True)
+    encryption_key_id = models.CharField(max_length=16, blank=True)
 
     class Meta:
         indexes = [models.Index(fields=["request_item", "status"])]
