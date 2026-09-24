@@ -1,0 +1,21 @@
+{% extends "base/app_base.html" %}
+
+{% block title %}Otrzymane prośby - Monituj{% endblock %}
+{% block page_class %}page--wide{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<div>
+<h1>Otrzymane prośby</h1>
+<p class="page-header__sub">Prośby o dokumenty, które inni wysłali na Twój adres {{ user.email }} – także te wysłane, zanim założyłeś konto.</p>
+</div>
+</div>
+
+{% if email_verified %}
+{% include "requests/_received_table.html" %}
+{% else %}
+<div class="card">
+<p class="mb-0">Potwierdź swój adres email linkiem, który wysłaliśmy po rejestracji – wtedy zobaczysz tu prośby wysłane na ten adres.</p>
+</div>
+{% endif %}
+{% endblock %}

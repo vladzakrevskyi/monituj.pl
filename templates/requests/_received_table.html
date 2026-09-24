@@ -1,0 +1,43 @@
+{% load badges formatting %}
+<nav class="tabs" aria-label="Widok">
+{% for tab in tabs %}
+<a class="tabs__item{% if tab.active %} is-active{% endif %}" href="?widok={{ tab.key }}"{% if tab.active %} aria-current="page"{% endif %}>{{ tab.label }}<span class="tabs__count">{{ tab.count }}</span></a>
+{% endfor %}
+</nav>
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>Prośba</th>
+<th>Od</th>
+<th>Termin</th>
+<th>Przesłano</th>
+<th>Status</th>
+<th class="cell-right">Akcje</th>
+</tr>
+</thead>
+<tbody>
+{% for request_obj in rows %}
+<tr>
+<td class="cell-strong" data-label="Prośba"><a class="link-plain" href="{% url 'public:request-detail' request_obj.public_token %}">{{ request_obj.name }}</a></td>
+<td data-label="Od">{{ request_obj.created_by.display_name|default:request_obj.created_by.email }}</td>
+<td class="cell-muted" data-label="Termin">{% if request_obj.deadline %}{{ request_obj.deadline|dt }}{% else %}Bez terminu{% endif %}</td>
+<td data-label="Przesłano">
+<div class="progress-cell">
+<progress class="progress-bar" value="{{ request_obj.delivered_items }}" max="{{ request_obj.total_items|default:1 }}"></progress>
+<span>{{ request_obj.delivered_items }}/{{ request_obj.total_items }}</span>
+</div>
+</td>
+<td data-label="Status"><span class="badge {{ request_obj.status_code|badge_class }}">{{ request_obj.status_label }}</span></td>
+<td class="cell-right cell-actions" data-label="Akcje">
+<div class="table-actions">
+<a class="btn {% if request_obj.is_finished %}btn-secondary{% else %}btn-primary{% endif %} btn-sm" href="{% url 'public:request-detail' request_obj.public_token %}">{% if request_obj.is_finished %}Zobacz{% else %}Prześlij dokumenty{% endif %}</a>
+</div>
+</td>
+</tr>
+{% empty %}
+<tr class="table-empty"><td colspan="6">{% if active_view == "zakonczone" %}Nie masz jeszcze zakończonych próśb.{% elif active_view == "otwarte" %}Nikt nie czeka teraz na Twoje dokumenty.{% else %}Nie masz jeszcze żadnych próśb o dokumenty.{% endif %}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
