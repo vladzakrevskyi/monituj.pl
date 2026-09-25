@@ -190,6 +190,10 @@ td.cell-right {
   .table-empty td {
     padding: var(--space-6) 0;
   }
+
+  td.cell-strong {
+    width: 100%;
+  }
 }
 
 td.cell-actions {
