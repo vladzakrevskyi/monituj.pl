@@ -1,0 +1,10 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Potwierdź, że to Ty dodajesz logowanie przez Google.{% endblock %}
+{% block eyebrow %}Bezpieczeństwo konta{% endblock %}
+{% block title %}Potwierdź połączenie z Google{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Ktoś chce dodać do Twojego konta Monituj logowanie przez Google. Jeśli to Ty, kliknij przycisk w przeglądarce, w której jesteś zalogowany.</p>
+{% include "notifications/emails/_button.html" with url=confirm_url label="Potwierdź i przejdź do Google" %}
+{% include "notifications/emails/_notice.html" with text="Jeśli to nie Ty, zignoruj tę wiadomość i ustaw hasło do konta – ktoś mógł przejąć Twoją sesję." tone="danger" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}
