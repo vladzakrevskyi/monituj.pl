@@ -214,3 +214,22 @@ def test_refused_download_is_not_recorded_as_one(client, document):
     client.get(reverse("documents_api:download", args=[document.pk]))
 
     assert not AuditLog.objects.filter(event=AuditEvent.FILE_DOWNLOAD).exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("bad_key", ["not base64!!", "c2hvcnQ=", ""])
+def test_broken_master_key_gives_the_same_clear_error(
+    client, user, document, settings, bad_key
+):
+    settings.DOCUMENTS_ENCRYPTION_KEY = bad_key
+    client.force_login(user)
+
+    response = client.get(reverse("documents_api:download", args=[document.pk]))
+
+    assert response.status_code == 500
+    assert response.json()["error"]["code"] == "FILE_UNREADABLE"
+
+
+@pytest.mark.django_db
+def test_every_page_loads_the_download_helper(client):
+    assert "js/download.js" in client.get("/").content.decode()

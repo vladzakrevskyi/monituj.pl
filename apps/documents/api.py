@@ -3,6 +3,7 @@ import json
 import logging
 import mimetypes
 
+from django.core.exceptions import ImproperlyConfigured
 from django.http import FileResponse
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
@@ -102,7 +103,9 @@ def download_document(request, document_id):
     document = DocumentAccessService.get_for_download(document_id, request)
     try:
         content = read_document_file(document)
-    except DecryptionError, FileNotFoundError:
+    except DecryptionError, ImproperlyConfigured, OSError, ValueError:
+        # Wrong or malformed master key, a damaged or missing file: the person
+        # gets a short message, the details go to the log.
         logger.exception("Document %s could not be read", document.pk)
         return error_response(
             "FILE_UNREADABLE",
