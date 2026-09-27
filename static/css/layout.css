@@ -735,6 +735,24 @@ body.nav-open {
   color: #fff;
 }
 
+.app-cookies {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-2);
+  padding: var(--space-1) 0;
+  border: 0;
+  background: none;
+  color: #8a8b94;
+  font: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.app-cookies:hover {
+  color: #d4d4d8;
+}
+
 .app-main {
   flex: 1;
   min-width: 0;

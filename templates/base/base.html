@@ -33,8 +33,8 @@
 {% if site_verification.google %}<meta name="google-site-verification" content="{{ site_verification.google }}">
 {% endif %}{% if site_verification.bing %}<meta name="msvalidate.01" content="{{ site_verification.bing }}">
 {% endif %}{% for block in seo.jsonld %}{{ block|ld_json }}
-{% endfor %}{% if cookie_consent.enabled and seo.public %}{{ cookie_consent.config|json_script:"cookie-consent-config" }}
-<script src="{% static 'js/consent.js' %}" data-gtm-id="{{ gtm_id }}" data-log-url="{% url 'consents:cookie-consent' %}"></script>
+{% endfor %}{% if cookie_consent.enabled %}{{ cookie_consent.config|json_script:"cookie-consent-config" }}
+<script src="{% static 'js/consent.js' %}" data-gtm-id="{{ gtm_id }}" data-load-tags="{{ seo.public|yesno:'1,0' }}" data-log-url="{% url 'consents:cookie-consent' %}"></script>
 {% endif %}
 <link rel="stylesheet" href="{% static 'css/base.css' %}">
 <link rel="stylesheet" href="{% static 'css/layout.css' %}">
@@ -57,7 +57,7 @@
 </main>
 {% include "base/_public_footer.html" %}
 {% endblock %}
-{% if cookie_consent.enabled and seo.public %}{% include "base/_cookie_consent.html" %}{% endif %}
+{% if cookie_consent.enabled %}{% include "base/_cookie_consent.html" %}{% endif %}
 <script src="{% static 'js/timezone.js' %}"></script>
 <script src="{% static 'js/nav.js' %}"></script>
 <script src="{% static 'js/toast.js' %}"></script>

@@ -8,6 +8,10 @@
   const script = document.currentScript;
   const gtmId = script.dataset.gtmId;
   const logUrl = script.dataset.logUrl;
+  // The banner and the choice work on every page; the tags themselves load
+  // only on public pages - never in the panel or on token links, whose
+  // addresses must not reach any third party.
+  const tagsAllowed = script.dataset.loadTags === "1";
   const configBlock = document.getElementById("cookie-consent-config");
   if (!gtmId || !configBlock) return;
   const config = JSON.parse(configBlock.textContent);
@@ -92,7 +96,7 @@
 
   let loaded = false;
   function loadTagManager() {
-    if (loaded) return;
+    if (loaded || !tagsAllowed) return;
     loaded = true;
     window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
     const tag = document.createElement("script");

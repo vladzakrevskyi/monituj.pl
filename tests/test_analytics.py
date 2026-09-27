@@ -38,6 +38,7 @@ def test_public_pages_load_the_consent_script(gtm, path):
     html = _html(path).content.decode()
 
     assert f'data-gtm-id="{GTM}"' in html
+    assert 'data-load-tags="1"' in html
     assert "js/consent.js" in html
     assert "data-cookie-settings" in html
 
@@ -46,10 +47,13 @@ def test_public_pages_load_the_consent_script(gtm, path):
 @pytest.mark.parametrize(
     "path", ["/logowanie/", "/d/some-token/", "/dostep/wyslij/", "/reset-hasla/x/"]
 )
-def test_private_pages_and_token_links_never_load_it(gtm, path):
+def test_private_pages_and_token_links_never_load_the_tags(gtm, path):
+    """The banner is there (the choice applies everywhere), but the tag
+    manager never loads where the address could leak to a third party."""
     html = _html(path).content.decode()
 
-    assert "consent.js" not in html
+    assert "js/consent.js" in html
+    assert 'data-load-tags="0"' in html
     assert "googletagmanager" not in html
 
 
@@ -58,7 +62,10 @@ def test_panel_never_loads_it(gtm, user):
     browser = BrowserClient()
     browser.force_login(user)
 
-    assert "consent.js" not in browser.get(reverse("accounts:panel")).content.decode()
+    html = browser.get(reverse("accounts:panel")).content.decode()
+
+    assert 'data-load-tags="0"' in html
+    assert "data-cookie-settings" in html
 
 
 @pytest.mark.django_db

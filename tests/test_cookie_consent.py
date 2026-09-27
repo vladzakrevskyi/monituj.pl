@@ -166,13 +166,15 @@ def test_banner_is_hidden_until_the_script_decides(tracking):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("path", ["/logowanie/", "/d/some-token/", "/dostep/wyslij/"])
-def test_private_pages_get_neither_banner_nor_config(tracking, path):
+def test_banner_shows_on_every_page_but_tags_stay_off_private_ones(tracking, path):
     tracking("ga4", "meta_pixel")
 
     html = _get(path).content.decode()
 
-    assert "data-cookie-banner" not in html
-    assert "cookie-consent-config" not in html
+    assert "data-cookie-banner" in html
+    assert "cookie-consent-config" in html
+    assert "data-cookie-lock" in html
+    assert 'data-load-tags="0"' in html
 
 
 @pytest.mark.django_db

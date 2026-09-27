@@ -57,6 +57,7 @@ Nowe przypomnienie
 {% csrf_token %}
 <button type="submit" class="app-logout">Wyloguj się</button>
 </form>
+{% if cookie_consent.enabled %}<button type="button" class="app-cookies" data-cookie-settings>Ustawienia cookies</button>{% endif %}
 </div>
 </aside>
 <div class="app-main">

@@ -93,7 +93,9 @@ def _confirm_link(email):
 def test_without_configuration_there_is_no_google_at_all(client, settings):
     settings.GOOGLE_OAUTH_CLIENT_ID = ""
 
-    assert "google" not in client.get(reverse("accounts:login")).content.decode()
+    page = client.get(reverse("accounts:login")).content.decode()
+    assert "/logowanie/google/" not in page
+    assert "btn-google" not in page
     assert client.get(reverse("accounts:google-start")).status_code == 404
     assert client.get(reverse("accounts:google-callback")).status_code == 404
 
