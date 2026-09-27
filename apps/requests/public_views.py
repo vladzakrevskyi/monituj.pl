@@ -14,7 +14,7 @@ from apps.common.responses import (
     success_response,
 )
 from apps.documents.services import GuestUploadContext
-from apps.requests import received
+from apps.requests import received, recipient_files
 from apps.requests.forms import PublicPasswordForm, PublicRequestForm
 from apps.requests.guest import GuestRequestService
 from apps.requests.links import remember_recipient_timezone
@@ -75,8 +75,14 @@ def public_request_detail(request, token):
         item.own_documents = docs.get(item.id, [])
         for document in item.own_documents:
             document.can_delete = bool(
-                session_key and document.uploaded_by_session_key == session_key
+                session_key
+                and document.uploaded_by_session_key == session_key
+                and item.status != "zaakceptowany"
             )
+    # Files sent from another browser (another device, an expired session):
+    # the recipient can get to them through a link mailed to their address.
+    shown = sum(len(found) for found in docs.values())
+    hidden_files = 0 if verified else _stored_documents(request_obj) - shown
 
     status = compute_status(request_obj)
     return render(
@@ -88,8 +94,70 @@ def public_request_detail(request, token):
             "status_label": status.label,
             "status_code": status.value,
             "public_token": request_obj.public_token,
+            "hidden_files": hidden_files,
         },
     )
+
+
+def _stored_documents(request_obj):
+    from apps.documents.models import Document
+
+    return Document.objects.filter(
+        request_item__request=request_obj, anonymized_at__isnull=True
+    ).count()
+
+
+def _open_request(request, token):
+    try:
+        request_obj = PublicAccessService.get_by_token(token)
+    except ApplicationError:
+        raise Http404 from None
+    return request_obj
+
+
+@require_http_methods(["POST"])
+def recipient_files_request(request, token):
+    """ "Pokaż wszystkie moje pliki": mails a link to the request's address.
+    Only from a browser that has opened the request (past its password)."""
+    request_obj = _open_request(request, token)
+    detail_url = reverse("public:request-detail", args=[token])
+    if not PublicAccessService.has_access(request_obj, request):
+        return redirect(detail_url)
+    try:
+        recipient_files.send_link(request_obj, request)
+    except ApplicationError as exc:
+        messages.error(request, exc.message)
+    else:
+        messages.success(
+            request,
+            "Wysłaliśmy link na adres email, na który przyszła ta prośba. Otwórz "
+            "go w ciągu godziny – zobaczysz wszystkie przesłane przez siebie pliki.",
+        )
+    return redirect(detail_url)
+
+
+@require_http_methods(["GET", "POST"])
+def recipient_files_confirm(request, token, signed):
+    """Opening the link only shows a button, so mail scanners that open links
+    don't use it up (and don't get the access themselves)."""
+    try:
+        if request.method == "GET":
+            request_obj = recipient_files.check_link(token, signed)
+            return render(
+                request,
+                "public/recipient_files_confirm.html",
+                {"request_obj": request_obj},
+            )
+        recipient_files.confirm(token, signed, request)
+    except ApplicationError as exc:
+        return render(
+            request,
+            "base/message.html",
+            {"title": "Link nie działa", "message": exc.message},
+            status=400,
+        )
+    messages.success(request, "Gotowe – widzisz teraz wszystkie swoje pliki.")
+    return redirect("public:request-detail", token=token)
 
 
 SENDER_SESSION_KEY = "guest_request_sender"

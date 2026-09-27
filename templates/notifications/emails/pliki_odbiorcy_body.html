@@ -1,0 +1,10 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Link do plików, które przesłałeś.{% endblock %}
+{% block eyebrow %}Twoje pliki{% endblock %}
+{% block title %}Pokaż swoje pliki{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Ktoś poprosił o dostęp do plików, które przesłałeś w prośbie <strong>„{{ request_name }}”</strong>. Jeśli to Ty, kliknij przycisk – zobaczysz wszystkie swoje pliki, także te wysłane z innych urządzeń.</p>
+{% include "notifications/emails/_button.html" with url=confirm_url label="Pokaż moje pliki" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Link działa przez godzinę. Jeśli to nie Ty, zignoruj tę wiadomość – bez kliknięcia nikt nie zobaczy Twoich plików.</p>
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ na ten adres przyszła prośba o dokumenty w Monituj.{% endblock %}

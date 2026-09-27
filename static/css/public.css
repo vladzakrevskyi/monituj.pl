@@ -248,6 +248,15 @@
   margin-bottom: 0;
 }
 
+.public-note--files {
+  background: var(--color-primary-bg);
+  color: var(--color-text);
+}
+
+.public-note--files p {
+  margin: 0 0 var(--space-3);
+}
+
 .public-closed {
   margin: var(--space-5) 0 0;
   padding: var(--space-4) var(--space-5);

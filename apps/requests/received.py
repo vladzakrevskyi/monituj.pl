@@ -56,9 +56,25 @@ def account_email(user):
     return None
 
 
+VERIFIED_EMAILS_SESSION_KEY = "verified_recipient_emails"
+
+
+def mark_verified_recipient(django_request, email):
+    """This browser has proved it can read the recipient's mailbox (a link
+    sent there was opened) - from now on it counts as the recipient."""
+    emails = set(django_request.session.get(VERIFIED_EMAILS_SESSION_KEY, []))
+    emails.add(email.strip().lower())
+    django_request.session[VERIFIED_EMAILS_SESSION_KEY] = sorted(emails)
+
+
 def is_verified_recipient(django_request, email):
     """Whether the viewer is the recipient in person: signed in to an account
-    whose (confirmed) address the request was sent to. A link alone - even
-    the recipient page - doesn't count, since emails get forwarded."""
+    whose (confirmed) address the request was sent to, or opened a link that
+    was just mailed to that address in this browser. A request link alone -
+    even the recipient page - doesn't count, since emails get forwarded."""
+    email = email.strip().lower()
     user_email = account_email(django_request.user)
-    return bool(user_email) and user_email.lower() == email.lower()
+    if user_email and user_email.lower() == email:
+        return True
+    session = getattr(django_request, "session", None)
+    return session is not None and email in session.get(VERIFIED_EMAILS_SESSION_KEY, [])

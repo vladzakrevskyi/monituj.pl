@@ -35,7 +35,7 @@
 
 {% if item.status == "zaakceptowany" %}
 <p class="item-accepted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Dokument zaakceptowany.</p>
-{% else %}
+{% endif %}
 <div class="uploaded-files">
 {% for document in item.own_documents %}
 {% if document.is_anonymized %}
@@ -51,7 +51,7 @@
 {% endfor %}
 </div>
 
-{% if not request_obj.is_closed %}
+{% if not request_obj.is_closed and item.status != "zaakceptowany" %}
 <div class="upload-zone" data-item-id="{{ item.id }}">
 <input type="file" class="upload-input" data-item-id="{{ item.id }}">
 <svg class="upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
@@ -61,10 +61,19 @@
 <p class="upload-error" role="alert"></p>
 </div>
 {% endif %}
-{% endif %}
 </div>
 {% endfor %}
 </div>
+
+{% if hidden_files %}
+<div class="public-note public-note--files">
+<p><strong>Nie widzisz swoich plików?</strong> Pliki przesłane z innego urządzenia albo dawniej niż 2 tygodnie temu pokazujemy dopiero po potwierdzeniu, że to Ty – na wypadek, gdyby ktoś dostał ten link od Ciebie.</p>
+<form method="post" action="{% url 'public:recipient-files' public_token %}">
+{% csrf_token %}
+<button type="submit" class="btn btn-secondary btn-sm">Wyślij mi link do moich plików</button>
+</form>
+</div>
+{% endif %}
 
 <aside class="public-note">
 <p>Przesłane pliki są przechowywane przez <strong>{{ request_obj.retention_days }} dni</strong> od przesłania, a następnie trwale usuwane. Dostaniesz o tym wiadomość email.</p>

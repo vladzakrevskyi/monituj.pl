@@ -7,6 +7,16 @@ app_name = "public"
 urlpatterns = [
     path("d/<str:token>/", public_views.public_request_detail, name="request-detail"),
     path(
+        "d/<str:token>/moje-pliki/",
+        public_views.recipient_files_request,
+        name="recipient-files",
+    ),
+    path(
+        "d/<str:token>/moje-pliki/<str:signed>/",
+        public_views.recipient_files_confirm,
+        name="recipient-files-confirm",
+    ),
+    path(
         "wyslij-prosbe/", public_views.guest_request_create, name="guest-request-create"
     ),
     path(

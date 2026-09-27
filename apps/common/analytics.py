@@ -1,7 +1,7 @@
 """Google Tag Manager, switched on by GTM_ID.
 
 GTM runs only where it can't do harm and only with permission:
-- on public, indexable pages - never in the panel or on token links, whose
+- on public pages (seo.public) - never in the panel or on token links, whose
   addresses (/d/<token>/, reset links...) must not reach any third party;
 - only after the visitor accepts at least one optional cookie category
   (Google Consent Mode v2, static/js/consent.js), as Polish law requires;

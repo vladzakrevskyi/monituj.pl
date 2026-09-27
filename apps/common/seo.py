@@ -181,6 +181,8 @@ PAGES = {
         "description": "Regulamin świadczenia usług drogą elektroniczną w Monituj.",
         "priority": "0.3",
         "label": "Regulamin",
+        # Readable by everyone, but not something to land on from search.
+        "index": False,
         "template": "legal/terms.html",
     },
     "legal:privacy": {
@@ -191,6 +193,8 @@ PAGES = {
         ),
         "priority": "0.3",
         "label": "Polityka prywatności",
+        # Readable by everyone, but not something to land on from search.
+        "index": False,
         "template": "legal/privacy.html",
     },
     "legal:cookies": {
@@ -200,6 +204,8 @@ PAGES = {
         ),
         "priority": "0.2",
         "label": "Polityka cookies",
+        # Readable by everyone, but not something to land on from search.
+        "index": False,
         "template": "legal/cookies.html",
     },
     "legal:dpa": {
@@ -210,6 +216,8 @@ PAGES = {
         ),
         "priority": "0.3",
         "label": "Umowa powierzenia",
+        # Readable by everyone, but not something to land on from search.
+        "index": False,
         "template": "legal/dpa.html",
     },
 }
@@ -220,8 +228,12 @@ for _page in PAGES.values():
     _page.setdefault("label", _page["name"])
 
 
-def build(request, name, description, og_image=None, indexable=True, **extra):
-    """The `seo` context every page renders its <head> from."""
+def build(
+    request, name, description, og_image=None, indexable=True, public=None, **extra
+):
+    """The `seo` context every page renders its <head> from. `public`: an
+    ordinary page of the site (not the panel, not a token link) - analytics
+    and the cookie banner may run there, even when it isn't indexed."""
     canonical = absolute_url(request.path)
     image = og_image or DEFAULT_OG_IMAGE
     title = page_title(name)
@@ -230,9 +242,10 @@ def build(request, name, description, og_image=None, indexable=True, **extra):
         "title": title,
         "description": description,
         "indexable": indexable,
+        "public": indexable if public is None else public,
         "robots": "index, follow, max-image-preview:large"
         if indexable
-        else "noindex, nofollow",
+        else ("noindex, follow" if public else "noindex, nofollow"),
         "canonical": canonical,
         "og_type": extra.get("og_type", "website"),
         "og_image": absolute_url(static(image)),
@@ -246,13 +259,16 @@ def for_request(request):
     page = PAGES.get(match.view_name) if match else None
     if page is None:
         return build(request, DEFAULT_PAGE_NAME, DEFAULT_DESCRIPTION, indexable=False)
+    indexable = page.get("index", True)
     return build(
         request,
         page["name"],
         page["description"],
         og_image=page.get("og_image"),
+        indexable=indexable,
+        public=True,
         og_type=page.get("og_type", "website"),
-        jsonld=_page_jsonld(match.view_name, page, request),
+        jsonld=_page_jsonld(match.view_name, page, request) if indexable else [],
     )
 
 

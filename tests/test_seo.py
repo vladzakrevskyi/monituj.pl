@@ -86,8 +86,12 @@ def test_page_titles_follow_the_house_style(client, path, name):
     assert f"<title>{name} | monituj.pl</title>" in head
 
 
+INDEXED = [name for name, page in PAGES.items() if page.get("index", True)]
+LEGAL = [name for name in PAGES if name.startswith("legal:")]
+
+
 @pytest.mark.django_db
-@pytest.mark.parametrize("name", list(PAGES))
+@pytest.mark.parametrize("name", INDEXED)
 def test_public_pages_are_indexable_with_full_metadata(client, name):
     head = _head(client.get(reverse(name)))
 
@@ -195,8 +199,10 @@ def test_sitemap_lists_every_public_page_and_nothing_private(client):
     urls = {loc.text for loc in root.iter(f"{SITEMAP_NS}loc")}
 
     assert response["Content-Type"].startswith("application/xml")
-    for name in PAGES:
+    for name in INDEXED:
         assert f"http://localhost:8000{reverse(name)}" in urls
+    for name in LEGAL:
+        assert f"http://localhost:8000{reverse(name)}" not in urls
     for segment in SEGMENTS:
         assert f"http://localhost:8000/dla-kogo/{segment['slug']}/" in urls
     assert not any("/panel/" in url or "/logowanie/" in url for url in urls)
@@ -238,3 +244,30 @@ def test_site_verification_tags_appear_when_configured(client, settings):
     head = _head(client.get("/"))
 
     assert _meta(head, "name", "google-site-verification") == "google-token-123"
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("name", LEGAL)
+def test_legal_pages_are_readable_but_not_indexed(client, name):
+    response = client.get(reverse(name))
+    head = _head(response)
+
+    assert response.status_code == 200
+    # "follow": links from the documents still count.
+    assert _meta(head, "name", "robots") == "noindex, follow"
+    assert 'rel="canonical"' not in head
+    assert _jsonld(head) == []
+
+
+@pytest.mark.django_db
+def test_legal_pages_are_not_blocked_in_robots_txt(client):
+    """Blocking them would hide their noindex from search engines."""
+    body = client.get("/robots.txt").content.decode()
+
+    assert "Disallow: /regulamin/" not in body
+    assert "# /regulamin/" in body
+
+
+@pytest.mark.django_db
+def test_legal_pages_are_in_llms_txt_as_references(client):
+    assert "/regulamin/" in client.get("/llms.txt").content.decode()

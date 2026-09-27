@@ -40,6 +40,7 @@ class EmailTemplate(models.TextChoices):
     GOOGLE_UNLINKED = "google_odlaczone", "Logowanie Google odłączone"
     GOOGLE_LINK_CONFIRM = "google_potwierdz", "Potwierdzenie połączenia z Google"
     LEGAL_UPDATE = "zmiana_dokumentow", "Zmiana Regulaminu i dokumentów"
+    RECIPIENT_FILES_LINK = "pliki_odbiorcy", "Link do przesłanych plików"
 
 
 class EmailStatus(models.TextChoices):

@@ -43,6 +43,8 @@ def _modified(*paths):
 def sitemap_entries():
     entries = []
     for view_name, page in seo.PAGES.items():
+        if not page.get("index", True):
+            continue
         entries.append(
             {
                 "loc": absolute_url(reverse(view_name)),
@@ -67,6 +69,15 @@ def sitemap_entries():
 def robots_txt(request):
     lines = ["User-agent: *", "Allow: /"]
     lines += [f"Disallow: {path}" for path in PRIVATE_PATHS]
+    # Legal pages carry "noindex" on the page itself. They are deliberately
+    # not disallowed: a robot that may not open a page can't see its noindex,
+    # and search engines then list the bare address anyway.
+    lines += ["", "# Regulamin, polityki i umowa powierzenia: noindex na stronie."]
+    lines += [
+        f"# {reverse(name)}"
+        for name, page in seo.PAGES.items()
+        if not page.get("index", True)
+    ]
     lines += ["", f"Sitemap: {absolute_url('/sitemap.xml')}", ""]
     return HttpResponse("\n".join(lines), content_type="text/plain; charset=utf-8")
 
