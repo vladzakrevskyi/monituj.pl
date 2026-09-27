@@ -16,11 +16,15 @@ and never open an account for the wrong person:
    proves the mailbox: linking removes the password set by that someone.
 5. Every new link is announced by email to the account's address.
 6. Google can be disconnected only while a password exists - no lockouts.
+7. Connecting Google from Settings needs the password first (or, without
+   one, a click in an email): a stolen session alone must not be turned into
+   a way in that survives a password change.
 """
 
 import hmac
 import secrets
 import time
+from datetime import timedelta
 from enum import Enum
 
 from django.contrib.auth import login as django_login
@@ -35,7 +39,7 @@ from apps.accounts.services import REGISTRATIONS_PER_IP_HOUR
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.common import throttle
-from apps.common.exceptions import ValidationAppError
+from apps.common.exceptions import RateLimitedAppError, ValidationAppError
 from apps.common.site import absolute_url
 from apps.consents.models import AcceptanceMethod
 from apps.consents.services import record_acceptance
@@ -50,6 +54,13 @@ CONFIRM_SALT = "google-confirm"
 CONFIRM_MAX_AGE = 30 * 60
 CONFIRMS_PER_ACCOUNT_HOUR = 3
 SIGN_INS_PER_IP_HOUR = 30
+CONNECT_SESSION_KEY = "google_connect_verified"
+CONNECT_WINDOW = 5 * 60  # from confirming the password to the Google button
+CONNECT_SALT = "google-connect"
+CONNECT_LINK_MAX_AGE = 30 * 60
+REAUTH_FAILURES = 5
+REAUTH_WINDOW = timedelta(minutes=15)
+CONNECT_LINKS_PER_HOUR = 3
 BACKEND = "django.contrib.auth.backends.ModelBackend"
 
 UNAVAILABLE_MESSAGE = "Na to konto nie można zalogować się przez Google."
@@ -367,3 +378,67 @@ class GoogleAuthService:
             to_email=user.email,
             context={"google_email": google_email},
         )
+
+
+class GoogleConnectGate:
+    """Before Settings sends anyone to Google to link an account, the owner
+    proves it's them: the password, or - for accounts without one - a click
+    in an email. The proof opens a five-minute window in this session."""
+
+    @staticmethod
+    def confirm_password(request, user, password):
+        key = f"google-reauth:{user.pk}"
+        if throttle.is_limited(key, REAUTH_FAILURES, REAUTH_WINDOW):
+            raise RateLimitedAppError(
+                "Zbyt wiele błędnych haseł. Spróbuj ponownie za 15 minut.",
+                code="REAUTH_LIMIT_REACHED",
+            )
+        if not user.has_usable_password() or not user.check_password(password):
+            throttle.record(key)
+            raise ValidationAppError(
+                "Nieprawidłowe hasło.", code="INVALID_CURRENT_PASSWORD"
+            )
+        throttle.clear(key)
+        request.session[CONNECT_SESSION_KEY] = int(time.time())
+
+    @staticmethod
+    def send_link(user):
+        key = f"google-connect-link:{user.pk}"
+        if throttle.is_limited(key, CONNECT_LINKS_PER_HOUR, throttle.HOUR):
+            return  # quietly: an earlier email is on its way
+        throttle.record(key)
+        signed = signing.dumps({"u": user.pk}, salt=CONNECT_SALT)
+        EmailService.send(
+            EmailTemplate.GOOGLE_CONNECT_CONFIRM,
+            to_email=user.email,
+            context={
+                "confirm_url": absolute_url(
+                    reverse("accounts:google-connect-confirm", args=[signed])
+                )
+            },
+        )
+
+    @staticmethod
+    def confirm_link(request, signed):
+        try:
+            data = signing.loads(
+                signed, salt=CONNECT_SALT, max_age=CONNECT_LINK_MAX_AGE
+            )
+        except signing.BadSignature as exc:
+            raise ValidationAppError(
+                "Link jest nieprawidłowy albo wygasł.", code="INVALID_TOKEN"
+            ) from exc
+        # Only for the account that asked, signed in in this browser.
+        if not request.user.is_authenticated or request.user.pk != data.get("u"):
+            raise ValidationAppError(
+                "Zaloguj się na konto, dla którego wysłaliśmy ten link, i otwórz "
+                "go ponownie.",
+                code="INVALID_TOKEN",
+            )
+        request.session[CONNECT_SESSION_KEY] = int(time.time())
+
+    @staticmethod
+    def take(request):
+        """Uses up the permission - one proof, one trip to Google."""
+        started = request.session.pop(CONNECT_SESSION_KEY, None)
+        return bool(started) and time.time() - started <= CONNECT_WINDOW

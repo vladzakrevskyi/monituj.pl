@@ -7,7 +7,12 @@ from django.views.decorators.http import require_http_methods
 
 from apps.accounts import google
 from apps.accounts.forms import GoogleSignupForm
-from apps.accounts.google_auth import GoogleAuthService, Outcome, consume_attempt
+from apps.accounts.google_auth import (
+    GoogleAuthService,
+    GoogleConnectGate,
+    Outcome,
+    consume_attempt,
+)
 from apps.common.exceptions import ApplicationError
 from apps.common.forms import add_service_error
 from apps.common.responses import (
@@ -57,7 +62,27 @@ def google_connect(request):
         return redirect("accounts:settings")
     if hasattr(request.user, "google_account"):
         return redirect("accounts:settings")
+    if not GoogleConnectGate.take(request):
+        messages.error(
+            request, "Najpierw potwierdź, że to Ty – w Ustawieniach, przy Google."
+        )
+        return redirect(reverse("accounts:settings") + "#google")
     return redirect(google.authorization_url(request, "connect", user=request.user))
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def google_connect_confirm(request, signed):
+    """The link from the "confirm adding Google" email (accounts without a
+    password). Opening it only shows a button."""
+    _require_enabled()
+    if request.method == "GET":
+        return render(request, "accounts/google_connect_confirm.html")
+    try:
+        GoogleConnectGate.confirm_link(request, signed)
+    except ApplicationError as exc:
+        return _problem(request, exc.message)
+    return redirect("accounts:google-connect")
 
 
 def google_callback(request):
@@ -79,8 +104,7 @@ def google_callback(request):
             GoogleAuthService.connect(user, identity, request)
             messages.success(
                 request,
-                f"Połączono z kontem Google {identity.email}. Możesz się nim "
-                "logować.",
+                f"Połączono z kontem Google {identity.email}. Możesz się nim logować.",
             )
             return redirect("accounts:settings")
         outcome, result = GoogleAuthService.sign_in(request, identity)

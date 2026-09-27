@@ -21,6 +21,8 @@ from apps.common.site import absolute_url
 
 # Private or pointless for search: the panel, token links, forms that only
 # make sense from an email, the API. Those pages also send "noindex".
+# The admin is left out on purpose: robots.txt is public, and listing a moved
+# admin address there would show it to everyone. Its pages send noindex.
 PRIVATE_PATHS = [
     *PRIVATE_PREFIXES,
     "/logowanie/",

@@ -17,15 +17,17 @@ EXEMPT_PATHS = ("/api/health/",)
 RETRY_AFTER_SECONDS = 600
 
 
-def parse_networks(entries):
+def parse_networks(entries, setting="MAINTENANCE_ALLOWED_IPS"):
     """Accepts single addresses (IPv4/IPv6) and ranges like 10.0.0.0/24."""
     networks = []
     for entry in entries:
+        if not entry.strip():
+            continue
         try:
             networks.append(ipaddress.ip_network(entry.strip(), strict=False))
         except ValueError as exc:
             raise ImproperlyConfigured(
-                f"MAINTENANCE_ALLOWED_IPS: {entry!r} is not an IP address or range"
+                f"{setting}: {entry!r} is not an IP address or range"
             ) from exc
     return networks
 

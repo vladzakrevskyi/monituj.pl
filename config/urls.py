@@ -1,12 +1,16 @@
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
 from apps.common import seo_views
+from apps.common.admin_security import admin_login
 from apps.common.pages import landing
 from apps.common.views import health_check
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    # Rate-limited login first; ADMIN_URL can be moved away from /admin/.
+    path(f"{settings.ADMIN_URL}login/", admin_login, name="admin-login"),
+    path(settings.ADMIN_URL, admin.site.urls),
     path("", landing, name="landing"),
     path("robots.txt", seo_views.robots_txt, name="robots-txt"),
     path("sitemap.xml", seo_views.sitemap_xml, name="sitemap-xml"),

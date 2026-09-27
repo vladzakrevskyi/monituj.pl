@@ -17,6 +17,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 GTM_PATTERN = re.compile(r"^GTM-[A-Z0-9]{4,12}$")
 
+
 def gtm_id():
     value = (getattr(settings, "GTM_ID", "") or "").strip()
     if value and not GTM_PATTERN.match(value):

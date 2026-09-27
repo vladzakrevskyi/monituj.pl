@@ -41,6 +41,7 @@ class EmailTemplate(models.TextChoices):
     GOOGLE_LINK_CONFIRM = "google_potwierdz", "Potwierdzenie połączenia z Google"
     LEGAL_UPDATE = "zmiana_dokumentow", "Zmiana Regulaminu i dokumentów"
     RECIPIENT_FILES_LINK = "pliki_odbiorcy", "Link do przesłanych plików"
+    GOOGLE_CONNECT_CONFIRM = "google_polacz", "Potwierdzenie dodania Google"
 
 
 class EmailStatus(models.TextChoices):

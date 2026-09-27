@@ -150,6 +150,18 @@ class EmailChangeForm(forms.Form):
     )
 
 
+class GoogleConnectForm(forms.Form):
+    current_password = forms.CharField(
+        label="Twoje hasło do Monituj",
+        widget=forms.PasswordInput,
+        required=False,
+        error_messages={"required": REQUIRED_MESSAGE},
+    )
+
+    def clean_current_password(self):
+        return self.cleaned_data.get("current_password", "")
+
+
 class SetPasswordForm(forms.Form):
     """For accounts created without a password (requests sent without
     registering): there is no current password to confirm."""

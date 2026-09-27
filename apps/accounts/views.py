@@ -8,6 +8,7 @@ from django.views.decorators.http import require_http_methods
 from apps.accounts.forms import (
     AccountDeletionForm,
     EmailChangeForm,
+    GoogleConnectForm,
     LoginForm,
     PasswordChangeForm,
     PasswordResetConfirmForm,
@@ -16,7 +17,7 @@ from apps.accounts.forms import (
     RegistrationForm,
     SetPasswordForm,
 )
-from apps.accounts.google_auth import GoogleAuthService
+from apps.accounts.google_auth import GoogleAuthService, GoogleConnectGate
 from apps.accounts.models import is_guest_account
 from apps.accounts.services import (
     AccountDeletionService,
@@ -188,11 +189,19 @@ def password_reset_confirm(request, token):
         form = PasswordResetConfirmForm(request.POST)
         if form.is_valid():
             try:
-                PasswordResetService.confirm_reset(
+                user = PasswordResetService.confirm_reset(
                     token, form.cleaned_data["password"], request=request
                 )
                 title = "Hasło zmienione"
                 message = "Twoje hasło zostało zmienione. Możesz się teraz zalogować."
+                google_account = getattr(user, "google_account", None)
+                if google_account is not None:
+                    # Recovering an account: say plainly what else opens it.
+                    message += (
+                        " Do konta jest też podłączone logowanie przez Google "
+                        f"({google_account.email}). Jeśli to nie Twoje konto "
+                        "Google, zaloguj się i odłącz je w Ustawieniach."
+                    )
                 if is_ajax_request(request):
                     return success_response({"title": title, "message": message})
                 return render(
@@ -232,6 +241,7 @@ def settings_view(request):
     deletion_form = AccountDeletionForm(
         auto_id="id_delete_%s", require_password=has_password
     )
+    google_form = GoogleConnectForm(auto_id="id_google_%s")
 
     if request.method == "POST" and is_demo_user(request.user):
         if is_ajax_request(request):
@@ -324,6 +334,41 @@ def settings_view(request):
                 return success_response({"message": success_message})
             messages.success(request, success_message)
             return redirect("accounts:settings")
+        elif action == "google_connect":
+            google_form = GoogleConnectForm(request.POST, auto_id="id_google_%s")
+            if not has_password:
+                # No password to check: the proof comes from the mailbox.
+                GoogleConnectGate.send_link(request.user)
+                success_message = (
+                    f"Wysłaliśmy link na {request.user.email}. Otwórz go w tej "
+                    "przeglądarce, aby połączyć konto z Google."
+                )
+                if ajax:
+                    return success_response({"message": success_message})
+                messages.success(request, success_message)
+                return redirect("accounts:settings")
+            if google_form.is_valid():
+                try:
+                    GoogleConnectGate.confirm_password(
+                        request,
+                        request.user,
+                        google_form.cleaned_data["current_password"],
+                    )
+                    redirect_url = reverse("accounts:google-connect")
+                    if ajax:
+                        return success_response({"redirect_url": redirect_url})
+                    return redirect(redirect_url)
+                except ApplicationError as exc:
+                    add_service_error(
+                        google_form,
+                        exc,
+                        {
+                            "INVALID_CURRENT_PASSWORD": "current_password",
+                            "REAUTH_LIMIT_REACHED": "current_password",
+                        },
+                    )
+            if ajax:
+                return ajax_form_error_response(google_form)
         elif action == "google_disconnect":
             try:
                 GoogleAuthService.disconnect(request.user, request=request)
@@ -403,6 +448,7 @@ def settings_view(request):
             "is_guest": guest,
             "has_password": has_password,
             "google_account": getattr(request.user, "google_account", None),
+            "google_form": google_form,
         },
     )
 

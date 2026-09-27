@@ -39,6 +39,7 @@ MIDDLEWARE = [
     "apps.common.middleware.SecurityHeadersMiddleware",
     # After the security headers, so the maintenance page gets them too.
     "apps.common.maintenance.MaintenanceModeMiddleware",
+    "apps.common.admin_security.AdminAccessMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -106,6 +107,13 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 PRIVATE_STORAGE_ROOT = BASE_DIR / "storage"
+
+# Address of the Django admin. Moving it off the obvious /admin/ keeps bots
+# from even finding the login; nginx should allow it only from your IP.
+ADMIN_URL = env("ADMIN_URL", default="admin/").strip("/") + "/"
+# Addresses (or ranges like 10.0.0.0/24) allowed to open the admin, comma
+# separated. Empty = no limit (fine locally; set it on the server).
+ADMIN_ALLOWED_IPS = env.list("ADMIN_ALLOWED_IPS", default=[])
 # Master key for encrypting uploaded documents at rest (AES-256-GCM, see
 # apps/documents/encryption.py). Generate: README 'Szyfrowanie dokumentów'.
 # Required in production. Keep a copy outside the

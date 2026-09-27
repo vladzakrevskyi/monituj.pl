@@ -24,6 +24,11 @@ urlpatterns = [
         google_views.google_connect,
         name="google-connect",
     ),
+    path(
+        "ustawienia/google/polacz/<str:signed>/",
+        google_views.google_connect_confirm,
+        name="google-connect-confirm",
+    ),
     path("wyloguj/", views.logout_view, name="logout"),
     path("weryfikacja-email/", views.verification_sent, name="verification-sent"),
     path("weryfikacja-email/<str:token>/", views.verify_email, name="verify-email"),

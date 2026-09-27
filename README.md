@@ -421,6 +421,7 @@ Najważniejsze zmienne:
 | `CONTACT_EMAIL` | `kontakt@monituj.pl` – tu trafiają wiadomości z formularza kontaktowego i odpowiedzi na e-maile systemowe. Ta skrzynka musi istnieć i odbierać pocztę |
 | `LEGAL_*` | Dane firmy. Puste wartości są wyróżniane na stronach prawnych jako „[uzupełnij: …]” |
 | `MAINTENANCE_MODE`, `MAINTENANCE_ALLOWED_IPS` | Tryb serwisowy – patrz sekcja „Tryb serwisowy” niżej. Domyślnie wyłączony |
+| `ADMIN_URL`, `ADMIN_ALLOWED_IPS` | Adres panelu administratora i adresy IP, z których jest dostępny (zob. krok 10). Na serwerze ustaw oba |
 | `LEGAL_EFFECTIVE_DATE` | Data wejścia w życie Regulaminu, Polityki prywatności i umowy powierzenia, np. `2026-10-01` albo `01.10.2026`. To zarazem wersja dokumentów: przy każdej akceptacji zapisujemy, której wersji dotyczyła |
 | `LEGAL_BACKUP_DAYS` | Liczba dni przechowywania kopii zapasowych u hostingu (krok 11), np. `7` – ta liczba jest podana w polityce prywatności |
 | `DOCUMENTS_ENCRYPTION_KEY` | **Wymagany.** Klucz główny szyfrujący przesłane dokumenty (zob. „Szyfrowanie dokumentów”). Wygeneruj na serwerze: `python3 -c "import os,base64;print(base64.urlsafe_b64encode(os.urandom(32)).decode())"` i **zapisz kopię poza serwerem** |
@@ -478,7 +479,8 @@ Co robi ta konfiguracja:
 
 - przekazuje cały ruch do `127.0.0.1:8000`;
 - pozwala przesyłać pliki do 25 MB (limit w aplikacji to 20 MB);
-- przekazuje aplikacji prawdziwy adres IP odwiedzającego. Nagłówek `X-Forwarded-For` jest **nadpisywany**, a nie uzupełniany: na podstawie tego adresu działają limity (prośba bez konta, demo), więc odwiedzający nie może go podrobić.
+- przekazuje aplikacji prawdziwy adres IP odwiedzającego. Nagłówek `X-Forwarded-For` jest **nadpisywany**, a nie uzupełniany: na podstawie tego adresu działają limity (prośba bez konta, demo), więc odwiedzający nie może go podrobić;
+- wpuszcza do `/admin/` tylko adresy z listy `allow` – **dopisz tam swój adres IP** (sprawdzisz go poleceniem `curl ifconfig.me` na swoim komputerze), inaczej panel administratora będzie zamknięty także dla Ciebie. Jeśli zmienisz `ADMIN_URL`, zmień też ścieżkę w `location`.
 
 ### Krok 9. HTTPS (Let's Encrypt)
 
@@ -508,7 +510,13 @@ Oczekiwana odpowiedź: `{"success": true, "data": {"status": "ok"}}`.
 
 ### Krok 10. Administrator i test e-maili
 
-Utwórz konto administratora do panelu `/admin/`:
+Panel administratora jest chroniony na trzy sposoby:
+
+- `ADMIN_ALLOWED_IPS` w `.env` – adresy (albo zakresy, np. `83.12.34.0/24`), z których w ogóle widać panel; wszyscy inni dostają 404, jakby panelu nie było. Działa w aplikacji, niezależnie od nginx;
+- `ADMIN_URL` – adres panelu (domyślnie `admin/`); ustaw coś trudnego do zgadnięcia, np. `zaplecze-7f3k2/`. Tego adresu nie ma w `robots.txt`;
+- limit prób logowania: po 5 nieudanych próbach na jeden login albo 10 z jednego adresu logowanie jest blokowane na 15 minut, a każda próba trafia do dziennika zdarzeń.
+
+Utwórz konto administratora (panel pod adresem `ADMIN_URL`, domyślnie `/admin/`):
 
 ```bash
 docker compose exec web python manage.py createsuperuser
@@ -548,6 +556,7 @@ Jak to działa i dlaczego jest bezpieczne (szczegóły w `apps/accounts/google.p
 - adres, który już ma konto w Monituj: przy Gmailu i Google Workspace konta łączą się od razu, przy innych adresach dopiero po kliknięciu linku z maila w tej samej przeglądarce; o każdym połączeniu właściciel dostaje e-mail;
 - konto założone przez kogoś, kto nigdy nie potwierdził adresu, przejmuje właściciel skrzynki – hasło ustawione przez tamtą osobę przestaje działać;
 - nowe konto przez Google wymaga akceptacji Regulaminu i Polityki prywatności, jak przy rejestracji hasłem;
+- połączenie Google z istniejącym kontem w Ustawieniach wymaga podania hasła (konto bez hasła potwierdza to linkiem z maila) – przejęta sesja nie wystarczy, żeby dopiąć własne Google; po resecie hasła strona pokazuje, które konto Google jest podłączone;
 - konto z Google może w każdej chwili ustawić hasło (Ustawienia albo „Nie pamiętasz hasła?”) i logować się na oba sposoby; Google można odłączyć tylko, gdy konto ma hasło.
 
 ### Krok 11. Kopie zapasowe
@@ -695,6 +704,7 @@ Podłącz darmowy zewnętrzny monitoring dostępności (UptimeRobot, Better Stac
 - [ ] Wszystkie zmienne `LEGAL_*` są uzupełnione, a Regulamin, Polityka prywatności i Umowa powierzenia zostały sprawdzone przez prawnika.
 - [ ] Kopie zapasowe u hostingu są włączone; przywracanie zostało przetestowane przynajmniej raz.
 - [ ] `DOCUMENTS_ENCRYPTION_KEY` jest ustawiony, a jego kopia leży poza serwerem.
+- [ ] `ADMIN_URL` i `ADMIN_ALLOWED_IPS` są ustawione, a w nginx w `location /admin/` jest Twój adres IP.
 - [ ] `LEGAL_BACKUP_DAYS` odpowiada liczbie dni przechowywania kopii u hostingu.
 - [ ] Jeśli włączasz logowanie przez Google: aplikacja OAuth jest opublikowana, a adres przekierowania zgadza się z `SITE_URL`.
 - [ ] Skonfigurowany jest zewnętrzny monitoring `/api/health/`.

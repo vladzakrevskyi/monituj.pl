@@ -24,7 +24,6 @@ PRIVATE_PREFIXES = (
     "/moje-prosby/",
     "/dostep/",
     "/api/",
-    "/admin/",
     "/wyslij-prosbe/potwierdz/",
     "/weryfikacja-email/",
     "/reset-hasla/",
@@ -64,7 +63,9 @@ class SecurityHeadersMiddleware:
         response["Permissions-Policy"] = self.permissions_policy_header
         # Panel, token links and the API must never land in search results,
         # even if such a link leaks somewhere public.
-        if request.path.startswith(PRIVATE_PREFIXES):
+        if request.path.startswith(PRIVATE_PREFIXES) or request.path.startswith(
+            f"/{settings.ADMIN_URL}"
+        ):
             response["X-Robots-Tag"] = "noindex, nofollow"
         return response
 

@@ -69,6 +69,13 @@ def _google(browser, issued, start="accounts:google-start", key=KEY, **claims):
     )
 
 
+def _confirm_password(browser, password="s3cr3t-pass!"):
+    return browser.post(
+        reverse("accounts:settings"),
+        {"form_action": "google_connect", "current_password": password},
+    )
+
+
 def _logged_in_as(browser):
     user_id = browser.session.get("_auth_user_id")
     return User.objects.get(pk=user_id) if user_id else None
@@ -423,6 +430,7 @@ def test_connect_from_settings_with_any_google_address(
     client, google_on, password_user
 ):
     client.force_login(password_user)
+    _confirm_password(client)
 
     _google(client, google_on, start="accounts:google-connect", email="inny@gmail.com")
 
@@ -439,6 +447,7 @@ def test_google_account_of_someone_else_cannot_be_connected(
         user=other, subject="google-sub-1", email="a@gmail.com"
     )
     client.force_login(password_user)
+    _confirm_password(client)
 
     _google(client, google_on, start="accounts:google-connect")
 
@@ -485,3 +494,106 @@ def test_google_pages_are_never_indexed(client, google_on):
     response = client.get(reverse("accounts:google-start"))
 
     assert response["X-Robots-Tag"] == "noindex, nofollow"
+
+
+# --- connecting needs proof, not just a session (security audit) ---------
+
+
+@pytest.mark.django_db
+def test_a_session_alone_cannot_connect_google(client, google_on, password_user):
+    client.force_login(password_user)
+
+    response = client.get(reverse("accounts:google-connect"))
+
+    assert response["Location"].startswith(reverse("accounts:settings"))
+    assert "google_oauth" not in client.session
+
+
+@pytest.mark.django_db
+def test_wrong_password_opens_nothing_and_is_limited(client, google_on, password_user):
+    from apps.accounts.google_auth import REAUTH_FAILURES
+
+    client.force_login(password_user)
+    for _ in range(REAUTH_FAILURES):
+        _confirm_password(client, "zle-haslo")
+    blocked = _confirm_password(client)
+
+    assert client.get(reverse("accounts:google-connect"))["Location"].startswith(
+        reverse("accounts:settings")
+    )
+    assert blocked.status_code in (200, 302)
+    assert "google_oauth" not in client.session
+
+
+@pytest.mark.django_db
+def test_password_opens_one_trip_to_google(client, google_on, password_user):
+    client.force_login(password_user)
+    _confirm_password(client)
+
+    first = client.get(reverse("accounts:google-connect"))
+    second = client.get(reverse("accounts:google-connect"))
+
+    assert first["Location"].startswith(google.AUTHORIZE_URL)
+    assert second["Location"].startswith(reverse("accounts:settings"))
+
+
+@pytest.mark.django_db
+def test_password_proof_expires(client, google_on, password_user):
+    from apps.accounts.google_auth import CONNECT_SESSION_KEY, CONNECT_WINDOW
+
+    client.force_login(password_user)
+    _confirm_password(client)
+    session = client.session
+    session[CONNECT_SESSION_KEY] -= CONNECT_WINDOW + 1
+    session.save()
+
+    response = client.get(reverse("accounts:google-connect"))
+
+    assert response["Location"].startswith(reverse("accounts:settings"))
+
+
+@pytest.mark.django_db
+def test_account_without_password_confirms_by_email(client, google_on):
+    from django.utils import timezone
+
+    guest = User.objects.create_user(
+        email="gosc@example.com", email_verified_at=timezone.now()
+    )
+    GuestAccess.objects.create(user=guest)
+    client.force_login(guest)
+    mail.outbox.clear()
+
+    client.post(reverse("accounts:settings"), {"form_action": "google_connect"})
+    body = mail.outbox[0].body
+    link = next(w for w in body.split() if "/ustawienia/google/polacz/" in w)
+
+    # Someone else signed in can't use it.
+    stranger = BrowserClient()
+    stranger.force_login(User.objects.create_user(email="x@example.com"))
+    assert stranger.post(link).status_code == 400
+
+    assert client.get(link).status_code == 200  # a button, nothing more
+    client.post(link)
+    assert client.get(reverse("accounts:google-connect"))["Location"].startswith(
+        google.AUTHORIZE_URL
+    )
+
+
+@pytest.mark.django_db
+def test_password_reset_says_which_google_can_still_sign_in(
+    client, google_on, password_user
+):
+    from apps.accounts.services import PasswordResetService
+
+    GoogleAccount.objects.create(
+        user=password_user, subject="s", email="jan.google@gmail.com"
+    )
+    mail.outbox.clear()
+    PasswordResetService.request_reset(password_user.email)
+    link = next(w for w in mail.outbox[0].body.split() if "/reset-hasla/" in w)
+
+    response = client.post(
+        link, {"password": "Nowe-haslo-2026!", "password_confirm": "Nowe-haslo-2026!"}
+    )
+
+    assert "jan.google@gmail.com" in page_text(response)
