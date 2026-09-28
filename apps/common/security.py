@@ -15,7 +15,10 @@ def hash_token(raw_token: str) -> str:
 
 def get_client_ip(django_request) -> str:
     """The visitor's address as seen by our own proxy. nginx (deploy/) sets
-    X-Forwarded-For to exactly that address; if some other proxy appends to
+    X-Forwarded-For to exactly that address - behind Cloudflare, the real
+    visitor's, which nginx takes from Cloudflare only (real_ip, see README
+    "Cloudflare"). Never read CF-Connecting-IP here: anyone reaching the
+    server around Cloudflare could send it. If some other proxy appends to
     the header instead, only its last entry was added by a proxy - anything
     before it came from the visitor and could be made up."""
     forwarded = django_request.META.get("HTTP_X_FORWARDED_FOR")

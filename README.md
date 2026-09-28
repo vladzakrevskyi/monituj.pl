@@ -625,6 +625,38 @@ Wszystkie polecenia uruchamiasz z katalogu `/srv/monituj`.
 
 > **Nigdy nie uruchamiaj `docker compose down -v`** – flaga `-v` usuwa wolumeny, czyli bazę danych i wszystkie przesłane pliki.
 
+### Cloudflare przed serwerem
+
+Gdy strona stoi za Cloudflare, nginx widzi adresy Cloudflare zamiast adresów odwiedzających – a z adresu IP korzysta tryb serwisowy, lista adresów panelu administratora i limity prób (logowanie, rejestracja, formularze). Prawdziwy adres podaje Cloudflare w nagłówku `CF-Connecting-IP`; nginx przyjmuje go **tylko od serwerów Cloudflare** (moduł `real_ip`), więc nikt, kto łączy się z serwerem z pominięciem Cloudflare, nie podrobi swojego adresu. Aplikacja niczego nie zmienia – dostaje od nginx już prawdziwy adres.
+
+1. Plik z adresami Cloudflare (i odświeżanie raz w miesiącu):
+
+```bash
+sudo /srv/monituj/deploy/nginx/update-cloudflare-ips.sh
+```
+
+```bash
+echo "0 4 1 * * root /srv/monituj/deploy/nginx/update-cloudflare-ips.sh" | sudo tee /etc/cron.d/cloudflare-ips
+```
+
+2. W `/etc/nginx/sites-available/monituj.conf`, w każdym bloku `server { … }` obsługującym stronę (także w tym z `listen 443`), dopisz:
+
+```
+include /etc/nginx/snippets/cloudflare-real-ip.conf;
+```
+
+   i w `location` ustaw `proxy_set_header X-Forwarded-For $remote_addr;` (nadpisuje nagłówek – jak w `deploy/nginx/monituj.conf`).
+
+3. Sprawdź i przeładuj:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+4. Sprawdzenie: w trybie serwisowym strona „Prace techniczne” pokazuje „Twój adres IP” – teraz Twój, a nie Cloudflare (`172.64…`, `104.…`, `2606:4700…`).
+
+W Cloudflare ustaw SSL/TLS na **Full (strict)**. Dodatkowo możesz w zaporze (ufw) wpuszczać ruch na porty 80 i 443 tylko z adresów Cloudflare – wtedy serwera nie da się obejść.
+
 ### Tryb serwisowy (maintenance mode)
 
 Na czas prac (np. większej migracji danych) możesz pokazać odwiedzającym stronę „Prace techniczne” (HTTP 503). W pliku `.env` ustaw:
