@@ -1,8 +1,8 @@
 {% comment %}
 The four plans. panel=True: buttons submit the surrounding plan form;
 otherwise (the public pricing page) they link to registration or the panel.
-Prices switch between monthly and yearly with the interval radios around it
-(CSS only, see billing.css).
+Prices switch between monthly and yearly, net and gross, with the radios
+of _price_switches.html around it (CSS only, see billing.css).
 {% endcomment %}
 {% load formatting %}
 <div class="plan-grid">
@@ -18,8 +18,15 @@ Prices switch between monthly and yearly with the interval radios around it
 {% if card.plan.is_paid %}
 {% for price in card.prices %}
 <div class="plan-card__price" data-interval="{{ price.interval }}">
-<p class="plan-card__amount"><strong>{{ price.net }}</strong><span>{% if vat_rate %}netto {% endif %}/ {% if price.interval == 'year' %}rok{% else %}mies.{% endif %}</span></p>
-<p class="plan-card__sub">{% if vat_rate %}{{ price.gross }} z VAT{% if price.interval == 'year' %} · {% endif %}{% endif %}{% if price.interval == 'year' %}{{ price.per_month }} / mies.{% endif %}</p>
+{% if vat_rate %}
+<p class="plan-card__amount" data-vat="net"><strong>{{ price.net }}</strong><span>netto / {% if price.interval == 'year' %}rok{% else %}mies.{% endif %}</span></p>
+<p class="plan-card__amount" data-vat="gross"><strong>{{ price.gross }}</strong><span>brutto / {% if price.interval == 'year' %}rok{% else %}mies.{% endif %}</span></p>
+<p class="plan-card__sub" data-vat="net">{{ price.gross }} z VAT{% if price.interval == 'year' %} · {{ price.per_month }} / mies.{% endif %}</p>
+<p class="plan-card__sub" data-vat="gross">{{ price.net }} + {{ vat_rate }}% VAT{% if price.interval == 'year' %} · {{ price.per_month_gross }} / mies.{% endif %}</p>
+{% else %}
+<p class="plan-card__amount"><strong>{{ price.net }}</strong><span>/ {% if price.interval == 'year' %}rok{% else %}mies.{% endif %}</span></p>
+<p class="plan-card__sub">{% if price.interval == 'year' %}{{ price.per_month }} / mies.{% endif %}</p>
+{% endif %}
 </div>
 {% endfor %}
 {% else %}
@@ -37,7 +44,7 @@ Prices switch between monthly and yearly with the interval radios around it
 {% if state.is_subscribed and card.current and state.account.interval == price.interval %}
 <button type="button" class="btn btn-secondary btn-block" disabled>{% if state.account.cancel_at %}Działa do {{ state.account.cancel_at|d }}{% else %}Twój plan{% endif %}</button>
 {% else %}
-<button type="submit" class="btn {% if card.trial and not state.is_subscribed %}btn-primary{% else %}btn-dark{% endif %} btn-block" name="plan" value="{{ card.plan.code }}"{% if not can_buy %} disabled{% endif %}>{% if not state.is_subscribed %}Wybierz {{ card.plan.name }}{% elif card.current %}{% if price.interval == 'year' %}Płać rocznie{% else %}Płać miesięcznie{% endif %}{% else %}Zmień na {{ card.plan.name }}{% endif %}</button>
+<button type="submit" class="btn {% if card.trial and not state.is_subscribed %}btn-primary{% else %}btn-dark{% endif %} btn-block" name="plan" value="{{ card.plan.code }}"{% if not can_buy %} disabled{% endif %}>{% if not state.is_subscribed %}Zamawiam i płacę{% elif price.pays_now %}Zmieniam i dopłacam{% elif card.current %}Płać miesięcznie{% else %}Zmień na {{ card.plan.name }}{% endif %}</button>
 {% endif %}
 </div>
 {% endfor %}

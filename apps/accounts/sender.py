@@ -2,10 +2,14 @@
 
 The name is chosen by the sender, so on its own it proves nothing - anyone
 could call themselves a tax office or a bank. So recipients always see it
-together with the sender's confirmed email address, plus a "verified firm"
-line when the account's invoice details were checked in GUS or the VAT
-register; and names that mimic public institutions, banks or Monituj itself
-are refused up front."""
+together with the sender's confirmed email address, plus - for a paid
+account invoiced to a firm - the firm that pays for it; and names that
+mimic public institutions, banks or Monituj itself are refused up front.
+
+The firm line states a fact, not a verdict: anyone can type a NIP, but an
+account paid by card and invoiced to that firm (in KSeF the firm sees the
+invoice) is a signal a recipient can weigh. So it shows only while the
+subscription is paid and after an invoice to that NIP was issued."""
 
 import re
 import unicodedata
@@ -74,15 +78,29 @@ def validate_sender_name(name):
         raise ValidationError(DECEPTIVE_MESSAGE, code="deceptive_name")
 
 
-def verified_firm(user):
-    """'NAZWA Z REJESTRU, NIP 5213017228' when the account's invoice details
-    are a firm checked in GUS or the VAT register, otherwise ''."""
-    from apps.billing.models import BillingProfile
+def paying_firm(user):
+    """'NAZWA Z REJESTRU, NIP 5213017228' when the account's paid plan is
+    invoiced to a firm whose name came from the register, otherwise ''."""
+    from apps.billing.models import (
+        BillingAccount,
+        BillingProfile,
+        VatInvoice,
+        VatInvoiceStatus,
+    )
+    from apps.billing.services import is_subscribed
 
     profile = BillingProfile.objects.filter(user=user).first()
     if profile is None or not profile.is_company or not profile.registry_source:
         return ""
-    return f"{profile.company_name}, NIP {profile.tax_id}"
+    account = BillingAccount.objects.filter(user=user).first()
+    if account is None or not is_subscribed(account):
+        return ""
+    invoiced = VatInvoice.objects.filter(
+        user=user,
+        status=VatInvoiceStatus.ISSUED,
+        client__client_tax_code=profile.tax_id,
+    ).exists()
+    return f"{profile.company_name}, NIP {profile.tax_id}" if invoiced else ""
 
 
 def sender_context(user):
@@ -94,7 +112,7 @@ def sender_context(user):
         "sender_email": user.email,
         # "Biuro X (jan@biuro-x.pl)" - the confirmed address with the name.
         "sender_from": f"{name} ({user.email})" if name else user.email,
-        "sender_firm": verified_firm(user),
+        "sender_firm": paying_firm(user),
     }
 
 

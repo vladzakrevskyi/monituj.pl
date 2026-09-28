@@ -60,17 +60,36 @@ REGISTRY_LOOKUPS_PER_HOUR = 20
 DEMO_MESSAGE = "Konto demonstracyjne nie może kupić planu."
 
 
-def _price_rows(plan):
-    return [
-        {
-            "interval": interval,
-            "net": plans.format_pln(plan.price(interval)),
-            "gross": plans.format_pln(plans.gross(plan.price(interval))),
-            # The yearly price per month, to compare with the monthly one.
-            "per_month": plans.format_pln(plan.price(interval) // 12),
-        }
-        for interval in plans.INTERVALS
-    ]
+def _pays_now(plan, interval, state):
+    """Whether switching a subscription to this plan charges the card at
+    once - the button then says so. A new interval starts a new period
+    (paid now if yearly, credited if monthly); within one, a dearer plan
+    costs the difference."""
+    if state is None or not state.is_subscribed or state.account is None:
+        return False
+    current = plans.PLANS.get(state.account.plan, plans.FREE)
+    if interval != state.account.interval:
+        return interval == plans.YEAR
+    return plan.price(interval) > current.price(interval)
+
+
+def _price_rows(plan, state=None):
+    rows = []
+    for interval in plans.INTERVALS:
+        net = plan.price(interval)
+        gross = plans.gross(net)
+        rows.append(
+            {
+                "interval": interval,
+                "net": plans.format_pln(net),
+                "gross": plans.format_pln(gross),
+                # The yearly price per month, to compare with the monthly one.
+                "per_month": plans.format_pln(net // 12),
+                "per_month_gross": plans.format_pln(gross // 12),
+                "pays_now": _pays_now(plan, interval, state),
+            }
+        )
+    return rows
 
 
 def _days(count):
@@ -83,7 +102,7 @@ def plan_cards(state=None):
         {
             "plan": plan,
             "limit": plans.requests_phrase(plan.active_requests).split(" ", 1),
-            "prices": _price_rows(plan),
+            "prices": _price_rows(plan, state),
             "current": state is not None
             and state.plan == plan
             and state.source in ("subscription", "free"),
@@ -183,7 +202,7 @@ def plan_view(request):
             "can_buy": gateway.enabled()
             and not blocked
             and _profile(request.user) is not None,
-            "interval": account.interval if subscribed else plans.MONTH,
+            "yearly": subscribed and account.interval == plans.YEAR,
             "current_price": (
                 plans.format_pln(state.plan.price(account.interval))
                 if subscribed

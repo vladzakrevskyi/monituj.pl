@@ -7,4 +7,4 @@
 {% include "notifications/emails/_notice.html" with text="Jeśli kolejne próby się nie powiodą, subskrypcja wygaśnie, a konto przejdzie na bezpłatny plan Free. Sprawdź kartę albo dodaj nową w zakładce Plan i płatności." tone="danger" %}
 {% include "notifications/emails/_button.html" with url=plan_url label="Zaktualizuj kartę" %}
 {% endblock %}
-{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy płatności za Twoje konto w Monituj. Faktury i potwierdzenia płatności wysyła osobno Stripe.{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy płatności za Twoje konto w Monituj. Faktury VAT wysyłamy osobnymi wiadomościami.{% endblock %}

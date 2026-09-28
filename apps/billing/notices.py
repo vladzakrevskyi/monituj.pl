@@ -6,9 +6,14 @@ They follow the stored copy of the subscription, not Stripe events: whatever
 path brings a change (webhook, return from Checkout or the portal), the
 before/after comparison happens once, under a row lock, so each change is
 queued exactly once. The queue (BillingNotice) is sent by a task every
-minute. Receipts and invoices themselves come from Stripe."""
+minute. VAT invoices go out separately (invoicing.py).
+
+The email about a new subscription also confirms the contract, as the
+consumer rights act asks (art. 21): the terms, the request to start at
+once and the right of withdrawal, with the Regulamin attached."""
 
 from dataclasses import dataclass
+from datetime import timedelta
 
 from django.conf import settings
 from django.db import transaction
@@ -16,8 +21,9 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.billing import plans
-from apps.billing.models import BillingNotice
+from apps.billing.models import BillingNotice, CheckoutConsent
 from apps.billing.services import PAID_STATUSES, stripe_mode, within_grace
+from apps.common import legal
 from apps.common.site import absolute_url
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
@@ -134,6 +140,24 @@ def _context(account, previous_plan, previous_interval, kind):
     return context
 
 
+WITHDRAWAL_DAYS = 14
+
+
+def _contract(notice):
+    """The contract confirmation in the "plan started" email."""
+    consent = (
+        CheckoutConsent.objects.filter(user=notice.user).order_by("-created_at").first()
+    )
+    concluded = timezone.localdate(notice.created_at)
+    return {
+        "early_start_at": consent.created_at if consent else None,
+        "withdraw_until": concluded + timedelta(days=WITHDRAWAL_DAYS),
+        "terms_version": legal.effective_date_display(),
+        "contract_email": settings.LEGAL_ENTITY.get("email") or settings.CONTACT_EMAIL,
+        "withdrawal_url": absolute_url(reverse("legal:withdrawal")),
+    }
+
+
 def notify(account, before):
     """Queues an email to the owner about the change from `before` to the
     account's current state. Saved in the caller's transaction: a rolled
@@ -177,15 +201,21 @@ def _send(notice):
     from apps.billing.services import account_for
 
     account = account_for(notice.user)
+    context = _context(
+        account,
+        notice.data.get("previous_plan", ""),
+        notice.data.get("previous_interval", ""),
+        notice.kind,
+    )
+    attachments = None
+    if notice.kind == STARTED:
+        context.update(_contract(notice))
+        attachments = [legal.contract_attachment()]
     EmailService.send(
         TEMPLATES[notice.kind],
         to_email=notice.user.email,
-        context=_context(
-            account,
-            notice.data.get("previous_plan", ""),
-            notice.data.get("previous_interval", ""),
-            notice.kind,
-        ),
+        context=context,
+        attachments=attachments,
     )
 
 

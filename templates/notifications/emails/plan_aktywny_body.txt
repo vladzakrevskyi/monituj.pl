@@ -6,6 +6,11 @@ Plan: {{ plan_name }}
 {% endif %}
 Subskrypcja odnawia się automatycznie. Plan zmienisz, a subskrypcję anulujesz w każdej chwili w panelu:
 {{ plan_url }}
+
+POTWIERDZENIE UMOWY
+Umowę o plan {{ plan_name }} zawarliśmy z chwilą płatności, na zasadach Regulaminu obowiązującego od {{ terms_version }}. Regulamin z umową powierzenia i wzorem formularza odstąpienia jest w załączniku – zachowaj go.
+{% if early_start_at %}Zgodnie z Twoim żądaniem z {{ early_start_at|dt }} usługę świadczymy od razu, przed upływem terminu na odstąpienie od umowy.
+{% endif %}Jeśli zamawiasz jako konsument (albo jako przedsiębiorca, dla którego ta umowa nie ma charakteru zawodowego), możesz odstąpić od niej bez podawania przyczyny do {{ withdraw_until|d }} – wystarczy wiadomość na {{ contract_email }}. Zapłacisz wtedy tylko za dni do odstąpienia, resztę zwrócimy w ciągu 14 dni. Jak odstąpić od umowy: {{ withdrawal_url }}
 --
 Monituj – {{ site_url }}
 {% endautoescape %}

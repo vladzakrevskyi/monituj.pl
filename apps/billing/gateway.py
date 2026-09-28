@@ -20,7 +20,7 @@ from django.utils import timezone
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.billing import invoicing, notices, plans
-from apps.billing.models import BillingAccount, StripeEvent
+from apps.billing.models import BillingAccount, StripeEvent, VatInvoice
 from apps.billing.services import PAID_STATUSES, account_for, customer_id
 from apps.common.exceptions import ApplicationError
 from apps.common.site import absolute_url
@@ -365,30 +365,239 @@ def change_plan_url(user, plan, interval):
     )
 
 
-def cancel_all_subscriptions(user):
-    """Ends at once every subscription Stripe has for this user - used when
-    the account is deleted. Asks Stripe instead of trusting the local copy,
-    which may lag behind (a lost webhook), so nobody keeps paying for an
-    account that no longer exists. Returns how many were cancelled."""
-    cancelled = 0
+def close_customer(user):
+    """The Stripe side of deleting an account, per Regulamin § 5a:
+    - every subscription ends at once - Stripe is asked instead of trusting
+      the local copy, which may lag behind, so nobody keeps paying for an
+      account that no longer exists;
+    - what was paid for the time left, plus any credit from a downgrade,
+      goes back to the card;
+    - the customer is stripped of personal data (name, email, address, NIP,
+      cards). Payment records Stripe must keep stay with Stripe.
+    A cancellation that fails raises (better a retry than charges for a
+    deleted account); a refund or clean-up that fails only alerts the team,
+    who finish it by hand. Returns the refunded gross grosze."""
+    refunded = 0
+    problems = []
     for customer in find_customers(user):
-        for subscription in (
-            client()
-            .v1.subscriptions.list(
-                params={"customer": customer, "status": "all", "limit": 100}
+        unused = 0
+        try:
+            for subscription in (
+                client()
+                .v1.subscriptions.list(
+                    params={"customer": customer, "status": "all", "limit": 100}
+                )
+                .auto_paging_iter()
+            ):
+                if subscription.status not in LIVE_STATUSES:
+                    continue
+                try:
+                    client().v1.subscriptions.cancel(
+                        subscription.id,
+                        params={"cancellation_details": {"comment": DELETION_COMMENT}},
+                    )
+                except stripe.InvalidRequestError as exc:
+                    # Already cancelled on Stripe's side.
+                    if exc.code != "resource_missing":
+                        raise
+                    continue
+                unused += unused_value(_plain(subscription), int(time.time()))
+        finally:
+            # Also when a later cancellation fails: a retry won't see the
+            # subscriptions already cancelled, so their money goes back now.
+            refunded += _return_money(
+                customer, unused, problems, reason="account_deleted"
             )
-            .auto_paging_iter()
-        ):
-            if subscription.status not in LIVE_STATUSES:
-                continue
-            try:
-                client().v1.subscriptions.cancel(subscription.id)
-                cancelled += 1
-            except stripe.InvalidRequestError as exc:
-                # Already cancelled on Stripe's side.
-                if exc.code != "resource_missing":
-                    raise
-    return cancelled
+        _anonymize(customer, problems)
+    if refunded or problems:
+        _alert_refund(
+            user.email,
+            refunded,
+            problems,
+            numbers=list(
+                VatInvoice.objects.filter(user=user)
+                .exclude(number="")
+                .values_list("number", flat=True)[:3]
+            ),
+            why="Konto usunięte – zwrot za niewykorzystany okres",
+            key=f"deletion:{user.pk}",
+        )
+    return refunded
+
+
+# --- Money back ------------------------------------------------------------
+
+# Marks the subscriptions ended by an account deletion, whose refund
+# close_customer makes itself.
+DELETION_COMMENT = "monituj: account deleted"
+
+
+def _plain(stripe_object):
+    return (
+        stripe_object.to_dict()
+        if hasattr(stripe_object, "to_dict")
+        else dict(stripe_object)
+    )
+
+
+def unused_value(subscription, at):
+    """Gross grosze paid for the rest of the current period at `at` (a unix
+    time): the plan's price times the share of the period left. Upgrades are
+    charged and downgrades credited as they happen, so the current plan's
+    price is what the remaining time was paid at. Nothing when the period
+    isn't paid (past_due and the like)."""
+    if subscription["status"] != "active":
+        return 0
+    found = _plan_of(subscription)
+    item = subscription["items"]["data"][0]
+    start = item.get("current_period_start") or subscription.get("current_period_start")
+    end = item.get("current_period_end") or subscription.get("current_period_end")
+    if found is None or not start or not end or end <= start:
+        return 0
+    plan, interval = found
+    left = min(max(end - at, 0), end - start)
+    return round(plans.gross(plan.price(interval)) * left / (end - start))
+
+
+def _refund(customer, amount, reason, key):
+    """Sends `amount` grosze back to the customer, from the newest payments
+    on. Returns how much went back - less when the payments don't cover
+    it. Each refund is marked, so the webhook knows Monituj made it."""
+    refunded = 0
+    for charge in (
+        client()
+        .v1.charges.list(params={"customer": customer, "limit": 100})
+        .auto_paging_iter()
+    ):
+        if refunded >= amount:
+            break
+        left = (charge.amount_captured or 0) - (charge.amount_refunded or 0)
+        if not charge.paid or charge.status != "succeeded" or left <= 0:
+            continue
+        part = min(left, amount - refunded)
+        client().v1.refunds.create(
+            params={
+                "charge": charge.id,
+                "amount": part,
+                "reason": "requested_by_customer",
+                "metadata": {"monituj_reason": reason},
+            },
+            options={"idempotency_key": f"{key}-{charge.id}-{part}"},
+        )
+        refunded += part
+    return refunded
+
+
+def _return_money(customer, unused, problems, reason):
+    """Refunds `unused` plus the customer's credit balance (left by a
+    downgrade) and clears the refunded credit. Problems are collected for
+    the team, never raised."""
+    due = unused
+    try:
+        balance = client().v1.customers.retrieve(customer).balance or 0
+        credit = max(-balance, 0)
+        due = unused + credit
+        if not due:
+            return 0
+        refunded = _refund(customer, due, reason, key=f"monituj-{reason}-{customer}")
+        cleared = min(credit, refunded)
+        if cleared:
+            client().v1.customers.balance_transactions.create(
+                customer,
+                params={
+                    "amount": cleared,
+                    "currency": "pln",
+                    "description": "Saldo zwrócone na kartę",
+                },
+            )
+        if refunded < due:
+            problems.append(
+                f"Do zwrotu ręcznie: {plans.format_pln(due - refunded)} (klient "
+                f"{customer}) – płatności w Stripe nie pokrywają tej kwoty."
+            )
+        return refunded
+    except stripe.StripeError:
+        logger.exception("Stripe refund for %s failed", customer)
+        problems.append(
+            f"Zwrot {plans.format_pln(due)} się nie udał (klient {customer}) – "
+            "sprawdź w Stripe, ile już wróciło, i zwróć resztę ręcznie."
+        )
+        return 0
+
+
+def _anonymize(customer, problems):
+    """Removes the personal data Monituj put on a Stripe customer."""
+    stripe_client = client()
+    try:
+        current = stripe_client.v1.customers.retrieve(customer)
+        stripe_client.v1.customers.update(
+            customer,
+            params={
+                "name": "",
+                "email": "",
+                "phone": "",
+                "description": "",
+                "address": "",
+                "shipping": "",
+                # An empty value removes a key; the date says why it's bare.
+                "metadata": {
+                    **{key: "" for key in _metadata(current)},
+                    "monituj_deleted": timezone.localdate().isoformat(),
+                },
+            },
+        )
+        for tax_id in stripe_client.v1.customers.tax_ids.list(customer).data:
+            stripe_client.v1.customers.tax_ids.delete(customer, tax_id.id)
+        for method in stripe_client.v1.customers.payment_methods.list(
+            customer
+        ).auto_paging_iter():
+            stripe_client.v1.payment_methods.detach(method.id)
+    except stripe.StripeError:
+        logger.exception("Stripe customer %s not anonymized", customer)
+        problems.append(
+            f"Nie udało się usunąć danych klienta {customer} w Stripe – usuń "
+            "ręcznie imię, nazwę, e-mail, adres, NIP i karty."
+        )
+
+
+def _alert_refund(who, refunded, problems, numbers, why, key):
+    lines = [f"Konto: {who}"]
+    if refunded:
+        lines.append(f"Zwrócono na kartę: {plans.format_pln(refunded)}.")
+        lines.append(
+            "Wystaw w inFakt fakturę korygującą"
+            + (f" do faktury {', '.join(numbers)}." if numbers else ".")
+        )
+    notices.alert_team(why, lines + problems, key=key)
+
+
+def _refund_credit_after_end(account, subscription):
+    """A downgrade leaves credit for later payments. When the subscription
+    ends with some of it unused, it goes back to the card (Regulamin § 5a)
+    - unless another subscription still runs and uses it, or a deletion
+    ended it (close_customer refunds those itself)."""
+    details = subscription.get("cancellation_details") or {}
+    if details.get("comment") == DELETION_COMMENT:
+        return
+    if account.status in LIVE_STATUSES:
+        return
+    problems = []
+    refunded = _return_money(
+        account.stripe_customer_id, 0, problems, reason="credit_after_end"
+    )
+    if refunded or problems:
+        _alert_refund(
+            account.user.email,
+            refunded,
+            problems,
+            numbers=list(
+                VatInvoice.objects.filter(user=account.user)
+                .exclude(number="")
+                .values_list("number", flat=True)[:3]
+            ),
+            why="Subskrypcja zakończona – zwrot niewykorzystanego salda",
+            key=f"credit:{subscription.get('id')}",
+        )
 
 
 # --- Keeping the local copy in sync ----------------------------------------
@@ -595,8 +804,20 @@ def _adopt_customer(customer, data):
     return account
 
 
+def _refunded_by_monituj(charge):
+    """True when the charge's newest refund was made by Monituj itself (an
+    account deletion, unused credit) - the team was told about it then."""
+    try:
+        latest = client().v1.refunds.list(params={"charge": charge, "limit": 1}).data
+    except stripe.StripeError:
+        return False
+    return bool(latest) and bool(_metadata(latest[0]).get("monituj_reason"))
+
+
 def _alert_money_back(event, account):
     data = event.data.object.to_dict()
+    if event.type == "charge.refunded" and _refunded_by_monituj(data.get("id")):
+        return
     if account is None and data.get("charge"):
         # A dispute names the charge, not the customer.
         customer = client().v1.charges.retrieve(data["charge"]).customer
@@ -605,7 +826,10 @@ def _alert_money_back(event, account):
     amount = plans.format_pln(data.get("amount_refunded") or data.get("amount") or 0)
     if event.type == "charge.refunded":
         subject = "Zwrot płatności w Stripe"
-        what = f"Zwrócono {amount}. Plan klienta się nie zmienił"
+        what = (
+            f"Zwrócono {amount}. Wystaw w inFakt fakturę korygującą. Plan "
+            "klienta się nie zmienił"
+        )
     else:
         subject = "Klient zakwestionował płatność (spór)"
         what = f"Spór o {amount}. Odpowiedz w Stripe w wyznaczonym terminie"
@@ -644,5 +868,7 @@ def handle_event(event):
             logger.warning("Stripe event %s for an unknown customer", event.id)
             return False
         # An error here rolls back the StripeEvent row, so Stripe retries.
-        refresh(account)
+        account = refresh(account)
+        if event.type == "customer.subscription.deleted":
+            _refund_credit_after_end(account, data)
     return True

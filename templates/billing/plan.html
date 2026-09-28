@@ -64,7 +64,7 @@
 {% if not blocked %}
 <section class="card billing-profile" id="dane" aria-labelledby="profile-title">
 <h2 id="profile-title">Dane do faktury</h2>
-<p class="text-muted">Na te dane wystawimy fakturę VAT po każdej płatności. Sprawdzamy je, zanim cokolwiek zapłacisz: dla firmy wystarczy NIP – nazwę i adres pobieramy z rejestru GUS.</p>
+<p class="text-muted">Na te dane wystawimy fakturę VAT po każdej płatności. Sprawdzamy je, zanim cokolwiek zapłacisz: dla firmy wystarczy NIP – nazwę i adres pobieramy z rejestru GUS. Gdy płatny plan opłaca firma, odbiorcy Twoich próśb widzą jej nazwę i NIP – to pomaga im upewnić się, kto prosi o dokumenty.</p>
 {% if profile %}
 <div class="billing-profile__summary" data-profile-summary>
 <div>
@@ -146,20 +146,17 @@
 {% csrf_token %}
 <div class="plan-picker__head">
 <h2>{% if state.is_subscribed %}Zmień plan{% else %}Wybierz plan{% endif %}</h2>
-<fieldset class="interval-switch">
-<legend class="visually-hidden">Okres rozliczenia</legend>
-<label><input type="radio" name="interval" value="month"{% if interval != 'year' %} checked{% endif %}><span>Miesięcznie</span></label>
-<label><input type="radio" name="interval" value="year"{% if interval == 'year' %} checked{% endif %}><span>Rocznie <em>2 miesiące gratis</em></span></label>
-</fieldset>
+{% include "billing/_price_switches.html" with yearly=yearly gross=False %}
 </div>
 {% if can_buy and not state.is_subscribed %}
+<p class="plan-order-note">Zamówienie jest płatne: płacisz kartą z góry cenę brutto wybranego planu, a subskrypcja odnawia się automatycznie co miesiąc albo co rok, dopóki jej nie anulujesz – w każdej chwili, w panelu.</p>
 <p class="consent plan-consent">
-<label for="id_early_start">{{ early_start_label }} Zasady: <a href="{% url 'legal:terms' %}#platnosci" target="_blank" rel="noopener">Regulamin, § 5a</a>.</label>
+<label for="id_early_start">{{ early_start_label }} Zasady: <a href="{% url 'legal:terms' %}#platnosci" target="_blank" rel="noopener">Regulamin, § 5a</a> i <a href="{% url 'legal:withdrawal' %}" target="_blank" rel="noopener">odstąpienie od umowy</a>.</label>
 <input type="checkbox" name="early_start" id="id_early_start" required>
 </p>
 {% endif %}
 {% include "billing/_plan_grid.html" with panel=True %}
-<p class="plan-picker__foot">{% if vat_rate %}Ceny netto – do każdej płatności doliczamy {{ vat_rate }}% VAT. {% endif %}Płatność kartą przez Stripe: {% if state.is_subscribed %}przy zmianie na droższy plan albo na płatność roczną dopłacasz od razu różnicę za pozostały czas (niewykorzystana część obecnej opłaty jest odliczana), a przy zmianie na tańszy – nadwyżka zostaje zaliczona na kolejne płatności{% else %}płacisz z góry za miesiąc albo rok, subskrypcja odnawia się automatycznie{% endif %}. Zrezygnujesz w każdej chwili – plan działa do końca opłaconego okresu. Po przekroczeniu limitu nic się nie zatrzymuje: przypomnienia są wysyłane, a klienci przesyłają pliki – blokowane jest tylko wysłanie nowej prośby.</p>
+<p class="plan-picker__foot">{% if vat_rate %}Do ceny netto doliczamy {{ vat_rate }}% VAT – przełącznik nad planami pokazuje ceny netto albo brutto. {% endif %}Płatność kartą przez Stripe: {% if state.is_subscribed %}przy zmianie na droższy plan albo na płatność roczną dopłacasz od razu różnicę za pozostały czas (niewykorzystana część obecnej opłaty jest odliczana), a przy zmianie na tańszy – nadwyżka zostaje zaliczona na kolejne płatności (niewykorzystaną zwracamy po zakończeniu subskrypcji){% else %}płacisz z góry za miesiąc albo rok, subskrypcja odnawia się automatycznie{% endif %}. Zrezygnujesz w każdej chwili – plan działa do końca opłaconego okresu. Po przekroczeniu limitu nic się nie zatrzymuje: przypomnienia są wysyłane, a klienci przesyłają pliki – blokowane jest tylko wysłanie nowej prośby.</p>
 </form>
 {% endif %}
 

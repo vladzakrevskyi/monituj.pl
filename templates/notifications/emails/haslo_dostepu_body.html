@@ -7,7 +7,7 @@
 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Prośba o dokumenty jest zabezpieczona hasłem. Użyj go po otwarciu linku z poprzedniej wiadomości.</p>
 {% include "notifications/emails/_details_open.html" %}
 {% include "notifications/emails/_row.html" with label="Od" value=sender_from %}
-{% if sender_firm %}{% include "notifications/emails/_row.html" with label="Firma zweryfikowana" value=sender_firm %}{% endif %}
+{% if sender_firm %}{% include "notifications/emails/_row.html" with label="Konto opłaca firma" value=sender_firm %}{% endif %}
 {% include "notifications/emails/_row.html" with label="Prośba" value=request_name %}
 {% include "notifications/emails/_details_close.html" %}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;"><tr><td align="center" style="padding:18px;background-color:#0b0b0c;border-radius:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:22px;font-weight:700;letter-spacing:2px;color:#ff6b00;">{{ password }}</td></tr></table>

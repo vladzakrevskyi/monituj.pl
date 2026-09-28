@@ -120,6 +120,8 @@ def test_every_email_is_sent_as_html_with_text_fallback(request_record, request_
                 "price_gross": "109,47 zł",
                 "interval_label": "miesięcznie",
                 "limit": "75 próśb",
+                "withdraw_until": timezone.localdate(),
+                "terms_version": "1 października 2026",
             },
             request=request_record,
         )

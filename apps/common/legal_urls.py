@@ -9,4 +9,5 @@ urlpatterns = [
     path("polityka-prywatnosci/", legal.privacy, name="privacy"),
     path("polityka-cookies/", legal.cookies, name="cookies"),
     path("umowa-powierzenia/", legal.dpa, name="dpa"),
+    path("odstapienie-od-umowy/", legal.withdrawal, name="withdrawal"),
 ]

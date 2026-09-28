@@ -104,6 +104,16 @@ class FakeStripe:
             )
         ]
         self.v1.customers.create.return_value = SimpleNamespace(id="cus_1")
+        # No credit, payments, refunds or cards unless a test sets them.
+        self.v1.customers.retrieve.return_value = stripe.StripeObject.construct_from(
+            {"id": "cus_1", "balance": 0, "metadata": {}}, "k"
+        )
+        self.charges = []
+        self.v1.charges.list.side_effect = lambda params: _listing(
+            [stripe.StripeObject.construct_from(c, "k") for c in self.charges]
+        )
+        self.v1.refunds.list.return_value = _listing([])
+        self.v1.customers.payment_methods.list.return_value = _listing([])
         self.v1.customers.tax_ids.list.return_value = SimpleNamespace(data=[])
         self.v1.checkout.sessions.create.return_value = SimpleNamespace(
             url="https://checkout.stripe.com/c/pay/cs_test_1"
@@ -111,6 +121,10 @@ class FakeStripe:
         self.v1.billing_portal.sessions.create.return_value = SimpleNamespace(
             url="https://billing.stripe.com/p/session/test_1"
         )
+
+
+def gateway_cancel_params():
+    return {"cancellation_details": {"comment": gateway.DELETION_COMMENT}}
 
 
 @pytest.fixture
@@ -676,30 +690,17 @@ def test_terms_describe_payments_and_withdrawal(client):
 
 
 @pytest.mark.django_db
-def test_free_plan_emails_to_recipients_mention_monituj(
-    user, request_record, request_item
-):
+def test_emails_to_recipients_carry_no_advertising(user, request_record, request_item):
+    # Recipients never agreed to marketing - a free plan changes nothing.
     _expire_trial(user)
 
     EmailService.send(
         EmailTemplate.INVITATION, to_email="acme@example.com", request=request_record
     )
-    EmailService.send(EmailTemplate.PASSWORD_RESET, to_email=user.email)
 
-    invitation, own = mail.outbox
-    assert "Zbierasz dokumenty od klientów?" in invitation.body
-    html = invitation.alternatives[0][0].replace("\u00a0", " ")
-    assert "Zbierasz dokumenty od klientów?" in html
-    assert "Zbierasz dokumenty" not in own.body
-
-
-@pytest.mark.django_db
-def test_paid_and_trial_emails_have_no_monituj_line(user, request_record, request_item):
-    EmailService.send(
-        EmailTemplate.INVITATION, to_email="acme@example.com", request=request_record
-    )
-
-    assert "Zbierasz dokumenty" not in mail.outbox[0].body
+    invitation = mail.outbox[0]
+    assert "zacznij za darmo" not in invitation.body
+    assert "zacznij za darmo" not in invitation.alternatives[0][0]
 
 
 @pytest.mark.django_db
@@ -757,7 +758,9 @@ def test_deleting_the_account_cancels_the_subscription(client, user, fake_stripe
 
     client.post(reverse("accounts:account-deletion-confirm", args=[token]))
 
-    fake_stripe.v1.subscriptions.cancel.assert_called_once_with("sub_1")
+    fake_stripe.v1.subscriptions.cancel.assert_called_once_with(
+        "sub_1", params=gateway_cancel_params()
+    )
     assert not User.objects.filter(pk=user.pk).exists()
     assert not BillingAccount.objects.exists()
 
@@ -1018,7 +1021,9 @@ def test_deletion_cancels_subscriptions_monituj_never_stored(client, user, fake_
 
     client.post(reverse("accounts:account-deletion-confirm", args=[token]))
 
-    fake_stripe.v1.subscriptions.cancel.assert_called_once_with("sub_live")
+    fake_stripe.v1.subscriptions.cancel.assert_called_once_with(
+        "sub_live", params=gateway_cancel_params()
+    )
     assert not User.objects.filter(pk=user.pk).exists()
 
 

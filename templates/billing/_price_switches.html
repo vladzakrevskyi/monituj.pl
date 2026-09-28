@@ -1,0 +1,19 @@
+{% comment %}
+Monthly or yearly, net or gross: radios that switch the plan cards' prices
+around them (CSS only, see billing.css). yearly / gross: which one starts
+checked.
+{% endcomment %}
+<div class="price-switches">
+<fieldset class="interval-switch">
+<legend class="visually-hidden">Okres rozliczenia</legend>
+<label><input type="radio" name="interval" value="month"{% if not yearly %} checked{% endif %}><span>Miesięcznie</span></label>
+<label><input type="radio" name="interval" value="year"{% if yearly %} checked{% endif %}><span>Rocznie</span><em>2 miesiące gratis</em></label>
+</fieldset>
+{% if vat_rate %}
+<fieldset class="interval-switch interval-switch--small">
+<legend class="visually-hidden">Ceny netto albo brutto</legend>
+<label><input type="radio" name="vat" value="net" form="price-switches-none"{% if not gross %} checked{% endif %}><span>Netto</span></label>
+<label><input type="radio" name="vat" value="gross" form="price-switches-none"{% if gross %} checked{% endif %}><span>Brutto</span></label>
+</fieldset>
+{% endif %}
+</div>

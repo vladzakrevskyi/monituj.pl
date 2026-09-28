@@ -13,14 +13,10 @@
 <div class="plan-picker plan-picker--public">
 <div class="plan-picker__head">
 <p class="plan-picker__intro">Bezpłatny plan {{ free_plan.name }} działa bez limitu czasu. Płatny plan wybierasz, kiedy potrzebujesz więcej.</p>
-<fieldset class="interval-switch">
-<legend class="visually-hidden">Okres rozliczenia</legend>
-<label><input type="radio" name="interval" value="month" checked><span>Miesięcznie</span></label>
-<label><input type="radio" name="interval" value="year"><span>Rocznie <em>2 miesiące gratis</em></span></label>
-</fieldset>
+{% include "billing/_price_switches.html" with yearly=False gross=False %}
 </div>
 {% include "billing/_plan_grid.html" with panel=False %}
-<p class="plan-picker__foot">{% if vat_rate %}Ceny netto – do płatności doliczamy {{ vat_rate }}% VAT (ceny z VAT podane pod kwotą). {% endif %}Płatność kartą przez Stripe, z góry za miesiąc albo rok. Zrezygnujesz w każdej chwili – plan działa do końca opłaconego okresu. Szczegóły w <a href="{% url 'legal:terms' %}#platnosci">Regulaminie</a>.</p>
+<p class="plan-picker__foot">{% if vat_rate %}Do ceny netto doliczamy {{ vat_rate }}% VAT – przełącznik nad planami pokazuje ceny netto albo brutto. {% endif %}Płatność kartą przez Stripe, z góry za miesiąc albo rok. Zrezygnujesz w każdej chwili – plan działa do końca opłaconego okresu. Szczegóły w <a href="{% url 'legal:terms' %}#platnosci">Regulaminie</a>.</p>
 </div>
 
 <div class="plan-features">

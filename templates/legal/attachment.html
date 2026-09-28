@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base href="{{ site_url }}">
+<title>Monituj – Regulamin, umowa powierzenia i formularz odstąpienia</title>
+<style>
+body { margin: 0; padding: 32px 16px; background: #fff; color: #18181b; font: 15px/1.6 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+main { max-width: 760px; margin: 0 auto; }
+.intro { padding: 12px 16px; background: #f7f7f8; border: 1px solid #e4e4e8; border-radius: 8px; color: #3f3f46; }
+.document { margin-top: 40px; padding-top: 24px; border-top: 2px solid #e4e4e8; }
+h1 { font-size: 24px; line-height: 1.3; margin: 0 0 4px; }
+h2 { font-size: 18px; margin: 28px 0 8px; }
+.meta { color: #62636d; margin: 0 0 16px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #e4e4e8; padding: 6px 8px; text-align: left; vertical-align: top; }
+a { color: #c24e00; }
+.legal-form { padding: 12px 16px; border: 1px dashed #a1a1aa; border-radius: 8px; }
+</style>
+</head>
+<body>
+<main>
+<p class="intro">Treść dokumentów serwisu Monituj w wersji z dnia zamówienia ({{ issued }}). Zachowaj ten plik – nie zmieni się, nawet jeśli dokumenty na stronie zostaną później zaktualizowane.</p>
+{% for part in parts %}{{ part }}{% endfor %}
+</main>
+</body>
+</html>

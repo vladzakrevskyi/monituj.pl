@@ -2,9 +2,13 @@ from datetime import datetime
 
 from django.conf import settings
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.formats import date_format
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
+
+from apps.common.site import absolute_url
 
 PLACEHOLDERS = {
     "name": "nazwa firmy",
@@ -88,7 +92,31 @@ def _legal_page(template):
     return view
 
 
+# The Regulamin with its annex and the withdrawal form, in the order a buyer
+# receives them.
+CONTRACT_DOCUMENTS = ("legal/terms.html", "legal/dpa.html", "legal/withdrawal.html")
+
+
+def contract_attachment():
+    """The contract documents as one self-contained HTML file for the order
+    confirmation email - the copy a buyer keeps on a durable medium (art. 21
+    of the consumer rights act): unlike the pages, it can't change later.
+    Returns (filename, bytes, mimetype)."""
+    context = {"legal": legal_context(), "legal_base": "legal/_fragment.html"}
+    parts = [mark_safe(render_to_string(name, context)) for name in CONTRACT_DOCUMENTS]
+    html = render_to_string(
+        "legal/attachment.html",
+        {
+            "parts": parts,
+            "site_url": absolute_url("/"),
+            "issued": date_format(timezone.localdate(), "j E Y"),
+        },
+    )
+    return ("Monituj-regulamin.html", html.encode(), "text/html")
+
+
 terms = _legal_page("legal/terms.html")
 privacy = _legal_page("legal/privacy.html")
 cookies = _legal_page("legal/cookies.html")
 dpa = _legal_page("legal/dpa.html")
+withdrawal = _legal_page("legal/withdrawal.html")

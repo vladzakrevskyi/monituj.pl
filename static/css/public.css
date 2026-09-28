@@ -267,24 +267,39 @@
   font-size: 15px;
 }
 
-/* Who is asking: the name, the confirmed address and - for a firm checked
-   in GUS or the VAT register - a verified line. */
+/* Who is asking: the name, the confirmed address and - for a paid account
+   invoiced to a firm from the register - the firm that pays for it. */
 .public-head__sender {
   margin: 0 0 var(--space-2);
 }
 
-.public-head__verified {
-  display: inline-flex;
-  align-items: center;
+.public-head__firm {
+  display: flex;
+  align-items: flex-start;
   gap: var(--space-2);
+  max-width: 640px;
   margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
   font-size: 14px;
-  font-weight: 600;
+}
+
+.public-head__firm p {
+  margin: 0;
+}
+
+.public-head__firm svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
   color: var(--color-success);
 }
 
-.public-head__verified svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
+.public-head__firm .public-head__firm-note {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--color-text-muted);
 }

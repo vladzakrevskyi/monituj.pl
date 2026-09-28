@@ -1471,6 +1471,17 @@
   vertical-align: top;
 }
 
+.legal-form {
+  margin: var(--space-4) 0;
+  padding: var(--space-4) var(--space-5);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.legal-form p {
+  margin: 0 0 var(--space-2);
+}
+
 .legal-todo {
   background: #fff3bf;
   color: #7a4a00;

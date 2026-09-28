@@ -47,28 +47,12 @@ def _request_context(request, to_email):
         ),
         # Every request to this address, from any sender, on one page.
         "portal_link": recipient_portal_url(to_email) if to_recipient else "",
-        "promo_url": _promo_url(request.created_by) if to_recipient else "",
         "missing_items": list(
             request.items.filter(status__in=NOT_DELIVERED)
             .order_by("id")
             .values_list("name", flat=True)
         ),
     }
-
-
-PROMO_TEXT = (
-    "Zbierasz dokumenty od klientów? Monituj przypomni o nich za Ciebie – "
-    "zacznij za darmo:"
-)
-
-
-def _promo_url(owner):
-    """Emails to recipients of free-plan senders end with a line about
-    Monituj; paid plans (and the trial) send them without it."""
-    from apps.billing.services import plan_for
-
-    _plan, source = plan_for(owner)
-    return absolute_url("/") if source == "free" else ""
 
 
 def _is_demo(to_email, request):
@@ -121,8 +105,6 @@ class EmailService:
             ).strip(),
             keep_lines=True,
         )
-        if full_context.get("promo_url"):
-            text_body += f"\n\n{PROMO_TEXT} {full_context['promo_url']}"
         html_body = add_link_titles(
             fix_orphans(
                 render_to_string(

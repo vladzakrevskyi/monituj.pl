@@ -1,7 +1,7 @@
 {% load formatting %}{% autoescape off %}Prośba o dokumenty jest zabezpieczona hasłem. Użyj go po otwarciu linku z poprzedniej wiadomości.
 
 Od: {{ sender_from }}
-{% if sender_firm %}Firma zweryfikowana: {{ sender_firm }}
+{% if sender_firm %}Konto opłaca firma: {{ sender_firm }}
 {% endif %}Prośba: {{ request_name }}
 {% if deadline %}Termin: {{ deadline|dt }}
 {% endif %}

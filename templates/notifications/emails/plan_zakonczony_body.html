@@ -7,4 +7,4 @@
 {% if over_limit %}{% include "notifications/emails/_notice.html" with text="Masz więcej próśb w toku, niż obejmuje obecny plan. Nic się nie zatrzymuje – przypomnienia są wysyłane, a klienci przesyłają pliki – ale nową prośbę wyślesz po wybraniu planu albo gdy część obecnych się zakończy." %}{% endif %}
 {% include "notifications/emails/_button.html" with url=plan_url label="Wybierz plan" %}
 {% endblock %}
-{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy płatności za Twoje konto w Monituj. Faktury i potwierdzenia płatności wysyła osobno Stripe.{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy płatności za Twoje konto w Monituj. Faktury VAT wysyłamy osobnymi wiadomościami.{% endblock %}

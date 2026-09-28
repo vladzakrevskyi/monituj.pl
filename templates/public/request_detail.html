@@ -10,7 +10,7 @@
 <p class="eyebrow">Prośba o dokumenty</p>
 <h1>{{ request_obj.name }}</h1>
 <p class="public-head__sender">Od: <strong>{{ sender_name }}</strong>{% if sender_name != sender_email %} <span class="text-muted">({{ sender_email }})</span>{% endif %}</p>
-{% if sender_firm %}<p class="public-head__verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Firma zweryfikowana w rejestrze: {{ sender_firm }}</p>{% endif %}
+{% if sender_firm %}<div class="public-head__firm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg><div><p>Konto opłaca firma <strong>{{ sender_firm }}</strong></p><p class="public-head__firm-note">Monituj wystawia tej firmie faktury za korzystanie z serwisu. Jej nazwę pobraliśmy z publicznego rejestru na podstawie NIP.</p></div></div>{% endif %}
 {% if request_obj.description %}<p class="public-head__desc">{{ request_obj.description }}</p>{% endif %}
 <div class="public-head__meta" id="request-status">
 <span class="badge {{ status_code|badge_class }}" id="request-status-label">{{ status_label }}</span>

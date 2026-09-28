@@ -1,10 +1,16 @@
 import pytest
 from django.core import mail
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.accounts.sender import is_deceptive
-from apps.billing.models import BillingProfile
+from apps.billing.models import (
+    BillingAccount,
+    BillingProfile,
+    VatInvoice,
+    VatInvoiceStatus,
+)
 from apps.clients.models import Client
 from apps.requests.models import Request
 from tests.conftest import page_text
@@ -73,12 +79,32 @@ def test_request_page_shows_the_senders_address(client, user, client_record):
     assert "(owner@example.com)" in html
 
 
-# --- 2. Verified firm ---------------------------------------------------------------
+# --- 2. The firm that pays for the account -------------------------------------------
+
+
+def _paid_by_firm(user, nip="5213017228"):
+    account = BillingAccount.objects.get_or_create(user=user)[0]
+    account.stripe_mode, account.stripe_customer_id = "sandbox", "cus_1"
+    account.plan, account.interval, account.status = "biuro", "month", "active"
+    account.save()
+    VatInvoice.objects.create(
+        user=user,
+        email=user.email,
+        stripe_mode="sandbox",
+        stripe_invoice_id="in_1",
+        description="Plan Biuro",
+        gross=10947,
+        paid_at=timezone.now(),
+        client={"client_tax_code": nip},
+        status=VatInvoiceStatus.ISSUED,
+        number="FV 1/2026",
+    )
 
 
 @pytest.mark.django_db
-def test_verified_firm_is_named_in_emails_and_on_the_page(client, user, client_record):
+def test_paying_firm_is_named_in_emails_and_on_the_page(client, user, client_record):
     _verified_firm(user)
+    _paid_by_firm(user)
     client.force_login(user)
     _create(client, client_record)
     request_obj = Request.objects.get()
@@ -88,20 +114,46 @@ def test_verified_firm_is_named_in_emails_and_on_the_page(client, user, client_r
         client.get(reverse("public:request-detail", args=[request_obj.public_token]))
     )
 
-    assert "Firma zweryfikowana: BIURO TESTOWE SP. Z O.O., NIP 5213017228" in _text(
+    assert "Konto opłaca firma: BIURO TESTOWE SP. Z O.O., NIP 5213017228" in _text(
         mail.outbox[-1].body
     )
-    assert "Firma zweryfikowana w rejestrze: BIURO TESTOWE SP. Z O.O." in html
+    assert "Konto opłaca firma <strong>BIURO TESTOWE SP. Z O.O., NIP 5213017228" in html
+    assert "zweryfikowan" not in html
 
 
+@pytest.mark.parametrize(
+    "setup",
+    [
+        # A NIP typed in, never invoiced: anyone could have done that.
+        lambda user: _verified_firm(user),
+        # Invoiced to another NIP.
+        lambda user: (_verified_firm(user), _paid_by_firm(user, nip="1234563218")),
+        # Not from the register.
+        lambda user: (_verified_firm(user, source=""), _paid_by_firm(user)),
+    ],
+)
 @pytest.mark.django_db
-def test_typed_in_firm_is_not_called_verified(client, user, client_record):
-    _verified_firm(user, source="")
+def test_no_firm_line_without_a_paid_invoice_to_that_firm(
+    client, user, client_record, setup
+):
+    setup(user)
     client.force_login(user)
 
     _create(client, client_record)
 
-    assert "Firma zweryfikowana" not in mail.outbox[-1].body
+    assert "Konto opłaca" not in mail.outbox[-1].body
+
+
+@pytest.mark.django_db
+def test_no_firm_line_once_the_subscription_ended(client, user, client_record):
+    _verified_firm(user)
+    _paid_by_firm(user)
+    BillingAccount.objects.filter(user=user).update(status="canceled")
+    client.force_login(user)
+
+    _create(client, client_record)
+
+    assert "Konto opłaca" not in mail.outbox[-1].body
 
 
 # --- 3. A name before the first request ---------------------------------------------

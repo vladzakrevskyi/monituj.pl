@@ -220,6 +220,18 @@ PAGES = {
         "index": False,
         "template": "legal/dpa.html",
     },
+    "legal:withdrawal": {
+        "name": "Odstąpienie od umowy",
+        "description": (
+            "Jak odstąpić od umowy o płatny plan Monituj w ciągu 14 dni – "
+            "zasady i wzór formularza odstąpienia."
+        ),
+        "priority": "0.2",
+        "label": "Odstąpienie od umowy",
+        # Readable by everyone, but not something to land on from search.
+        "index": False,
+        "template": "legal/withdrawal.html",
+    },
 }
 
 
