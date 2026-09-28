@@ -13,6 +13,9 @@
 <li><span>Przesłane pliki</span><strong>{{ files_count }}</strong></li>
 </ul>
 <p class="text-muted">Automatyczne przypomnienia przestaną być wysyłane, a linki do przesyłania dokumentów przestaną działać. Odbiorcy otwartych próśb dostaną wiadomość, że prośba jest nieaktualna. Tej operacji nie można cofnąć.</p>
+{% if subscription.is_subscribed %}
+<p class="alert alert--info">Subskrypcja planu {{ subscription.plan.name }} zostanie anulowana od razu – kolejne płatności nie będą pobierane. Faktury za dotychczasowe płatności zachowujemy, bo wymagają tego przepisy podatkowe.</p>
+{% endif %}
 <form method="post">
 {% csrf_token %}
 <button type="submit" class="btn btn-danger-solid btn-block">Usuń konto i wszystkie dane</button>

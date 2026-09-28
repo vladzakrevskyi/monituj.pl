@@ -1,47 +1,54 @@
 {% extends "pages/base_page.html" %}
+{% load static %}
 
+{% block extra_css %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/billing.css' %}">{% endblock %}
 
 {% block hero_eyebrow %}Cennik{% endblock %}
-{% block hero_title %}Obecnie <strong>bezpłatnie</strong>. Bez karty, bez zobowiązań.{% endblock %}
-{% block hero_lead %}Wszystkie funkcje Monituj są teraz dostępne za darmo. Jeśli kiedyś wprowadzimy płatne plany, dowiesz się o tym z wyprzedzeniem – i nic nie zostanie pobrane bez Twojej zgody.{% endblock %}
+{% block hero_title %}Płacisz za prośby <strong>w toku</strong>, nie za przypomnienia{% endblock %}
+{% block hero_lead %}Plan zależy od tego, ile próśb o dokumenty prowadzisz jednocześnie. Przypomnienia, klienci i wszystkie funkcje są w każdym planie. Każdy płatny plan wypróbujesz przez {{ trial_days }} dni za darmo – bez karty.{% endblock %}
 
 {% block page_body %}
 <section class="section section--flush-top">
 <div class="container">
-<div class="pricing">
-<div class="pricing-card pricing-card--featured">
-<p class="pricing-card__name">Konto Monituj</p>
-<p class="pricing-card__price"><strong>0 zł</strong><span>/ miesiąc</span></p>
-<p class="pricing-card__desc">Pełny panel do zbierania dokumentów od klientów.</p>
-{% if user.is_authenticated %}
-<a class="btn btn-dark btn-lg btn-block" href="{% url 'accounts:panel' %}">Przejdź do panelu</a>
-{% else %}
-<a class="btn btn-dark btn-lg btn-block" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
-{% endif %}
-<ul class="check-list">
-{% include "pages/_check.html" with text="Prośby o dokumenty bez dziennego limitu" %}
-{% include "pages/_check.html" with text="Automatyczne i ręczne przypomnienia" %}
+<div class="plan-picker plan-picker--public">
+<div class="plan-picker__head">
+<p class="plan-picker__intro">Bezpłatny plan {{ free_plan.name }} działa bez limitu czasu. Płatny plan wybierasz, kiedy potrzebujesz więcej.</p>
+<fieldset class="interval-switch">
+<legend class="visually-hidden">Okres rozliczenia</legend>
+<label><input type="radio" name="interval" value="month" checked><span>Miesięcznie</span></label>
+<label><input type="radio" name="interval" value="year"><span>Rocznie <em>2 miesiące gratis</em></span></label>
+</fieldset>
+</div>
+{% include "billing/_plan_grid.html" with panel=False %}
+<p class="plan-picker__foot">{% if vat_rate %}Ceny netto – do płatności doliczamy {{ vat_rate }}% VAT (ceny z VAT podane pod kwotą). {% endif %}Płatność kartą przez Stripe, z góry za miesiąc albo rok. Zrezygnujesz w każdej chwili – plan działa do końca opłaconego okresu. Szczegóły w <a href="{% url 'legal:terms' %}#platnosci">Regulaminie</a>.</p>
+</div>
+
+<div class="plan-features">
+<h2 class="plan-features__title">W każdym planie</h2>
+<ul class="check-list check-list--inline">
+{% include "pages/_check.html" with text="Automatyczne i ręczne przypomnienia bez limitu" %}
+{% include "pages/_check.html" with text="Klienci bez limitu" %}
 {% include "pages/_check.html" with text="Panel ze statusami i listą braków" %}
-{% include "pages/_check.html" with text="Lista klientów, wyszukiwanie i filtry" %}
 {% include "pages/_check.html" with text="Akceptacja i odrzucanie dokumentów" %}
 {% include "pages/_check.html" with text="Hasła dostępu i automatyczne usuwanie plików" %}
-{% include "pages/_check.html" with text="Pełna historia zdarzeń" %}
+{% include "pages/_check.html" with text="Szyfrowanie plików i pełna historia zdarzeń" %}
 </ul>
 </div>
-<div class="pricing-card">
-<p class="pricing-card__name">Bez konta</p>
-<p class="pricing-card__price"><strong>0 zł</strong><span>/ prośba</span></p>
-<p class="pricing-card__desc">Prośby o dokumenty bez rejestracji – potwierdzasz je mailem, a panel otwierasz stałym linkiem.</p>
-<a class="btn btn-secondary btn-lg btn-block" href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
-<ul class="check-list">
-{% include "pages/_check.html" with text="Jedna prośba dziennie" %}
-{% include "pages/_check.html" with text="Lista dokumentów, termin i hasło" %}
-{% include "pages/_check.html" with text="Automatyczne przypomnienia" %}
-{% include "pages/_check.html" with text="Panel bez hasła – wszystkie prośby w jednym miejscu" %}
-</ul>
+
+<div class="plan-explainer">
+<div>
+<h2>Co to jest prośba w toku?</h2>
+<p>To prośba wysłana do klienta, na którą wciąż czekasz: nie jest zamknięta i brakuje w niej co najmniej jednego dokumentu. Gdy klient prześle komplet albo zamkniesz prośbę, zwalnia się miejsce na następną – zakończone prośby nie liczą się do limitu.</p>
+</div>
+<div>
+<h2>Co, jeśli skończy się limit?</h2>
+<p>Nic się nie zatrzymuje: przypomnienia są wysyłane, a klienci przesyłają pliki. Nową prośbę wyślesz po zmianie planu albo gdy któraś z obecnych się zakończy.</p>
+</div>
+<div>
+<h2>Bez konta</h2>
+<p>Jedną prośbę dziennie możesz wysłać bez rejestracji – <a href="{% url 'public:guest-request-create' %}">wyślij prośbę bez konta</a>. Takie konto działa w planie {{ free_plan.name }}.</p>
 </div>
 </div>
-<p class="pricing-note">Zgodnie z <a href="{% url 'legal:terms' %}">Regulaminem</a> o zamiarze wprowadzenia opłat poinformujemy Cię emailem co najmniej 30 dni wcześniej. Opłaty nie będą pobierane bez Twojej wyraźnej akceptacji nowych warunków.</p>
 </div>
 </section>
 

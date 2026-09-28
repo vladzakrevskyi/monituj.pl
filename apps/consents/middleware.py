@@ -18,6 +18,9 @@ GATED_NAMESPACES = {
 }
 GATED_VIEWS = {
     ("accounts", "panel"),
+    # Buying a plan means accepting the current Terms first.
+    ("billing", "checkout"),
+    ("billing", "change"),
     ("documents_api", "download"),
     ("documents_api", "accept-item"),
     ("documents_api", "reject-item"),

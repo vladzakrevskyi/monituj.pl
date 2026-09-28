@@ -3,6 +3,7 @@ from datetime import datetime, time
 from django import forms
 from django.utils import timezone as django_timezone
 
+from apps.accounts.sender import suggested_name, validate_sender_name
 from apps.clients.models import Client
 from apps.requests.models import DEFAULT_RETENTION_DAYS, MAX_RETENTION_DAYS
 
@@ -160,12 +161,43 @@ class RequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form):
         help_text="Zostaw puste, aby nie zabezpieczać linku hasłem.",
     )
 
+    sender_name = forms.CharField(
+        label="Jak przedstawić Cię klientowi?",
+        max_length=255,
+        required=False,
+        help_text=(
+            "Twoje imię i nazwisko albo nazwa firmy – odbiorca zobaczy ją razem "
+            "z Twoim adresem email. Zmienisz ją w Ustawieniach."
+        ),
+    )
+
     def __init__(self, *args, owner=None, **kwargs):
         super().__init__(*args, **kwargs)
+        # Asked for once: until the account has a name to show recipients.
+        self.asks_name = owner is not None and not owner.display_name
+        if not self.asks_name:
+            del self.fields["sender_name"]
+        else:
+            self.fields["sender_name"].required = True
+            self.fields["sender_name"].error_messages["required"] = (
+                "Podaj, jak przedstawić Cię klientowi."
+            )
+            self.fields["sender_name"].initial = suggested_name(owner)
         if owner is not None:
             self.fields["client"].queryset = Client.objects.filter(
                 owner=owner
             ).order_by("name")
+
+    def clean_sender_name(self):
+        name = " ".join(self.cleaned_data["sender_name"].split())
+        validate_sender_name(name)
+        return name
+
+    def save_sender_name(self, user):
+        """The name recipients will see, asked for with the first request."""
+        if self.asks_name and self.cleaned_data.get("sender_name"):
+            user.display_name = self.cleaned_data["sender_name"]
+            user.save(update_fields=["display_name"])
 
     def clean(self):
         cleaned_data = super().clean()
@@ -217,7 +249,9 @@ class PublicRequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form
 
     def clean_sender_name(self):
         # Shown in email subjects and headers, where line breaks can't go.
-        return " ".join(self.cleaned_data["sender_name"].split())
+        name = " ".join(self.cleaned_data["sender_name"].split())
+        validate_sender_name(name)
+        return name
 
     accept_terms = forms.BooleanField(
         label=(

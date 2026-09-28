@@ -680,6 +680,62 @@ body.nav-open {
   padding: var(--space-5);
 }
 
+/* Plan usage above the account box: "Plan Free · 2 z 3 próśb w toku". */
+.app-plan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 var(--space-4) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-black-line);
+  border-radius: var(--radius-md);
+  color: #b4b5bd;
+  font-size: 13px;
+}
+
+.app-plan:hover {
+  border-color: #4a4a52;
+  color: #fff;
+  text-decoration: none;
+}
+
+.app-plan__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.app-plan__row strong {
+  color: #fff;
+  font-size: 14px;
+}
+
+.app-plan__row span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.app-plan .progress-bar {
+  height: 6px;
+  background: var(--color-black-line);
+}
+
+.app-plan .progress-bar::-webkit-progress-bar {
+  background: var(--color-black-line);
+}
+
+.app-plan--full .progress-bar::-webkit-progress-value {
+  background: var(--color-danger);
+}
+
+.app-plan--full .progress-bar::-moz-progress-bar {
+  background: var(--color-danger);
+}
+
 .app-user {
   display: flex;
   align-items: center;

@@ -145,7 +145,13 @@ const FormErrors = (function () {
           if (payload.redirect_url) {
             // Keep spinning until the next page replaces this one.
             leaving = true;
-            window.location.href = payload.redirect_url;
+            const target = new URL(payload.redirect_url, window.location.href);
+            const samePage =
+              target.pathname === window.location.pathname &&
+              target.search === window.location.search;
+            window.location.href = target.href;
+            // Only the #fragment differs: the browser would just scroll.
+            if (samePage) window.location.reload();
             return;
           }
           if (form.dataset.replaceOnSuccess !== undefined) {
@@ -158,6 +164,8 @@ const FormErrors = (function () {
             form.reset();
           }
         } else if (data && data.error) {
+          // Page scripts may need to reveal the fields the errors are for.
+          form.dispatchEvent(new CustomEvent("ajax-form:error", { detail: data.error }));
           FormErrors.apply(form, data.error);
         } else {
           showToast("Wystąpił błąd. Spróbuj ponownie.", "error");

@@ -27,5 +27,7 @@ LOGGING = {
     "loggers": {
         "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "monituj": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        # The Stripe library logs every API call at INFO; only problems matter.
+        "stripe": {"handlers": ["console"], "level": "WARNING", "propagate": False},
     },
 }

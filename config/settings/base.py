@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import environ
+from django.core.exceptions import ImproperlyConfigured
 
 from apps.common import logging_conf
 
@@ -31,6 +32,7 @@ INSTALLED_APPS = [
     "apps.audit",
     "apps.demo",
     "apps.contact",
+    "apps.billing",
 ]
 
 MIDDLEWARE = [
@@ -144,7 +146,8 @@ CONTENT_SECURITY_POLICY = {
     "connect-src": "'self'",
     "frame-ancestors": "'none'",
     "base-uri": "'self'",
-    "form-action": "'self'",
+    # Plan purchase forms redirect to Stripe's Checkout and customer portal.
+    "form-action": "'self' https://checkout.stripe.com https://billing.stripe.com",
     "object-src": "'none'",
 }
 
@@ -188,6 +191,21 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.consents.tasks.delete_old_cookie_consents",
         "schedule": 86400.0,
     },
+    # VAT invoices for paid Stripe invoices: create in inFakt, then email.
+    "issue-vat-invoices": {
+        "task": "apps.billing.tasks.issue_invoices",
+        "schedule": 60.0,
+    },
+    # Emails about plan changes, queued by Stripe syncs.
+    "send-billing-notices": {
+        "task": "apps.billing.tasks.send_notices",
+        "schedule": 60.0,
+    },
+    # Trial reminders and cleanup of handled Stripe webhook events.
+    "billing-daily": {
+        "task": "apps.billing.tasks.daily",
+        "schedule": 3600.0,
+    },
     "delete-expired-demo-accounts": {
         "task": "apps.demo.tasks.delete_expired_demo_accounts",
         "schedule": 3600.0,
@@ -219,6 +237,64 @@ SITE_URL = env("SITE_URL", default="http://localhost:8000")
 # Cloud Console). Both empty = the Google buttons are not shown at all.
 GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID", default="")
 GOOGLE_OAUTH_CLIENT_SECRET = env("GOOGLE_OAUTH_CLIENT_SECRET", default="")
+
+# Payments (Stripe). STRIPE_MODE picks the keys in use: "sandbox" (test
+# cards, no real money) or "live". Each mode has its own secret key and
+# webhook signing secret; empty secret key = the plan can't be bought.
+# Products and prices are created by `manage.py stripe_setup` (README).
+STRIPE_MODE = env("STRIPE_MODE", default="sandbox").strip().lower()
+if STRIPE_MODE not in ("sandbox", "live"):
+    raise ImproperlyConfigured("STRIPE_MODE must be 'sandbox' or 'live'.")
+STRIPE_KEYS = {
+    mode: {
+        "secret_key": env(f"STRIPE_{mode.upper()}_SECRET_KEY", default=""),
+        "webhook_secret": env(f"STRIPE_{mode.upper()}_WEBHOOK_SECRET", default=""),
+    }
+    for mode in ("sandbox", "live")
+}
+# A live key in the sandbox slot (or the other way round) would charge real
+# cards while testing - refuse to start instead.
+for _mode, _prefix in (("sandbox", "_test_"), ("live", "_live_")):
+    _key = STRIPE_KEYS[_mode]["secret_key"]
+    if _key and _key[2:8] != _prefix:
+        raise ImproperlyConfigured(
+            f"STRIPE_{_mode.upper()}_SECRET_KEY must be an sk{_prefix}... "
+            f"or rk{_prefix}... key."
+        )
+# VAT invoices (inFakt). INFAKT_MODE picks the account: "sandbox"
+# (api.sandbox-infakt.pl, test invoices) or "live" (api.infakt.pl). Each mode
+# has its own API key (scopes api:invoices:read + api:invoices:write) and
+# webhook secret (from the webhook's details in inFakt). Empty key = no
+# invoices are issued. INFAKT_SEND_TO_KSEF: send each invoice to KSeF
+# (needs the KSeF integration switched on in inFakt).
+INFAKT_MODE = env("INFAKT_MODE", default="sandbox").strip().lower()
+if INFAKT_MODE not in ("sandbox", "live"):
+    raise ImproperlyConfigured("INFAKT_MODE must be 'sandbox' or 'live'.")
+INFAKT_KEYS = {
+    mode: {
+        "api_key": env(f"INFAKT_{mode.upper()}_API_KEY", default=""),
+        "webhook_secret": env(f"INFAKT_{mode.upper()}_WEBHOOK_SECRET", default=""),
+    }
+    for mode in ("sandbox", "live")
+}
+INFAKT_API_URLS = {
+    "sandbox": "https://api.sandbox-infakt.pl/api/v3",
+    "live": "https://api.infakt.pl/api/v3",
+}
+INFAKT_SEND_TO_KSEF = env.bool("INFAKT_SEND_TO_KSEF", default=False)
+
+# Firm details by NIP from the GUS REGON database (BIR 1.1) - every firm,
+# VAT payer or not. GUS_MODE=test uses GUS's public test key and its
+# anonymised test data (fine locally); production needs a free key from
+# GUS (https://api.stat.gov.pl/Home/RegonApi). Without it only the Ministry
+# of Finance VAT register is asked.
+GUS_MODE = env("GUS_MODE", default="test").strip().lower()
+if GUS_MODE not in ("test", "production"):
+    raise ImproperlyConfigured("GUS_MODE must be 'test' or 'production'.")
+GUS_API_KEY = env("GUS_API_KEY", default="")
+
+# VAT added to plan prices (net) in percent; 0 when the seller is VAT-exempt.
+BILLING_VAT_RATE = env.int("BILLING_VAT_RATE", default=23)
 
 # Google Tag Manager container, e.g. GTM-NWZ96857. Empty = no analytics.
 # See apps/common/analytics.py for where and when it loads.

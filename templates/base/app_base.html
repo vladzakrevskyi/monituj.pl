@@ -32,6 +32,10 @@ Otrzymane
 Powiadomienia
 {% if unread_notifications %}<span class="app-nav__count" title="Nowe dokumenty od klientów">{{ unread_notifications }}</span>{% endif %}
 </a>
+<a class="app-nav__link {% if request.path|slice:':6' == '/plan/' %}is-active{% endif %}" href="{% url 'billing:plan' %}">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
+Plan i płatności
+</a>
 <a class="app-nav__link {% if '/ustawienia/' in request.path %}is-active{% endif %}" href="{% url 'accounts:settings' %}">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
 Ustawienia
@@ -43,6 +47,13 @@ Ustawienia
 Nowe przypomnienie
 </a>
 </div>
+{% if plan_state and plan_state.limit %}
+<a class="app-plan{% if plan_state.at_limit %} app-plan--full{% endif %}" href="{% url 'billing:plan' %}" title="Plan i płatności">
+<span class="app-plan__row"><strong>Plan {{ plan_state.plan.name }}</strong>{% if plan_state.source == 'trial' %}<span>próbny</span>{% elif plan_state.is_subscribed and plan_state.account.cancel_at %}<span>do {{ plan_state.account.cancel_at|date:"d.m" }}</span>{% endif %}</span>
+<progress class="progress-bar" max="100" value="{{ plan_state.percent }}" aria-hidden="true"></progress>
+<span class="app-plan__usage">{{ plan_state.used }} z {{ plan_state.limit }} próśb w toku</span>
+</a>
+{% endif %}
 <div class="app-sidebar__footer">
 <div class="app-user">
 {% if demo_account %}

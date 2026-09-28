@@ -1,0 +1,11 @@
+{% load formatting %}{% autoescape off %}Dziękujemy za zakup! Plan {{ plan_name }} jest aktywny – od teraz możesz mieć jednocześnie {{ limit }} w toku.
+
+Plan: {{ plan_name }}
+{% if price %}Cena: {{ price }}{% if vat_rate %} netto ({{ price_gross }} z VAT){% endif %} {{ interval_label }}
+{% endif %}{% if period_end %}Następna płatność: {{ period_end|d }}
+{% endif %}
+Subskrypcja odnawia się automatycznie. Plan zmienisz, a subskrypcję anulujesz w każdej chwili w panelu:
+{{ plan_url }}
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

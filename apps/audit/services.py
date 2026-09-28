@@ -35,6 +35,8 @@ EVENT_LABELS_PL = {
     AuditEvent.ACCOUNT_DELETION_REQUESTED: "Zażądano usunięcia konta",
     AuditEvent.GOOGLE_LINKED: "Dodano logowanie przez Google",
     AuditEvent.GOOGLE_UNLINKED: "Odłączono logowanie przez Google",
+    AuditEvent.CHECKOUT_STARTED: "Rozpoczęto zamówienie planu",
+    AuditEvent.PLAN_CHANGED: "Zmieniono plan",
 }
 
 

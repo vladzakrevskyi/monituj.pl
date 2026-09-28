@@ -67,6 +67,7 @@ def legal_context():
         context["email"] = settings.CONTACT_EMAIL
     if not entity.get("privacy_email"):
         context["privacy_email"] = context["email"]
+    context["vat_rate"] = settings.BILLING_VAT_RATE
     return context
 
 

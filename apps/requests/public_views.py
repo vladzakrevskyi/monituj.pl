@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from apps.accounts.models import User
+from apps.accounts.sender import sender_context
 from apps.accounts.services import GuestAccessService
 from apps.common.exceptions import ApplicationError
 from apps.common.forms import add_service_error
@@ -90,6 +91,7 @@ def public_request_detail(request, token):
         "public/request_detail.html",
         {
             "request_obj": request_obj,
+            **sender_context(request_obj.created_by),
             "items": items,
             "status_label": status.label,
             "status_code": status.value,

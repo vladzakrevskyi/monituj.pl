@@ -38,6 +38,7 @@ from apps.accounts.models import GoogleAccount, GuestAccess, User
 from apps.accounts.services import REGISTRATIONS_PER_IP_HOUR
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
+from apps.billing.services import apply_signup_plan
 from apps.common import throttle
 from apps.common.exceptions import RateLimitedAppError, ValidationAppError
 from apps.common.site import absolute_url
@@ -295,6 +296,7 @@ class GoogleAuthService:
             metadata={"method": "google"},
         )
         record_acceptance(user, AcceptanceMethod.GOOGLE, request)
+        apply_signup_plan(user, request)
         return user, account
 
     @staticmethod

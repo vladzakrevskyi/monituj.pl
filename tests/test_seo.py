@@ -271,3 +271,17 @@ def test_legal_pages_are_not_blocked_in_robots_txt(client):
 @pytest.mark.django_db
 def test_legal_pages_are_in_llms_txt_as_references(client):
     assert "/regulamin/" in client.get("/llms.txt").content.decode()
+
+
+@pytest.mark.django_db
+def test_404_page_looks_like_the_site_and_is_never_indexed(client):
+    response = client.get("/nie-ma-takiej-strony/<script>alert(1)</script>/")
+    html = response.content.decode().replace(" ", " ")
+
+    assert response.status_code == 404
+    assert "Tej strony <strong>tu nie ma</strong>" in html
+    assert 'class="badge badge--missing">Brak' in html
+    assert reverse("pages:faq") in html
+    assert _meta(_head(response), "name", "robots") == "noindex, nofollow"
+    # The typed address is shown back, but only as text.
+    assert "<script>alert(1)</script>" not in html

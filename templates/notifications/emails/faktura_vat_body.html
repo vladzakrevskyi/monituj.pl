@@ -1,0 +1,17 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Faktura za płatność z {{ paid_at|d }} jest w załączniku.{% endblock %}
+{% block eyebrow %}Płatności{% endblock %}
+{% block title %}Faktura VAT {{ number }}{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Dziękujemy za płatność. Faktura VAT jest w załączniku tej wiadomości (PDF).</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Numer faktury" value=number %}
+{% include "notifications/emails/_row.html" with label="Za" value=description %}
+{% include "notifications/emails/_row.html" with label="Zapłacono (brutto)" value=gross %}
+{% include "notifications/emails/_row.html" with label="Data płatności" value=paid_at|d %}
+{% include "notifications/emails/_details_close.html" %}
+{% if has_account %}<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Wszystkie faktury znajdziesz też w panelu, w zakładce Plan i płatności.</p>
+{% include "notifications/emails/_button.html" with url=plan_url label="Plan i płatności" %}{% endif %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ zapłaciłeś za plan w Monituj.{% endblock %}

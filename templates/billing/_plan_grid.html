@@ -1,0 +1,55 @@
+{% comment %}
+The four plans. panel=True: buttons submit the surrounding plan form;
+otherwise (the public pricing page) they link to registration or the panel.
+Prices switch between monthly and yearly with the interval radios around it
+(CSS only, see billing.css).
+{% endcomment %}
+{% load formatting %}
+<div class="plan-grid">
+{% for card in cards %}
+<article class="plan-card{% if card.trial and not state.is_subscribed %} plan-card--featured{% endif %}{% if card.current %} plan-card--current{% endif %}">
+<div class="plan-card__head">
+<h3 class="plan-card__name">{{ card.plan.name }}</h3>
+{% if card.current %}<span class="badge badge--complete">Twój plan</span>
+{% elif card.trial and panel and state.source == 'trial' %}<span class="badge badge--progress">Okres próbny</span>
+{% elif card.plan.is_paid and not panel %}<span class="badge badge--progress">{{ trial_days }} dni za darmo</span>{% endif %}
+</div>
+<p class="plan-card__tagline">{{ card.plan.tagline }}</p>
+{% if card.plan.is_paid %}
+{% for price in card.prices %}
+<div class="plan-card__price" data-interval="{{ price.interval }}">
+<p class="plan-card__amount"><strong>{{ price.net }}</strong><span>{% if vat_rate %}netto {% endif %}/ {% if price.interval == 'year' %}rok{% else %}mies.{% endif %}</span></p>
+<p class="plan-card__sub">{% if vat_rate %}{{ price.gross }} z VAT{% if price.interval == 'year' %} · {% endif %}{% endif %}{% if price.interval == 'year' %}{{ price.per_month }} / mies.{% endif %}</p>
+</div>
+{% endfor %}
+{% else %}
+<div class="plan-card__price">
+<p class="plan-card__amount"><strong>0 zł</strong><span>/ zawsze</span></p>
+<p class="plan-card__sub">Bez karty i bez limitu czasu</p>
+</div>
+{% endif %}
+<p class="plan-card__limit"><strong>{{ card.limit.0 }}</strong> {{ card.limit.1 }} w toku jednocześnie</p>
+{% if panel %}
+{% if state.is_subscribed and not card.current and card.plan.is_paid and state.used > card.plan.active_requests %}<p class="plan-card__warning">Masz {{ state.used }} próśb w toku. Po zmianie nic się nie zatrzyma, ale nową prośbę wyślesz dopiero, gdy będzie ich mniej niż {{ card.plan.active_requests }}.</p>{% endif %}
+{% if card.plan.is_paid %}
+{% for price in card.prices %}
+<div class="plan-card__action" data-interval="{{ price.interval }}">
+{% if state.is_subscribed and card.current and state.account.interval == price.interval %}
+<button type="button" class="btn btn-secondary btn-block" disabled>{% if state.account.cancel_at %}Działa do {{ state.account.cancel_at|d }}{% else %}Twój plan{% endif %}</button>
+{% else %}
+<button type="submit" class="btn {% if card.trial and not state.is_subscribed %}btn-primary{% else %}btn-dark{% endif %} btn-block" name="plan" value="{{ card.plan.code }}"{% if not can_buy %} disabled{% endif %}>{% if not state.is_subscribed %}Wybierz {{ card.plan.name }}{% elif card.current %}{% if price.interval == 'year' %}Płać rocznie{% else %}Płać miesięcznie{% endif %}{% else %}Zmień na {{ card.plan.name }}{% endif %}</button>
+{% endif %}
+</div>
+{% endfor %}
+{% else %}
+<p class="plan-card__note">{% if state.source == 'free' %}Z tego planu korzystasz teraz.{% elif state.is_subscribed %}Wracasz do niego po anulowaniu subskrypcji.{% else %}Działa po okresie próbnym, jeśli nie wybierzesz planu.{% endif %}</p>
+{% endif %}
+{% elif user.is_authenticated %}
+<a class="btn {% if card.trial %}btn-primary{% else %}btn-dark{% endif %} btn-block" href="{% url 'billing:plan' %}">{% if card.plan.is_paid %}Wybierz w panelu{% else %}Przejdź do panelu{% endif %}</a>
+{% else %}
+{% if card.plan.is_paid %}<a class="btn {% if card.trial %}btn-primary{% else %}btn-dark{% endif %} btn-block" href="{% url 'accounts:register' %}?plan={{ card.plan.code }}">Wypróbuj {{ card.plan.name }} za darmo</a>
+{% else %}<a class="btn btn-dark btn-block" href="{% url 'accounts:register' %}">Zacznij za darmo</a>{% endif %}
+{% endif %}
+</article>
+{% endfor %}
+</div>

@@ -1,0 +1,12 @@
+{% load formatting %}{% autoescape off %}Dziękujemy za płatność. Faktura VAT jest w załączniku tej wiadomości (PDF).
+
+Numer faktury: {{ number }}
+Za: {{ description }}
+Zapłacono (brutto): {{ gross }}
+Data płatności: {{ paid_at|d }}
+{% if has_account %}
+Wszystkie faktury znajdziesz też w panelu, w zakładce Plan i płatności:
+{{ plan_url }}
+{% endif %}--
+Monituj – {{ site_url }}
+{% endautoescape %}

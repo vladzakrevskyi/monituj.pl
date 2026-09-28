@@ -1,0 +1,9 @@
+{% autoescape off %}Twoje konto działa dalej w bezpłatnym planie {{ free_plan }}: możesz mieć jednocześnie {{ free_limit }} w toku. Wszystkie dane, klienci i historia zostają bez zmian.
+{% if over_free_limit %}
+Masz więcej próśb w toku, niż obejmuje plan Free. Nic się nie zatrzymało – przypomnienia są wysyłane, a klienci mogą przesyłać pliki – ale nowe prośby wyślesz po wybraniu planu albo gdy część obecnych się zakończy.
+{% endif %}
+Wybierz plan:
+{{ plan_url }}
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

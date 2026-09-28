@@ -1,0 +1,9 @@
+{% load formatting %}{% autoescape off %}Subskrypcja planu {{ plan_name }} znowu działa i będzie odnawiana automatycznie.
+{% if price %}
+Cena: {{ price }}{% if vat_rate %} netto ({{ price_gross }} z VAT){% endif %} {{ interval_label }}{% endif %}{% if period_end %}
+Następna płatność: {{ period_end|d }}{% endif %}
+
+Plan i płatności: {{ plan_url }}
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

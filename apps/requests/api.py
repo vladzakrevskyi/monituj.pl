@@ -46,6 +46,7 @@ def requests_collection(request):
             raise ValidationAppError("Dodaj co najmniej jeden dokument do listy.")
         if not form.is_valid():
             raise ValidationAppError(_first_form_error(form))
+        form.save_sender_name(request.user)
 
         if form.cleaned_data.get("client"):
             client_id = form.cleaned_data["client"].pk

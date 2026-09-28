@@ -1,6 +1,7 @@
 import pytest
 from django.core import mail
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.common.content import FAQ, SEGMENTS
 from apps.notifications.models import EmailTemplate
@@ -109,6 +110,16 @@ def test_every_email_is_sent_as_html_with_text_fallback(request_record, request_
                 "contact_email": "jan@example.com",
                 "contact_topic": "Pytanie o Monituj",
                 "contact_message": "Dzień dobry,\ndruga linia.",
+                "trial_ends_at": timezone.now(),
+                "cancel_at": timezone.now(),
+                "paid_at": timezone.now(),
+                "number": "1/09/2026",
+                "period_end": timezone.now(),
+                "plan_name": "Biuro",
+                "price": "89 zł",
+                "price_gross": "109,47 zł",
+                "interval_label": "miesięcznie",
+                "limit": "75 próśb",
             },
             request=request_record,
         )

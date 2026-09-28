@@ -31,6 +31,7 @@ Cały interfejs, wiadomości e-mail i dokumenty prawne są w języku polskim.
 | Konto | Rejestracja z potwierdzeniem adresu e-mail, zmiana hasła i adresu e-mail z potwierdzeniem, usunięcie konta z potwierdzeniem mailowym (wszystkie dane są usuwane od razu) |
 | E-maile | Wiadomości HTML w stylu strony oraz wersja tekstowa. Wszystkie wychodzą z `no-reply@monituj.pl`; odpowiedź klienta na e-mail dotyczący prośby trafia do firmy, która o dokumenty prosi, a odpowiedzi na pozostałe wiadomości – na `kontakt@monituj.pl` |
 | Kontakt | Formularz na `/kontakt/`: wiadomość trafia na `kontakt@monituj.pl` (odpowiedź idzie prosto do nadawcy), nadawca dostaje potwierdzenie; ochrona przed botami i limit wiadomości na adres IP |
+| Plany i płatności | Płaci się za liczbę **próśb w toku** (wysłanych, niezamkniętych, czekających na dokumenty): Free 3, Start 20, Biuro 75, Pro 250 – miesięcznie albo rocznie. Nowe konto ma 30 dni płatnego planu bez karty – tego, który wybrano w Cenniku przed rejestracją (`/rejestracja/?plan=pro`, także przez Google), domyślnie Biuro – potem Free. Po potwierdzeniu adresu konto z wybranym planem trafia od razu na „Plan i płatności”. Płatność przez Stripe (Checkout, portal klienta), zakładka „Plan i płatności” w panelu. Po przekroczeniu limitu nic się nie zatrzymuje – blokowane jest tylko wysłanie nowej prośby. Plany i ceny: `apps/billing/plans.py` |
 | Dokumenty prawne | Regulamin, Polityka prywatności, Polityka cookies, Umowa powierzenia przetwarzania danych – dane firmy są pobierane ze zmiennych środowiskowych |
 
 ## Technologie
@@ -99,6 +100,8 @@ pip-audit -r requirements/prod.txt
 | `delete_old_cookie_consents` (raz dziennie) | Usuwa wpisy rejestru zgód na cookies starsze niż 3 lata |
 | `delete_expired_demo_accounts` | Usuwa konta demo starsze niż 24 godziny |
 | `delete_old_throttle_events` | Czyści stare wpisy limitów (logowanie, e-maile, przesyłanie plików) |
+| `send_notices` (co minutę) | E-maile o zmianach planu i alerty płatności dla zespołu (kolejka `BillingNotice`) |
+| `billing.daily` (co godzinę) | E-maile o końcu okresu próbnego (7 dni i 1 dzień przed, oraz po zakończeniu) i czyszczenie obsłużonych zdarzeń Stripe |
 
 Bez działających kontenerów `worker` i `beat` strona działa, ale przypomnienia i e-maile o nowych dokumentach nie są wysyłane, a pliki nie są usuwane po terminie. Na produkcji oba uruchamiają się automatycznie razem ze stroną.
 
@@ -138,14 +141,22 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Strona: http://localhost:8000. Zadania w tle (w osobnych terminalach):
+Strona: http://localhost:8000. Zadania w tle – faktury VAT, e-maile o planach, przypomnienia – potrzebują Redisa i Celery. Bez Dockera Redis najprościej z Homebrew (raz):
 
 ```bash
-celery -A config worker -l info
+brew install redis && brew services start redis
 ```
 
+Celery (worker razem z harmonogramem, w osobnym terminalu; po zmianie kodu lub `.env` uruchom go ponownie – nie przeładowuje się sam). Na macOS worker działa w jednym procesie (pula `solo`, ustawiona w `config/celery.py`), bo domyślna pula prefork nie działa tam z Celery:
+
 ```bash
-celery -A config beat -l info
+celery -A config worker -B -l info
+```
+
+Webhooki Stripe lokalnie (trzeci terminal):
+
+```bash
+stripe listen --forward-to localhost:8000/stripe/webhook/ --events checkout.session.completed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,customer.subscription.paused,customer.subscription.resumed,invoice.paid,invoice.payment_failed,charge.refunded,charge.dispute.created
 ```
 
 Testy i linter:
@@ -654,6 +665,81 @@ docker compose exec web python manage.py rewrap_document_keys
 
 Każde pobranie dokumentu jest zapisywane w dzienniku zdarzeń (kto: nadawca czy odbiorca, kiedy, adres IP) i widoczne w historii prośby.
 
+### Płatności (Stripe)
+
+Dane do faktury (osoba prywatna albo firma z NIP i adres) klient podaje w panelu – „Plan i płatności” → „Dane do faktury” – **zanim zapłaci**; bez nich zakup i zmiana planu są zablokowane. Polska firma podaje **tylko NIP**: nazwę i adres Monituj pobiera z bazy REGON GUS (API BIR 1.1 – każda firma, także spoza VAT) i nie da się ich zmienić; status VAT dochodzi z wykazu podatników VAT Ministerstwa Finansów (`wl-api.mf.gov.pl`). NIP musi mieć poprawną sumę kontrolną, MF nie może go odrzucić, a firma nie może mieć zakończonej działalności. Dane wpisuje się ręcznie tylko dla firmy zagranicznej albo gdy żaden rejestr jej nie zna (lub chwilowo nie odpowiada). Limit: 20 sprawdzeń NIP na godzinę na konto.
+
+GUS: `GUS_MODE=test` używa publicznego klucza testowego GUS i **zanonimizowanych danych testowych** (np. „ul. Test-Krucza”) – tylko lokalnie. Na produkcji: bezpłatny klucz z https://api.stat.gov.pl/Home/RegonApi (przychodzi e-mailem), potem `GUS_MODE=production` i `GUS_API_KEY=...`. Bez klucza działa sam wykaz MF (tylko firmy zarejestrowane do VAT; pozostałe wpisują dane ręcznie). Z tych danych powstaje faktura VAT, a Monituj kopiuje je też do klienta w Stripe; w portalu Stripe edycja danych klienta jest wyłączona (po zmianie uruchom ponownie `stripe_setup`).
+
+Płatności obsługuje Stripe: klient płaci na stronie Stripe Checkout, a kartę, faktury, zmianę planu i rezygnację ma w portalu klienta Stripe (przycisk w zakładce „Plan i płatności”). Monituj nie widzi danych kart. Stan subskrypcji trafia do Monituj przez webhook `/stripe/webhook/` (tabela `BillingAccount`, podgląd w `/admin/` → „Płatności”).
+
+**Sandbox i live.** `.env` ma dwa komplety kluczy, a `STRIPE_MODE` wybiera, który działa:
+
+```
+STRIPE_MODE=sandbox
+STRIPE_SANDBOX_SECRET_KEY=sk_test_...
+STRIPE_SANDBOX_WEBHOOK_SECRET=whsec_...
+STRIPE_LIVE_SECRET_KEY=sk_live_...
+STRIPE_LIVE_WEBHOOK_SECRET=whsec_...
+```
+
+Przełączenie to zmiana jednej linii i `docker compose up -d`. Klucz live wpisany w miejsce sandboxa (i odwrotnie) zatrzyma start strony. Subskrypcje z sandboxa nie działają w trybie live – każdy tryb ma własnych klientów w Stripe. W sandboxie panel pokazuje kartę testową `4242 4242 4242 4242`.
+
+**Pierwsze uruchomienie (osobno dla każdego trybu):**
+
+1. Stripe Dashboard → Developers → API keys: skopiuj *Secret key* do `.env` i uruchom ponownie kontenery.
+2. Utwórz produkty, ceny, stawkę VAT i ustawienia portalu:
+
+```bash
+docker compose exec web python manage.py stripe_setup
+```
+
+   Na serwerze (publiczny `https://` w `SITE_URL`) od razu zarejestruj webhook – polecenie wypisze `whsec_...` do wpisania w `.env`:
+
+```bash
+docker compose exec web python manage.py stripe_setup --create-webhook
+```
+
+   Lokalnie webhook przekazuje Stripe CLI (sekret `whsec_...` wypisze samo polecenie):
+
+```bash
+stripe listen --forward-to localhost:8000/stripe/webhook/ --events checkout.session.completed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,customer.subscription.paused,customer.subscription.resumed,invoice.paid,invoice.payment_failed,charge.refunded,charge.dispute.created
+```
+
+3. W Stripe Dashboard → Settings → Billing: włącz e-maile z fakturami/potwierdzeniami płatności i o nieudanych płatnościach, a w *Subscriptions and emails → Manage failed payments* ustaw ponawianie (np. przez 2 tygodnie), a potem **anulowanie** subskrypcji – wtedy konto samo wraca do planu Free.
+4. Settings → Business → Public details: nazwa firmy, adres i NIP na fakturach.
+
+Zmiana ceny: popraw `apps/billing/plans.py`, wdróż i uruchom ponownie `stripe_setup` – powstanie nowa cena w Stripe (dla nowych zamówień); trwające subskrypcje zachowują starą, dopóki ich nie zmienisz w Stripe. Regulamin wymaga uprzedzenia klientów o podwyżce 30 dni wcześniej.
+
+Okres próbny: każde nowe konto ma 30 dni wybranego planu (`BillingAccount.trial_plan`, domyślnie Biuro). Przedłużenie – w `/admin/` → „Płatności” zmień `trial_ends_at` i wyczyść `trial_notices`.
+
+Usunięcie konta najpierw anuluje w Stripe wszystkie subskrypcje tego użytkownika (pytając Stripe, nie lokalną kopię); jeśli Stripe nie odpowiada, konto nie jest usuwane (link można użyć ponownie).
+
+E-maile o zmianach planu (zakup, zmiana, anulowanie, wznowienie, koniec, nieudana płatność) trafiają do kolejki `BillingNotice` i wysyła je zadanie `send_notices` co minutę. Zwroty, spory (chargeback) i podwójne subskrypcje trafiają jako alert na `CONTACT_EMAIL` – plan klienta sam się wtedy nie zmienia, zdecyduj w Stripe. Konta z większą liczbą próśb w toku niż limit: `/admin/` → „Płatności” → filtr „Ponad limit”. Zapis zgody na rozpoczęcie usługi przed upływem 14 dni (`CheckoutConsent`) zostaje po usunięciu konta i jest kasowany po 6 latach. `past_due` (Stripe ponawia płatność) utrzymuje plan najwyżej 14 dni.
+
+### Faktury VAT (inFakt)
+
+Po każdej udanej płatności w Stripe (pierwszej, zmianie planu i każdym odnowieniu) Monituj wystawia w inFakt fakturę VAT oznaczoną jako zapłacona kartą – na firmę, jeśli klient podał w Checkout NIP, w przeciwnym razie na osobę prywatną – i wysyła ją klientowi e-mailem z PDF w załączniku. Klient ma wszystkie faktury w panelu („Plan i płatności” → „Faktury VAT”). Kwota na fakturze = kwota pobrana przez Stripe (od brutto).
+
+```
+INFAKT_MODE=sandbox
+INFAKT_SANDBOX_API_KEY=...
+INFAKT_SANDBOX_WEBHOOK_SECRET=...
+INFAKT_LIVE_API_KEY=...
+INFAKT_LIVE_WEBHOOK_SECRET=...
+INFAKT_SEND_TO_KSEF=False
+```
+
+1. Klucz API: inFakt → Ustawienia → Inne opcje → API → „Wygeneruj nowy klucz” z uprawnieniami **api:invoices:read** i **api:invoices:write** (nic więcej). Sandbox: konto na https://konto.sandbox-infakt.pl/rejestracja.
+2. Webhook (przyspiesza, ale nie jest konieczny – zadanie co minutę i tak sprawdza status): inFakt → Integracje → Webhooki → adres `https://monituj.pl/infakt/webhook/`, zdarzenia `async_invoice_creation_success` i `async_invoice_creation_error`. Skopiuj „sekretny klucz” do `INFAKT_<MODE>_WEBHOOK_SECRET`, uruchom ponownie kontenery i kliknij „Zweryfikuj”. Lokalnie inFakt nie dotrze do `localhost` – wystarczy samo zadanie.
+3. `INFAKT_SEND_TO_KSEF=True`, gdy w inFakt jest włączona integracja z KSeF.
+4. Klient ma widzieć tylko fakturę z inFakt, nie dokumenty Stripe:
+   - portal klienta Stripe nie pokazuje historii „faktur” (ustawia to `stripe_setup` – uruchom go ponownie po aktualizacji);
+   - Stripe Dashboard → Settings → Billing → **Customer emails**: wyłącz „Send finalized invoices and credit notes to customers” i „Successful payments” (potwierdzenia płatności); zostaw e-maile o nieudanych płatnościach i wygasających kartach;
+   - Settings → Business → **Customer emails** → „Successful payments”: wyłącz, jeśli jest włączone.
+
+Zadanie `issue_invoices` (co minutę) tworzy fakturę w inFakt, sprawdza wynik i wysyła e-mail; co godzinę `billing.daily` dopisuje zapłacone faktury Stripe z ostatnich 3 dni, których webhook nie dotarł. Gdy inFakt odrzuci dane, faktura dostaje status „Błąd” (`/admin/` → „Faktury VAT”), a na `CONTACT_EMAIL` idzie alert – popraw przyczynę i użyj akcji „Wystaw ponownie” albo wystaw ją ręcznie. Zwroty i spory wymagają faktury korygującej – wystaw ją w inFakt (alert przychodzi automatycznie).
+
 ### Zmiana dokumentów prawnych
 
 Każda akceptacja Regulaminu (z umową powierzenia) i Polityki prywatności jest zapisywana w tabeli `LegalAcceptance`: wersja (`LEGAL_EFFECTIVE_DATE`), data, sposób (rejestracja hasłem, Google, prośba bez konta, akceptacja nowej wersji), adres IP i przeglądarka. Podgląd: `/admin/` → „Zgody i akceptacje” (tylko do odczytu).
@@ -695,6 +781,8 @@ Podłącz darmowy zewnętrzny monitoring dostępności (UptimeRobot, Better Stac
 | Przypomnienia nie wychodzą, pliki nie są usuwane po terminie | Nie działa `beat` albo `worker`: `docker compose ps`, `docker compose logs beat worker` |
 | Linki w e-mailach prowadzą do `localhost` | Błędny `SITE_URL` w `.env` |
 | Strony prawne pokazują „[uzupełnij: …]” | Nie uzupełniono zmiennych `LEGAL_*` |
+| „Płatności są chwilowo niedostępne” | Brak klucza `STRIPE_<MODE>_SECRET_KEY` albo nie uruchomiono `stripe_setup` w tym trybie – `docker compose logs web` |
+| Po płatności plan się nie zmienia | Webhook: zły `STRIPE_<MODE>_WEBHOOK_SECRET` albo adres – Stripe Dashboard → Developers → Webhooks pokazuje błędy dostaw |
 
 ### Lista kontrolna przed udostępnieniem klientom
 
@@ -708,4 +796,5 @@ Podłącz darmowy zewnętrzny monitoring dostępności (UptimeRobot, Better Stac
 - [ ] `LEGAL_BACKUP_DAYS` odpowiada liczbie dni przechowywania kopii u hostingu.
 - [ ] Jeśli włączasz logowanie przez Google: aplikacja OAuth jest opublikowana, a adres przekierowania zgadza się z `SITE_URL`.
 - [ ] Skonfigurowany jest zewnętrzny monitoring `/api/health/`.
+- [ ] Płatności: `STRIPE_MODE=live`, klucz i webhook trybu live w `.env`, `stripe_setup --create-webhook` uruchomione, testowy zakup i anulowanie przeszły; e-maile i ponawianie płatności ustawione w Stripe (README „Płatności”).
 - [ ] Logowanie na serwer tylko kluczem SSH, ufw jest włączony.

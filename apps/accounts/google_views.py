@@ -13,6 +13,7 @@ from apps.accounts.google_auth import (
     Outcome,
     consume_attempt,
 )
+from apps.billing.services import welcome_url
 from apps.common.exceptions import ApplicationError
 from apps.common.forms import add_service_error
 from apps.common.responses import (
@@ -146,7 +147,7 @@ def google_signup(request):
                 if outcome is Outcome.CONFIRM_SENT:
                     return _check_inbox(request, result)
                 messages.success(request, "Konto założone – witaj w Monituj!")
-                redirect_url = reverse("accounts:panel")
+                redirect_url = welcome_url(request, request.user)
                 if is_ajax_request(request):
                     return success_response({"redirect_url": redirect_url})
                 return redirect(redirect_url)

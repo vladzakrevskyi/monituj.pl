@@ -1,5 +1,6 @@
 from django import forms
 
+from apps.accounts.sender import validate_sender_name
 from apps.consents.forms import LegalAcceptanceForm
 
 REQUIRED_MESSAGE = "To pole jest wymagane."
@@ -98,11 +99,17 @@ class ProfileForm(forms.Form):
         label="Nazwa widoczna dla klientów (np. nazwa firmy)",
         required=False,
         max_length=255,
+        help_text=(
+            "Odbiorcy zobaczą ją zawsze razem z Twoim adresem email. Nazwy "
+            "udające urzędy, banki albo Monituj nie są dozwolone."
+        ),
     )
 
     def clean_display_name(self):
         # Used in email subjects, where a line break stops the email entirely.
-        return " ".join(self.cleaned_data["display_name"].split())
+        name = " ".join(self.cleaned_data["display_name"].split())
+        validate_sender_name(name)
+        return name
 
 
 class PasswordChangeForm(forms.Form):

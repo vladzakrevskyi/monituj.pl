@@ -121,9 +121,47 @@ FAQ = [
         "home": False,
         "q": "Ile kosztuje Monituj?",
         "a": (
-            "Obecnie korzystanie z Monituj jest bezpłatne. Jeśli wprowadzimy płatne "
-            "plany, poinformujemy Cię co najmniej 30 dni wcześniej i nic nie "
-            "zostanie pobrane bez Twojej zgody."
+            "Płacisz za liczbę próśb w toku, czyli prowadzonych jednocześnie. "
+            "Plan Free jest bezpłatny i pozwala mieć 3 prośby w toku. Start "
+            "kosztuje 39 zł netto miesięcznie (20 próśb), Biuro 89 zł (75 próśb), "
+            "a Pro 179 zł (250 próśb); przy płatności rocznej 2 miesiące są "
+            "gratis. Przypomnienia, klienci i wszystkie funkcje są w każdym planie."
+        ),
+    },
+    {
+        "category": "konto",
+        "home": False,
+        "q": "Czy jest okres próbny?",
+        "a": (
+            "Tak. Każdy płatny plan wypróbujesz przez 30 dni za darmo, bez "
+            "podawania karty – wybierz go w Cenniku przed rejestracją (domyślnie "
+            "Biuro). Jeśli potem nie wybierzesz planu, konto przechodzi na "
+            "bezpłatny plan Free – nic nie jest pobierane, a wszystkie dane "
+            "zostają."
+        ),
+    },
+    {
+        "category": "konto",
+        "home": False,
+        "q": "Co to jest prośba w toku?",
+        "a": (
+            "Prośba wysłana do klienta, na którą wciąż czekasz: nie jest zamknięta "
+            "i brakuje w niej co najmniej jednego dokumentu. Zakończone i zamknięte "
+            "prośby nie wliczają się do limitu. Gdy limit się wyczerpie, nic się "
+            "nie zatrzymuje – przypomnienia są wysyłane, a klienci przesyłają "
+            "pliki; nową prośbę wyślesz po zmianie planu albo gdy któraś z "
+            "obecnych się zakończy."
+        ),
+    },
+    {
+        "category": "konto",
+        "home": False,
+        "q": "Jak zapłacić i jak zrezygnować?",
+        "a": (
+            "Płacisz kartą przez Stripe, z góry za miesiąc albo rok; subskrypcja "
+            "odnawia się automatycznie, a fakturę dostajesz mailem. Plan zmienisz "
+            "albo anulujesz w każdej chwili w panelu, w zakładce Plan i płatności. "
+            "Po anulowaniu plan działa do końca opłaconego okresu."
         ),
     },
     {

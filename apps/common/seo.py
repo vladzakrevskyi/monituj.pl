@@ -110,11 +110,11 @@ PAGES = {
         "template": "pages/security.html",
     },
     "pages:pricing": {
-        "name": "Cennik i bezpłatny dostęp do Monituj",
+        "name": "Cennik i plany od 0 zł",
         "description": (
-            "Monituj jest obecnie bezpłatny: prośby o dokumenty, automatyczne "
-            "przypomnienia i panel z brakami. Możesz też wysłać prośbę bez "
-            "zakładania konta."
+            "Płacisz za prośby w toku, nie za przypomnienia. Plan Free za 0 zł, "
+            "płatne od 39 zł netto miesięcznie. Każdy 30 dni za darmo, "
+            "bez karty."
         ),
         "og_image": "images/og/cennik.png",
         "priority": "0.7",
@@ -303,6 +303,19 @@ def website():
     }
 
 
+def _offers():
+    from apps.billing import plans
+
+    prices = [plan.monthly for plan in plans.PLANS.values()]
+    return {
+        "@type": "AggregateOffer",
+        "priceCurrency": "PLN",
+        "lowPrice": f"{min(prices) / 100:.2f}",
+        "highPrice": f"{max(prices) / 100:.2f}",
+        "offerCount": len(prices),
+    }
+
+
 def software_application():
     return {
         "@type": "SoftwareApplication",
@@ -319,7 +332,7 @@ def software_application():
             "Akceptacja i odrzucanie dokumentów z podaniem powodu",
             "Automatyczne usuwanie plików po ustalonym czasie (RODO)",
         ],
-        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "PLN"},
+        "offers": _offers(),
         "publisher": {"@id": absolute_url("/#organization")},
     }
 

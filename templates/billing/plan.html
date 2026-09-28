@@ -1,0 +1,192 @@
+{% extends "base/app_base.html" %}
+{% load static formatting %}
+
+{% block page_name %}Plan i płatności{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/billing.css' %}">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<div>
+<h1>Plan i płatności</h1>
+<p class="page-header__sub">Płacisz za liczbę próśb w toku. Przypomnienia, klienci i wszystkie funkcje są w każdym planie.</p>
+</div>
+</div>
+
+<section class="card plan-status" aria-label="Twój plan">
+<div class="plan-status__main">
+<p class="plan-status__label">Twój plan</p>
+<p class="plan-status__name">{{ state.plan.name }}
+{% if state.source == 'trial' %}<span class="badge badge--progress">Okres próbny</span>
+{% elif state.account.status == 'past_due' %}<span class="badge badge--overdue">Zaległa płatność</span>
+{% elif state.is_subscribed and state.account.cancel_at %}<span class="badge badge--overdue">Anulowany – do {{ state.account.cancel_at|d }}</span>{% endif %}
+</p>
+<p class="plan-status__text">
+{% if state.source == 'demo' %}Konto demonstracyjne działa bez limitu próśb.
+{% elif state.source == 'trial' %}Za darmo do {{ state.trial_ends_at|d }} – zostało {{ trial_left }}. Potem, jeśli nie wybierzesz planu, konto przejdzie na bezpłatny plan {{ free_plan.name }}. Nic nie zostanie pobrane.
+{% elif state.is_subscribed %}{% if state.account.status == 'past_due' %}Ostatnia płatność się nie powiodła. Stripe spróbuje ponownie – zaktualizuj kartę, aby nie stracić planu.
+{% elif state.account.cancel_at %}Subskrypcja anulowana – <strong>kolejne płatności nie będą pobierane</strong>. Plan {{ state.plan.name }} działa do {{ state.account.cancel_at|d }}, potem konto przejdzie na bezpłatny plan {{ free_plan.name }} ({{ free_limit }} w toku). Dane, klienci i prośby zostają.
+{% else %}{{ current_price }}{% if vat_rate %} netto{% endif %} {% if state.account.interval == 'year' %}rocznie{% else %}miesięcznie{% endif %}.{% if state.account.current_period_end %} Następna płatność: {{ state.account.current_period_end|d }}.{% endif %}{% endif %}
+{% else %}Bezpłatnie i bez limitu czasu.{% endif %}
+</p>
+{% if has_customer and payments_enabled %}
+<form method="post" action="{% url 'billing:portal' %}" class="plan-status__actions">
+{% csrf_token %}
+{% if state.is_subscribed and state.account.cancel_at %}
+<button type="submit" class="btn btn-primary btn-sm">Wznów subskrypcję</button>
+{% else %}
+<button type="submit" class="btn btn-secondary btn-sm">{% if state.account.status == 'past_due' %}Zaktualizuj kartę{% else %}Karta i subskrypcja{% endif %}</button>
+{% endif %}
+</form>
+{% endif %}
+</div>
+{% if state.limit %}
+<div class="plan-status__usage">
+<p class="plan-status__count"><strong>{{ state.used }}</strong> z {{ state.limit }}</p>
+<p class="plan-status__count-label">próśb w toku</p>
+<progress class="progress-bar{% if state.at_limit %} progress-bar--full{% endif %}" max="100" value="{{ state.percent }}" aria-label="Wykorzystanie limitu: {{ state.used }} z {{ state.limit }}"></progress>
+<p class="plan-status__hint">{% if state.at_limit %}Limit wykorzystany – nową prośbę wyślesz po zmianie planu albo gdy któraś z obecnych się zakończy.{% else %}Prośby zakończone i zamknięte nie wliczają się do limitu.{% endif %}</p>
+</div>
+{% endif %}
+</section>
+
+{% if state.source != 'demo' %}
+{% if blocked %}
+<div class="plan-notice" role="status">
+<p>{{ blocked }}</p>
+<a class="btn btn-primary btn-sm" href="{% url 'accounts:settings' %}#haslo">Ustaw hasło</a>
+</div>
+{% elif not payments_enabled %}
+<div class="plan-notice" role="status"><p>Płatności są chwilowo niedostępne. Spróbuj ponownie później albo <a href="{% url 'pages:contact' %}">napisz do nas</a>.</p></div>
+{% elif sandbox %}
+<div class="plan-notice plan-notice--test" role="status"><p><strong>Tryb testowy Stripe.</strong> Pieniądze nie są pobierane – użyj karty testowej 4242 4242 4242 4242, dowolnej przyszłej daty i dowolnego CVC.</p></div>
+{% endif %}
+
+{% if not blocked %}
+<section class="card billing-profile" id="dane" aria-labelledby="profile-title">
+<h2 id="profile-title">Dane do faktury</h2>
+<p class="text-muted">Na te dane wystawimy fakturę VAT po każdej płatności. Sprawdzamy je, zanim cokolwiek zapłacisz: dla firmy wystarczy NIP – nazwę i adres pobieramy z rejestru GUS.</p>
+{% if profile %}
+<div class="billing-profile__summary" data-profile-summary>
+<div>
+<p class="billing-profile__name">{{ profile.display_name }}{% if profile.is_company %} <span class="text-muted">· NIP {{ profile.tax_id }}</span>{% endif %}</p>
+<p class="billing-profile__address">{{ profile.address_line }}</p>
+{% if profile.registry_source %}<p class="billing-profile__verified">Dane z rejestru {{ profile.registry_source }}{% if profile.registry_status %} · VAT: {{ profile.registry_status|lower }}{% endif %}</p>{% endif %}
+</div>
+<button type="button" class="btn btn-secondary btn-sm" data-profile-edit>Zmień dane</button>
+</div>
+{% endif %}
+<form method="post" action="{% url 'billing:profile' %}" novalidate data-ajax-form class="billing-profile__form" data-profile-form data-registry-url="{% url 'billing:registry' %}" data-state="{% if profile.is_company and profile.registry_source %}found{% elif profile.is_company %}manual{% endif %}"{% if profile %} hidden{% endif %}>
+{% csrf_token %}
+{% include "base/_form_flash.html" with form=profile_form %}
+<fieldset class="interval-switch billing-profile__kind">
+<legend class="visually-hidden">{{ profile_form.kind.label }}</legend>
+{% for radio in profile_form.kind %}<label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}
+</fieldset>
+<div data-kind="company">
+<p>
+{{ profile_form.tax_id.label_tag }}
+<span class="billing-profile__nip" data-error-for="tax_id">
+{{ profile_form.tax_id }}
+<button type="button" class="btn btn-secondary" data-registry-lookup>Sprawdź NIP</button>
+</span>
+{{ profile_form.tax_id.errors }}
+</p>
+<p class="billing-profile__hint" data-registry-hint>Wpisz NIP i kliknij „Sprawdź NIP” – nazwę i adres firmy pobierzemy z rejestru GUS, tak jak będą na fakturze.</p>
+<p class="billing-profile__hint billing-profile__hint--found" data-found-hint><span data-registry-source>{% if profile.registry_source %}Dane z rejestru {{ profile.registry_source }}{% if profile.registry_status %} · VAT: {{ profile.registry_status|lower }}{% endif %}{% endif %}</span>. Pola z rejestru są zablokowane – uzupełnij tylko te, których rejestr nie zna.</p>
+<p class="billing-profile__hint" data-manual-hint>Nie znaleźliśmy tej firmy w rejestrach albo są chwilowo niedostępne – wpisz dane ręcznie.</p>
+</div>
+<div class="field-row" data-kind="person">
+<p>
+{{ profile_form.first_name.label_tag }}
+{{ profile_form.first_name }}
+{{ profile_form.first_name.errors }}
+</p>
+<p>
+{{ profile_form.last_name.label_tag }}
+{{ profile_form.last_name }}
+{{ profile_form.last_name.errors }}
+</p>
+</div>
+<div data-manual>
+<p data-kind="company">
+{{ profile_form.company_name.label_tag }}
+{{ profile_form.company_name }}
+{{ profile_form.company_name.errors }}
+</p>
+<p>
+{{ profile_form.street.label_tag }}
+{{ profile_form.street }}
+{{ profile_form.street.errors }}
+</p>
+<div class="field-row billing-profile__address-row">
+<p>
+{{ profile_form.post_code.label_tag }}
+{{ profile_form.post_code }}
+{{ profile_form.post_code.errors }}
+</p>
+<p>
+{{ profile_form.city.label_tag }}
+{{ profile_form.city }}
+{{ profile_form.city.errors }}
+</p>
+</div>
+</div>
+<div class="billing-profile__actions">
+<button type="submit" class="btn btn-primary">Zapisz dane do faktury</button>
+{% if profile %}<button type="button" class="btn btn-secondary" data-profile-cancel>Anuluj</button>{% endif %}
+</div>
+</form>
+</section>
+{% if not profile %}
+<div class="plan-notice" role="status"><p>Uzupełnij dane do faktury powyżej – potem wybierzesz plan.</p></div>
+{% endif %}
+{% endif %}
+
+<form class="plan-picker" method="post" action="{% if state.is_subscribed %}{% url 'billing:change' %}{% else %}{% url 'billing:checkout' %}{% endif %}">
+{% csrf_token %}
+<div class="plan-picker__head">
+<h2>{% if state.is_subscribed %}Zmień plan{% else %}Wybierz plan{% endif %}</h2>
+<fieldset class="interval-switch">
+<legend class="visually-hidden">Okres rozliczenia</legend>
+<label><input type="radio" name="interval" value="month"{% if interval != 'year' %} checked{% endif %}><span>Miesięcznie</span></label>
+<label><input type="radio" name="interval" value="year"{% if interval == 'year' %} checked{% endif %}><span>Rocznie <em>2 miesiące gratis</em></span></label>
+</fieldset>
+</div>
+{% if can_buy and not state.is_subscribed %}
+<p class="consent plan-consent">
+<label for="id_early_start">{{ early_start_label }} Zasady: <a href="{% url 'legal:terms' %}#platnosci" target="_blank" rel="noopener">Regulamin, § 5a</a>.</label>
+<input type="checkbox" name="early_start" id="id_early_start" required>
+</p>
+{% endif %}
+{% include "billing/_plan_grid.html" with panel=True %}
+<p class="plan-picker__foot">{% if vat_rate %}Ceny netto – do każdej płatności doliczamy {{ vat_rate }}% VAT. {% endif %}Płatność kartą przez Stripe: {% if state.is_subscribed %}przy zmianie na droższy plan albo na płatność roczną dopłacasz od razu różnicę za pozostały czas (niewykorzystana część obecnej opłaty jest odliczana), a przy zmianie na tańszy – nadwyżka zostaje zaliczona na kolejne płatności{% else %}płacisz z góry za miesiąc albo rok, subskrypcja odnawia się automatycznie{% endif %}. Zrezygnujesz w każdej chwili – plan działa do końca opłaconego okresu. Po przekroczeniu limitu nic się nie zatrzymuje: przypomnienia są wysyłane, a klienci przesyłają pliki – blokowane jest tylko wysłanie nowej prośby.</p>
+</form>
+{% endif %}
+
+{% if invoices %}
+<section class="card plan-invoices" aria-labelledby="invoices-title">
+<h2 id="invoices-title">Faktury VAT</h2>
+<p class="text-muted">Faktura powstaje automatycznie po każdej płatności i przychodzi też e-mailem.</p>
+<ul class="plan-invoices__list">
+{% for invoice in invoices %}
+<li class="plan-invoices__row">
+<div class="plan-invoices__main">
+<span class="plan-invoices__number">{% if invoice.number %}Faktura {{ invoice.number }}{% else %}Płatność z {{ invoice.paid_at|d }}{% endif %}</span>
+<span class="plan-invoices__sub">{{ invoice.description }}</span>
+</div>
+<span class="plan-invoices__amount">{{ invoice.gross_display }}</span>
+{% if invoice.status == 'issued' %}
+<a class="btn btn-secondary btn-sm" href="{% url 'billing:invoice-pdf' invoice.pk %}" title="Pobierz fakturę {{ invoice.number }} (PDF)">Pobierz PDF</a>
+{% elif invoice.status == 'failed' %}
+<span class="badge badge--neutral">Wyślemy e-mailem</span>
+{% else %}
+<span class="badge badge--progress">W przygotowaniu</span>
+{% endif %}
+</li>
+{% endfor %}
+</ul>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/billing_profile.js' %}"></script>{% endblock %}

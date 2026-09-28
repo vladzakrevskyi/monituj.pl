@@ -1,0 +1,8 @@
+{% autoescape off %}Subskrypcja planu {{ previous_plan_name }} wygasła. Konto działa dalej w planie {{ current_plan_name }}: możesz mieć jednocześnie {{ current_limit }} w toku. Płatności nie są już pobierane, a wszystkie dane, klienci i prośby zostają.
+{% if over_limit %}
+Masz więcej próśb w toku, niż obejmuje obecny plan. Nic się nie zatrzymuje – przypomnienia są wysyłane, a klienci przesyłają pliki – ale nową prośbę wyślesz po wybraniu planu albo gdy część obecnych się zakończy.
+{% endif %}
+Wybierz plan: {{ plan_url }}
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

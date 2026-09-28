@@ -1,0 +1,1 @@
+{% with value=price|add:" "|add:interval_label %}{% include "notifications/emails/_row.html" with label="Cena" value=value %}{% endwith %}{% if vat_rate %}<p style="margin:-6px 0 10px;font-size:13px;color:#62636d;">netto, z VAT: {{ price_gross }}</p>{% endif %}

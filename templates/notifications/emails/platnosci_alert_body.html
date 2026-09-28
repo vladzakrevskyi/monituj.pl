@@ -1,0 +1,12 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}{{ subject }}{% endblock %}
+{% block eyebrow %}Płatności – alert{% endblock %}
+{% block title %}{{ subject }}{% endblock %}
+{% block content %}
+{% include "notifications/emails/_details_open.html" %}
+{% for line in lines %}<p style="margin:0 0 10px;font-size:15px;line-height:1.6;color:#0b0b0c;">{{ line }}</p>
+{% endfor %}
+{% include "notifications/emails/_details_close.html" %}
+{% if link %}{% include "notifications/emails/_button.html" with url=link label="Otwórz w Stripe" %}{% endif %}
+{% endblock %}
+{% block footer_note %}Wiadomość dla zespołu Monituj, wysłana automatycznie po zdarzeniu w Stripe.{% endblock %}

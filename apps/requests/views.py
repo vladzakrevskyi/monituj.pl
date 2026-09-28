@@ -78,6 +78,7 @@ def request_create(request):
         item_names = form.item_names()
         if form.is_valid():
             try:
+                form.save_sender_name(request.user)
                 if form.cleaned_data.get("client"):
                     client_id = form.cleaned_data["client"].pk
                 else:
@@ -214,10 +215,14 @@ def request_close(request, request_id):
     except ApplicationError:
         raise Http404 from None
     if request.POST.get("action") == "reopen":
-        RequestService.reopen(request_obj, actor=request.user, request=request)
-        messages.success(
-            request, "Prośba jest znowu otwarta – odbiorca może przesyłać pliki."
-        )
+        try:
+            RequestService.reopen(request_obj, actor=request.user, request=request)
+        except ApplicationError as exc:
+            messages.error(request, exc.message)
+        else:
+            messages.success(
+                request, "Prośba jest znowu otwarta – odbiorca może przesyłać pliki."
+            )
     else:
         RequestService.close(request_obj, actor=request.user, request=request)
         messages.success(

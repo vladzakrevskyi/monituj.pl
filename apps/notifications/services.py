@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.accounts.sender import sender_context
 from apps.common.link_titles import add_link_titles
 from apps.common.site import absolute_url
 from apps.common.typography import fix_orphans, fix_orphans_text
@@ -36,7 +37,7 @@ def _request_context(request, to_email):
 
     to_recipient = to_email.lower() == request.client.email.lower()
     return {
-        "sender_name": request.created_by.display_name or "",
+        **sender_context(request.created_by),
         "request_name": request.name,
         "deadline": request.deadline,
         "retention_days": request.retention_days,
@@ -46,12 +47,28 @@ def _request_context(request, to_email):
         ),
         # Every request to this address, from any sender, on one page.
         "portal_link": recipient_portal_url(to_email) if to_recipient else "",
+        "promo_url": _promo_url(request.created_by) if to_recipient else "",
         "missing_items": list(
             request.items.filter(status__in=NOT_DELIVERED)
             .order_by("id")
             .values_list("name", flat=True)
         ),
     }
+
+
+PROMO_TEXT = (
+    "Zbierasz dokumenty od klientów? Monituj przypomni o nich za Ciebie – "
+    "zacznij za darmo:"
+)
+
+
+def _promo_url(owner):
+    """Emails to recipients of free-plan senders end with a line about
+    Monituj; paid plans (and the trial) send them without it."""
+    from apps.billing.services import plan_for
+
+    _plan, source = plan_for(owner)
+    return absolute_url("/") if source == "free" else ""
 
 
 def _is_demo(to_email, request):
@@ -78,9 +95,18 @@ def _default_reply_to(to_email, request):
 
 class EmailService:
     @staticmethod
-    def send(template, to_email, context=None, request=None, log=True, reply_to=None):
+    def send(
+        template,
+        to_email,
+        context=None,
+        request=None,
+        log=True,
+        reply_to=None,
+        attachments=None,
+    ):
         """Renders and sends one email. log=False sends without leaving an
-        EmailLog row - used when the data it would describe is being erased."""
+        EmailLog row - used when the data it would describe is being erased.
+        attachments: (filename, bytes, mimetype) tuples, e.g. an invoice PDF."""
         full_context = _base_context()
         if request is not None:
             full_context.update(_request_context(request, to_email))
@@ -95,6 +121,8 @@ class EmailService:
             ).strip(),
             keep_lines=True,
         )
+        if full_context.get("promo_url"):
+            text_body += f"\n\n{PROMO_TEXT} {full_context['promo_url']}"
         html_body = add_link_titles(
             fix_orphans(
                 render_to_string(
@@ -123,6 +151,8 @@ class EmailService:
                 reply_to=reply_to or _default_reply_to(to_email, request),
             )
             message.attach_alternative(html_body, "text/html")
+            for filename, content, mimetype in attachments or ():
+                message.attach(filename, content, mimetype)
             message.send(using="default")
             status = EmailStatus.SENT
             sent_at = timezone.now()

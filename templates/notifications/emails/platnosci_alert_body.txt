@@ -1,0 +1,8 @@
+{% autoescape off %}{{ subject }}
+
+{% for line in lines %}{{ line }}
+{% endfor %}{% if link %}
+Stripe: {{ link }}
+{% endif %}--
+Monituj – {{ site_url }}
+{% endautoescape %}

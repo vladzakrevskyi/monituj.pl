@@ -20,7 +20,7 @@
 {% for request_obj in rows %}
 <tr>
 <td class="cell-strong" data-label="Prośba"><a class="link-plain" href="{% url 'public:request-detail' request_obj.public_token %}">{{ request_obj.name }}</a></td>
-<td data-label="Od">{{ request_obj.created_by.display_name|default:request_obj.created_by.email }}</td>
+<td data-label="Od">{% if request_obj.created_by.display_name %}{{ request_obj.created_by.display_name }}<br><span class="text-muted">{{ request_obj.created_by.email }}</span>{% else %}{{ request_obj.created_by.email }}{% endif %}</td>
 <td class="cell-muted" data-label="Termin">{% if request_obj.deadline %}{{ request_obj.deadline|dt }}{% else %}Bez terminu{% endif %}</td>
 <td data-label="Przesłano">
 <div class="progress-cell">

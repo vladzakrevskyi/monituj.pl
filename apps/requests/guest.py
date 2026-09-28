@@ -14,6 +14,7 @@ from django.utils import timezone
 
 from apps.accounts.models import GuestAccess, User
 from apps.audit.models import AuditLog
+from apps.billing.services import check_request_allowed
 from apps.clients.services import ClientService
 from apps.common.exceptions import ValidationAppError
 from apps.common.site import absolute_url
@@ -152,6 +153,7 @@ class GuestRequestService:
                 ]
             )
             owner = request_obj.created_by
+            check_request_allowed(owner)
             first_confirmation = owner.email_verified_at is None
             if first_confirmation:
                 owner.email_verified_at = timezone.now()

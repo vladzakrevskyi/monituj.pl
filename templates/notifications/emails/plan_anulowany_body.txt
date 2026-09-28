@@ -1,0 +1,11 @@
+{% load formatting %}{% autoescape off %}Anulowałeś subskrypcję planu {{ plan_name }}. Kolejne płatności nie będą pobierane.
+
+Plan działa do końca opłaconego okresu, czyli do {{ cancel_at|d }}. Potem konto przejdzie na bezpłatny plan {{ free_plan }} ({{ free_limit }} w toku). Wszystkie dane, klienci i prośby zostają.
+{% if over_free_limit %}
+Masz więcej próśb w toku, niż obejmuje plan Free. Po zakończeniu planu nic się nie zatrzyma – ale nową prośbę wyślesz dopiero, gdy część obecnych się zakończy.
+{% endif %}
+Zmieniłeś zdanie? Subskrypcję wznowisz przed {{ cancel_at|d }} w zakładce Plan i płatności:
+{{ plan_url }}
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

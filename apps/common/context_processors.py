@@ -22,6 +22,7 @@ def _in_panel(request):
         "clients",
         "requests",
         "notifications",
+        "billing",
     }
 
 
@@ -34,6 +35,18 @@ def _unread_notifications(request):
     if not _in_panel(request):
         return 0
     return unread_count(user)
+
+
+def _plan_state(request):
+    from apps.billing.services import state_for
+    from apps.demo.models import is_demo_user
+
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated or not request.resolver_match:
+        return None
+    if not _in_panel(request) or is_demo_user(user):
+        return None
+    return state_for(user)
 
 
 def site(request):
@@ -54,6 +67,7 @@ def site(request):
         },
         "received_open_count": _received_open_count(request),
         "unread_notifications": _unread_notifications(request),
+        "plan_state": _plan_state(request),
         "contact_email": settings.CONTACT_EMAIL,
         "maintenance_bypass": getattr(request, "maintenance_bypass", False),
         "guest_account": is_guest_account(getattr(request, "user", None)),

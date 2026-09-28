@@ -3,7 +3,7 @@
 
 {% block auth_title %}Zacznij zbierać <strong>dokumenty</strong> w&nbsp;kilka minut{% endblock %}
 {% block auth_points %}
-{% include "base/_auth_point.html" with text="Za darmo, bez karty kredytowej" %}
+{% if signup_plan %}{% with text="Plan "|add:signup_plan.name|add:" – 30 dni za darmo, bez karty" %}{% include "base/_auth_point.html" %}{% endwith %}{% else %}{% include "base/_auth_point.html" with text="30 dni planu Biuro za darmo, bez karty" %}{% endif %}
 {% include "base/_auth_point.html" with text="Konto gotowe w minute" %}
 {% include "base/_auth_point.html" with text="Pierwsza prośba o dokumenty w 5 minut" %}
 {% endblock %}

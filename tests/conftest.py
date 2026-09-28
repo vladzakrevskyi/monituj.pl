@@ -59,7 +59,11 @@ def _no_published_legal_version(settings):
 
 @pytest.fixture
 def user(db):
-    return User.objects.create_user(email="owner@example.com", password="s3cr3t-pass!")
+    return User.objects.create_user(
+        email="owner@example.com",
+        password="s3cr3t-pass!",
+        display_name="Biuro Testowe",
+    )
 
 
 @pytest.fixture
@@ -79,3 +83,46 @@ def request_record(db, user, client_record):
 @pytest.fixture
 def request_item(db, request_record):
     return RequestItem.objects.create(request=request_record, name="Faktury sprzedaży")
+
+
+@pytest.fixture(autouse=True)
+def _stripe_sandbox(settings, monkeypatch):
+    """Payments in the sandbox with dummy keys, whatever the local .env says -
+    and no test ever reaches the real Stripe API (tests/test_billing.py
+    replaces the client with a fake)."""
+    from apps.billing import gateway
+
+    settings.STRIPE_MODE = "sandbox"
+    settings.STRIPE_KEYS = {
+        "sandbox": {"secret_key": "sk_test_dummy", "webhook_secret": "whsec_test"},
+        "live": {"secret_key": "", "webhook_secret": ""},
+    }
+    settings.BILLING_VAT_RATE = 23
+    gateway.clear_cache()
+
+    def no_network():
+        raise RuntimeError("Stripe called without a fake client")
+
+    monkeypatch.setattr(gateway, "client", no_network)
+
+
+@pytest.fixture(autouse=True)
+def _infakt_off(settings, monkeypatch):
+    """No VAT invoices unless a test turns inFakt on - and never a real call
+    (tests/test_invoicing.py fakes the API)."""
+    import requests
+
+    settings.INFAKT_MODE = "sandbox"
+    settings.INFAKT_KEYS = {
+        "sandbox": {"api_key": "", "webhook_secret": ""},
+        "live": {"api_key": "", "webhook_secret": ""},
+    }
+    settings.INFAKT_SEND_TO_KSEF = False
+    # No GUS either (tests/test_billing_profile.py turns it on with a fake).
+    settings.GUS_MODE = "production"
+    settings.GUS_API_KEY = ""
+
+    def no_network(*args, **kwargs):
+        raise RuntimeError("inFakt called without a fake")
+
+    monkeypatch.setattr(requests, "request", no_network)

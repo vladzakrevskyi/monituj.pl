@@ -1,0 +1,10 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Zaktualizuj kartę, aby nie stracić planu {{ plan_name }}.{% endblock %}
+{% block eyebrow %}Płatności{% endblock %}
+{% block title %}Płatność się nie powiodła{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Nie udało się pobrać opłaty za plan <strong>{{ plan_name }}</strong>. Plan na razie działa dalej, a Stripe spróbuje ponownie w najbliższych dniach.</p>
+{% include "notifications/emails/_notice.html" with text="Jeśli kolejne próby się nie powiodą, subskrypcja wygaśnie, a konto przejdzie na bezpłatny plan Free. Sprawdź kartę albo dodaj nową w zakładce Plan i płatności." tone="danger" %}
+{% include "notifications/emails/_button.html" with url=plan_url label="Zaktualizuj kartę" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy płatności za Twoje konto w Monituj. Faktury i potwierdzenia płatności wysyła osobno Stripe.{% endblock %}

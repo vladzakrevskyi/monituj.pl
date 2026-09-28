@@ -1,0 +1,17 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Dziękujemy! Możesz mieć teraz jednocześnie {{ limit }} w toku.{% endblock %}
+{% block eyebrow %}Twój plan{% endblock %}
+{% block title %}Plan {{ plan_name }} jest aktywny{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Dziękujemy za zakup! Od teraz możesz mieć jednocześnie <strong>{{ limit }} w toku</strong>. Przypomnienia i wszystkie funkcje działają jak dotąd.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Plan" value=plan_name %}
+{% include "notifications/emails/_row.html" with label="Limit" value=limit|add:" w toku" %}
+{% if price %}{% include "notifications/emails/_plan_price.html" %}{% endif %}
+{% if period_end %}{% include "notifications/emails/_row.html" with label="Następna płatność" value=period_end|d %}{% endif %}
+{% include "notifications/emails/_details_close.html" %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Subskrypcja odnawia się automatycznie. Plan zmienisz, a subskrypcję anulujesz w każdej chwili w panelu, w zakładce Plan i płatności.</p>
+{% include "notifications/emails/_button.html" with url=plan_url label="Plan i płatności" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy płatności za Twoje konto w Monituj. Faktury i potwierdzenia płatności wysyła osobno Stripe.{% endblock %}

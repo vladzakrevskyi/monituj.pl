@@ -59,7 +59,7 @@ def test_public_view_404_for_unknown_token(client):
 
 
 @pytest.mark.django_db
-def test_public_view_does_not_leak_other_requests_or_owner_info(
+def test_public_view_shows_the_sender_but_not_the_recipient(
     client, user, client_record
 ):
     request_obj = RequestService.create(
@@ -75,7 +75,9 @@ def test_public_view_does_not_leak_other_requests_or_owner_info(
         reverse("public:request-detail", args=[request_obj.public_token])
     )
 
-    assert user.email.encode() not in response.content
+    # The sender's confirmed address is shown on purpose - it is what tells
+    # the recipient who is really asking, whatever name they chose.
+    assert user.email.encode() in response.content
     assert client_record.email.encode() not in response.content
 
 

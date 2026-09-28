@@ -13,8 +13,10 @@ from django.utils import timezone
 
 from apps.accounts.erasure import erase_account
 from apps.accounts.models import AccountToken, AccountTokenPurpose, GuestAccess, User
+from apps.accounts.sender import sender_context
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
+from apps.billing.services import apply_signup_plan
 from apps.common import throttle
 from apps.common.exceptions import RateLimitedAppError, ValidationAppError
 from apps.common.security import generate_public_token, hash_token
@@ -125,6 +127,7 @@ class RegistrationService:
         AuditService.log(
             AuditEvent.USER_REGISTERED, actor=user, target=user, request=request
         )
+        apply_signup_plan(user, request)
         record_acceptance(user, AcceptanceMethod.REGISTRATION, request)
         VerificationService.send_verification_email(user)
         return user
@@ -491,6 +494,36 @@ class EmailChangeService:
         return user
 
 
+def _cancel_subscription(user):
+    """Cancels every subscription Stripe has for the user - asking Stripe,
+    not the local copy, which can lag behind. If Stripe can't be asked, the
+    account stays: better a retry than charges for a deleted account."""
+    import stripe
+
+    from apps.billing import gateway
+    from apps.billing.services import account_for, customer_id
+
+    failed = ValidationAppError(
+        "Nie udało się anulować subskrypcji. Spróbuj ponownie za chwilę "
+        "albo napisz do nas.",
+        code="SUBSCRIPTION_CANCEL_FAILED",
+    )
+    account = account_for(user)
+    # No Stripe customer ever stored: none exists (one is created only at
+    # checkout, and saved under a lock in the same step).
+    if not account.stripe_customer_id:
+        return
+    if not gateway.enabled():
+        # Payments off: only an account that paid in this mode needs Stripe.
+        if customer_id(account):
+            raise failed
+        return
+    try:
+        gateway.cancel_all_subscriptions(user)
+    except stripe.StripeError as exc:
+        raise failed from exc
+
+
 class AccountDeletionService:
     """Deleting an account takes two proofs: the current password, then a
     click on a link mailed to the account's address (and an explicit button
@@ -586,8 +619,11 @@ class AccountDeletionService:
         token = AccountDeletionService.pending_token(raw_token)
         user = token.user
         email = user.email
-        sender_name = user.display_name
+        sender = sender_context(user)
         notices = AccountDeletionService._recipient_notices(user)
+        # First, so a deleted account is never charged again. If Stripe can't
+        # be reached, nothing is deleted and the link can be used again.
+        _cancel_subscription(user)
 
         if (
             request is not None
@@ -603,7 +639,7 @@ class AccountDeletionService:
             EmailService.send(
                 EmailTemplate.REQUEST_CANCELLED,
                 to_email=notice.pop("to_email"),
-                context={"sender_name": sender_name, **notice},
+                context={**sender, **notice},
                 log=False,
             )
         EmailService.send(

@@ -9,6 +9,7 @@ from django.utils import timezone
 from apps.accounts.models import is_guest_account
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
+from apps.billing.services import check_request_allowed
 from apps.clients.models import Client
 from apps.common import throttle
 from apps.common.exceptions import (
@@ -74,6 +75,21 @@ def with_stats(queryset):
         delivered_items=Count(
             "items", filter=Q(items__status__in=DELIVERED_STATUSES), distinct=True
         ),
+    )
+
+
+def in_progress(owner):
+    """Requests still in progress: sent, not closed and still waiting for at
+    least one document - the "Aktywne prośby" on the dashboard and what the
+    plan limit counts."""
+    return (
+        with_stats(
+            Request.objects.filter(
+                created_by=owner, awaiting_confirmation=False, closed_at__isnull=True
+            )
+        )
+        .exclude(total_items__gt=0, delivered_items=models.F("total_items"))
+        .order_by()
     )
 
 
@@ -213,6 +229,7 @@ class RequestService:
         the recipient; GuestRequestService.confirm() sends it later."""
         if is_guest_account(owner):
             check_guest_daily_limit(owner)
+        check_request_allowed(owner)
         throttle.consume(
             f"requests-created:{owner.pk}",
             REQUESTS_PER_DAY,
@@ -290,8 +307,11 @@ class RequestService:
         return request_obj
 
     @staticmethod
+    @transaction.atomic
     def reopen(request_obj, actor, request=None):
         if request_obj.closed_at is not None:
+            # A reopened request is in progress again, so it needs a free slot.
+            check_request_allowed(request_obj.created_by)
             request_obj.closed_at = None
             request_obj.save(update_fields=["closed_at", "updated_at"])
             AuditService.log(
@@ -419,13 +439,7 @@ class DashboardService:
             delivered=Count("id", filter=Q(status__in=DELIVERED_STATUSES)),
         )
 
-        annotated = list(with_stats(requests_qs))
-        finished = (
-            RequestStatus.COMPLETE,
-            RequestStatus.CLOSED,
-            RequestStatus.AWAITING,
-        )
-        active_requests = sum(1 for r in annotated if compute_status(r) not in finished)
+        active_requests = in_progress(owner).count()
 
         reminders_sent = Reminder.objects.filter(request_id__in=request_ids).count()
 

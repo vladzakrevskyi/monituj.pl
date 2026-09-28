@@ -9,11 +9,25 @@
 <div class="card">
 <h1>Nowe przypomnienie</h1>
 <p class="card-lead">Wybierz klienta, dodaj listę dokumentów i ustaw automatyczne przypomnienia.</p>
+{% if plan_state.at_limit %}
+<p class="alert alert--info">Masz już {{ plan_state.used }} z {{ plan_state.limit }} próśb w toku – tyle obejmuje plan {{ plan_state.plan.name }}. <a href="{% url 'billing:plan' %}">Zmień plan</a> albo zamknij prośbę, na którą już nie czekasz.</p>
+{% endif %}
 <form method="post" novalidate data-ajax-form>
 {% csrf_token %}
 {% include "base/_form_flash.html" %}
 
+{% if form.asks_name %}
+<p class="form-divider form-divider--first">Ty</p>
+<p>
+{{ form.sender_name.label_tag }}
+{{ form.sender_name }}
+<small class="help-text">{{ form.sender_name.help_text }}</small>
+{{ form.sender_name.errors }}
+</p>
+<p class="form-divider">Klient</p>
+{% else %}
 <p class="form-divider form-divider--first">Klient</p>
+{% endif %}
 <p>
 {{ form.client.label_tag }}
 {{ form.client }}

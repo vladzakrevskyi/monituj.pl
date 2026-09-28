@@ -39,6 +39,8 @@ class AuditEvent(models.TextChoices):
     )
     GOOGLE_LINKED = "GOOGLE_LINKED", "Google sign-in linked"
     GOOGLE_UNLINKED = "GOOGLE_UNLINKED", "Google sign-in unlinked"
+    CHECKOUT_STARTED = "CHECKOUT_STARTED", "Plan checkout started"
+    PLAN_CHANGED = "PLAN_CHANGED", "Plan changed"
 
 
 class AuditLog(models.Model):

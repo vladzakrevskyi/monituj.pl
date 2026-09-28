@@ -6,7 +6,8 @@
 {% block content %}
 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">To przypomnienie o dokumentach, które {% if sender_name %}<strong>{{ sender_name }}</strong>{% else %}nadawca prośby{% endif %} wciąż od Ciebie potrzebuje. Przesłanie ich zajmie tylko chwilę.</p>
 {% include "notifications/emails/_details_open.html" %}
-{% if sender_name %}{% include "notifications/emails/_row.html" with label="Od" value=sender_name %}{% endif %}
+{% include "notifications/emails/_row.html" with label="Od" value=sender_from %}
+{% if sender_firm %}{% include "notifications/emails/_row.html" with label="Firma zweryfikowana" value=sender_firm %}{% endif %}
 {% include "notifications/emails/_row.html" with label="Prośba" value=request_name %}
 {% if deadline %}{% include "notifications/emails/_row.html" with label="Termin" value=deadline|dt %}{% endif %}
 {% include "notifications/emails/_details_close.html" %}
@@ -15,4 +16,4 @@
 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Jeśli już wszystko przesłałeś, możesz zignorować tę wiadomość – przypomnienia wyłączą się automatycznie, gdy komplet dokumentów dotrze.</p>
 {% include "notifications/emails/_portal.html" %}
 {% endblock %}
-{% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}
+{% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}

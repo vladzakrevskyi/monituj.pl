@@ -3,5 +3,5 @@
 
 Jeśli to nie Ty, zignoruj tę wiadomość – bez kliknięcia nikt nie zobaczy Twoich plików.
 --
-Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_name }}{% endif %}.
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}.
 {% endautoescape %}

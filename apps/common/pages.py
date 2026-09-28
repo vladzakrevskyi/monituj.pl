@@ -26,7 +26,22 @@ security = _page(
     "pages/security.html",
     lambda: {"max_upload_mb": MAX_UPLOAD_SIZE // (1024 * 1024)},
 )
-pricing = _page("pages/pricing.html")
+
+
+def _pricing_context():
+    from apps.billing import plans
+    from apps.billing.views import plan_cards
+
+    return {
+        "cards": plan_cards(),
+        "trial_days": plans.TRIAL_DAYS,
+        "trial_plan": plans.TRIAL_PLAN,
+        "free_plan": plans.FREE,
+        "vat_rate": plans.vat_rate(),
+    }
+
+
+pricing = _page("pages/pricing.html", _pricing_context)
 faq = _page("pages/faq.html")
 demo = _page("pages/demo.html")
 guide = _page("pages/guide.html")

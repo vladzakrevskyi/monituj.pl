@@ -20,6 +20,9 @@
 <li><strong>Konto bez hasła</strong> – Konto tworzone automatycznie dla adresu e-mail nadawcy Prośby bez konta, otwierane stałym linkiem przesłanym na ten adres. Użytkownik może w każdej chwili ustawić hasło, co zamienia je w zwykłe Konto.</li>
 <li><strong>Odbiorca</strong> – osoba, do której skierowana jest Prośba i która przesyła Dokumenty za pomocą linku.</li>
 <li><strong>Dokument</strong> – plik przesłany przez Odbiorcę w ramach Prośby.</li>
+<li><strong>Plan</strong> – zakres usług dostępnych w Koncie, określony maksymalną liczbą Próśb w toku: bezpłatny plan Free albo jeden z planów płatnych wskazanych w Cenniku.</li>
+<li><strong>Prośba w toku</strong> – Prośba wysłana do Odbiorcy, która nie została zamknięta i w której brakuje co najmniej jednego Dokumentu.</li>
+<li><strong>Cennik</strong> – aktualne plany, limity i ceny, dostępne pod adresem monituj.pl/cennik/ oraz w panelu, w zakładce „Plan i płatności”.</li>
 <li><strong>Okres przechowywania</strong> – wybrany dla Prośby czas przechowywania Dokumentów, liczony od chwili przesłania danego Dokumentu, nie dłuższy niż 365 dni.</li>
 </ol>
 
@@ -36,7 +39,7 @@
 <li>udostępnianie tymczasowego konta demonstracyjnego z przykładowymi danymi. Konto demonstracyjne jest usuwane automatycznie po 24 godzinach wraz ze wszystkimi danymi, a w jego ramach nie są wysyłane wiadomości e-mail. Uruchomienie konta demonstracyjnego oznacza akceptację Regulaminu.</li>
 </ol>
 </li>
-<li>Usługi są obecnie świadczone nieodpłatnie. O zamiarze wprowadzenia opłat Usługodawca poinformuje Użytkowników drogą e-mail z co najmniej 30-dniowym wyprzedzeniem. Opłaty nie będą pobierane bez wyraźnej akceptacji nowych warunków przez Użytkownika.</li>
+<li>Prowadzenie Konta w planie Free jest nieodpłatne. Usługi w planach płatnych są świadczone odpłatnie, na zasadach określonych w § 5a.</li>
 <li>Serwis jest przeznaczony przede wszystkim dla przedsiębiorców, w szczególności biur rachunkowych i firm zbierających dokumenty od swoich klientów.</li>
 </ol>
 
@@ -54,6 +57,21 @@
 <li>Użytkownik zobowiązany jest zachować hasło w tajemnicy. Użytkownik odpowiada za działania wykonane z użyciem jego Konta.</li>
 <li>Użytkownik może w każdej chwili usunąć Konto samodzielnie w ustawieniach Konta. Usunięcie wymaga podania hasła oraz potwierdzenia za pomocą linku wysłanego na adres e-mail Konta. Po potwierdzeniu Usługodawca niezwłocznie i nieodwracalnie usuwa Konto wraz z danymi Odbiorców, prośbami, przypomnieniami i Dokumentami, a Odbiorcy próśb, które nie zostały zakończone lub zawierają przesłane pliki, otrzymują powiadomienie e-mail, że prośba jest nieaktualna. Użytkownik może także zażądać usunięcia Konta, wysyłając wiadomość na adres {{ legal.email }} – wówczas Usługodawca usuwa Konto w terminie do 14 dni od otrzymania żądania.</li>
 <li>Przed usunięciem Konta Użytkownik powinien pobrać Dokumenty, które jest obowiązany przechowywać na podstawie przepisów prawa, w szczególności podatkowych lub rachunkowych. Usługodawca nie przechowuje kopii Dokumentów po usunięciu Konta, z zastrzeżeniem kopii zapasowych nadpisywanych w cyklu ich rotacji, nie dłuższym niż {{ legal.backup_days }} dni.</li>
+</ol>
+
+<h2 id="platnosci">§ 5a. Plany, płatności i okres próbny</h2>
+<ol>
+<li>Plany różnią się wyłącznie maksymalną liczbą Próśb w toku. Pozostałe funkcje Serwisu, w tym przypomnienia, są dostępne w każdym planie. Plany, limity i ceny określa Cennik.</li>
+<li>{% if legal.vat_rate %}Ceny w Cenniku są podane w złotych polskich jako ceny netto. Do ceny dolicza się podatek VAT według stawki {{ legal.vat_rate }}%, a łączna cena z VAT jest wskazana przy każdym planie przed złożeniem zamówienia.{% else %}Ceny w Cenniku są podane w złotych polskich i są cenami łącznymi.{% endif %}</li>
+<li>Każde nowe Konto przez 30 dni od jego założenia korzysta nieodpłatnie z planu płatnego wybranego w Cenniku przed rejestracją, a jeżeli żadnego nie wybrano – z planu Biuro (okres próbny). Okres próbny nie wymaga podania danych karty i kończy się automatycznie – jeżeli Użytkownik nie wybierze płatnego planu, Konto przechodzi na plan Free, bez żadnych opłat. Konto bez hasła działa w planie Free.</li>
+<li>Płatny plan zamawia się w panelu, w zakładce „Plan i płatności”, wybierając plan i okres rozliczeniowy (miesiąc albo rok). Umowa o świadczenie usług w płatnym planie zostaje zawarta z chwilą dokonania pierwszej płatności. Płatności obsługuje Stripe Payments Europe, Ltd. z siedzibą w Irlandii. Usługodawca nie otrzymuje ani nie przechowuje danych kart płatniczych.</li>
+<li>Opłata jest pobierana z góry za okres rozliczeniowy, a subskrypcja odnawia się automatycznie na kolejne okresy do czasu jej anulowania. Użytkownik może w każdej chwili anulować subskrypcję w panelu; plan działa wtedy do końca opłaconego okresu, po czym Konto przechodzi na plan Free. Opłata za rozpoczęty okres nie podlega zwrotowi, z zastrzeżeniem § 13.</li>
+<li>Użytkownik może w każdej chwili zmienić plan lub okres rozliczeniowy. Zmiana działa od razu, a różnica w cenie jest rozliczana proporcjonalnie do pozostałej części bieżącego okresu: przy przejściu na droższy plan albo na płatność roczną dopłata jest pobierana od razu (pomniejszona o niewykorzystaną część dotychczasowej opłaty), a przy przejściu na tańszy plan niewykorzystana kwota jest zaliczana na poczet kolejnych płatności.</li>
+<li>Jeżeli pobranie opłaty się nie powiedzie, operator płatności ponawia próbę obciążenia karty. Jeżeli opłaty nie uda się pobrać, subskrypcja wygasa, a Konto przechodzi na plan Free.</li>
+<li>Jeżeli liczba Próśb w toku przekracza limit planu (np. po przejściu na niższy plan albo po zakończeniu okresu próbnego), istniejące Prośby działają dalej – przypomnienia są wysyłane, a Odbiorcy mogą przesyłać Dokumenty. Do czasu zmiany planu albo zakończenia części Próśb Użytkownik nie może wysłać nowej Prośby ani ponownie otworzyć zamkniętej.</li>
+<li>Po każdej płatności Usługodawca wystawia fakturę VAT – na dane podane przed płatnością w zakładce „Plan i płatności” (na firmę z NIP albo na osobę fizyczną). Dane polskiej firmy (nazwa i adres) Usługodawca pobiera przed płatnością na podstawie NIP z bazy REGON prowadzonej przez Główny Urząd Statystyczny, a poprawność NIP sprawdza także w wykazie podatników VAT prowadzonym przez Ministra Finansów – w formie elektronicznej i przesyła ją na adres e-mail podany przy płatności, na co Użytkownik wyraża zgodę, zamawiając płatny plan. Faktury są też dostępne w panelu, w zakładce „Plan i płatności”.</li>
+<li>Usługodawca może zmienić Cennik. Nowa cena obowiązuje w trwającej subskrypcji od pierwszego okresu rozliczeniowego rozpoczynającego się co najmniej 30 dni po poinformowaniu Użytkownika o zmianie drogą e-mail. Użytkownik, który nie akceptuje nowej ceny, może wcześniej anulować subskrypcję.</li>
+<li>Usunięcie Konta powoduje natychmiastowe anulowanie subskrypcji. Opłata za rozpoczęty okres nie podlega zwrotowi, z zastrzeżeniem § 13.</li>
 </ol>
 
 <h2>§ 6. Prośby, Dokumenty i Okres przechowywania</h2>
@@ -101,7 +119,7 @@
 
 <h2>§ 11. Rozwiązanie umowy</h2>
 <ol>
-<li>Użytkownik może w każdej chwili rozwiązać umowę, usuwając Konto zgodnie z § 5 ust. 4.</li>
+<li>Użytkownik może w każdej chwili rozwiązać umowę, usuwając Konto zgodnie z § 5 ust. 4. Anulowanie subskrypcji płatnego planu nie rozwiązuje umowy o prowadzenie Konta – Konto działa dalej w planie Free.</li>
 <li>Usługodawca może rozwiązać umowę z zachowaniem 30-dniowego okresu wypowiedzenia z ważnych przyczyn, w szczególności w razie zakończenia działalności Serwisu. W razie rażącego naruszenia Regulaminu Usługodawca może rozwiązać umowę ze skutkiem natychmiastowym.</li>
 <li>Po rozwiązaniu umowy Usługodawca usuwa Konto oraz Dokumenty w terminie do 30 dni, z zastrzeżeniem danych, które musi przechowywać na podstawie przepisów prawa.</li>
 </ol>
@@ -115,6 +133,8 @@
 <h2>§ 13. Konsumenci i przedsiębiorcy na prawach konsumenta</h2>
 <ol>
 <li>Konsument oraz osoba fizyczna prowadząca działalność gospodarczą zawierająca umowę niemającą dla niej charakteru zawodowego (art. 38a ustawy o prawach konsumenta) mogą odstąpić od umowy w terminie 14 dni od jej zawarcia bez podawania przyczyny, wysyłając oświadczenie na adres {{ legal.email }}.</li>
+<li>Jeżeli osoba wskazana w ust. 1, zamawiając płatny plan, wyraźnie zażąda rozpoczęcia świadczenia usług przed upływem terminu do odstąpienia od umowy, a następnie od umowy odstąpi, zapłaci za usługi świadczone do chwili odstąpienia, proporcjonalnie do ich zakresu. Pozostałą część opłaty Usługodawca zwraca w terminie 14 dni od otrzymania oświadczenia o odstąpieniu, przy użyciu tej samej metody płatności.</li>
+<li>Oświadczenie o odstąpieniu można złożyć na formularzu, którego wzór stanowi załącznik nr 2 do ustawy o prawach konsumenta, jednak nie jest to obowiązkowe.</li>
 <li>Do osób wskazanych w ust. 1 nie stosuje się postanowień Regulaminu ograniczających odpowiedzialność Usługodawcy w zakresie wykraczającym poza przepisy prawa.</li>
 </ol>
 

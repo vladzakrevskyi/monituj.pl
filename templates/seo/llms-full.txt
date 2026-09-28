@@ -37,7 +37,14 @@ Każda prośba ma unikalny, trudny do odgadnięcia link. Pliki są szyfrowane na
 
 ## Cena
 
-Obecnie korzystanie z Monituj jest bezpłatne, bez karty kredytowej. O ewentualnych płatnych planach użytkownicy dowiedzą się co najmniej 30 dni wcześniej.
+Płaci się za liczbę próśb w toku – wysłanych, niezamkniętych i wciąż czekających na dokumenty. Przypomnienia, klienci i wszystkie funkcje są w każdym planie. Ceny netto (+23% VAT), płatność kartą przez Stripe, miesięcznie albo rocznie (2 miesiące gratis):
+
+- Free – 0 zł, do 3 próśb w toku, bez limitu czasu.
+- Start – 39 zł/mies. (390 zł/rok), do 20 próśb w toku.
+- Biuro – 89 zł/mies. (890 zł/rok), do 75 próśb w toku.
+- Pro – 179 zł/mies. (1790 zł/rok), do 250 próśb w toku.
+
+Nowe konto ma 30 dni wybranego płatnego planu za darmo (domyślnie Biuro), bez karty; potem, bez wyboru planu, przechodzi na Free. Po przekroczeniu limitu nic się nie zatrzymuje – blokowane jest tylko wysłanie nowej prośby.
 
 - Załóż konto: {{ register_url }}
 - Wyślij prośbę bez konta: {{ guest_url }}

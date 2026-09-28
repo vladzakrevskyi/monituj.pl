@@ -1,0 +1,1 @@
+{% autoescape off %}Okres próbny zakończony – działasz w planie {{ free_plan }}{% endautoescape %}

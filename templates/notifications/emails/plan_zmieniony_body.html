@@ -1,0 +1,19 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}{% if kind == "interval" %}Plan {{ plan_name }} rozliczasz teraz {{ interval_label }}.{% else %}Twój nowy plan: {{ plan_name }}, {{ limit }} w toku.{% endif %}{% endblock %}
+{% block eyebrow %}Twój plan{% endblock %}
+{% block title %}{% if kind == "interval" %}Płacisz teraz {{ interval_label }}{% elif kind == "upgraded" %}Masz teraz większy plan: {{ plan_name }}{% else %}Zmieniłeś plan na {{ plan_name }}{% endif %}{% endblock %}
+{% block content %}
+{% if kind == "interval" %}<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Plan <strong>{{ plan_name }}</strong> rozliczasz teraz {{ interval_label }} zamiast {{ previous_interval_label }}. Różnicę za pozostały czas Stripe rozliczył proporcjonalnie – szczegóły znajdziesz na fakturze.</p>
+{% elif kind == "upgraded" %}<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Plan zmieniony z {{ previous_plan_name }} na <strong>{{ plan_name }}</strong>. Od teraz możesz mieć jednocześnie <strong>{{ limit }} w toku</strong>. Dopłata za pozostały czas bieżącego okresu jest widoczna na fakturze.</p>
+{% else %}<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Plan zmieniony z {{ previous_plan_name }} na <strong>{{ plan_name }}</strong>. Możesz mieć teraz jednocześnie {{ limit }} w toku. Niewykorzystana część poprzedniej opłaty zostanie zaliczona na kolejne płatności.</p>
+{% endif %}{% if over_limit %}{% include "notifications/emails/_notice.html" with text="Masz teraz więcej próśb w toku, niż obejmuje nowy plan. Nic się nie zatrzymuje – przypomnienia są wysyłane, a klienci przesyłają pliki – ale nową prośbę wyślesz dopiero, gdy część obecnych się zakończy." %}{% endif %}
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Plan" value=plan_name %}
+{% include "notifications/emails/_row.html" with label="Limit" value=limit|add:" w toku" %}
+{% if price %}{% include "notifications/emails/_plan_price.html" %}{% endif %}
+{% if period_end %}{% include "notifications/emails/_row.html" with label="Następna płatność" value=period_end|d %}{% endif %}
+{% include "notifications/emails/_details_close.html" %}
+{% include "notifications/emails/_button.html" with url=plan_url label="Plan i płatności" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy płatności za Twoje konto w Monituj. Faktury i potwierdzenia płatności wysyła osobno Stripe.{% endblock %}

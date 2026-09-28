@@ -42,6 +42,16 @@ class EmailTemplate(models.TextChoices):
     LEGAL_UPDATE = "zmiana_dokumentow", "Zmiana Regulaminu i dokumentów"
     RECIPIENT_FILES_LINK = "pliki_odbiorcy", "Link do przesłanych plików"
     GOOGLE_CONNECT_CONFIRM = "google_polacz", "Potwierdzenie dodania Google"
+    TRIAL_ENDING = "okres_probny_konczy_sie", "Okres próbny się kończy"
+    TRIAL_ENDED = "okres_probny_zakonczony", "Okres próbny zakończony"
+    PLAN_STARTED = "plan_aktywny", "Plan aktywny"
+    PLAN_CHANGED = "plan_zmieniony", "Plan zmieniony"
+    PLAN_CANCELLED = "plan_anulowany", "Subskrypcja anulowana"
+    PLAN_RESUMED = "plan_wznowiony", "Subskrypcja wznowiona"
+    PLAN_ENDED = "plan_zakonczony", "Plan zakończony"
+    PAYMENT_FAILED = "platnosc_nieudana", "Płatność nieudana"
+    BILLING_ALERT = "platnosci_alert", "Płatności – alert dla zespołu"
+    VAT_INVOICE = "faktura_vat", "Faktura VAT"
 
 
 class EmailStatus(models.TextChoices):

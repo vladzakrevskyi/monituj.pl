@@ -30,6 +30,8 @@ from apps.accounts.services import (
     RegistrationService,
     VerificationService,
 )
+from apps.billing.services import remember_signup_plan, welcome_url
+from apps.billing.services import state_for as billing_state_for
 from apps.common.exceptions import ApplicationError
 from apps.common.forms import add_service_error
 from apps.common.responses import (
@@ -77,7 +79,11 @@ def register(request):
             return ajax_form_error_response(form)
     else:
         form = RegistrationForm()
-    return render(request, "accounts/register.html", {"form": form})
+    return render(
+        request,
+        "accounts/register.html",
+        {"form": form, "signup_plan": remember_signup_plan(request)},
+    )
 
 
 def verification_sent(request):
@@ -117,7 +123,7 @@ def verify_email(request, token):
         )
     GuestAccessService.login(request, user)
     messages.success(request, "Adres email potwierdzony – witaj w Monituj!")
-    return redirect("accounts:panel")
+    return redirect(welcome_url(request, user))
 
 
 @require_http_methods(["GET", "POST"])
@@ -521,10 +527,16 @@ def account_deletion_confirm(request, token):
             )
         deletion_token = AccountDeletionService.pending_token(token)
     except ApplicationError as exc:
+        failed = exc.code == "SUBSCRIPTION_CANCEL_FAILED"
         return render(
             request,
             "base/message.html",
-            {"title": "Nieprawidłowy link", "message": exc.message},
+            {
+                "title": "Nie udało się usunąć konta"
+                if failed
+                else "Nieprawidłowy link",
+                "message": exc.message,
+            },
         )
     user = deletion_token.user
     return render(
@@ -533,6 +545,7 @@ def account_deletion_confirm(request, token):
         {
             "token": token,
             "account_email": user.email,
+            "subscription": billing_state_for(user),
             **AccountDeletionService.summary(user),
         },
     )
