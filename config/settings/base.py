@@ -328,6 +328,8 @@ LEGAL_ENTITY = {
     "privacy_email": env("LEGAL_PRIVACY_EMAIL", default=""),
     "hosting_provider": env("LEGAL_HOSTING_PROVIDER", default=""),
     "email_provider": env("LEGAL_EMAIL_PROVIDER", default=""),
+    # Optional: a CDN / proxy all traffic passes through (e.g. Cloudflare).
+    "cdn_provider": env("LEGAL_CDN_PROVIDER", default=""),
     "effective_date": env("LEGAL_EFFECTIVE_DATE", default=""),
     "backup_days": env("LEGAL_BACKUP_DAYS", default=""),
     "hosting_location": env("LEGAL_HOSTING_LOCATION", default=""),

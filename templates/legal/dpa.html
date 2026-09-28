@@ -43,7 +43,7 @@
 
 <h2>§ 6. Dalsze powierzenie (podprocesorzy)</h2>
 <ol>
-<li>Administrator udziela Procesorowi ogólnej zgody na korzystanie z usług dalszych podmiotów przetwarzających. Aktualni podprocesorzy to: dostawca hostingu – {{ legal.hosting_provider }}; dostawca wysyłki poczty e-mail – {{ legal.email_provider }}.</li>
+<li>Administrator udziela Procesorowi ogólnej zgody na korzystanie z usług dalszych podmiotów przetwarzających. Aktualni podprocesorzy to: dostawca hostingu – {{ legal.hosting_provider }}; dostawca wysyłki poczty e-mail – {{ legal.email_provider }}{% if legal.cdn_provider %}; dostawca sieci dostarczania treści i ochrony przed atakami (CDN) – {{ legal.cdn_provider }}, przez którego serwery przechodzą przesyłane Dokumenty (połączeniem szyfrowanym){% endif %}.</li>
 <li>O zamiarze dodania lub zmiany podprocesora Procesor poinformuje Administratora drogą e-mail co najmniej 14 dni wcześniej. Administrator może w tym terminie wyrazić sprzeciw, a w razie jego nieuwzględnienia rozwiązać umowę ze skutkiem natychmiastowym.</li>
 <li>Procesor nakłada na podprocesorów te same obowiązki w zakresie ochrony danych, które wynikają z niniejszej umowy, i odpowiada wobec Administratora za ich wykonanie.</li>
 </ol>

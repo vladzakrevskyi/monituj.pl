@@ -45,6 +45,8 @@
 <ul>
 <li>dostawcy infrastruktury serwerowej (hostingu): {{ legal.hosting_provider }};</li>
 <li>dostawcy usługi wysyłki poczty e-mail: {{ legal.email_provider }};</li>
+{% if legal.cdn_provider %}<li>dostawcy sieci dostarczania treści i ochrony przed atakami (CDN): {{ legal.cdn_provider }} – przez jego serwery, połączeniem szyfrowanym, przechodzi cały ruch do Serwisu, w tym przesyłane pliki i adres IP;</li>
+{% endif %}
 <li>podmiotom świadczącym nam usługi informatyczne, prawne lub księgowe – w zakresie niezbędnym do ich wykonania;</li>
 <li>inFakt sp. z o.o. (Kraków) – dostawcy systemu do wystawiania faktur, gdy zamawiasz płatny plan (dane do faktury: imię i nazwisko lub nazwa firmy, adres, NIP, adres e-mail, kwota). Jeśli faktura podlega przesłaniu do Krajowego Systemu e-Faktur (KSeF), jej dane trafiają także do Ministerstwa Finansów;</li>
 <li>Stripe Payments Europe, Ltd. (Irlandia) – operatorowi płatności, gdy zamawiasz płatny plan. W zakresie danych płatniczych, zapobiegania oszustwom i obowiązków wynikających z przepisów o przeciwdziałaniu praniu pieniędzy Stripe jest odrębnym administratorem danych (zasady: stripe.com/pl/privacy);</li>
@@ -55,7 +57,7 @@
 <p>Dane mogą zostać udostępnione organom publicznym, jeżeli wymagają tego przepisy prawa.</p>
 
 <h2>5. Przekazywanie danych poza EOG</h2>
-<p>Serwery, na których przechowujemy dane, znajdują się w: {{ legal.hosting_location }}. Jeżeli któryś z naszych dostawców przekazywałby dane poza EOG, odbywa się to wyłącznie na podstawie decyzji Komisji Europejskiej stwierdzającej odpowiedni stopień ochrony lub standardowych klauzul umownych (art. 45–46 RODO). Stripe może przekazywać dane płatnicze do Stripe, Inc. w USA na podstawie ram ochrony danych UE–USA (EU-U.S. Data Privacy Framework) oraz standardowych klauzul umownych.{% if cookie_consent.transfers %} Dane z narzędzi, na które wyrazisz zgodę w banerze cookies, mogą być przekazywane do USA ({% for service in cookie_consent.transfers %}{{ service.name }} – {{ service.transfer }}{% if not forloop.last %}; {% endif %}{% endfor %}) na podstawie decyzji Komisji Europejskiej z 10 lipca 2023 r. w sprawie ram ochrony danych UE–USA (EU-U.S. Data Privacy Framework).{% endif %}</p>
+<p>Serwery, na których przechowujemy dane, znajdują się w: {{ legal.hosting_location }}. Jeżeli któryś z naszych dostawców przekazywałby dane poza EOG, odbywa się to wyłącznie na podstawie decyzji Komisji Europejskiej stwierdzającej odpowiedni stopień ochrony lub standardowych klauzul umownych (art. 45–46 RODO). Stripe może przekazywać dane płatnicze do Stripe, Inc. w USA na podstawie ram ochrony danych UE–USA (EU-U.S. Data Privacy Framework) oraz standardowych klauzul umownych.{% if legal.cdn_provider %} Ruch do Serwisu obsługuje {{ legal.cdn_provider }}, którego serwery mogą znajdować się także poza EOG (w tym w USA) – przekazanie odbywa się na podstawie ram ochrony danych UE–USA (EU-U.S. Data Privacy Framework) oraz standardowych klauzul umownych.{% endif %}{% if cookie_consent.transfers %} Dane z narzędzi, na które wyrazisz zgodę w banerze cookies, mogą być przekazywane do USA ({% for service in cookie_consent.transfers %}{{ service.name }} – {{ service.transfer }}{% if not forloop.last %}; {% endif %}{% endfor %}) na podstawie decyzji Komisji Europejskiej z 10 lipca 2023 r. w sprawie ram ochrony danych UE–USA (EU-U.S. Data Privacy Framework).{% endif %}</p>
 
 <h2>6. Twoje prawa</h2>
 <p>Przysługuje Ci prawo do:</p>

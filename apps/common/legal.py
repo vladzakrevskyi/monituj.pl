@@ -22,6 +22,9 @@ PLACEHOLDERS = {
 }
 
 
+PROVIDER_KEYS = ("hosting_provider", "email_provider")
+
+
 def version():
     """The documents' version: their effective date (LEGAL_EFFECTIVE_DATE,
     as 2026-10-01 or 01.10.2026). Empty = not published yet, nothing to
@@ -58,9 +61,16 @@ def legal_context():
     context = {}
     for key, label in PLACEHOLDERS.items():
         value = entity.get(key, "")
+        # A provider is a company name - an email address put there by
+        # mistake would be published as the name.
+        if key in PROVIDER_KEYS and "@" in value:
+            value = ""
         context[key] = value or format_html(
             '<mark class="legal-todo">[uzupełnij: {}]</mark>', label
         )
+    # Optional, no placeholder: the policies mention a CDN only when there is one.
+    cdn = entity.get("cdn_provider", "")
+    context["cdn_provider"] = "" if "@" in cdn else cdn
     if version():
         context["effective_date"] = effective_date_display()
     if not entity.get("email"):
