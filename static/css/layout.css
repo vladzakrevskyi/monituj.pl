@@ -1132,6 +1132,18 @@ body.nav-open {
   font-size: 17px;
 }
 
+.maintenance__ip {
+  margin: var(--space-4) 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.maintenance__ip code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
 .maintenance__contact {
   margin: var(--space-6) 0 0;
   padding-top: var(--space-5);

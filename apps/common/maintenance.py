@@ -40,6 +40,22 @@ def is_allowed(ip, networks):
     return any(address in network for network in networks)
 
 
+def visitor_address(ip):
+    """The address the site sees for this visitor - shown on the page, so the
+    owner knows exactly what to put in MAINTENANCE_ALLOWED_IPS. For IPv6 also
+    its /64 network: home connections change the address within it."""
+    context = {"client_ip": ip}
+    try:
+        address = ipaddress.ip_address(ip)
+    except ValueError:
+        return context
+    if address.version == 6:
+        context["client_network"] = str(
+            ipaddress.ip_network(f"{address}/64", strict=False)
+        )
+    return context
+
+
 class MaintenanceModeMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -49,14 +65,17 @@ class MaintenanceModeMiddleware:
         request.maintenance_bypass = False
         if not settings.MAINTENANCE_MODE or request.path in EXEMPT_PATHS:
             return self.get_response(request)
-        if is_allowed(get_client_ip(request), self.networks):
+        ip = get_client_ip(request)
+        if is_allowed(ip, self.networks):
             request.maintenance_bypass = True
             return self.get_response(request)
 
         if request.path.startswith("/api/"):
             response = error_response("MAINTENANCE", MESSAGE, status=503)
         else:
-            response = render(request, "maintenance.html", status=503)
+            response = render(
+                request, "maintenance.html", visitor_address(ip), status=503
+            )
         response["Retry-After"] = str(RETRY_AFTER_SECONDS)
         response["Cache-Control"] = "no-store"
         return response

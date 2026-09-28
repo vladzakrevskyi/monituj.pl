@@ -634,10 +634,10 @@ MAINTENANCE_MODE=True
 MAINTENANCE_ALLOWED_IPS=83.12.34.56,2a01:4f8::1,10.0.0.0/24
 ```
 
-`MAINTENANCE_ALLOWED_IPS` to lista adresów oddzielonych przecinkami – pojedyncze IPv4 i IPv6 albo całe zakresy. Osoby z tych adresów widzą serwis normalnie, z pomarańczowym paskiem przypominającym, że tryb serwisowy jest włączony. Swój adres sprawdzisz poleceniem `curl -4 ifconfig.me` (lub `-6` dla IPv6). Zmiana zaczyna działać po odtworzeniu kontenerów:
+`MAINTENANCE_ALLOWED_IPS` to lista adresów oddzielonych przecinkami – pojedyncze IPv4 i IPv6 albo całe zakresy. Osoby z tych adresów widzą serwis normalnie, z pomarańczowym paskiem przypominającym, że tryb serwisowy jest włączony. Najprościej: otwórz stronę w trybie serwisowym – pod komunikatem widać „Twój adres IP”, dokładnie ten, który widzi serwis (dla IPv6 także sieć `/64`). Domowy adres IPv6 zmienia się w obrębie tej sieci, więc wpisz całą sieć, np. `2a01:110f:1234:5678::/64`. Przeglądarka często łączy się przez IPv6, nawet gdy `curl -4 ifconfig.me` pokazuje adres IPv4. Zmiana w `.env` zaczyna działać dopiero po odtworzeniu kontenerów (`docker compose restart` jej nie wczyta):
 
 ```bash
-docker compose up -d
+docker compose up -d --force-recreate web
 ```
 
 Wyłączenie: `MAINTENANCE_MODE=False` i ponownie `docker compose up -d`. Adres `/api/health/` działa także w trybie serwisowym. Zadania w tle (przypomnienia, usuwanie plików po terminie) nie są wstrzymywane.

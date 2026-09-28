@@ -97,3 +97,19 @@ def test_ipv6_addresses_and_ranges_are_supported():
 def test_a_typo_in_the_list_stops_the_app_with_a_clear_error():
     with pytest.raises(ImproperlyConfigured, match="83.12.34"):
         parse_networks(["83.12.34"])
+
+
+@pytest.mark.django_db
+def test_maintenance_page_shows_the_visitors_address(client):
+    with _on("10.0.0.1"):
+        ipv4 = client.get(reverse("pages:faq"), HTTP_X_FORWARDED_FOR="83.7.253.70")
+        ipv6 = client.get(
+            reverse("pages:faq"),
+            HTTP_X_FORWARDED_FOR="2a01:110f:1234:5678:abcd:ef01:2345:6789",
+        )
+
+    assert "Twój adres IP: <code>83.7.253.70</code>" in ipv4.content.decode()
+    html = ipv6.content.decode()
+    assert "<code>2a01:110f:1234:5678:abcd:ef01:2345:6789</code>" in html
+    # Home IPv6 addresses change within the network - that is what to allow.
+    assert "<code>2a01:110f:1234:5678::/64</code>" in html
