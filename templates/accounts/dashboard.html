@@ -14,7 +14,7 @@
 
 {% if security_hint %}
 <div class="security-hint">
-<p class="security-hint__text"><strong>Chroń konto kodem z telefonu.</strong> Włącz weryfikację dwuetapową – nawet ze znanym hasłem nikt nie zobaczy dokumentów Twoich klientów. Zajmie to minutę.</p>
+<p class="security-hint__text"><strong>Chroń konto kodem z telefonu.</strong> Włącz weryfikację dwuetapową – samo hasło nie wystarczy, by ktoś wszedł na Twoje konto.</p>
 <div class="security-hint__actions">
 <a class="btn btn-secondary btn-sm" href="{% url 'accounts:two-factor' %}">Włącz</a>
 <form method="post" action="{% url 'accounts:security-hint-hide' %}" class="inline-form">
