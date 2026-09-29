@@ -578,31 +578,27 @@ W `.env` ustaw `LEGAL_BACKUP_DAYS=7`. Ta liczba trafia do Polityki prywatności,
 
 ### Krok 12. Aktualizacja strony
 
-Zatwierdź i wypchnij zmiany na swoim komputerze. Przed większą aktualizacją (np. z migracjami bazy danych) zrób ręczną kopię w panelu hostingu. Potem na serwerze:
+Zatwierdź i wypchnij zmiany na swoim komputerze, potem na serwerze **jedno polecenie**:
 
 ```bash
-cd /srv/monituj && git pull
+/srv/monituj/deploy/deploy.sh
 ```
 
-```bash
-docker compose up -d --build
-```
+Skrypt po kolei:
 
-Migracje wykonają się automatycznie przy starcie kontenera `web`. Podczas odtwarzania kontenera strona jest niedostępna przez kilka sekund.
+1. robi kopię bazy danych do `/srv/monituj-backups/` (starsze niż `LEGAL_BACKUP_DAYS` dni usuwa – tyle obiecuje Polityka prywatności); jeśli istnieje `deploy/backup.sh`, uruchamia go dodatkowo;
+2. pobiera najnowszy `main` z GitHuba (tylko fast-forward – odmówi, jeśli na serwerze ktoś zmienił pliki z repozytorium);
+3. buduje nowy obraz i sprawdza ustawienia (`check --deploy`) – zły wpis w `.env` zatrzymuje aktualizację, zanim cokolwiek zostanie podmienione;
+4. wykonuje migracje i uruchamia nowe kontenery `web`, `worker`, `beat`;
+5. sprawdza, czy strona odpowiada (`/api/health/`);
+6. uruchamia `post_deploy`: synchronizuje Stripe (produkty, ceny, VAT, portal, zdarzenia webhooka), zapisuje obowiązujące wersje dokumentów prawnych w archiwum, dopisuje do kolejki faktury VAT za płatności, których webhook zaginął, i wypisuje raport – tryby Stripe / inFakt / GUS, tryb serwisowy, puste dane firmy, zaległe faktury i e-maile;
+7. jeśli przed stroną stoi Cloudflare, przypomina o liście adresów w nginx.
 
-Powrót do poprzedniej wersji: `git log --oneline`, następnie `git checkout <commit>` i `docker compose up -d --build`. Jeśli nowa wersja zmieniała bazę danych (migracje), zamiast tego przywróć w panelu hostingu ręczną kopię zrobioną przed aktualizacją – wrócą wtedy jednocześnie kod i baza danych.
+Przy błędzie zatrzymuje się i wypisuje, jak wrócić do poprzedniej wersji (i jak przywrócić zrobioną właśnie kopię bazy). Opcje: `--skip-backup` (gdy kopia się nie udaje), `--update-images` (nowsze obrazy PostgreSQL i Redisa w obrębie tych samych wersji). Podczas podmiany kontenerów strona jest niedostępna przez kilka sekund.
 
-Co kilka miesięcy warto zaktualizować obrazy PostgreSQL i Redisa (w obrębie tych samych wersji 16 i 7):
+Powrót do poprzedniej wersji: `git log --oneline`, następnie `git checkout <commit>` i `docker compose up -d --build`. Jeśli nowa wersja zmieniała bazę danych (migracje), przywróć też kopię bazy zrobioną przez skrypt (polecenie wypisuje on sam przy błędzie) albo kopię całego serwera w panelu hostingu. Po powrocie wróć na gałąź: `git checkout main`.
 
-```bash
-docker compose pull db redis && docker compose up -d
-```
-
-Usuwanie starych obrazów po aktualizacjach:
-
-```bash
-docker image prune -f
-```
+Co kilka miesięcy warto zaktualizować obrazy PostgreSQL i Redisa (w obrębie tych samych wersji 16 i 7): `deploy/deploy.sh --update-images`. Stare obrazy skrypt usuwa sam.
 
 ---
 
