@@ -1,0 +1,122 @@
+{% extends "base/app_base.html" %}
+{% load static formatting %}
+
+{% block page_name %}Edycja prośby cyklicznej{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'requests:list' %}" title="Wróć: Przypomnienia">&larr; Przypomnienia</a>
+<div class="card">
+<h1>Prośba cykliczna</h1>
+<div class="recurring-status">
+<p class="recurring-status__text">
+{% if schedule.active %}<span class="badge badge--progress">{{ schedule.when|capfirst }}</span> Następna wysyłka: <strong>{{ schedule.next_run_on|d }}</strong> – „{{ schedule.next_name }}”{% else %}<span class="badge badge--neutral">Wstrzymana</span> Nie wychodzi, dopóki jej nie wznowisz.{% endif %}
+{% if sent_count %}<br><span class="text-muted">Wysłane dotąd: {{ sent_count }} – znajdziesz je na liście z oznaczeniem „Cykliczna”.</span>{% endif %}
+</p>
+<div class="recurring-status__actions">
+<form method="post" action="{% url 'requests:recurring-send' schedule.id %}" class="inline-form" data-confirm="Wysłać teraz „{{ now_name }}” do {{ clients_count }} {% if clients_count == 1 %}klienta{% else %}klientów{% endif %}? To dodatkowa wysyłka poza harmonogramem – {% if schedule.active %}następna i tak wyjdzie {{ schedule.next_run_on|d }}{% else %}harmonogram pozostaje wstrzymany{% endif %}.">
+{% csrf_token %}
+<button type="submit" class="btn btn-secondary btn-sm">Wyślij teraz</button>
+</form>
+<form method="post" action="{% url 'requests:recurring-toggle' schedule.id %}" class="inline-form">
+{% csrf_token %}
+<button type="submit" class="btn btn-secondary btn-sm">{% if schedule.active %}Wstrzymaj{% else %}Wznów{% endif %}</button>
+</form>
+<form method="post" action="{% url 'requests:recurring-delete' schedule.id %}" class="inline-form" data-confirm="Usunąć prośbę cykliczną? Prośby już wysłane zostaną na liście.">
+{% csrf_token %}
+<button type="submit" class="btn btn-danger btn-sm">Usuń</button>
+</form>
+</div>
+{% if schedule.last_result.skipped %}<p class="recurring-status__warning">Ostatnia wysyłka ({{ schedule.last_run_at|d }}) nie wyszła: {{ schedule.last_result.skipped }}</p>{% endif %}
+</div>
+<p class="card-lead">Zmiany obowiązują od następnej wysyłki. Prośby już wysłane zostają bez zmian.</p>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+{% include "base/_form_flash.html" %}
+
+<p class="form-divider form-divider--first">Kiedy</p>
+{% include "requests/_timing_fields.html" %}
+
+<p class="form-divider">Klienci</p>
+<div class="client-picker" data-error-for="clients" data-client-picker>
+<div class="client-picker__head">
+<input type="search" placeholder="Szukaj klienta po nazwie lub adresie" aria-label="Szukaj klienta" data-client-search>
+<button type="button" class="btn btn-secondary btn-sm" data-select-visible>Zaznacz widocznych</button>
+<button type="button" class="btn btn-secondary btn-sm" data-select-none>Odznacz</button>
+</div>
+<ul class="client-picker__list">
+{% for client in form.fields.clients.queryset %}<li data-search="{{ client.name|lower }} {{ client.email|lower }}"><label><input type="checkbox" name="clients" value="{{ client.pk }}"{% if client.pk in selected %} checked{% endif %}><span class="client-picker__name">{{ client.name }}</span><span class="client-picker__email">{{ client.email }}</span></label></li>
+{% endfor %}</ul>
+</div>
+{{ form.clients.errors }}
+<p class="text-muted form-hint">Nowego klienta dodasz w zakładce <a href="{% url 'clients:list' %}">Klienci</a>.</p>
+
+<p class="form-divider">Dokumenty</p>
+<p>
+{{ form.name.label_tag }}
+{{ form.name }}
+<small class="help-text"><strong>{miesiąc}</strong> zamienimy na miesiąc, którego dotyczą dokumenty (poprzedni względem dnia wysyłki), np. „wrzesień 2026”.</small>
+{{ form.name.errors }}
+</p>
+<p>
+{{ form.description.label_tag }}
+{{ form.description }}
+{{ form.description.errors }}
+</p>
+
+<div class="item-builder">
+<label for="item-name-input">Lista dokumentów</label>
+<div class="item-input-row" data-error-for="items">
+<input type="text" id="item-name-input" placeholder="Np. Faktury sprzedaży">
+<button type="button" id="add-item-button" class="btn btn-dark">Dodaj</button>
+</div>
+{{ form.items.errors }}
+<ul id="item-list" class="item-list"></ul>
+{{ posted_items|json_script:"posted-items-data" }}
+</div>
+
+<p class="form-divider">Przypomnienia</p>
+<p>
+<label>{{ form.reminders_enabled }} {{ form.reminders_enabled.label }}</label>
+</p>
+<div class="field-row">
+<p>
+{{ form.first_reminder_after_days.label_tag }}
+{{ form.first_reminder_after_days }}
+</p>
+<p>
+{{ form.reminder_frequency_days.label_tag }}
+{{ form.reminder_frequency_days }}
+</p>
+<p>
+{{ form.max_reminders.label_tag }}
+{{ form.max_reminders }}
+</p>
+</div>
+
+<p class="form-divider">Przechowywanie plików</p>
+<div class="field-row">
+<p>
+{{ form.retention_choice.label_tag }}
+{{ form.retention_choice }}
+{{ form.retention_choice.errors }}
+</p>
+<p data-retention-custom>
+{{ form.retention_custom_days.label_tag }}
+{{ form.retention_custom_days }}
+{{ form.retention_custom_days.errors }}
+</p>
+</div>
+
+<div class="form-actions">
+<button type="submit" class="btn btn-primary btn-lg">Zapisz</button>
+<a class="btn btn-secondary btn-lg" href="{% url 'requests:list' %}">Anuluj</a>
+</div>
+</form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/request_items.js' %}"></script>
+<script src="{% static 'js/request_recipients.js' %}"></script>
+{% endblock %}

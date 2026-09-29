@@ -52,6 +52,7 @@ class EmailTemplate(models.TextChoices):
     PAYMENT_FAILED = "platnosc_nieudana", "Płatność nieudana"
     BILLING_ALERT = "platnosci_alert", "Płatności – alert dla zespołu"
     VAT_INVOICE = "faktura_vat", "Faktura VAT"
+    RECURRING_SKIPPED = "cykliczna_pominieta", "Prośba cykliczna niewysłana"
 
 
 class EmailStatus(models.TextChoices):

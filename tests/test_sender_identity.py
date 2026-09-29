@@ -102,7 +102,7 @@ def _paid_by_firm(user, nip="5213017228"):
 
 
 @pytest.mark.django_db
-def test_paying_firm_is_named_in_emails_and_on_the_page(client, user, client_record):
+def test_without_consent_nothing_about_the_firm_is_shown(client, user, client_record):
     _verified_firm(user)
     _paid_by_firm(user)
     client.force_login(user)
@@ -113,12 +113,40 @@ def test_paying_firm_is_named_in_emails_and_on_the_page(client, user, client_rec
     html = page_text(
         client.get(reverse("public:request-detail", args=[request_obj.public_token]))
     )
+    body = _text(mail.outbox[-1].body)
 
-    assert "Konto opłaca firma: BIURO TESTOWE SP. Z O.O., NIP 5213017228" in _text(
+    for text in (body, html):
+        assert "BIURO TESTOWE SP. Z O.O." not in text
+        assert "5213017228" not in text
+        assert "Firma:" not in text
+
+
+@pytest.mark.django_db
+def test_with_consent_the_firm_is_named(client, user, client_record):
+    _verified_firm(user)
+    _paid_by_firm(user)
+    client.force_login(user)
+    client.post(
+        reverse("accounts:settings"),
+        {
+            "form_action": "profile",
+            "display_name": "Biuro Testowe",
+            "show_paying_firm": "on",
+        },
+    )
+    _create(client, client_record)
+    request_obj = Request.objects.get()
+    client.logout()
+
+    html = page_text(
+        client.get(reverse("public:request-detail", args=[request_obj.public_token]))
+    )
+
+    assert "Firma: BIURO TESTOWE SP. Z O.O., NIP 5213017228" in _text(
         mail.outbox[-1].body
     )
-    assert "Konto opłaca firma <strong>BIURO TESTOWE SP. Z O.O., NIP 5213017228" in html
-    assert "zweryfikowan" not in html
+    assert "Firma: <strong>BIURO TESTOWE SP. Z O.O., NIP 5213017228" in html
+    assert "opłaca" not in html
 
 
 @pytest.mark.parametrize(
@@ -136,12 +164,15 @@ def test_paying_firm_is_named_in_emails_and_on_the_page(client, user, client_rec
 def test_no_firm_line_without_a_paid_invoice_to_that_firm(
     client, user, client_record, setup
 ):
+    # Even with the setting on: a NIP typed in proves nothing.
+    user.show_paying_firm = True
+    user.save()
     setup(user)
     client.force_login(user)
 
     _create(client, client_record)
 
-    assert "Konto opłaca" not in mail.outbox[-1].body
+    assert "Firma:" not in mail.outbox[-1].body
 
 
 @pytest.mark.django_db
@@ -149,11 +180,13 @@ def test_no_firm_line_once_the_subscription_ended(client, user, client_record):
     _verified_firm(user)
     _paid_by_firm(user)
     BillingAccount.objects.filter(user=user).update(status="canceled")
+    user.show_paying_firm = True
+    user.save()
     client.force_login(user)
 
     _create(client, client_record)
 
-    assert "Konto opłaca" not in mail.outbox[-1].body
+    assert "Firma:" not in mail.outbox[-1].body
 
 
 # --- 3. A name before the first request ---------------------------------------------

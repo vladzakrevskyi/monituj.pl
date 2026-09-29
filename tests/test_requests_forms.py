@@ -87,9 +87,7 @@ def test_request_form_invalid_when_neither_client_nor_new_client_email_given(use
     form = RequestForm(data={"name": "R", "description": ""}, owner=user)
 
     assert not form.is_valid()
-    assert "Wybierz istniejącego klienta lub podaj email nowego klienta." in str(
-        form.errors
-    )
+    assert "Wybierz klienta albo wpisz adres e-mail nowego." in str(form.errors)
 
 
 @pytest.mark.django_db

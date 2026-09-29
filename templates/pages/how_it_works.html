@@ -20,12 +20,13 @@
 <span class="timeline__num">2</span>
 <div class="timeline__body">
 <h2>Tworzysz prośbę o dokumenty</h2>
-<p>W jednym formularzu określasz wszystko, czego potrzebujesz:</p>
+<p>W jednym formularzu określasz wszystko, czego potrzebujesz – dla jednego klienta albo kilku naraz:</p>
 <ul class="check-list">
 {% include "pages/_check.html" with text="listę dokumentów – każdy z osobnym statusem" %}
 {% include "pages/_check.html" with text="termin, widoczny dla Ciebie i dla klienta" %}
 {% include "pages/_check.html" with text="opcjonalne hasło dostępu do prośby" %}
 {% include "pages/_check.html" with text="harmonogram automatycznych przypomnień" %}
+{% include "pages/_check.html" with text="opcjonalnie: automatyczne powtarzanie – co dzień, tydzień, 2 tygodnie albo miesiąc" %}
 {% include "pages/_check.html" with text="okres przechowywania plików – maksymalnie rok" %}
 </ul>
 </div>
@@ -48,7 +49,7 @@
 <span class="timeline__num">5</span>
 <div class="timeline__body">
 <h2>Sprawdzasz i zamykasz</h2>
-<p>Akceptujesz dokumenty albo odrzucasz je z podaniem powodu – klient dostaje wiadomość, co poprawić, i może od razu przesłać nową wersję. Gdy dotrze komplet, klient otrzymuje potwierdzenie, a przypomnienia wyłączają się same.</p>
+<p>Akceptujesz dokumenty albo odrzucasz je z podaniem powodu – klient dostaje wiadomość, co poprawić, i może od razu przesłać nową wersję. Gdy dotrze komplet, klient otrzymuje potwierdzenie, a przypomnienia wyłączają się same. Pliki pobierzesz pojedynczo albo wszystkie naraz w archiwum ZIP.</p>
 </div>
 </li>
 <li class="timeline__step">

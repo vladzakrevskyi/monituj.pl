@@ -159,9 +159,9 @@ def limit_message(state):
     )
 
 
-def check_request_allowed(owner):
-    """Raises PlanLimitError when one more request in progress would go over
-    the plan. Call inside the transaction that sends the request."""
+def check_request_allowed(owner, count=1):
+    """Raises PlanLimitError when `count` more requests in progress would go
+    over the plan. Call inside the transaction that sends the requests."""
     if is_demo_user(owner):
         return
     with transaction.atomic():
@@ -169,6 +169,14 @@ def check_request_allowed(owner):
         state = state_for(owner, account)
         if state.at_limit:
             raise PlanLimitError(limit_message(state))
+        if state.limit is not None and state.used + count > state.limit:
+            free = state.limit - state.used
+            raise PlanLimitError(
+                f"W planie {state.plan.name} możesz mieć jednocześnie "
+                f"{plans.requests_phrase(state.limit)} w toku – wolnych miejsc "
+                f"zostało {free}, a wybrano {count} klientów. Wybierz mniej "
+                "klientów albo zmień plan."
+            )
 
 
 def start_trial(sender, instance, created, raw=False, **kwargs):

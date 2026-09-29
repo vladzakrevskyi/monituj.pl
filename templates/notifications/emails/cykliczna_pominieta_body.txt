@@ -1,0 +1,9 @@
+{% load formatting %}{% autoescape off %}Dzisiaj miała wyjść prośba cykliczna „{{ request_name }}” do {{ clients_count }} klientów, ale nie wysłaliśmy jej:
+
+{{ reason }}
+
+Możesz to poprawić i wysłać ją ręcznie przyciskiem „Wyślij teraz” na liście próśb cyklicznych. Jeśli nic nie zrobisz, kolejna wysyłka będzie {{ next_run_on|d }}.
+{{ list_url }}
+--
+Monituj – {{ site_url }}
+{% endautoescape %}

@@ -2,14 +2,13 @@
 
 The name is chosen by the sender, so on its own it proves nothing - anyone
 could call themselves a tax office or a bank. So recipients always see it
-together with the sender's confirmed email address, plus - for a paid
-account invoiced to a firm - the firm that pays for it; and names that
-mimic public institutions, banks or Monituj itself are refused up front.
+together with the sender's confirmed email address, plus the firm's name
+and NIP if the sender chose to show them (Ustawienia); names that mimic
+public institutions, banks or Monituj itself are refused up front.
 
-The firm line states a fact, not a verdict: anyone can type a NIP, but an
-account paid by card and invoiced to that firm (in KSeF the firm sees the
-invoice) is a signal a recipient can weigh. So it shows only while the
-subscription is paid and after an invoice to that NIP was issued."""
+The firm line needs more than a NIP typed in - anyone could type a known
+firm's. It is offered only for a firm the account pays for: the subscription
+is paid and an invoice to that NIP was issued (in KSeF the firm sees it)."""
 
 import re
 import unicodedata
@@ -106,13 +105,15 @@ def paying_firm(user):
 def sender_context(user):
     """What emails and pages show about the sender of a request."""
     name = user.display_name or ""
+    firm = paying_firm(user)
     return {
         # Never empty: the address stands in for a missing name.
         "sender_name": name or user.email,
         "sender_email": user.email,
         # "Biuro X (jan@biuro-x.pl)" - the confirmed address with the name.
         "sender_from": f"{name} ({user.email})" if name else user.email,
-        "sender_firm": paying_firm(user),
+        # The firm's name and NIP - only with the sender's consent.
+        "sender_firm": firm if user.show_paying_firm else "",
     }
 
 

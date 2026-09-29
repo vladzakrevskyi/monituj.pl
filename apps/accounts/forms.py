@@ -105,6 +105,16 @@ class ProfileForm(forms.Form):
         ),
     )
 
+    show_paying_firm = forms.BooleanField(
+        label="Pokazuj odbiorcom nazwę firmy i NIP",
+        required=False,
+        help_text=(
+            "Pomaga klientom upewnić się, kto prosi o dokumenty. Nazwa i NIP "
+            "pochodzą z Twoich danych do faktury – działa, gdy płatny plan jest "
+            "fakturowany na firmę."
+        ),
+    )
+
     def clean_display_name(self):
         # Used in email subjects, where a line break stops the email entirely.
         name = " ".join(self.cleaned_data["display_name"].split())

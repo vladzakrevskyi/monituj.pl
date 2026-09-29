@@ -4,9 +4,19 @@
   const list = document.getElementById("item-list");
   if (!input || !addButton || !list) return;
 
+  function changed() {
+    list.dispatchEvent(new CustomEvent("items:change", { bubbles: true }));
+  }
+
+  function has(name) {
+    return Array.from(list.querySelectorAll('input[name="items"]')).some(
+      (hidden) => hidden.value.toLowerCase() === name.toLowerCase(),
+    );
+  }
+
   function addItem(name) {
     const trimmed = name.trim();
-    if (!trimmed) return;
+    if (!trimmed || has(trimmed)) return;
 
     const li = document.createElement("li");
     li.className = "item-chip";
@@ -23,13 +33,28 @@
     removeButton.type = "button";
     removeButton.className = "btn btn-secondary btn-sm item-remove";
     removeButton.textContent = "Usuń";
-    removeButton.addEventListener("click", () => li.remove());
+    removeButton.addEventListener("click", () => {
+      li.remove();
+      changed();
+    });
 
     li.appendChild(span);
     li.appendChild(hidden);
     li.appendChild(removeButton);
     list.appendChild(li);
+    changed();
   }
+
+  // Suggested documents ("+ Faktury sprzedaży") add with a click.
+  document.querySelectorAll("[data-suggest]").forEach((chip) => {
+    chip.addEventListener("click", () => addItem(chip.dataset.suggest));
+  });
+  function syncSuggestions() {
+    document.querySelectorAll("[data-suggest]").forEach((chip) => {
+      chip.hidden = has(chip.dataset.suggest);
+    });
+  }
+  list.addEventListener("items:change", syncSuggestions);
 
   addButton.addEventListener("click", () => {
     addItem(input.value);

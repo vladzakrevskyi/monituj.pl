@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
 from apps.accounts.models import User
@@ -23,6 +24,10 @@ from apps.requests.models import RecipientAccess
 from apps.requests.services import PublicAccessService, compute_status
 
 
+# Uploads go by fetch with the CSRF cookie - the page must set it even when
+# none of its forms prints a token (someone opening the link for the first
+# time would otherwise get 403 on the first file).
+@ensure_csrf_cookie
 @require_http_methods(["GET", "POST"])
 def public_request_detail(request, token):
     try:

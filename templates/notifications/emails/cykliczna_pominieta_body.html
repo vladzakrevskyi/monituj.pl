@@ -1,0 +1,12 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Prośba „{{ request_name }}” nie wyszła do klientów.{% endblock %}
+{% block eyebrow %}Prośba cykliczna{% endblock %}
+{% block title %}Nie wysłaliśmy prośby „{{ request_name }}”{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Dzisiaj miała wyjść prośba cykliczna do {{ clients_count }} klientów, ale nie wysłaliśmy jej:</p>
+{% include "notifications/emails/_notice.html" with text=reason %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Możesz to poprawić i wysłać ją ręcznie przyciskiem <strong>Wyślij teraz</strong> na liście próśb cyklicznych. Jeśli nic nie zrobisz, kolejna wysyłka będzie {{ next_run_on|d }}.</p>
+{% include "notifications/emails/_button.html" with url=list_url label="Prośby cykliczne" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ w Twoim koncie Monituj jest ustawiona prośba cykliczna.{% endblock %}

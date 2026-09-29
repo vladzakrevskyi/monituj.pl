@@ -48,6 +48,41 @@ FAQ = [
     },
     {
         "category": "firma",
+        "home": True,
+        "q": "Czy prośba może wychodzić sama, np. co miesiąc?",
+        "a": (
+            "Tak. Przy tworzeniu prośby zaznacz „Powtarzaj automatycznie” i "
+            "wybierz, jak często: codziennie, co tydzień, co 2 tygodnie albo co "
+            "miesiąc, np. 5. albo ostatniego dnia miesiąca. Monituj wyśle ją "
+            "wybranym klientom w każdym okresie, z tą samą listą dokumentów i "
+            "nazwą z właściwym miesiącem, np. „Dokumenty za wrzesień 2026”. "
+            "Wysyłka wypadająca w weekend albo święto przesuwa się na najbliższy "
+            "dzień roboczy. Wstrzymasz ją albo zmienisz w każdej chwili."
+        ),
+    },
+    {
+        "category": "firma",
+        "home": False,
+        "q": "Czy mogę wysłać jedną prośbę do kilku klientów naraz?",
+        "a": (
+            "Tak. Wybierasz kilku klientów albo wklejasz kilka adresów email – "
+            "nowych klientów Monituj doda sam. Każdy klient dostaje osobną "
+            "prośbę z własnym linkiem, więc widzi tylko swoje dokumenty, a Ty "
+            "śledzisz postęp każdego z osobna."
+        ),
+    },
+    {
+        "category": "firma",
+        "home": False,
+        "q": "Jak pobrać wszystkie przesłane pliki?",
+        "a": (
+            "Pojedynczo przy każdym dokumencie albo wszystkie naraz: przycisk "
+            "„Pobierz wszystko (ZIP)” w prośbie pakuje pliki do jednego archiwum, "
+            "w osobnych folderach dla każdego dokumentu z listy."
+        ),
+    },
+    {
+        "category": "firma",
         "home": False,
         "q": "Co, jeśli dokument jest nieczytelny albo niewłaściwy?",
         "a": (
@@ -82,6 +117,17 @@ FAQ = [
             "Po każdym przesłaniu klient dostaje potwierdzenie z listą dokumentów, "
             "które jeszcze zostały. Gdy komplet dotrze, otrzymuje osobną wiadomość, "
             "a przypomnienia wyłączają się same."
+        ),
+    },
+    {
+        "category": "klient",
+        "home": False,
+        "q": "Skąd klient wie, że prośba jest ode mnie?",
+        "a": (
+            "W wiadomości i na stronie prośby widzi Twoją nazwę i adres email, "
+            "z którego może Ci odpowiedzieć. Jeśli masz płatny plan na fakturę "
+            "firmową, możesz w Ustawieniach pokazywać też nazwę firmy i NIP – "
+            "pobrane z rejestru, więc nie da się ich zmyślić."
         ),
     },
     {
@@ -146,11 +192,13 @@ FAQ = [
         "q": "Co to jest prośba w toku?",
         "a": (
             "Prośba wysłana do klienta, na którą wciąż czekasz: nie jest zamknięta "
-            "i brakuje w niej co najmniej jednego dokumentu. Zakończone i zamknięte "
-            "prośby nie wliczają się do limitu. Gdy limit się wyczerpie, nic się "
-            "nie zatrzymuje – przypomnienia są wysyłane, a klienci przesyłają "
-            "pliki; nową prośbę wyślesz po zmianie planu albo gdy któraś z "
-            "obecnych się zakończy."
+            "i brakuje w niej co najmniej jednego dokumentu. Prośba do kilku "
+            "klientów to kilka próśb – po jednej na klienta. Zakończone i "
+            "zamknięte prośby nie wliczają się do limitu. Gdy limit się wyczerpie, "
+            "nic się nie zatrzymuje – przypomnienia są wysyłane, a klienci "
+            "przesyłają pliki; nową prośbę wyślesz po zmianie planu albo gdy "
+            "któraś z obecnych się zakończy. Prośba cykliczna, która nie mieści "
+            "się w limicie, nie wychodzi – dostaniesz o tym email."
         ),
     },
     {
@@ -348,6 +396,7 @@ SEGMENT_PAGES = {
             "Trudno powiedzieć, którzy klienci są gotowi do zamknięcia miesiąca.",
         ],
         "benefits": [
+            "Jedna prośba cykliczna wychodzi co miesiąc do wszystkich klientów sama.",
             "Każdy klient dostaje tę samą, jasną listę dokumentów na dany miesiąc.",
             "Przypomnienia wychodzą same, aż dotrze komplet – nie musisz pamiętać.",
             "W panelu od razu widzisz, kto ma braki i czego dokładnie brakuje.",
@@ -366,10 +415,12 @@ SEGMENT_PAGES = {
             {
                 "q": "Czy mogę co miesiąc wysyłać klientom tę samą listę?",
                 "a": (
-                    "Tak. Tworzysz prośbę na dany miesiąc z listą dokumentów i "
-                    "terminem przed Twoim terminem rozliczenia. Klient zawsze "
-                    "dostaje tę samą, przewidywalną listę, a Ty widzisz, kto ją "
-                    "już zamknął."
+                    "Tak, i to automatycznie. Tworzysz jedną prośbę cykliczną "
+                    "dla wszystkich klientów, np. „Dokumenty za wrzesień”, "
+                    "wysyłaną 1. dnia miesiąca z terminem do 10. Monituj co "
+                    "miesiąc wyśle każdemu klientowi osobną prośbę z nazwą "
+                    "właściwego miesiąca i sam przypomni o brakach, a Ty widzisz, "
+                    "kto już zamknął miesiąc."
                 ),
             },
             {

@@ -340,6 +340,9 @@ def software_application():
         "featureList": [
             "Prośby o dokumenty z listą i terminem",
             "Automatyczne przypomnienia o brakujących dokumentach",
+            "Prośby cykliczne wysyłane automatycznie co miesiąc, tydzień lub dzień",
+            "Wysyłka jednej prośby do wielu klientów naraz",
+            "Pobieranie wszystkich plików prośby w archiwum ZIP",
             "Przesyłanie plików przez klienta bez zakładania konta",
             "Akceptacja i odrzucanie dokumentów z podaniem powodu",
             "Automatyczne usuwanie plików po ustalonym czasie (RODO)",

@@ -171,6 +171,16 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.reminders.tasks.send_automatic_reminders",
         "schedule": 300.0,
     },
+    # Monthly recurring requests, from 8:00 on their day (owner's time).
+    "send-recurring-requests": {
+        "task": "apps.requests.tasks.send_recurring_requests",
+        "schedule": 900.0,
+    },
+    # Invitations of a request sent to many clients at once.
+    "send-queued-invitations": {
+        "task": "apps.requests.tasks.send_queued_invitations",
+        "schedule": 60.0,
+    },
     # "Nowy dokument" emails to senders, once the recipient stops uploading.
     "send-upload-emails": {
         "task": "apps.notifications.tasks.send_upload_emails",

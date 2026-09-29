@@ -19,6 +19,7 @@ from apps.accounts.forms import (
 )
 from apps.accounts.google_auth import GoogleAuthService, GoogleConnectGate
 from apps.accounts.models import is_guest_account
+from apps.accounts.sender import paying_firm
 from apps.accounts.services import (
     AccountDeletionService,
     AuthenticationService,
@@ -235,7 +236,12 @@ def dashboard(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def settings_view(request):
-    profile_form = ProfileForm(initial={"display_name": request.user.display_name})
+    profile_form = ProfileForm(
+        initial={
+            "display_name": request.user.display_name,
+            "show_paying_firm": request.user.show_paying_firm,
+        }
+    )
     # Both forms have a current_password field; distinct auto_ids keep the
     # HTML ids (and label targets) unique on the settings page.
     password_form = PasswordChangeForm(auto_id="id_password_%s")
@@ -265,6 +271,7 @@ def settings_view(request):
                     request.user,
                     profile_form.cleaned_data["display_name"],
                     request=request,
+                    show_paying_firm=profile_form.cleaned_data["show_paying_firm"],
                 )
                 if ajax:
                     return success_response({"message": "Dane zostały zapisane."})
@@ -454,6 +461,7 @@ def settings_view(request):
             "is_guest": guest,
             "has_password": has_password,
             "google_account": getattr(request.user, "google_account", None),
+            "paying_firm": paying_firm(request.user),
             "google_form": google_form,
         },
     )

@@ -319,9 +319,13 @@ class PasswordResetService:
 
 class ProfileService:
     @staticmethod
-    def update_profile(user, display_name, request=None):
+    def update_profile(user, display_name, request=None, show_paying_firm=None):
         user.display_name = display_name.strip()
-        user.save(update_fields=["display_name"])
+        fields = ["display_name"]
+        if show_paying_firm is not None:
+            user.show_paying_firm = show_paying_firm
+            fields.append("show_paying_firm")
+        user.save(update_fields=fields)
         AuditService.log(
             AuditEvent.PROFILE_UPDATED, actor=user, target=user, request=request
         )

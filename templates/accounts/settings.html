@@ -78,6 +78,10 @@
 {{ profile_form.display_name }}
 {{ profile_form.display_name.errors }}
 </p>
+<p>
+<label>{{ profile_form.show_paying_firm }} {{ profile_form.show_paying_firm.label }}</label>
+<small class="help-text">{{ profile_form.show_paying_firm.help_text }}{% if paying_firm %} Teraz: {{ paying_firm }}.{% endif %}</small>
+</p>
 <button type="submit" class="btn btn-primary">Zapisz</button>
 </form>
 </div>

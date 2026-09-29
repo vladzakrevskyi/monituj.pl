@@ -220,10 +220,7 @@ def test_create_view_without_client_or_new_client_email_shows_error(client, user
     )
 
     assert response.status_code == 200
-    assert (
-        "Wybierz istniejącego klienta lub podaj email nowego klienta.".encode()
-        in response.content
-    )
+    assert b"Wybierz klienta albo wpisz adres e-mail nowego." in response.content
     assert not Request.objects.filter(name="R").exists()
 
 

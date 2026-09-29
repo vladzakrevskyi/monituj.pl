@@ -1,16 +1,26 @@
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
+from itertools import zip_longest
 
 from django import forms
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.utils import timezone as django_timezone
 
 from apps.accounts.sender import suggested_name, validate_sender_name
 from apps.clients.models import Client
-from apps.requests.models import DEFAULT_RETENTION_DAYS, MAX_RETENTION_DAYS
+from apps.requests.models import (
+    DEFAULT_RETENTION_DAYS,
+    LAST_DAY_OF_MONTH,
+    MAX_RETENTION_DAYS,
+    RecurringInterval,
+)
 
 REQUIRED_MESSAGE = "To pole jest wymagane."
 
 
 NO_ITEMS_MESSAGE = "Dodaj co najmniej jeden dokument do listy."
+# New clients typed in at once on the "many clients" form.
+MAX_NEW_CLIENTS = 100
 
 RETENTION_PRESETS = [30, 90, 180, 365]
 RETENTION_CUSTOM = "custom"
@@ -21,6 +31,31 @@ RETENTION_CHOICES = [
     ("365", "1 rok (365 dni)"),
     (RETENTION_CUSTOM, "Własny okres"),
 ]
+
+
+# Reminder rhythms to pick from: (first after days, every days, how many).
+REMINDER_PRESETS = {
+    "gentle": (3, 5, 2),
+    "standard": (2, 3, 3),
+    "frequent": (1, 2, 5),
+}
+REMINDER_PRESET_CHOICES = [
+    ("gentle", "Łagodne"),
+    ("standard", "Standardowe"),
+    ("frequent", "Częste"),
+    ("custom", "Własne"),
+    ("off", "Bez przypomnień"),
+]
+
+
+def reminder_preset_of(enabled, first, every, count):
+    """The preset these settings match - "custom" when none does."""
+    if not enabled:
+        return "off"
+    for key, values in REMINDER_PRESETS.items():
+        if values == (first, every, count):
+            return key
+    return "custom"
 
 
 def _deadline_to_end_of_day(value):
@@ -43,6 +78,12 @@ class _RequestDetailsFieldsMixin(forms.Form):
         input_formats=["%Y-%m-%d"],
     )
 
+    reminder_preset = forms.ChoiceField(
+        label="Przypomnienia",
+        choices=REMINDER_PRESET_CHOICES,
+        initial="standard",
+        required=False,
+    )
     reminders_enabled = forms.BooleanField(
         label="Włącz automatyczne przypomnienia", required=False, initial=True
     )
@@ -110,6 +151,33 @@ class _RequestDetailsFieldsMixin(forms.Form):
         return {"retention_choice": RETENTION_CUSTOM, "retention_custom_days": days}
 
     def reminder_settings(self):
+        preset = self.cleaned_data.get("reminder_preset")
+        if preset == "off":
+            return {
+                "reminders_enabled": False,
+                **self._numbers(*REMINDER_PRESETS["standard"]),
+            }
+        if preset in REMINDER_PRESETS:
+            return {
+                "reminders_enabled": True,
+                **self._numbers(*REMINDER_PRESETS[preset]),
+            }
+        if preset == "custom":
+            return {
+                **self._custom_reminders(),
+                "reminders_enabled": True,
+            }
+        return self._custom_reminders()
+
+    @staticmethod
+    def _numbers(first, every, count):
+        return {
+            "first_reminder_after_days": first,
+            "reminder_frequency_days": every,
+            "max_reminders": count,
+        }
+
+    def _custom_reminders(self):
         return {
             "reminders_enabled": self.cleaned_data.get("reminders_enabled", False),
             "first_reminder_after_days": self.cleaned_data.get(
@@ -138,7 +206,102 @@ class _ItemsFieldMixin(forms.Form):
         return names
 
 
-class RequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form):
+DEADLINE_MONTH_DAY = "day10"
+DEADLINE_DAY = 10
+DEADLINE_CHOICES = [
+    ("7", "7 dni"),
+    ("14", "14 dni"),
+    (DEADLINE_MONTH_DAY, f"Do {DEADLINE_DAY}. dnia miesiąca"),
+    ("date", "Wybierz datę"),
+    ("days", "Inna liczba dni"),
+    ("none", "Bez terminu"),
+]
+
+
+def next_month_day(after, day):
+    """The next `day` of a month after `after` - this month's if still ahead."""
+    candidate = after.replace(day=day)
+    if candidate <= after:
+        candidate = (after.replace(day=1) + timedelta(days=32)).replace(day=day)
+    return candidate
+
+
+WEEKDAY_CHOICES = [
+    (0, "poniedziałek"),
+    (1, "wtorek"),
+    (2, "środa"),
+    (3, "czwartek"),
+    (4, "piątek"),
+    (5, "sobota"),
+    (6, "niedziela"),
+]
+MONTH_DAY_CHOICES = [(day, f"{day}.") for day in range(1, 29)] + [
+    (LAST_DAY_OF_MONTH, "ostatni dzień miesiąca")
+]
+
+
+class _TimingFieldsMixin(forms.Form):
+    """When a recurring request goes out (apps/requests/recurring.py)."""
+
+    interval = forms.ChoiceField(
+        label="Jak często",
+        choices=RecurringInterval.choices,
+        initial=RecurringInterval.MONTHLY,
+        required=False,
+    )
+    month_day = forms.TypedChoiceField(
+        label="Dzień miesiąca",
+        choices=MONTH_DAY_CHOICES,
+        coerce=int,
+        initial=1,
+        required=False,
+    )
+    weekday = forms.TypedChoiceField(
+        label="Dzień tygodnia",
+        choices=WEEKDAY_CHOICES,
+        coerce=int,
+        initial=0,
+        required=False,
+    )
+    workdays_only = forms.BooleanField(
+        label="Tylko dni robocze", required=False, initial=True
+    )
+    deadline_days = forms.IntegerField(
+        label="Termin: dni po wysłaniu",
+        required=False,
+        min_value=1,
+        max_value=90,
+        initial=10,
+    )
+
+    def clean_timing(self, cleaned_data):
+        interval = cleaned_data.get("interval") or RecurringInterval.MONTHLY
+        cleaned_data["interval"] = interval
+        if interval == RecurringInterval.MONTHLY and not cleaned_data.get("month_day"):
+            self.add_error("month_day", "Wybierz dzień miesiąca.")
+        if interval in (RecurringInterval.WEEKLY, RecurringInterval.BIWEEKLY) and (
+            cleaned_data.get("weekday") in (None, "")
+        ):
+            self.add_error("weekday", "Wybierz dzień tygodnia.")
+
+    def timing(self):
+        data = self.cleaned_data
+        interval = data["interval"]
+        return {
+            "interval": interval,
+            "month_day": data.get("month_day")
+            if interval == RecurringInterval.MONTHLY
+            else None,
+            "weekday": data.get("weekday")
+            if interval in (RecurringInterval.WEEKLY, RecurringInterval.BIWEEKLY)
+            else None,
+            "workdays_only": bool(data.get("workdays_only")),
+        }
+
+
+class RequestForm(
+    _TimingFieldsMixin, _ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form
+):
     client = forms.ModelChoiceField(
         label="Istniejący klient",
         queryset=Client.objects.none(),
@@ -146,6 +309,25 @@ class RequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form):
         empty_label="-- wybierz klienta --",
         error_messages={"invalid_choice": "Nieprawidłowy klient."},
     )
+    send_first_now = forms.BooleanField(
+        label="Wyślij pierwszą już teraz", required=False, initial=True
+    )
+    deadline_choice = forms.ChoiceField(
+        label="Termin",
+        choices=DEADLINE_CHOICES,
+        required=False,
+    )
+    # Several clients at once: the same request to each of them.
+    clients = forms.ModelMultipleChoiceField(
+        label="Klienci",
+        queryset=Client.objects.none(),
+        required=False,
+        error_messages={"invalid_choice": "Nieprawidłowy klient."},
+    )
+    # New clients typed in on the "many clients" form: repeated
+    # new_clients_name / new_clients_email values, read by new_clients();
+    # the field exists so errors about them have a place.
+    new_clients = forms.CharField(required=False)
     new_client_name = forms.CharField(
         label="Nazwa nowego klienta", required=False, max_length=255
     )
@@ -184,9 +366,9 @@ class RequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form):
             )
             self.fields["sender_name"].initial = suggested_name(owner)
         if owner is not None:
-            self.fields["client"].queryset = Client.objects.filter(
-                owner=owner
-            ).order_by("name")
+            own = Client.objects.filter(owner=owner).order_by("name")
+            self.fields["client"].queryset = own
+            self.fields["clients"].queryset = own
 
     def clean_sender_name(self):
         name = " ".join(self.cleaned_data["sender_name"].split())
@@ -199,13 +381,157 @@ class RequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form):
             user.display_name = self.cleaned_data["sender_name"]
             user.save(update_fields=["display_name"])
 
+    @property
+    def is_recurring(self):
+        """Sent again and again ("Cyklicznie"), not once."""
+        return self.data.get("schedule") == "recurring"
+
+    @property
+    def to_many(self):
+        """More than one client: each gets its own request (create_many)."""
+        if hasattr(self, "cleaned_data") and "recipient_count" in self.cleaned_data:
+            return self.cleaned_data["recipient_count"] > 1
+        return self.data.get("recipients") == "many"
+
+    def _values(self, name):
+        """Repeated values of a field (a plain dict in tests has no getlist)."""
+        if hasattr(self.data, "getlist"):
+            return self.data.getlist(name)
+        value = self.data.get(name) or []
+        return value if isinstance(value, list) else [value]
+
+    def _new_clients(self):
+        """[(name, email)] from the rows typed in - empty rows skipped, the
+        same address once. Adds an error for a row that can't be used."""
+        names = self._values("new_clients_name")
+        emails = self._values("new_clients_email")
+        found, seen, problems = [], set(), []
+        for name, email in zip_longest(names, emails, fillvalue=""):
+            name, email = " ".join(name.split())[:255], email.strip()
+            if not name and not email:
+                continue
+            if not email:
+                problems.append(f"Podaj adres email klienta „{name}”.")
+                continue
+            try:
+                validate_email(email)
+            except ValidationError:
+                problems.append(f"Nieprawidłowy adres email: {email}")
+                continue
+            if email.lower() not in seen:
+                seen.add(email.lower())
+                found.append((name, email))
+        if len(found) > MAX_NEW_CLIENTS:
+            problems.append(f"Naraz dodasz najwyżej {MAX_NEW_CLIENTS} nowych klientów.")
+        for problem in problems:
+            self.add_error("new_clients", problem)
+        return found
+
+    def _recipients(self, cleaned_data):
+        """The clients picked and the new ones typed in - one field for one
+        client or many (the old single-client fields are read too)."""
+        picked = list(cleaned_data.get("clients") or [])
+        if cleaned_data.get("client") and cleaned_data["client"] not in picked:
+            picked.append(cleaned_data["client"])
+        new = self._new_clients()
+        if cleaned_data.get("new_client_email"):
+            email = cleaned_data["new_client_email"]
+            if email.lower() not in {e.lower() for _, e in new}:
+                new.append((cleaned_data.get("new_client_name", ""), email))
+        known = {c.email.lower() for c in picked}
+        new = [(n, e) for n, e in new if e.lower() not in known]
+        cleaned_data["client_ids"] = [c.pk for c in picked]
+        cleaned_data["new_clients_list"] = new
+        cleaned_data["recipient_count"] = len(picked) + len(new)
+        if not cleaned_data["recipient_count"] and not {
+            "clients",
+            "client",
+            "new_clients",
+            "new_client_email",
+        } & set(self.errors):
+            self.add_error("clients", "Wybierz klienta albo wpisz adres e-mail nowego.")
+
+    def _deadline_choice(self, cleaned_data):
+        """The deadline picked with a button: a date for a one-off request,
+        days (or a day of the month) after each sending for a recurring one."""
+        choice = cleaned_data.get("deadline_choice")
+        today = django_timezone.localdate()
+        cleaned_data["deadline_month_day"] = None
+        if self.is_recurring:
+            cleaned_data["deadline"] = None
+            if choice in ("7", "14"):
+                cleaned_data["deadline_days"] = int(choice)
+            elif choice == DEADLINE_MONTH_DAY:
+                cleaned_data["deadline_days"] = None
+                cleaned_data["deadline_month_day"] = DEADLINE_DAY
+            elif choice == "none":
+                cleaned_data["deadline_days"] = None
+            elif choice == "days" and not cleaned_data.get("deadline_days"):
+                self.add_error("deadline_days", "Podaj liczbę dni.")
+            return
+        if choice in ("7", "14"):
+            cleaned_data["deadline"] = _deadline_to_end_of_day(
+                today + timedelta(days=int(choice))
+            )
+        elif choice == DEADLINE_MONTH_DAY:
+            cleaned_data["deadline"] = _deadline_to_end_of_day(
+                next_month_day(today, DEADLINE_DAY)
+            )
+        elif choice == "none":
+            cleaned_data["deadline"] = None
+        elif choice == "date" and not cleaned_data.get("deadline"):
+            self.add_error("deadline", "Wybierz datę.")
+
     def clean(self):
         cleaned_data = super().clean()
-        has_client = cleaned_data.get("client") or cleaned_data.get("new_client_email")
-        if not has_client and "new_client_email" not in self.errors:
+        self._recipients(cleaned_data)
+        self._deadline_choice(cleaned_data)
+        if self.is_recurring:
+            self.clean_timing(cleaned_data)
+            if cleaned_data.get("password"):
+                self.add_error(
+                    "password",
+                    "Prośba cykliczna nie może mieć hasła – przy każdej wysyłce "
+                    "trzeba by je przekazywać od nowa.",
+                )
+        elif self.to_many and cleaned_data.get("password"):
             self.add_error(
-                "client", "Wybierz istniejącego klienta lub podaj email nowego klienta."
+                "password",
+                "Hasło ustawisz tylko w prośbie do jednego klienta – jedno "
+                "hasło znane wielu osobom niczego nie chroni.",
             )
+        return cleaned_data
+
+
+class RecurringRequestForm(
+    _TimingFieldsMixin, _ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form
+):
+    """Editing a recurring request: what goes out, to whom and when. The
+    changes apply from the next run; requests already sent stay as they are."""
+
+    clients = forms.ModelMultipleChoiceField(
+        label="Klienci",
+        queryset=Client.objects.none(),
+        error_messages={
+            "required": "Zaznacz co najmniej jednego klienta.",
+            "invalid_choice": "Nieprawidłowy klient.",
+        },
+    )
+
+    def __init__(self, *args, owner=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        del self.fields["deadline"]
+        if owner is not None:
+            self.fields["clients"].queryset = Client.objects.filter(
+                owner=owner
+            ).order_by("name")
+
+    def clean_deadline(self):
+        return None
+
+    def clean(self):
+        cleaned_data = super().clean()
+        self.clean_timing(cleaned_data)
         return cleaned_data
 
 

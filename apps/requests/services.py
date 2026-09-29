@@ -224,9 +224,12 @@ class RequestService:
         reminder_settings=None,
         request=None,
         awaiting_confirmation=False,
+        queue_invitation=False,
+        recurring=None,
     ):
         """awaiting_confirmation=True stores the request without contacting
-        the recipient; GuestRequestService.confirm() sends it later."""
+        the recipient; GuestRequestService.confirm() sends it later.
+        queue_invitation=True leaves the invitation to the queue (create_many)."""
         if is_guest_account(owner):
             check_guest_daily_limit(owner)
         check_request_allowed(owner)
@@ -259,6 +262,8 @@ class RequestService:
                 generate_public_token() if awaiting_confirmation else None
             ),
             pending_access_password=(password or "") if awaiting_confirmation else "",
+            invitation_queued=queue_invitation,
+            recurring=recurring,
             **reminder_settings,
         )
         RequestItem.objects.bulk_create(
@@ -275,15 +280,106 @@ class RequestService:
         AuditService.log(
             AuditEvent.REQUEST_CREATED, actor=owner, target=request_obj, request=request
         )
-        if not awaiting_confirmation:
+        if not awaiting_confirmation and not queue_invitation:
             RequestService.deliver(request_obj, password, actor=owner, request=request)
         return request_obj
 
     @staticmethod
-    def deliver(request_obj, password, actor=None, request=None):
-        """Sends the recipient their link (and the access password, if any)."""
+    def create_many(
+        owner,
+        client_ids,
+        name,
+        description,
+        deadline,
+        item_names,
+        reminder_settings=None,
+        request=None,
+        new_clients=(),
+        recurring=None,
+    ):
+        """The same request to several clients at once - all of them or none:
+        the plan's free places and the day's email limit are checked for the
+        whole group first. The invitations go out from the queue within a
+        minute (send_queued_invitations), so a long list doesn't hold the
+        page. No access password: one shared by many recipients protects
+        nothing. new_clients: [(name, email)] typed in on the form - saved as
+        clients (an address already on the list is that client). Returns the
+        requests."""
+        from apps.clients.services import ClientService
+
+        client_ids = list(client_ids)
+        if Client.objects.filter(owner=owner, pk__in=client_ids).count() != len(
+            set(client_ids)
+        ):
+            raise NotFoundAppError("Nie znaleziono klienta.")
+        with transaction.atomic():
+            for client_name, email in new_clients:
+                client_ids.append(
+                    ClientService.get_or_create_by_email(
+                        owner=owner, email=email, name=client_name, request=request
+                    ).pk
+                )
+            client_ids = list(dict.fromkeys(client_ids))
+            check_request_allowed(owner, count=len(client_ids))
+            requests = [
+                RequestService.create(
+                    owner=owner,
+                    client_id=client_id,
+                    name=name,
+                    description=description,
+                    deadline=deadline,
+                    item_names=item_names,
+                    reminder_settings=reminder_settings,
+                    request=request,
+                    queue_invitation=True,
+                    recurring=recurring,
+                )
+                for client_id in client_ids
+            ]
+            # Counted now, with the rest: a limit hit rolls back every request.
+            for _ in requests:
+                consume_outbound_email(owner)
+        return requests
+
+    @staticmethod
+    def send_queued_invitations(limit=100):
+        """Sends the invitations of requests made for many clients at once.
+        Each row is taken under a lock, so two workers never send one twice.
+        Returns how many went out."""
+        sent = 0
+        for pk in (
+            Request.objects.filter(invitation_queued=True)
+            .order_by("created_at")
+            .values_list("pk", flat=True)[:limit]
+        ):
+            with transaction.atomic():
+                request_obj = (
+                    Request.objects.select_for_update(skip_locked=True, of=("self",))
+                    .select_related("client", "created_by")
+                    .filter(pk=pk, invitation_queued=True)
+                    .first()
+                )
+                if request_obj is None:
+                    continue
+                request_obj.invitation_queued = False
+                request_obj.save(update_fields=["invitation_queued", "updated_at"])
+                if request_obj.closed_at is None:
+                    RequestService.deliver(
+                        request_obj, None, actor=request_obj.created_by, counted=True
+                    )
+                    sent += 1
+        return sent
+
+    @staticmethod
+    def deliver(request_obj, password, actor=None, request=None, counted=False):
+        """Sends the recipient their link (and the access password, if any).
+        counted=True: the email was already counted against the day's limit."""
         RequestService.send_invitation(
-            request_obj, request_obj.client.email, actor=actor, django_request=request
+            request_obj,
+            request_obj.client.email,
+            actor=actor,
+            django_request=request,
+            counted=counted,
         )
         if password:
             EmailService.send(
@@ -323,8 +419,11 @@ class RequestService:
         return request_obj
 
     @staticmethod
-    def send_invitation(request_obj, to_email, actor=None, django_request=None):
-        consume_outbound_email(request_obj.created_by)
+    def send_invitation(
+        request_obj, to_email, actor=None, django_request=None, counted=False
+    ):
+        if not counted:
+            consume_outbound_email(request_obj.created_by)
         link = absolute_url(f"/d/{request_obj.public_token}/")
         EmailService.send(
             EmailTemplate.INVITATION,

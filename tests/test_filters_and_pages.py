@@ -89,7 +89,7 @@ def test_request_create_without_client_reports_error_on_client_field(client, use
     response = client.post(
         reverse("requests:create"), {"name": "R", "items": ["A"]}, **AJAX_HEADERS
     )
-    assert "client" in response.json()["error"]["fields"]
+    assert "clients" in response.json()["error"]["fields"]
 
 
 @pytest.mark.django_db

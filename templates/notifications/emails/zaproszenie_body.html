@@ -7,7 +7,7 @@
 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">{% if sender_name %}<strong>{{ sender_name }}</strong> korzysta z Monituj, aby zebrać od Ciebie potrzebne dokumenty.{% else %}Ktoś korzysta z Monituj, aby zebrać od Ciebie potrzebne dokumenty.{% endif %} Nie musisz zakładać konta – wystarczy otworzyć link i dodać pliki.</p>
 {% include "notifications/emails/_details_open.html" %}
 {% include "notifications/emails/_row.html" with label="Od" value=sender_from %}
-{% if sender_firm %}{% include "notifications/emails/_row.html" with label="Konto opłaca firma" value=sender_firm %}{% endif %}
+{% if sender_firm %}{% include "notifications/emails/_row.html" with label="Firma" value=sender_firm %}{% endif %}
 {% include "notifications/emails/_row.html" with label="Prośba" value=request_name %}
 {% if deadline %}{% include "notifications/emails/_row.html" with label="Termin" value=deadline|dt %}{% endif %}
 {% include "notifications/emails/_details_close.html" %}

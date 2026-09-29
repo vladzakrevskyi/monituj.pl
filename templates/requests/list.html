@@ -1,5 +1,5 @@
 {% extends "base/app_base.html" %}
-{% load badges formatting %}
+{% load static badges formatting %}
 
 {% block page_name %}Przypomnienia{% endblock %}
 {% block page_class %}page--wide{% endblock %}
@@ -62,9 +62,24 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 </tr>
 </thead>
 <tbody>
+{% for schedule in planned %}
+<tr>
+<td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'requests:recurring-edit' schedule.id %}">{{ schedule.next_name }}</a><span class="cell-sub"><span class="badge badge--neutral">Cykliczna</span> {{ schedule.when }}{% if schedule.active %} · pierwsza {{ schedule.next_run_on|date:"j.m" }}{% endif %}</span>{% if schedule.last_result.skipped %}<span class="cell-note">Nie wyszła {{ schedule.last_run_at|d }}: {{ schedule.last_result.skipped }}</span>{% endif %}</td>
+<td class="cell-muted" data-label="Klient">{{ schedule.clients_count }} {% if schedule.clients_count == 1 %}klient{% else %}klientów{% endif %}</td>
+<td class="cell-muted" data-label="Termin">{{ schedule.deadline_text|capfirst }}</td>
+<td class="cell-muted" data-label="Postęp">–</td>
+<td class="cell-muted" data-label="Przypomnienia">{% if schedule.reminders_enabled %}Włączone{% else %}Wyłączone{% endif %}</td>
+<td data-label="Status">{% if schedule.active %}<span class="badge badge--neutral">Zaplanowana</span>{% else %}<span class="badge badge--neutral">Wstrzymana</span>{% endif %}</td>
+<td class="cell-right cell-actions" data-label="Akcje">
+<div class="table-actions">
+<a class="btn btn-secondary btn-sm" href="{% url 'requests:recurring-edit' schedule.id %}" title="Harmonogram: {{ schedule.next_name }}">Harmonogram</a>
+</div>
+</td>
+</tr>
+{% endfor %}
 {% for request_obj in page_obj.object_list %}
 <tr>
-<td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'requests:detail' request_obj.id %}">{{ request_obj.name }}</a></td>
+<td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'requests:detail' request_obj.id %}">{{ request_obj.name }}</a>{% if request_obj.schedule %}<span class="cell-sub"><span class="badge badge--neutral">Cykliczna</span> <a href="{% url 'requests:recurring-edit' request_obj.schedule.id %}" title="Harmonogram: wyślij teraz, wstrzymaj, zmień">{{ request_obj.schedule.when }} · {% if request_obj.schedule.active %}następna {{ request_obj.schedule.next_run_on|date:"j.m" }}{% else %}wstrzymana{% endif %}</a></span>{% endif %}</td>
 <td data-label="Klient"><a class="link-plain" href="{% url 'clients:documents' request_obj.client.id %}">{{ request_obj.client.name }}</a></td>
 <td class="cell-muted" data-label="Termin">{% if request_obj.deadline %}{{ request_obj.deadline|dt }}{% else %}Bez terminu{% endif %}</td>
 <td data-label="Postęp">
@@ -82,7 +97,7 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 </td>
 </tr>
 {% empty %}
-<tr class="table-empty"><td colspan="7">{% if has_filters or filters.data.status %}Brak przypomnień pasujących do filtrów.{% else %}Brak przypomnień.{% endif %}</td></tr>
+{% if not planned %}<tr class="table-empty"><td colspan="7">{% if has_filters or filters.data.status %}Brak przypomnień pasujących do filtrów.{% else %}Brak przypomnień.{% endif %}</td></tr>{% endif %}
 {% endfor %}
 </tbody>
 </table>

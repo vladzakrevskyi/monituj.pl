@@ -1,7 +1,7 @@
 {% load formatting %}{% autoescape off %}Wciąż czekamy na Twoje dokumenty.
 
 Od: {{ sender_from }}
-{% if sender_firm %}Konto opłaca firma: {{ sender_firm }}
+{% if sender_firm %}Firma: {{ sender_firm }}
 {% endif %}Prośba: {{ request_name }}
 {% if deadline %}Termin: {{ deadline|dt }}
 {% endif %}{% if missing_items %}

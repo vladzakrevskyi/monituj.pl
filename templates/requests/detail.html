@@ -11,6 +11,7 @@
 <span class="badge {{ status_code|badge_class }}">{{ status_label }}</span>
 </div>
 <div class="page-header__actions">
+{% if has_files %}<a class="btn btn-secondary" href="{% url 'requests:files-zip' request_obj.id %}" title="Pobierz wszystkie pliki tej prośby w jednym archiwum ZIP">Pobierz wszystko (ZIP)</a>{% endif %}
 <a class="btn btn-secondary" href="{% url 'requests:edit' request_obj.id %}" title="Edytuj prośbę: {{ request_obj.name }}">Edytuj</a>
 {% if not request_obj.awaiting_confirmation %}
 <form method="post" action="{% url 'requests:close' request_obj.id %}" class="inline-form"{% if not request_obj.is_closed %} data-confirm-close{% endif %}>
@@ -26,6 +27,9 @@
 </div>
 </div>
 
+{% if schedule %}
+<p class="alert alert--info">Ta prośba została wysłana automatycznie przez prośbę cykliczną „{{ schedule.name }}” ({{ schedule.when }}{% if schedule.active %}, następna wysyłka {{ schedule.next_run_on|d }}{% else %}, obecnie wstrzymana{% endif %}). <a href="{% url 'requests:recurring-edit' schedule.id %}">Harmonogram: wyślij teraz, wstrzymaj, zmień</a></p>
+{% endif %}
 {% if request_obj.awaiting_confirmation %}
 <p class="alert alert--info">Ta prośba czeka na potwierdzenie linkiem z maila, który wysłaliśmy na <strong>{{ request_obj.created_by.email }}</strong>. Odbiorca jeszcze nic nie dostał. Niepotwierdzone prośby są usuwane po 48 godzinach.</p>
 {% elif request_obj.is_closed %}

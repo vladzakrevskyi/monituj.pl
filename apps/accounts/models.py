@@ -27,6 +27,10 @@ class User(AbstractUser):
     username = None  # type: ignore[assignment]
     email = models.EmailField(unique=True)
     display_name = models.CharField(max_length=255, blank=True)
+    # Recipients see the name and NIP of the firm paying for the account only
+    # with the owner's consent (Ustawienia); without it - that the account is
+    # a paid business one, nothing more.
+    show_paying_firm = models.BooleanField(default=False)
     email_verified_at = models.DateTimeField(null=True, blank=True)
     terms_accepted_at = models.DateTimeField(null=True, blank=True)
     privacy_policy_accepted_at = models.DateTimeField(null=True, blank=True)
