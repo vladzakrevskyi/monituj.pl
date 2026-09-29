@@ -15,8 +15,9 @@ send_recurring_requests, every 15 minutes) as ordinary requests created by
 RequestService.create_many - to all of its clients or none, within the
 plan's free places. At most once per period (day, week, two weeks, month),
 and days missed while the server was down are not caught up. "Wyślij teraz"
-is an extra send on top: the schedule stays as it was. A run that can't go out is skipped until
-the next period, and the owner gets an email saying why."""
+is an extra send on top: the schedule stays as it was. A run that can't go
+out is skipped until the next period, and the owner gets an email saying
+why."""
 
 import logging
 from datetime import date, datetime, time, timedelta

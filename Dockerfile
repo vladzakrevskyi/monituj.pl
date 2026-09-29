@@ -22,8 +22,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# libmagic: file type checks. Pango, HarfBuzz and a font with Polish
+# letters: WeasyPrint, which renders the Regulamin PDF for order emails.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libmagic1 \
+        libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements/ requirements/

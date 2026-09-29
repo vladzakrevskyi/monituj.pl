@@ -10,3 +10,4 @@ whitenoise>=6.12
 PyJWT[crypto]>=2.10
 stripe>=15.6
 requests>=2.32
+weasyprint>=70

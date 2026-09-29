@@ -279,6 +279,22 @@ def test_every_wording_is_archived_once(published):
     )
 
 
+@pytest.mark.parametrize("key", list(legal.DOCUMENTS))
+def test_archived_wording_is_the_document_alone(key, settings):
+    # Only the document, never the site's page around it: the worker has no
+    # static files manifest, and the page's layout would change the archived
+    # text on every deploy.
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+        },
+    }
+    html = legal.render_body(key)
+    assert html.startswith('<section class="document">')
+    assert "<html" not in html and "/static/" not in html
+
+
 @pytest.mark.django_db
 def test_text_changed_without_a_new_date_is_archived_and_reported(settings, published):
     from apps.billing.notices import send_pending

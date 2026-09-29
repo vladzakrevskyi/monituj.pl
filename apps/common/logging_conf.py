@@ -50,5 +50,7 @@ LOGGING = {
         },
         # The Stripe library logs every API call at INFO; only problems matter.
         "stripe": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        # WeasyPrint (the Regulamin PDF) logs each rendering step at INFO.
+        "weasyprint": {"handlers": ["console"], "level": "WARNING", "propagate": False},
     },
 }

@@ -81,7 +81,9 @@ def request_list(request):
             # first page, unless the list is narrowed down.
             "planned": (
                 _planned(request.user)
-                if page_obj.number == 1 and not status_filter and not advanced_count
+                if page_obj.number == 1
+                and not status_filter
+                and not advanced_count
                 and not request.GET.get("q")
                 else []
             ),

@@ -150,6 +150,12 @@ Strona: http://localhost:8000. Zadania w tle – faktury VAT, e-maile o planach,
 brew install redis && brew services start redis
 ```
 
+Regulamin w PDF, dołączany do e-maila „Plan aktywny”, tworzy WeasyPrint – potrzebuje biblioteki Pango (w obrazie Dockera już jest; na Macu z procesorem Apple dodaj też `export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib`):
+
+```bash
+brew install pango
+```
+
 Celery (worker razem z harmonogramem, w osobnym terminalu; po zmianie kodu lub `.env` uruchom go ponownie – nie przeładowuje się sam). Na macOS worker działa w jednym procesie (pula `solo`, ustawiona w `config/celery.py`), bo domyślna pula prefork nie działa tam z Celery:
 
 ```bash

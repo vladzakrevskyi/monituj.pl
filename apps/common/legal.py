@@ -158,11 +158,15 @@ def _legal_page(key):
 
 
 def contract_attachment():
-    """The contract documents as one self-contained HTML file for the order
-    confirmation email - the copy a buyer keeps on a durable medium (art. 21
-    of the consumer rights act): unlike the pages, it can't change later.
-    The same wording as archived for the order. Returns (filename, bytes,
-    mimetype)."""
+    """The contract documents as one PDF for the order confirmation email -
+    the copy a buyer keeps on a durable medium (art. 21 of the consumer
+    rights act): unlike the pages, it can't change later. The same wording
+    as archived for the order. Returns (filename, bytes, mimetype)."""
+    # WeasyPrint needs Pango; imported here so only the worker, which sends
+    # the email, loads it.
+    from weasyprint import HTML
+    from weasyprint.urls import URLFetcher
+
     from apps.consents.versions import current
 
     parts = [mark_safe(current(key).html) for key in CONTRACT]
@@ -170,11 +174,17 @@ def contract_attachment():
         "legal/attachment.html",
         {
             "parts": parts,
-            "site_url": absolute_url("/"),
             "issued": date_format(timezone.localdate(), "j E Y"),
         },
     )
-    return ("Monituj-regulamin.html", html.encode(), "text/html")
+    # Nothing is loaded from outside - no image, stylesheet or file; links
+    # stay links, resolved against the site.
+    pdf = HTML(
+        string=html,
+        base_url=absolute_url("/"),
+        url_fetcher=URLFetcher(allowed_protocols=()),
+    ).write_pdf()
+    return ("Monituj-regulamin.pdf", pdf, "application/pdf")
 
 
 terms = _legal_page(TERMS)

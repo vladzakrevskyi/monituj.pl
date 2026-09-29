@@ -4,9 +4,12 @@ button says it costs money, prices show net or gross, the "plan started"
 email confirms the contract with the Regulamin attached, and the withdrawal
 form is on the site."""
 
+import io
+
 import pytest
 from django.core import mail
 from django.urls import reverse
+from pypdf import PdfReader
 
 from apps.billing.models import BillingProfile, CheckoutConsent
 from apps.billing.notices import send_pending
@@ -104,8 +107,10 @@ def test_plan_started_email_confirms_the_contract(
     assert "możesz odstąpić od niej bez podawania przyczyny do" in body
     assert reverse("legal:withdrawal") in body
     [(filename, content, mimetype)] = message.attachments
-    assert filename == "Monituj-regulamin.html" and mimetype == "text/html"
-    document = content.decode() if isinstance(content, bytes) else content
+    assert filename == "Monituj-regulamin.pdf" and mimetype == "application/pdf"
+    assert content.startswith(b"%PDF-")
+    pdf = PdfReader(io.BytesIO(content))
+    document = " ".join(" ".join(page.extract_text().split()) for page in pdf.pages)
     for title in (
         "Regulamin serwisu Monituj",
         "Umowa powierzenia przetwarzania danych osobowych",
@@ -113,7 +118,14 @@ def test_plan_started_email_confirms_the_contract(
     ):
         assert title in document
     # Links inside the saved file still lead to the site.
-    assert '<base href="http://localhost:8000/">' in document
+    links = {
+        annotation.get_object()["/A"]["/URI"]
+        for page in pdf.pages
+        for annotation in page.get("/Annots") or ()
+        if "/A" in annotation.get_object()
+    }
+    assert links and all(link.startswith("http") for link in links)
+    assert "http://localhost:8000" + reverse("legal:withdrawal") in links
 
 
 @pytest.mark.django_db
