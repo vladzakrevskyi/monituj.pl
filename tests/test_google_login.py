@@ -285,6 +285,55 @@ def test_other_address_is_confirmed_by_email_in_the_same_browser(client, google_
     assert user.google_account.email == "anna@firma.pl"
 
 
+AJAX = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
+
+
+@pytest.mark.django_db
+def test_terms_form_in_the_browser_gets_json_for_every_outcome(client, google_on):
+    # The page posts the terms in the background: an HTML answer would leave
+    # the person on the form with nothing happening.
+    _google(client, google_on, email="anna@firma.pl")
+    check_inbox = client.post(
+        reverse("accounts:google-signup"),
+        {"accept_terms": "on", "accept_privacy_policy": "on"},
+        **AJAX,
+    )
+    expired = client.post(
+        reverse("accounts:google-signup"),
+        {"accept_terms": "on", "accept_privacy_policy": "on"},
+        **AJAX,
+    )
+
+    assert check_inbox.json()["data"]["title"] == "Sprawdź swoją skrzynkę"
+    assert "anna@firma.pl" in check_inbox.json()["data"]["message"]
+    assert expired.status_code == 400
+    assert expired.json()["error"]["message"]
+
+
+@pytest.mark.django_db
+def test_terms_form_in_the_browser_goes_on_after_a_gmail_sign_up(client, google_on):
+    _google(client, google_on)
+
+    response = client.post(
+        reverse("accounts:google-signup"),
+        {"accept_terms": "on", "accept_privacy_policy": "on"},
+        **AJAX,
+    )
+
+    assert response.json()["data"]["redirect_url"]
+    assert _logged_in_as(client).email == "jan@gmail.com"
+
+
+@pytest.mark.django_db
+def test_terms_form_turns_into_the_message(client, google_on):
+    _google(client, google_on)
+
+    assert (
+        "data-replace-on-success"
+        in client.get(reverse("accounts:google-signup")).content.decode()
+    )
+
+
 # --- the same person, two ways in -----------------------------------------
 
 

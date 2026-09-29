@@ -18,6 +18,7 @@ from apps.common.exceptions import ApplicationError
 from apps.common.forms import add_service_error
 from apps.common.responses import (
     ajax_form_error_response,
+    error_response,
     is_ajax_request,
     success_response,
 )
@@ -31,7 +32,14 @@ def _require_enabled():
         raise Http404
 
 
+CHECK_INBOX_TITLE = "Sprawdź swoją skrzynkę"
+
+
 def _problem(request, message, status=400):
+    # The terms form posts in the background: it needs JSON to show the
+    # message - an HTML page would leave it silently where it was.
+    if is_ajax_request(request):
+        return error_response("GOOGLE_SIGNUP", message, status=status)
     return render(
         request,
         "accounts/google_problem.html",
@@ -41,10 +49,23 @@ def _problem(request, message, status=400):
 
 
 def _check_inbox(request, email):
+    if is_ajax_request(request):
+        # The form turns into this message (data-replace-on-success).
+        return success_response(
+            {
+                "title": CHECK_INBOX_TITLE,
+                "message": (
+                    f"Wysłaliśmy link potwierdzający na {email}. Otwórz go w tej "
+                    "przeglądarce w ciągu 30 minut – potem logowanie przez Google "
+                    "zadziała od razu. Prosimy o to, bo Google nie prowadzi tej "
+                    "skrzynki, więc sprawdzamy, że nadal należy do Ciebie."
+                ),
+            }
+        )
     return render(
         request,
         "accounts/google_check_inbox.html",
-        {"email": email},
+        {"email": email, "title": CHECK_INBOX_TITLE},
     )
 
 
