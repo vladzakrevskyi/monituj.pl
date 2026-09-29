@@ -222,3 +222,63 @@ class AccountDeletionForm(forms.Form):
         super().__init__(*args, **kwargs)
         if not require_password:
             del self.fields["current_password"]
+
+
+class TwoFactorLoginForm(forms.Form):
+    code = forms.CharField(
+        label="Kod z aplikacji",
+        max_length=20,
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "one-time-code",
+                "inputmode": "numeric",
+                "autofocus": True,
+                "placeholder": "123456",
+            }
+        ),
+        error_messages={"required": REQUIRED_MESSAGE},
+    )
+    remember = forms.BooleanField(
+        label="Zapamiętaj to urządzenie na 30 dni", required=False
+    )
+
+
+class TwoFactorConfirmForm(forms.Form):
+    code = forms.CharField(
+        label="Kod z aplikacji",
+        max_length=20,
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "one-time-code",
+                "inputmode": "numeric",
+                "placeholder": "123456",
+            }
+        ),
+        error_messages={"required": REQUIRED_MESSAGE},
+    )
+
+
+class TwoFactorPasswordForm(forms.Form):
+    """The password before turning it on (accounts that have one)."""
+
+    current_password = forms.CharField(
+        label="Twoje hasło do Monituj",
+        widget=forms.PasswordInput,
+        error_messages={"required": REQUIRED_MESSAGE},
+    )
+
+    def __init__(self, *args, require_password=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not require_password:
+            del self.fields["current_password"]
+
+
+class TwoFactorManageForm(TwoFactorPasswordForm):
+    """Turning it off and new backup codes: the password and a code."""
+
+    code = forms.CharField(
+        label="Kod z aplikacji lub kod zapasowy",
+        max_length=20,
+        widget=forms.TextInput(attrs={"autocomplete": "one-time-code"}),
+        error_messages={"required": REQUIRED_MESSAGE},
+    )

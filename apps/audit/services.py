@@ -35,6 +35,10 @@ EVENT_LABELS_PL = {
     AuditEvent.ACCOUNT_DELETION_REQUESTED: "Zażądano usunięcia konta",
     AuditEvent.GOOGLE_LINKED: "Dodano logowanie przez Google",
     AuditEvent.GOOGLE_UNLINKED: "Odłączono logowanie przez Google",
+    AuditEvent.TWO_FACTOR_ENABLED: "Włączono weryfikację dwuetapową",
+    AuditEvent.TWO_FACTOR_DISABLED: "Wyłączono weryfikację dwuetapową",
+    AuditEvent.TWO_FACTOR_FAILED: "Błędny kod weryfikacji dwuetapowej",
+    AuditEvent.BACKUP_CODES_REGENERATED: "Wygenerowano nowe kody zapasowe",
     AuditEvent.CHECKOUT_STARTED: "Rozpoczęto zamówienie planu",
     AuditEvent.PLAN_CHANGED: "Zmieniono plan",
 }

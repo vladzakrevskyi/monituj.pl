@@ -87,24 +87,38 @@ def encrypt(plaintext, aad):
     return blob, wrap(file_key, current), key_id(current)
 
 
-def wrap(file_key, master_key):
+def wrap(file_key, master_key, aad=KEY_WRAP_AAD):
     nonce = os.urandom(NONCE_SIZE)
-    sealed = AESGCM(master_key).encrypt(nonce, file_key, KEY_WRAP_AAD)
+    sealed = AESGCM(master_key).encrypt(nonce, file_key, aad)
     return base64.b64encode(nonce + sealed).decode()
 
 
-def unwrap(wrapped, wrapping_key_id):
+def unwrap(wrapped, wrapping_key_id, aad=KEY_WRAP_AAD):
     _, ring = _keyring()
     master_key = ring.get(wrapping_key_id)
     if master_key is None:
         raise DecryptionError(f"No master key with id {wrapping_key_id}")
     raw = base64.b64decode(wrapped)
     try:
-        return AESGCM(master_key).decrypt(
-            raw[:NONCE_SIZE], raw[NONCE_SIZE:], KEY_WRAP_AAD
-        )
+        return AESGCM(master_key).decrypt(raw[:NONCE_SIZE], raw[NONCE_SIZE:], aad)
     except InvalidTag as exc:
         raise DecryptionError("Wrapped key does not match the master key") from exc
+
+
+def seal(secret, aad):
+    """A small secret (not a file - e.g. a two-step verification key)
+    encrypted straight with the master key. -> (text to store, master key
+    id). Without a master key (development) it is stored as plain base64."""
+    current, _ = _keyring()
+    if current is None:
+        return base64.b64encode(secret).decode(), ""
+    return wrap(secret, current, aad), key_id(current)
+
+
+def unseal(sealed, sealed_key_id, aad):
+    if not sealed_key_id:
+        return base64.b64decode(sealed)
+    return unwrap(sealed, sealed_key_id, aad)
 
 
 def decrypt(blob, wrapped, wrapping_key_id, aad):

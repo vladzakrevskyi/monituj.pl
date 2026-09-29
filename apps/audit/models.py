@@ -39,6 +39,13 @@ class AuditEvent(models.TextChoices):
     )
     GOOGLE_LINKED = "GOOGLE_LINKED", "Google sign-in linked"
     GOOGLE_UNLINKED = "GOOGLE_UNLINKED", "Google sign-in unlinked"
+    TWO_FACTOR_ENABLED = "TWO_FACTOR_ENABLED", "Two-step verification enabled"
+    TWO_FACTOR_DISABLED = "TWO_FACTOR_DISABLED", "Two-step verification disabled"
+    TWO_FACTOR_FAILED = "TWO_FACTOR_FAILED", "Two-step verification code failed"
+    BACKUP_CODES_REGENERATED = (
+        "BACKUP_CODES_REGENERATED",
+        "Two-step verification backup codes regenerated",
+    )
     CHECKOUT_STARTED = "CHECKOUT_STARTED", "Plan checkout started"
     PLAN_CHANGED = "PLAN_CHANGED", "Plan changed"
 

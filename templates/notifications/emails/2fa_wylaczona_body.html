@@ -1,0 +1,9 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Na Twoim koncie wyłączono weryfikację dwuetapową.{% endblock %}
+{% block eyebrow %}Bezpieczeństwo konta{% endblock %}
+{% block title %}Wyłączono weryfikację dwuetapową{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">{% if by_team %}Na Twoją prośbę wyłączyliśmy weryfikację dwuetapową na Twoim koncie w Monituj.{% else %}Na Twoim koncie w Monituj wyłączono weryfikację dwuetapową.{% endif %} Do logowania wystarczy teraz hasło lub konto Google. Możesz ją w każdej chwili włączyć ponownie w Ustawieniach.</p>
+{% include "notifications/emails/_notice.html" with text="Jeśli to nie Ty, natychmiast zresetuj hasło przez „Nie pamiętasz hasła?” i napisz do nas." tone="danger" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

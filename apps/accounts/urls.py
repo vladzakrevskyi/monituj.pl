@@ -29,6 +29,7 @@ urlpatterns = [
         google_views.google_connect_confirm,
         name="google-connect-confirm",
     ),
+    path("logowanie/kod/", views.two_factor_login, name="two-factor-login"),
     path("wyloguj/", views.logout_view, name="logout"),
     path("weryfikacja-email/", views.verification_sent, name="verification-sent"),
     path("weryfikacja-email/<str:token>/", views.verify_email, name="verify-email"),
@@ -43,6 +44,14 @@ urlpatterns = [
     path("dostep/e/<str:signed>/", views.guest_email_access, name="guest-email-access"),
     path("dostep/<str:token>/", views.guest_access, name="guest-access"),
     path("ustawienia/", views.settings_view, name="settings"),
+    path(
+        "ustawienia/weryfikacja-dwuetapowa/",
+        views.two_factor_settings,
+        name="two-factor",
+    ),
+    path(
+        "panel/podpowiedz/ukryj/", views.security_hint_hide, name="security-hint-hide"
+    ),
     path(
         "ustawienia/haslo/potwierdz/<str:token>/",
         views.password_change_confirm,

@@ -1,3 +1,33 @@
 .dashboard-grid .history-list {
   margin: 0;
 }
+
+/* Two-step verification hint: one quiet line, "Nie teraz" hides it */
+.security-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+
+.security-hint__text {
+  flex: 1 1 320px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.security-hint__text strong {
+  color: var(--color-text);
+}
+
+.security-hint__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}

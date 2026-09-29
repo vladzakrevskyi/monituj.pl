@@ -122,6 +122,19 @@
 </div>
 {% endif %}
 
+{% if not is_guest and not demo_account %}
+<div class="card" id="weryfikacja-dwuetapowa">
+<h2 class="mt-0">Weryfikacja dwuetapowa</h2>
+{% if two_factor_enabled %}
+<p class="text-muted"><span class="badge badge--complete">Włączona</span> Przy logowaniu prosimy o kod z aplikacji w telefonie.</p>
+<a class="btn btn-secondary" href="{% url 'accounts:two-factor' %}">Zarządzaj</a>
+{% else %}
+<p class="text-muted"><span class="badge badge--neutral">Wyłączona</span> Oprócz {% if has_password %}hasła{% else %}konta Google{% endif %} do logowania potrzebny będzie kod z aplikacji w telefonie.</p>
+<a class="btn btn-secondary" href="{% url 'accounts:two-factor' %}">Włącz</a>
+{% endif %}
+</div>
+{% endif %}
+
 {% if not is_guest and has_password %}
 <div class="card">
 <h2 class="mt-0">Adres email</h2>

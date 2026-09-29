@@ -1,7 +1,7 @@
 <footer class="site-footer">
 <div class="site-footer__inner">
 <div class="site-footer__brand">
-<a class="brand" href="{% url 'landing' %}" title="Monituj – strona główna"><span class="brand-mark">M</span>Monituj</a>
+<a class="brand" href="{% url 'landing' %}" title="Monituj – strona główna">{% include "base/_logo.html" with on_dark=True %}</a>
 <p>Monituj pilnuje Twoich dokumentów i terminów: zbiera je od klientów, sam przypomina o brakach i pokazuje, na czym stoisz.</p>
 <a class="site-footer__mail" href="mailto:{{ contact_email }}" title="Napisz na {{ contact_email }}">{% include "pages/_icon.html" with icon="mail" %}{{ contact_email }}</a>
 <a class="btn btn-primary site-footer__cta" href="{% url 'accounts:register' %}">Zacznij za darmo</a>

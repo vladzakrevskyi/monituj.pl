@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.accounts import two_factor
 from apps.accounts.erasure import erase_account
 from apps.accounts.models import AccountToken, AccountTokenPurpose, GuestAccess, User
 from apps.accounts.sender import sender_context
@@ -235,6 +236,8 @@ class AuthenticationService:
                 "Po kliknięciu zalogujesz się automatycznie.",
                 code="EMAIL_NOT_VERIFIED",
             )
+        if two_factor.challenge(request, user, user.backend, "password"):
+            return user  # Not logged in yet: the code comes first.
         django_login(request, user)
         AuditService.log(
             AuditEvent.USER_LOGIN, actor=user, target=user, request=request
@@ -744,6 +747,10 @@ class GuestAccessService:
 
     @staticmethod
     def login(request, user):
+        # Links from the mailbox never skip a second step. Accounts that
+        # have one are regular accounts, which don't come this way.
+        if two_factor.is_enabled(user):
+            return
         django_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         AuditService.log(
             AuditEvent.USER_LOGIN, actor=user, target=user, request=request

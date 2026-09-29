@@ -53,6 +53,9 @@ class EmailTemplate(models.TextChoices):
     BILLING_ALERT = "platnosci_alert", "Płatności – alert dla zespołu"
     VAT_INVOICE = "faktura_vat", "Faktura VAT"
     RECURRING_SKIPPED = "cykliczna_pominieta", "Prośba cykliczna niewysłana"
+    TWO_FACTOR_ENABLED = "2fa_wlaczona", "Weryfikacja dwuetapowa włączona"
+    TWO_FACTOR_DISABLED = "2fa_wylaczona", "Weryfikacja dwuetapowa wyłączona"
+    BACKUP_CODE_USED = "2fa_kod_zapasowy", "Użyto kodu zapasowego"
 
 
 class EmailStatus(models.TextChoices):

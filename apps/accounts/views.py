@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 
+from apps.accounts import two_factor
 from apps.accounts.forms import (
     AccountDeletionForm,
     EmailChangeForm,
@@ -16,6 +17,10 @@ from apps.accounts.forms import (
     ProfileForm,
     RegistrationForm,
     SetPasswordForm,
+    TwoFactorConfirmForm,
+    TwoFactorLoginForm,
+    TwoFactorManageForm,
+    TwoFactorPasswordForm,
 )
 from apps.accounts.google_auth import GoogleAuthService, GoogleConnectGate
 from apps.accounts.models import is_guest_account
@@ -138,7 +143,9 @@ def login_view(request):
                 AuthenticationService.login(
                     request, form.cleaned_data["email"], form.cleaned_data["password"]
                 )
-                redirect_url = reverse("accounts:panel")
+                redirect_url = two_factor.pending_url(request) or reverse(
+                    "accounts:panel"
+                )
                 if is_ajax_request(request):
                     return success_response({"redirect_url": redirect_url})
                 return redirect(redirect_url)
@@ -153,6 +160,153 @@ def login_view(request):
     else:
         form = LoginForm()
     return render(request, "accounts/login.html", {"form": form})
+
+
+@require_http_methods(["GET", "POST"])
+def two_factor_login(request):
+    """The second step of signing in: the code from the app (or a backup
+    code). Only for someone the first step has just let through."""
+    if request.user.is_authenticated:
+        return redirect("accounts:panel")
+    if two_factor.pending_user(request) is None:
+        messages.info(request, two_factor.EXPIRED_MESSAGE)
+        return redirect("accounts:login")
+    form = TwoFactorLoginForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            try:
+                user, kind, next_url = two_factor.complete(
+                    request, form.cleaned_data["code"]
+                )
+            except ApplicationError as exc:
+                if exc.code == "TWO_FACTOR_EXPIRED":
+                    messages.info(request, exc.message)
+                    login_url = reverse("accounts:login")
+                    if is_ajax_request(request):
+                        return success_response({"redirect_url": login_url})
+                    return redirect(login_url)
+                add_service_error(
+                    form, exc, {"INVALID_CODE": "code", "TWO_FACTOR_LIMIT": "code"}
+                )
+            else:
+                if kind == "backup":
+                    left = two_factor.remaining_backup_codes(user)
+                    messages.warning(
+                        request,
+                        f"Użyto kodu zapasowego – zostało {left}. "
+                        "Nowe wygenerujesz w Ustawieniach.",
+                    )
+                if not url_has_allowed_host_and_scheme(
+                    next_url,
+                    allowed_hosts={request.get_host()},
+                    require_https=request.is_secure(),
+                ):
+                    next_url = reverse("accounts:panel")
+                if is_ajax_request(request):
+                    response = success_response({"redirect_url": next_url})
+                else:
+                    response = redirect(next_url)
+                if form.cleaned_data["remember"]:
+                    two_factor.remember_device(response, user)
+                return response
+        if is_ajax_request(request):
+            return ajax_form_error_response(form)
+    return render(request, "accounts/two_factor_login.html", {"form": form})
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def two_factor_settings(request):
+    """Turning two-step verification on and off, and new backup codes."""
+    user = request.user
+    if not two_factor.can_use(user):
+        messages.error(
+            request,
+            DEMO_SETTINGS_MESSAGE
+            if is_demo_user(user)
+            else "Weryfikację dwuetapową włączysz po ustawieniu hasła.",
+        )
+        return redirect("accounts:settings")
+    has_password = user.has_usable_password()
+    enabled = two_factor.is_enabled(user)
+    start_form = TwoFactorPasswordForm(require_password=has_password)
+    confirm_form = TwoFactorConfirmForm()
+    manage_form = TwoFactorManageForm(require_password=has_password)
+    action = request.POST.get("form_action") if request.method == "POST" else None
+    try:
+        if action == "start" and not enabled:
+            start_form = TwoFactorPasswordForm(
+                request.POST, require_password=has_password
+            )
+            if start_form.is_valid():
+                two_factor.check_password(
+                    request, user, start_form.cleaned_data.get("current_password")
+                )
+                two_factor.start_setup(request, user)
+                return redirect("accounts:two-factor")
+        elif action == "confirm" and not enabled:
+            confirm_form = TwoFactorConfirmForm(request.POST)
+            if confirm_form.is_valid():
+                codes = two_factor.confirm_setup(
+                    request, user, confirm_form.cleaned_data["code"]
+                )
+                two_factor.keep_new_codes(request, codes)
+                messages.success(request, "Weryfikacja dwuetapowa jest włączona.")
+                return redirect("accounts:two-factor")
+        elif action == "cancel":
+            two_factor.cancel_setup(request)
+            return redirect("accounts:settings")
+        elif action in ("disable", "codes") and enabled:
+            manage_form = TwoFactorManageForm(
+                request.POST, require_password=has_password
+            )
+            if manage_form.is_valid():
+                password = manage_form.cleaned_data.get("current_password")
+                code = manage_form.cleaned_data["code"]
+                if action == "codes":
+                    codes = two_factor.regenerate_codes(request, user, password, code)
+                    two_factor.keep_new_codes(request, codes)
+                    messages.success(
+                        request,
+                        "Nowe kody zapasowe są gotowe. Poprzednie już nie działają.",
+                    )
+                    return redirect("accounts:two-factor")
+                two_factor.disable(request, user, password, code)
+                messages.success(request, "Weryfikacja dwuetapowa jest wyłączona.")
+                response = redirect("accounts:settings")
+                two_factor.forget_device(response)
+                return response
+    except ApplicationError as exc:
+        if exc.code == "TWO_FACTOR_EXPIRED":
+            messages.error(request, exc.message)
+            return redirect("accounts:two-factor")
+        form = {"start": start_form, "confirm": confirm_form}.get(action, manage_form)
+        add_service_error(
+            form,
+            exc,
+            {
+                "INVALID_CURRENT_PASSWORD": "current_password",
+                "REAUTH_LIMIT_REACHED": "current_password",
+                "INVALID_CODE": "code",
+                "TWO_FACTOR_LIMIT": "code",
+            },
+        )
+
+    context = {
+        "enabled": enabled,
+        "has_password": has_password,
+        "start_form": start_form,
+        "confirm_form": confirm_form,
+        "manage_form": manage_form,
+        "new_codes": two_factor.take_new_codes(request),
+    }
+    if enabled:
+        context["remaining_codes"] = two_factor.remaining_backup_codes(user)
+    else:
+        secret = two_factor.pending_setup(request, user)
+        if secret:
+            context["setup"] = two_factor.setup_details(user, secret)
+    return render(request, "accounts/two_factor.html", context)
 
 
 @require_http_methods(["POST"])
@@ -230,7 +384,19 @@ def dashboard(request):
     from apps.requests.services import DashboardService
 
     stats = DashboardService.for_owner(request.user)
+    stats["security_hint"] = two_factor.show_hint(request.user)
     return render(request, "accounts/dashboard.html", stats)
+
+
+@login_required
+@require_http_methods(["POST"])
+def security_hint_hide(request):
+    """ "Nie teraz" on the panel's two-step verification hint."""
+    if not is_demo_user(request.user):
+        two_factor.hide_hint(request.user)
+    if is_ajax_request(request):
+        return success_response({})
+    return redirect("accounts:panel")
 
 
 @login_required
@@ -463,6 +629,7 @@ def settings_view(request):
             "google_account": getattr(request.user, "google_account", None),
             "paying_firm": paying_firm(request.user),
             "google_form": google_form,
+            "two_factor_enabled": two_factor.is_enabled(request.user),
         },
     )
 

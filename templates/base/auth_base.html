@@ -3,7 +3,7 @@
 {% block content %}
 <div class="auth-card">
 <div class="auth-card__intro">
-<span class="brand-mark brand-mark--lg">M</span>
+<span class="auth-card__logo">{% include "base/_logo.html" with on_dark=True %}</span>
 <h1>{% block auth_title %}Kontroluj <strong>dokumenty</strong> od klientów bez chaosu w mailach{% endblock %}</h1>
 <ul class="auth-card__points">
 {% block auth_points %}

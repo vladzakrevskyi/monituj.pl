@@ -36,6 +36,9 @@ class User(AbstractUser):
     privacy_policy_accepted_at = models.DateTimeField(null=True, blank=True)
     # IANA zone reported by the browser (apps.common.timezones).
     timezone = models.CharField(max_length=64, default="Europe/Warsaw")
+    # "Nie teraz" on the panel's two-step verification hint hides it until
+    # this day.
+    security_hint_hidden_until = models.DateField(null=True, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []  # type: ignore[misc]
@@ -113,6 +116,29 @@ class GoogleAccount(TimeStampedModel):
 
     def __str__(self):
         return f"Google account of {self.user_id}"
+
+
+class TwoFactor(TimeStampedModel):
+    """Two-step verification with an authenticator app (TOTP, RFC 6238).
+    A row exists only once the first code was confirmed - until then the
+    secret lives in the session of the person setting it up."""
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="two_factor"
+    )
+    # The base32 secret, encrypted with the master key (documents'
+    # encryption); plain only where no key is set (development).
+    secret = models.TextField()
+    secret_key_id = models.CharField(max_length=16, blank=True)
+    # The last accepted 30-second step: a code works once, never replayed.
+    last_step = models.BigIntegerField(default=0)
+    # SHA-256 of each unused backup code.
+    backup_codes = models.JSONField(default=list)
+    # Part of every "remember this device" cookie; a new one forgets them all.
+    device_nonce = models.CharField(max_length=64, default=generate_public_token)
+
+    def __str__(self):
+        return f"Two-step verification of {self.user_id}"
 
 
 def is_guest_account(user) -> bool:

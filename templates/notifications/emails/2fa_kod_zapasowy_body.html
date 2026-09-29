@@ -1,0 +1,9 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Do Twojego konta zalogowano się kodem zapasowym.{% endblock %}
+{% block eyebrow %}Bezpieczeństwo konta{% endblock %}
+{% block title %}Zalogowano się kodem zapasowym{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Do Twojego konta w Monituj zalogowano się jednym z kodów zapasowych zamiast kodu z aplikacji. Ten kod już nie zadziała – zostało {{ remaining }}.{% if remaining < 3 %} Wygeneruj nowe w Ustawieniach → Weryfikacja dwuetapowa.{% endif %}</p>
+{% include "notifications/emails/_notice.html" with text="Jeśli to nie Ty, natychmiast zresetuj hasło przez „Nie pamiętasz hasła?” i napisz do nas." tone="danger" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

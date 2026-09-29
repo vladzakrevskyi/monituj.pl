@@ -22,9 +22,16 @@ NOT_DELIVERED = [
 ]
 
 
+# Not {% static %}: the worker, which sends most emails, has no manifest of
+# hashed names - and an email keeps working after the next deploy with a
+# plain path. WhiteNoise serves the unhashed copy too.
+LOGO_PATH = "images/brand/logo/monituj-logo-80.png"
+
+
 def _base_context():
     return {
         "site_url": absolute_url("/"),
+        "logo_url": absolute_url(f"/{settings.STATIC_URL.strip('/')}/{LOGO_PATH}"),
         "privacy_url": absolute_url(reverse("legal:privacy")),
         "terms_url": absolute_url(reverse("legal:terms")),
     }

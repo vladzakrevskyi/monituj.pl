@@ -33,6 +33,7 @@ from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.accounts import two_factor
 from apps.accounts.google import GoogleIdentity
 from apps.accounts.models import GoogleAccount, GuestAccess, User
 from apps.accounts.services import REGISTRATIONS_PER_IP_HOUR
@@ -107,6 +108,10 @@ def _check_allowed(user):
 
 def _login(request, user, account):
     account.email = account.email or user.email
+    if two_factor.challenge(request, user, BACKEND, "google"):
+        # Not logged in yet: the code comes first (two_factor.complete).
+        account.save(update_fields=["email", "updated_at"])
+        return
     account.last_login_at = timezone.now()
     account.save(update_fields=["email", "last_login_at", "updated_at"])
     django_login(request, user, backend=BACKEND)

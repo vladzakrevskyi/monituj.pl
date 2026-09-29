@@ -165,3 +165,20 @@ def test_plain_text_email_parts_are_not_html_escaped(request_record, request_ite
     assert 'Faktury & umowy "Q3"' in message.body
     assert "&amp;" not in message.body
     assert "&amp;" in message.alternatives[0][0]
+
+
+@pytest.mark.django_db
+def test_site_and_emails_show_the_logo_image(client):
+    page = client.get(reverse("landing")).content.decode()
+    # Dark text on the white header, white text on the black footer.
+    assert "images/brand/logo/monituj-logo.svg" in page
+    assert "images/brand/logo/monituj-logo-white.svg" in page
+    assert 'alt="Monituj"' in page
+
+    EmailService.send(EmailTemplate.PASSWORD_RESET, to_email="a@example.com")
+    html = mail.outbox[-1].alternatives[0][0]
+    # Absolute and unhashed: the worker has no static files manifest.
+    assert (
+        '<img src="http://localhost:8000/static/images/brand/logo/monituj-logo-80.png"'
+        in html
+    )

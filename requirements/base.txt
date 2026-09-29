@@ -11,3 +11,5 @@ PyJWT[crypto]>=2.10
 stripe>=15.6
 requests>=2.32
 weasyprint>=70
+pyotp>=2.9
+segno>=1.6

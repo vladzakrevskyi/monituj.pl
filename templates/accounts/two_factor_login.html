@@ -1,0 +1,27 @@
+{% extends "base/auth_base.html" %}
+
+{% block page_name %}Kod weryfikacyjny{% endblock %}
+
+{% block auth_form %}
+<h2>Kod weryfikacyjny</h2>
+<p class="text-muted">Otwórz aplikację uwierzytelniającą (np. Google Authenticator) i wpisz 6-cyfrowy kod dla Monituj.</p>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+{% include "base/_form_flash.html" %}
+<p>
+{{ form.code.label_tag }}
+{{ form.code }}
+{{ form.code.errors }}
+</p>
+<p>
+<label>{{ form.remember }} {{ form.remember.label }}</label>
+<small class="help-text">Tylko na własnym komputerze lub telefonie.</small>
+</p>
+<button type="submit" class="btn btn-primary btn-lg btn-block">Zaloguj się</button>
+</form>
+<div class="auth-links">
+<p>Nie masz telefonu przy sobie? Wpisz powyżej jeden z kodów zapasowych.</p>
+<p>Straciłeś telefon i kody? <a href="{% url 'pages:contact' %}">Napisz do nas</a> – pomożemy odzyskać dostęp.</p>
+<p><a href="{% url 'accounts:login' %}">Wróć do logowania</a></p>
+</div>
+{% endblock %}

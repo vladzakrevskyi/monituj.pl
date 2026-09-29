@@ -1680,3 +1680,37 @@
   color: var(--color-warning);
   font-size: 13px;
 }
+
+/* Two-step verification (accounts/two_factor.html) */
+.two-factor-steps {
+  padding-left: 20px;
+}
+
+.two-factor-qr {
+  display: inline-block;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  line-height: 0;
+}
+
+.two-factor-secret {
+  word-spacing: 0.3em;
+  overflow-wrap: anywhere;
+}
+
+.backup-codes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.backup-codes code {
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}

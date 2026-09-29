@@ -2,10 +2,10 @@
 {% with view=request.resolver_match.view_name %}
 <header class="site-header">
 <div class="site-header__inner">
-<a class="brand" href="{% url 'landing' %}" title="Monituj – strona główna"><span class="brand-mark">M</span>Monituj</a>
+<a class="brand" href="{% url 'landing' %}" title="Monituj – strona główna">{% include "base/_logo.html" %}</a>
 <nav class="site-nav" id="site-nav" data-nav-target aria-label="Menu">
 <div class="drawer-head">
-<a class="brand" href="{% url 'landing' %}" title="Monituj – strona główna"><span class="brand-mark">M</span>Monituj</a>
+<a class="brand" href="{% url 'landing' %}" title="Monituj – strona główna">{% include "base/_logo.html" with on_dark=True %}</a>
 {% include "base/_drawer_close.html" %}
 </div>
 <div class="site-nav__links">

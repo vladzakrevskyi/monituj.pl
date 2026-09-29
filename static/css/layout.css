@@ -47,26 +47,14 @@
   text-decoration: none;
 }
 
-.brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
+.brand-logo {
+  display: block;
+  width: auto;
   height: 36px;
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0;
-  flex-shrink: 0;
 }
 
-.brand-mark--lg {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  font-size: 24px;
+.auth-card__logo .brand-logo {
+  height: 44px;
 }
 
 /* Public header */
@@ -672,7 +660,7 @@ body.nav-open {
 }
 
 .app-nav__cta {
-  padding: 0 var(--space-4) var(--space-5);
+  padding: var(--space-4) var(--space-4) var(--space-5);
 }
 
 .app-sidebar__footer {
@@ -831,14 +819,8 @@ body.nav-open {
   z-index: 30;
 }
 
-.app-topbar .brand {
-  font-size: 19px;
-}
-
-.app-topbar .brand-mark {
-  width: 32px;
+.app-topbar .brand-logo {
   height: 32px;
-  font-size: 16px;
 }
 
 @media (max-width: 960px) {
@@ -885,7 +867,8 @@ body.nav-open {
   justify-content: center;
 }
 
-.auth-card__intro .brand-mark {
+.auth-card__logo {
+  display: block;
   margin-bottom: var(--space-7);
 }
 
@@ -991,7 +974,7 @@ body.nav-open {
     padding: var(--space-6) var(--space-5);
   }
 
-  .auth-card__intro .brand-mark {
+  .auth-card__logo {
     margin-bottom: var(--space-5);
   }
 

@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
-from apps.accounts import google
+from apps.accounts import google, two_factor
 from apps.accounts.forms import GoogleSignupForm
 from apps.accounts.google_auth import (
     GoogleAuthService,
@@ -139,7 +139,7 @@ def google_callback(request):
         return redirect("accounts:google-signup")
     if outcome is Outcome.CONFIRM_SENT:
         return _check_inbox(request, result)
-    return redirect("accounts:panel")
+    return redirect(two_factor.pending_url(request) or "accounts:panel")
 
 
 @require_http_methods(["GET", "POST"])
@@ -198,4 +198,4 @@ def google_confirm(request, signed):
     except ApplicationError as exc:
         return _problem(request, exc.message)
     messages.success(request, "Gotowe – od teraz możesz logować się przez Google.")
-    return redirect("accounts:panel")
+    return redirect(two_factor.pending_url(request) or "accounts:panel")

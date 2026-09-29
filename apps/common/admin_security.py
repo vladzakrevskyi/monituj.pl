@@ -3,15 +3,21 @@
   gets a plain 404, as if there were no admin (checked here in the app, so
   it holds whatever the nginx config says and wherever ADMIN_URL points);
 - its login gets the same protection as the site's: a limit on failed
-  attempts per address and per login name, every failure in the audit log.
+  attempts per address and per login name, every failure in the audit log,
+  and the code from the app for accounts with two-step verification.
 """
 
 from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth import BACKEND_SESSION_KEY
+from django.contrib.auth import logout as django_logout
 from django.http import Http404, HttpResponse
+from django.shortcuts import redirect
+from django.urls import reverse
 
+from apps.accounts import two_factor
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.common import throttle
@@ -38,6 +44,13 @@ def admin_login(request, extra_context=None):
     user = request.user
     if user.is_authenticated and user.is_active and user.is_staff:
         throttle.clear(login_key)
+        if two_factor.needs_code(request, user):
+            # The password was right; the code comes before the admin opens.
+            backend = request.session[BACKEND_SESSION_KEY]
+            next_url = request.POST.get("next") or reverse("admin:index")
+            django_logout(request)
+            two_factor.hold(request, user, backend, "admin", next_url)
+            return redirect("accounts:two-factor-login")
         return response
     throttle.record(ip_key)
     throttle.record(login_key)
