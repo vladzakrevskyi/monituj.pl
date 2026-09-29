@@ -36,6 +36,22 @@ textarea {
     box-shadow 0.15s ease;
 }
 
+/* iOS Safari draws date fields natively with their own minimum width and
+   ignores width: 100% - on a phone they stuck out past the screen. */
+input[type="date"],
+input[type="datetime-local"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+}
+
+input[type="date"]::-webkit-date-and-time-value,
+input[type="datetime-local"]::-webkit-date-and-time-value {
+  min-height: 1.5em;
+  text-align: left;
+}
+
 label > input:not([type="checkbox"]),
 label > select,
 label > textarea {
