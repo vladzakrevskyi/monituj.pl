@@ -4,7 +4,7 @@ from datetime import timedelta
 
 import pytest
 from django.core import mail
-from django.core.management import CommandError, call_command
+from django.core.management import call_command
 from django.urls import reverse
 from django.utils import timezone
 
@@ -16,6 +16,7 @@ from apps.consents.models import (
     LegalAcceptance,
     LegalDocument,
     LegalUpdateNotice,
+    LegalVersion,
 )
 from apps.consents.services import needs_acceptance, record_acceptance
 from apps.consents.tasks import delete_old_cookie_consents
@@ -29,8 +30,14 @@ AJAX = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
 
 @pytest.fixture
 def published(settings):
-    def publish(version=VERSION):
-        settings.LEGAL_ENTITY = {**settings.LEGAL_ENTITY, "effective_date": version}
+    """publish() dates every document VERSION; publish(date, "regulamin")
+    gives one document a new version."""
+
+    def publish(version=VERSION, *keys):
+        settings.LEGAL_VERSIONS = {
+            key: version if not keys or key in keys else settings.LEGAL_VERSIONS[key]
+            for key in settings.LEGAL_VERSIONS
+        }
 
     publish()
     return publish
@@ -79,6 +86,10 @@ def test_registration_records_every_document_with_its_version(client, published)
     }
     for row in rows:
         assert row.version == VERSION
+        # The exact wording, archived.
+        assert row.wording.document == row.document
+        assert row.wording.version == VERSION
+        assert "Obowiązuje od: 1 września 2026" in row.wording.html
         assert row.method == AcceptanceMethod.REGISTRATION
         # The address our proxy saw, not the one the visitor wrote in.
         assert row.ip_address == "83.12.34.56"
@@ -212,19 +223,29 @@ def test_accept_page_ignores_foreign_next(client, published, verified_user):
 def test_future_version_is_shown_but_required_only_from_its_day(
     client, published, verified_user
 ):
+    record_acceptance(verified_user, AcceptanceMethod.REGISTRATION)
     future = (timezone.localdate() + timedelta(days=14)).isoformat()
-    published(future)
+    published(future, "regulamin")
     client.force_login(verified_user)
 
-    assert not legal.in_force()
+    assert not legal.in_force("regulamin")
     assert client.get(reverse("accounts:panel")).status_code == 200
+    assert "Obowiązuje od: " in page_text(client.get(reverse("legal:terms")))
 
 
 @pytest.mark.django_db
-def test_nothing_to_accept_without_a_published_version(client, verified_user):
+def test_each_document_has_its_own_version(client, published, verified_user):
+    record_acceptance(verified_user, AcceptanceMethod.REGISTRATION)
+    # Only the Privacy policy changes.
+    published("2026-09-20", "polityka_prywatnosci")
     client.force_login(verified_user)
 
-    assert client.get(reverse("accounts:panel")).status_code == 200
+    page = page_text(client.get(reverse("consents:accept")))
+    terms = page_text(client.get(reverse("legal:terms")))
+
+    assert "Polityka prywatności</a> – od 20 września 2026" in page
+    assert "Regulamin</a> – od" not in page
+    assert "Obowiązuje od: 1 września 2026" in terms
 
 
 @pytest.mark.django_db
@@ -238,10 +259,68 @@ def test_demo_accounts_are_never_asked(client, published):
     assert client.get(reverse("accounts:panel")).status_code == 200
 
 
-def test_effective_date_in_both_formats(settings):
-    for raw in ("2026-10-01", "01.10.2026"):
-        settings.LEGAL_ENTITY = {**settings.LEGAL_ENTITY, "effective_date": raw}
-        assert legal.effective_date_display() == "1 października 2026"
+def test_effective_date_is_shown_in_polish(published):
+    published("2026-10-01")
+
+    assert legal.effective_date_display("regulamin") == "1 października 2026"
+
+
+# --- the archive of wordings -------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_every_wording_is_archived_once(published):
+    from apps.consents.versions import archive_all
+
+    assert archive_all() == len(legal.DOCUMENTS)
+    assert archive_all() == 0
+    assert set(LegalVersion.objects.values_list("document", flat=True)) == set(
+        legal.DOCUMENTS
+    )
+
+
+@pytest.mark.django_db
+def test_text_changed_without_a_new_date_is_archived_and_reported(settings, published):
+    from apps.billing.notices import send_pending
+    from apps.consents.versions import current
+
+    first = current("polityka_prywatnosci")
+    # The same version date, another wording (here: a new hosting provider).
+    settings.LEGAL_ENTITY = {**settings.LEGAL_ENTITY, "hosting_provider": "Nowy Host"}
+    second = current("polityka_prywatnosci")
+    send_pending()
+
+    assert first.pk != second.pk
+    assert first.version == second.version
+    assert "Nowy Host" in second.html and "Nowy Host" not in first.html
+    [alert] = mail.outbox
+    assert "zmieniona treść bez nowej daty" in alert.subject
+
+
+@pytest.mark.django_db
+def test_a_purchase_keeps_the_contract_wording(client, published, verified_user):
+    from apps.billing.models import CheckoutConsent
+    from apps.consents.versions import wordings
+
+    record_acceptance(verified_user, AcceptanceMethod.REGISTRATION)
+    documents = wordings(legal.CONTRACT)
+    consent = CheckoutConsent.objects.create(
+        user=verified_user,
+        email=verified_user.email,
+        stripe_mode="sandbox",
+        plan="biuro",
+        interval="month",
+        text="…",
+        documents=documents,
+    )
+    verified_user.delete()
+
+    consent.refresh_from_db()
+    for key in ("regulamin", "umowa_powierzenia", "odstapienie_od_umowy"):
+        row = LegalVersion.objects.get(
+            document=key, sha256=consent.documents[key]["sha256"]
+        )
+        assert row.version == VERSION
 
 
 # --- the email about a new version ----------------------------------------
@@ -249,7 +328,8 @@ def test_effective_date_in_both_formats(settings):
 
 @pytest.mark.django_db
 def test_update_email_goes_once_to_every_real_account(published, verified_user):
-    published((timezone.localdate() + timedelta(days=14)).isoformat())
+    record_acceptance(verified_user, AcceptanceMethod.REGISTRATION)
+    published((timezone.localdate() + timedelta(days=14)).isoformat(), "regulamin")
     User.objects.create_user(email="unconfirmed@example.com")
     User.objects.create_user(
         email="inactive@example.com", is_active=False, email_verified_at=timezone.now()
@@ -264,14 +344,12 @@ def test_update_email_goes_once_to_every_real_account(published, verified_user):
     call_command("notify_legal_update", changes="Nowy cennik.")
 
     assert [m.to for m in mail.outbox] == [[verified_user.email]]
-    assert "Nowy cennik." in mail.outbox[0].body
+    body = mail.outbox[0].body.replace("\u00a0", " ")
+    assert "Nowy cennik." in body
+    # Only the document that changed.
+    assert "Regulamin (od " in body
+    assert "Polityka prywatności" not in body
     assert LegalUpdateNotice.objects.count() == 1
-
-
-@pytest.mark.django_db
-def test_update_email_needs_a_dated_version(settings):
-    with pytest.raises(CommandError):
-        call_command("notify_legal_update", changes="x")
 
 
 # --- 5. cookie consent register -------------------------------------------
@@ -389,3 +467,19 @@ def test_every_document_is_recorded():
     from apps.consents.services import ALL_DOCUMENTS
 
     assert set(ALL_DOCUMENTS) == set(LegalDocument.values)
+
+
+def test_document_dates_come_from_env(monkeypatch):
+    from django.core.exceptions import ImproperlyConfigured
+
+    from config.settings import base
+
+    monkeypatch.setenv("LEGAL_TERMS_DATE", "01.11.2026")
+    assert base._legal_date("LEGAL_TERMS_DATE") == "2026-11-01"
+    monkeypatch.setenv("LEGAL_TERMS_DATE", "2026-11-15")
+    assert base._legal_date("LEGAL_TERMS_DATE") == "2026-11-15"
+    monkeypatch.delenv("LEGAL_TERMS_DATE")
+    assert base._legal_date("LEGAL_TERMS_DATE") == base.FIRST_LEGAL_VERSION
+    monkeypatch.setenv("LEGAL_TERMS_DATE", "listopad")
+    with pytest.raises(ImproperlyConfigured):
+        base._legal_date("LEGAL_TERMS_DATE")

@@ -33,6 +33,9 @@ class BillingAccount(TimeStampedModel):
     # When the renewal payment first failed: the plan keeps working while
     # Stripe retries, but only for a limited time (services.PAST_DUE_GRACE).
     past_due_since = models.DateTimeField(null=True, blank=True)
+    # The customer's credit in Stripe (gross grosze) - left by a downgrade or
+    # a switch to monthly, used by the next payments first. Stripe's copy.
+    credit = models.PositiveIntegerField(default=0)
     synced_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -92,6 +95,10 @@ class CheckoutConsent(models.Model):
     plan = models.CharField(max_length=16)
     interval = models.CharField(max_length=8)
     text = models.TextField()
+    # The contract's wording at the order: {document: {version, sha256}},
+    # each archived in consents.LegalVersion - so the terms of a purchase
+    # can be shown even after the account is gone.
+    documents = models.JSONField(default=dict, blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

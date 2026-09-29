@@ -426,6 +426,8 @@ def test_checkout_sends_to_stripe_with_vat_and_records_the_request(
     assert params["subscription_data"]["default_tax_rates"] == ["txr_vat23"]
     # Invoice details come from Monituj, checked; Checkout asks only for a card.
     assert "tax_id_collection" not in params
+    # Refunds are counted from list prices - no discount codes.
+    assert "allow_promotion_codes" not in params
     update = fake_stripe.v1.customers.update.call_args
     assert update.args[0] == "cus_1"
     assert update.kwargs["params"]["name"] == "Biuro Rachunkowe Sp. z o.o."

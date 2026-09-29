@@ -51,10 +51,10 @@ def _documents_encrypted(settings):
 
 
 @pytest.fixture(autouse=True)
-def _no_published_legal_version(settings):
-    """Tests don't depend on the local .env: no documents version unless a
-    test sets one (tests/test_consents.py)."""
-    settings.LEGAL_ENTITY = {**settings.LEGAL_ENTITY, "effective_date": ""}
+def _no_legal_version_in_force(settings):
+    """Nothing to accept unless a test publishes a version: every document
+    is dated in the future (tests/test_consents.py sets real dates)."""
+    settings.LEGAL_VERSIONS = {key: "2999-01-01" for key in settings.LEGAL_VERSIONS}
 
 
 @pytest.fixture

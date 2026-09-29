@@ -9,6 +9,7 @@ event body, so late or repeated events can't leave a stale state behind."""
 
 import logging
 import time
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 import stripe
@@ -205,6 +206,7 @@ def _set_customer(account, customer):
     account.current_period_end = None
     account.cancel_at = None
     account.past_due_since = None
+    account.credit = 0
     account.save()
 
 
@@ -302,7 +304,6 @@ def checkout_url(user, plan, interval):
         "subscription_data": subscription_data,
         "metadata": {"user_id": str(user.pk), "plan": plan.code, "interval": interval},
         "locale": "pl",
-        "allow_promotion_codes": True,
         "success_url": absolute_url(reverse("billing:return"))
         + "?session_id={CHECKOUT_SESSION_ID}",
         "cancel_url": absolute_url(reverse("billing:plan")),
@@ -375,8 +376,8 @@ def close_customer(user):
     - the customer is stripped of personal data (name, email, address, NIP,
       cards). Payment records Stripe must keep stay with Stripe.
     A cancellation that fails raises (better a retry than charges for a
-    deleted account); a refund or clean-up that fails only alerts the team,
-    who finish it by hand. Returns the refunded gross grosze."""
+    deleted account); a refund or clean-up that fails is only reported in
+    the result, for the team to finish by hand (see alert_deletion)."""
     refunded = 0
     problems = []
     for customer in find_customers(user):
@@ -409,20 +410,40 @@ def close_customer(user):
                 customer, unused, problems, reason="account_deleted"
             )
         _anonymize(customer, problems)
-    if refunded or problems:
-        _alert_refund(
-            user.email,
-            refunded,
-            problems,
-            numbers=list(
-                VatInvoice.objects.filter(user=user)
-                .exclude(number="")
-                .values_list("number", flat=True)[:3]
-            ),
-            why="Konto usunięte – zwrot za niewykorzystany okres",
-            key=f"deletion:{user.pk}",
-        )
-    return refunded
+    return Closure(refunded, problems)
+
+
+@dataclass
+class Closure:
+    """What close_customer did: gross grosze refunded, and what the team
+    has to finish by hand."""
+
+    refunded: int = 0
+    problems: list = field(default_factory=list)
+
+
+def invoice_numbers(user, limit=3):
+    """The user's latest VAT invoice numbers - for the correcting invoice."""
+    return list(
+        VatInvoice.objects.filter(user=user)
+        .exclude(number="")
+        .values_list("number", flat=True)[:limit]
+    )
+
+
+def alert_deletion(email, plan_name, closure, numbers, key):
+    """Tells the team about every deleted account - with the refund and the
+    correcting invoice it needs, if any."""
+    subject = "Konto usunięte"
+    if closure.refunded:
+        subject += f" – zwrot {plans.format_pln(closure.refunded)}"
+    notices.alert_team(
+        subject,
+        [f"Konto: {email}", f"Plan w chwili usunięcia: {plan_name}"]
+        + _refund_lines(closure.refunded, numbers)
+        + closure.problems,
+        key=key,
+    )
 
 
 # --- Money back ------------------------------------------------------------
@@ -430,6 +451,13 @@ def close_customer(user):
 # Marks the subscriptions ended by an account deletion, whose refund
 # close_customer makes itself.
 DELETION_COMMENT = "monituj: account deleted"
+
+
+def _credit(customer):
+    """The customer's credit in Stripe, in gross grosze: what a downgrade
+    or a switch to monthly left for later payments to use first."""
+    balance = _plain(client().v1.customers.retrieve(customer)).get("balance") or 0
+    return max(-balance, 0)
 
 
 def _plain(stripe_object):
@@ -560,15 +588,20 @@ def _anonymize(customer, problems):
         )
 
 
+def _refund_lines(refunded, numbers):
+    if not refunded:
+        return []
+    return [
+        f"Zwrócono na kartę: {plans.format_pln(refunded)}.",
+        "Wystaw w inFakt fakturę korygującą"
+        + (f" do faktury {', '.join(numbers)}." if numbers else "."),
+    ]
+
+
 def _alert_refund(who, refunded, problems, numbers, why, key):
-    lines = [f"Konto: {who}"]
-    if refunded:
-        lines.append(f"Zwrócono na kartę: {plans.format_pln(refunded)}.")
-        lines.append(
-            "Wystaw w inFakt fakturę korygującą"
-            + (f" do faktury {', '.join(numbers)}." if numbers else ".")
-        )
-    notices.alert_team(why, lines + problems, key=key)
+    notices.alert_team(
+        why, [f"Konto: {who}"] + _refund_lines(refunded, numbers) + problems, key=key
+    )
 
 
 def _refund_credit_after_end(account, subscription):
@@ -585,16 +618,15 @@ def _refund_credit_after_end(account, subscription):
     refunded = _return_money(
         account.stripe_customer_id, 0, problems, reason="credit_after_end"
     )
+    if refunded:
+        account.credit = max(account.credit - refunded, 0)
+        account.save(update_fields=["credit", "updated_at"])
     if refunded or problems:
         _alert_refund(
             account.user.email,
             refunded,
             problems,
-            numbers=list(
-                VatInvoice.objects.filter(user=account.user)
-                .exclude(number="")
-                .values_list("number", flat=True)[:3]
-            ),
+            numbers=invoice_numbers(account.user),
             why="Subskrypcja zakończona – zwrot niewykorzystanego salda",
             key=f"credit:{subscription.get('id')}",
         )
@@ -705,6 +737,7 @@ def refresh(account):
             )
             .data
         ]
+        account.credit = _credit(customer)
         paid = sorted(s["id"] for s in found if s["status"] in PAID_STATUSES)
         if len(paid) > 1:
             # Charged twice for one account - one must be refunded by hand.

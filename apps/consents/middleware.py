@@ -26,8 +26,7 @@ GATED_VIEWS = {
     ("documents_api", "reject-item"),
 }
 MESSAGE = (
-    "Zaktualizowaliśmy Regulamin i Politykę prywatności. Zaakceptuj je, "
-    "aby dalej korzystać z panelu."
+    "Zaktualizowaliśmy dokumenty Monituj. Zaakceptuj je, aby dalej korzystać z panelu."
 )
 
 

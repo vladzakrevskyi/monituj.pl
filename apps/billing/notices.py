@@ -132,6 +132,8 @@ def _context(account, previous_plan, previous_interval, kind):
         "over_free_limit": state.used > plans.FREE.active_requests,
         "plan_url": absolute_url(reverse("billing:plan")),
         "vat_rate": plans.vat_rate(),
+        "to_yearly": account.interval == plans.YEAR,
+        "credit": plans.format_pln(account.credit) if account.credit else "",
     }
     if plan.is_paid and account.interval:
         net = plan.price(account.interval)
@@ -152,7 +154,7 @@ def _contract(notice):
     return {
         "early_start_at": consent.created_at if consent else None,
         "withdraw_until": concluded + timedelta(days=WITHDRAWAL_DAYS),
-        "terms_version": legal.effective_date_display(),
+        "terms_version": legal.effective_date_display(legal.TERMS),
         "contract_email": settings.LEGAL_ENTITY.get("email") or settings.CONTACT_EMAIL,
         "withdrawal_url": absolute_url(reverse("legal:withdrawal")),
     }

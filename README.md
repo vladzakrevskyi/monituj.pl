@@ -433,7 +433,7 @@ Najważniejsze zmienne:
 | `LEGAL_*` | Dane firmy. Puste wartości są wyróżniane na stronach prawnych jako „[uzupełnij: …]” |
 | `MAINTENANCE_MODE`, `MAINTENANCE_ALLOWED_IPS` | Tryb serwisowy – patrz sekcja „Tryb serwisowy” niżej. Domyślnie wyłączony |
 | `ADMIN_URL`, `ADMIN_ALLOWED_IPS` | Adres panelu administratora i adresy IP, z których jest dostępny (zob. krok 10). Na serwerze ustaw oba |
-| `LEGAL_EFFECTIVE_DATE` | Data wejścia w życie Regulaminu, Polityki prywatności i umowy powierzenia, np. `2026-10-01` albo `01.10.2026`. To zarazem wersja dokumentów: przy każdej akceptacji zapisujemy, której wersji dotyczyła |
+| `LEGAL_TERMS_DATE`, `LEGAL_DPA_DATE`, `LEGAL_PRIVACY_DATE`, `LEGAL_COOKIES_DATE`, `LEGAL_WITHDRAWAL_DATE` | Wersje dokumentów prawnych – data, od której obowiązuje treść każdego z nich (zob. „Zmiana dokumentów prawnych”). Puste = pierwsze wersje |
 | `LEGAL_BACKUP_DAYS` | Liczba dni przechowywania kopii zapasowych u hostingu (krok 11), np. `7` – ta liczba jest podana w polityce prywatności |
 | `DOCUMENTS_ENCRYPTION_KEY` | **Wymagany.** Klucz główny szyfrujący przesłane dokumenty (zob. „Szyfrowanie dokumentów”). Wygeneruj na serwerze: `python3 -c "import os,base64;print(base64.urlsafe_b64encode(os.urandom(32)).decode())"` i **zapisz kopię poza serwerem** |
 | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | Logowanie przez Google (opcjonalnie, zob. „Logowanie przez Google” w kroku 10). Puste = przyciski Google się nie pokazują |
@@ -741,11 +741,13 @@ stripe listen --forward-to localhost:8000/stripe/webhook/ --events checkout.sess
 3. W Stripe Dashboard → Settings → Billing: włącz e-maile o nieudanych płatnościach (faktury i potwierdzenia płatności wyłącz – patrz „Faktury VAT” niżej), a w *Subscriptions and emails → Manage failed payments* ustaw ponawianie (np. przez 2 tygodnie), a potem **anulowanie** subskrypcji – wtedy konto samo wraca do planu Free.
 4. Settings → Business → Public details: nazwa firmy, adres i NIP na fakturach.
 
+Saldo klienta (kredyt po zmianie na tańszy plan albo z rocznej na miesięczną) Monituj odczytuje ze Stripe przy każdej synchronizacji (`BillingAccount.credit`) i pokazuje w „Plan i płatności”. Kody rabatowe są wyłączone – zwroty liczone są od cen z cennika.
+
 Zmiana ceny: popraw `apps/billing/plans.py`, wdróż i uruchom ponownie `stripe_setup` – powstanie nowa cena w Stripe (dla nowych zamówień); trwające subskrypcje zachowują starą, dopóki ich nie zmienisz w Stripe. Regulamin wymaga uprzedzenia klientów o podwyżce 30 dni wcześniej.
 
 Okres próbny: każde nowe konto ma 30 dni wybranego planu (`BillingAccount.trial_plan`, domyślnie Biuro). Przedłużenie – w `/admin/` → „Płatności” zmień `trial_ends_at` i wyczyść `trial_notices`.
 
-Usunięcie konta najpierw anuluje w Stripe wszystkie subskrypcje tego użytkownika (pytając Stripe, nie lokalną kopię); jeśli Stripe nie odpowiada, konto nie jest usuwane (link można użyć ponownie). Potem – zgodnie z Regulaminem (§ 5a) – Monituj sam zwraca na kartę niewykorzystaną część opłaty (cena planu brutto × pozostała część okresu) i saldo po zmianie na tańszy plan, a klienta w Stripe czyści z danych osobowych (imię/nazwa, e-mail, adres, NIP, karty). Na `CONTACT_EMAIL` przychodzi alert z kwotą i numerem faktury, do której trzeba **wystawić w inFakt fakturę korygującą**. Nieudany zwrot nie blokuje usunięcia konta – alert mówi wtedy, co zwrócić ręcznie. Tak samo saldo, które zostało po zakończeniu subskrypcji (np. po zmianie na tańszy plan i anulowaniu), wraca na kartę automatycznie. Gdy to Ty rozwiązujesz umowę z klientem (§ 11), zwróć niewykorzystaną część ręcznie w Stripe.
+Usunięcie konta najpierw anuluje w Stripe wszystkie subskrypcje tego użytkownika (pytając Stripe, nie lokalną kopię); jeśli Stripe nie odpowiada, konto nie jest usuwane (link można użyć ponownie). Potem – zgodnie z Regulaminem (§ 5a) – Monituj sam zwraca na kartę niewykorzystaną część opłaty (cena planu brutto × pozostała część okresu) i saldo po zmianie na tańszy plan, a klienta w Stripe czyści z danych osobowych (imię/nazwa, e-mail, adres, NIP, karty). O **każdym** usunięciu konta przychodzi alert na `CONTACT_EMAIL` (e-mail konta, plan); przy zwrocie – z kwotą i numerem faktury, do której trzeba **wystawić w inFakt fakturę korygującą**. Nieudany zwrot nie blokuje usunięcia konta – alert mówi wtedy, co zwrócić ręcznie. Tak samo saldo, które zostało po zakończeniu subskrypcji (np. po zmianie na tańszy plan i anulowaniu), wraca na kartę automatycznie. Gdy to Ty rozwiązujesz umowę z klientem (§ 11), zwróć niewykorzystaną część ręcznie w Stripe.
 
 Konsumenci: e-mail „Plan … jest aktywny” jest też potwierdzeniem umowy (art. 21 ustawy o prawach konsumenta) – zawiera termin na odstąpienie i żądanie rozpoczęcia usługi, a w załączniku `Monituj-regulamin.html` (Regulamin, umowa powierzenia i formularz odstąpienia w wersji z dnia zamówienia). Oświadczenie o odstąpieniu przychodzi na adres kontaktowy – **potwierdź jego otrzymanie e-mailem**, anuluj subskrypcję w Stripe i zwróć część za dni, które nie minęły (dni do odstąpienia są płatne, jeśli klient zaznaczył żądanie rozpoczęcia usługi).
 
@@ -776,12 +778,26 @@ Zadanie `issue_invoices` (co minutę) tworzy fakturę w inFakt, sprawdza wynik i
 
 ### Zmiana dokumentów prawnych
 
-Każda akceptacja Regulaminu (z umową powierzenia) i Polityki prywatności jest zapisywana w tabeli `LegalAcceptance`: wersja (`LEGAL_EFFECTIVE_DATE`), data, sposób (rejestracja hasłem, Google, prośba bez konta, akceptacja nowej wersji), adres IP i przeglądarka. Podgląd: `/admin/` → „Zgody i akceptacje” (tylko do odczytu).
+Każdy dokument ma **własną wersję** – datę, od której obowiązuje jego treść. Daty są w `.env` (`2026-10-01` albo `01.10.2026`; puste = pierwsze wersje z 29.09.2026):
 
-Gdy zmieniasz dokumenty:
+```
+LEGAL_TERMS_DATE=        # Regulamin
+LEGAL_DPA_DATE=          # umowa powierzenia
+LEGAL_PRIVACY_DATE=      # Polityka prywatności
+LEGAL_COOKIES_DATE=      # Polityka cookies
+LEGAL_WITHDRAWAL_DATE=   # strona „Odstąpienie od umowy”
+```
 
-1. Zmień treść w `templates/legal/` i ustaw `LEGAL_EFFECTIVE_DATE` na datę **co najmniej 14 dni w przód** (tak obiecuje Regulamin). Wdróż – nowa treść jest od razu widoczna na stronie.
-2. Wyślij wszystkim użytkownikom informację o zmianach:
+Zmiana Polityki prywatności nie zmienia wersji Regulaminu. Zła data zatrzyma start strony (z komunikatem, która zmienna).
+
+**Archiwum treści.** Każda obowiązująca treść każdego dokumentu (dokładnie tak, jak widać ją na stronie, z danymi z `.env`) jest zapisywana w tabeli `LegalVersion` – przy pierwszej akceptacji, przy każdym zakupie i co godzinę (zadanie `archive_legal_documents`). Podgląd: `/admin/` → „Wersje dokumentów” (tylko do odczytu, nie da się usunąć). Wiersz jest rozpoznawany po skrócie treści (SHA-256), więc zmiana tekstu **bez zmiany daty** też trafia do archiwum – a na `CONTACT_EMAIL` przychodzi alert „zmieniona treść bez nowej daty” (tak samo po zmianie danych w `.env`, które widać w dokumentach, np. dostawcy hostingu).
+
+**Akceptacje.** Każda akceptacja Regulaminu, umowy powierzenia i Polityki prywatności jest zapisywana w `LegalAcceptance`: dokument, jego wersja, **link do dokładnej treści w archiwum**, data, sposób (rejestracja hasłem, Google, prośba bez konta, akceptacja nowej wersji), IP i przeglądarka. Podgląd: `/admin/` → „Zgody i akceptacje”. Zakup planu zapisuje w `CheckoutConsent.documents` wersje i skróty Regulaminu, umowy powierzenia i strony odstąpienia – ten zapis zostaje 6 lat, także po usunięciu konta, więc warunki zakupu da się pokazać zawsze.
+
+Gdy zmieniasz dokument:
+
+1. Zmień treść w `templates/legal/`, wdróż i ustaw nową datę tego dokumentu w `.env` na serwerze (`docker compose up -d`). Regulamin i umowa powierzenia: data **co najmniej 14 dni w przód** (tak obiecują). Polityka prywatności i cookies: może obowiązywać od razu. Nowa treść jest widoczna na stronie od wdrożenia. Jeśli zapomnisz o dacie, archiwum i tak zapisze nową treść, a na `CONTACT_EMAIL` przyjdzie alert.
+2. Jeśli zmienił się Regulamin, umowa powierzenia albo Polityka prywatności, wyślij użytkownikom informację – każdy dostanie listę tylko tych dokumentów, które się zmieniły:
 
 ```bash
 docker compose exec web python manage.py notify_legal_update --changes "Krótko: co się zmienia." --dry-run
@@ -791,10 +807,10 @@ docker compose exec web python manage.py notify_legal_update --changes "Krótko:
 docker compose exec web python manage.py notify_legal_update --changes "Krótko: co się zmienia."
 ```
 
-   Polecenie można uruchomić ponownie – nikt nie dostanie maila dwa razy o tej samej wersji.
-3. Od tej daty każdy zalogowany użytkownik przed wejściem do panelu zobaczy stronę „Zaktualizowaliśmy dokumenty” i musi je zaakceptować (Ustawienia – w tym usunięcie konta – pozostają dostępne). Konta demo są pomijane.
+   Polecenie można uruchomić ponownie – nikt nie dostanie maila dwa razy o tych samych wersjach.
+3. Od daty nowej wersji każdy zalogowany użytkownik przed wejściem do panelu zobaczy stronę „Zaktualizowaliśmy dokumenty” z listą zmienionych dokumentów i musi je zaakceptować (Ustawienia – w tym usunięcie konta – pozostają dostępne). Konta demo są pomijane.
 
-Po pierwszym ustawieniu `LEGAL_EFFECTIVE_DATE` o akceptację zostaną poproszeni także użytkownicy zarejestrowani wcześniej – wtedy powstaje dla nich zapis z wersją.
+Poprawka literówki bez zmiany sensu: można zostawić datę – archiwum i tak zapisze nową treść (przyjdzie alert, który wtedy zignoruj).
 
 Decyzje z banera cookies trafiają do anonimowego rejestru `CookieConsent` (losowy identyfikator z przeglądarki, wybór, wersja banera, data – bez IP). Wpisy starsze niż 3 lata usuwa zadanie `delete_old_cookie_consents`.
 

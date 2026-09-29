@@ -1,4 +1,13 @@
-from datetime import datetime
+"""The legal documents: their pages, their versions and their wording.
+
+Each document has its own version - the date its wording applies from
+(settings.LEGAL_VERSIONS, from LEGAL_*_DATE in .env) - so the Privacy policy
+can change without a new
+Regulamin. Every wording in force is archived (consents.LegalVersion): what
+people accepted, and what a buyer got, can be shown word for word later."""
+
+from dataclasses import dataclass
+from datetime import date
 
 from django.conf import settings
 from django.shortcuts import render
@@ -20,7 +29,6 @@ PLACEHOLDERS = {
     "privacy_email": "email w sprawach danych osobowych",
     "hosting_provider": "dostawca hostingu",
     "email_provider": "dostawca poczty email",
-    "effective_date": "data wejścia w życie",
     "backup_days": "liczba dni rotacji kopii zapasowych",
     "hosting_location": "kraj lokalizacji serwerów",
 }
@@ -29,54 +37,92 @@ PLACEHOLDERS = {
 PROVIDER_KEYS = ("hosting_provider", "email_provider")
 
 
-def version():
-    """The documents' version: their effective date (LEGAL_EFFECTIVE_DATE,
-    as 2026-10-01 or 01.10.2026). Empty = not published yet, nothing to
-    accept."""
-    return (getattr(settings, "LEGAL_ENTITY", {}).get("effective_date") or "").strip()
+@dataclass(frozen=True)
+class Document:
+    key: str
+    title: str
+    template: str
+    url_name: str
+    # Part of what users accept (at sign-up and again after a change).
+    accepted: bool = False
 
 
-def effective_date():
-    raw = version()
-    for pattern in ("%Y-%m-%d", "%d.%m.%Y"):  # 2026-10-01 or 01.10.2026
-        try:
-            return datetime.strptime(raw, pattern).date()
-        except ValueError:
-            continue
-    return None
+TERMS = "regulamin"
+DPA = "umowa_powierzenia"
+PRIVACY = "polityka_prywatnosci"
+COOKIES = "polityka_cookies"
+WITHDRAWAL = "odstapienie_od_umowy"
+
+DOCUMENTS = {
+    doc.key: doc
+    for doc in (
+        Document(TERMS, "Regulamin", "legal/terms.html", "legal:terms", True),
+        Document(
+            DPA,
+            "Umowa powierzenia przetwarzania danych",
+            "legal/dpa.html",
+            "legal:dpa",
+            True,
+        ),
+        Document(
+            PRIVACY,
+            "Polityka prywatności",
+            "legal/privacy.html",
+            "legal:privacy",
+            True,
+        ),
+        Document(COOKIES, "Polityka cookies", "legal/cookies.html", "legal:cookies"),
+        Document(
+            WITHDRAWAL,
+            "Odstąpienie od umowy",
+            "legal/withdrawal.html",
+            "legal:withdrawal",
+        ),
+    )
+}
+ACCEPTED = [key for key, doc in DOCUMENTS.items() if doc.accepted]
+# What a paid plan is bought on - in the order a buyer receives them.
+CONTRACT = [TERMS, DPA, WITHDRAWAL]
 
 
-def in_force():
+def version(key):
+    """The document's version: the ISO date its wording applies from."""
+    return settings.LEGAL_VERSIONS[key]
+
+
+def effective_date(key):
+    return date.fromisoformat(version(key))
+
+
+def in_force(key):
     """A version dated in the future is already shown (so users can read it
     ahead), but accepting it becomes required only from that day."""
-    if not version():
-        return False
-    starts = effective_date()
-    return starts is None or starts <= timezone.localdate()
+    return effective_date(key) <= timezone.localdate()
 
 
-def effective_date_display():
-    starts = effective_date()
-    return date_format(starts, "j E Y") if starts else version()
+def effective_date_display(key):
+    return date_format(effective_date(key), "j E Y")
 
 
-def legal_context():
+def legal_context(key=None):
+    """The operator's details for the documents - and, for one document,
+    the date its wording applies from."""
     entity = getattr(settings, "LEGAL_ENTITY", {})
     context = {}
-    for key, label in PLACEHOLDERS.items():
-        value = entity.get(key, "")
+    for field, label in PLACEHOLDERS.items():
+        value = entity.get(field, "")
         # A provider is a company name - an email address put there by
         # mistake would be published as the name.
-        if key in PROVIDER_KEYS and "@" in value:
+        if field in PROVIDER_KEYS and "@" in value:
             value = ""
-        context[key] = value or format_html(
+        context[field] = value or format_html(
             '<mark class="legal-todo">[uzupełnij: {}]</mark>', label
         )
     # Optional, no placeholder: the policies mention a CDN only when there is one.
     cdn = entity.get("cdn_provider", "")
     context["cdn_provider"] = "" if "@" in cdn else cdn
-    if version():
-        context["effective_date"] = effective_date_display()
+    if key:
+        context["effective_date"] = effective_date_display(key)
     if not entity.get("email"):
         context["email"] = settings.CONTACT_EMAIL
     if not entity.get("privacy_email"):
@@ -85,25 +131,41 @@ def legal_context():
     return context
 
 
-def _legal_page(template):
+def render_body(key):
+    """The document's wording as a standalone HTML fragment - title, date
+    and text, exactly as the page shows them - for the archive and for the
+    copy attached to an order."""
+    from apps.accounts.google import enabled as google_login_enabled
+    from apps.common.cookies import consent as cookie_consent
+
+    return render_to_string(
+        DOCUMENTS[key].template,
+        {
+            "legal": legal_context(key),
+            "legal_base": "legal/_fragment.html",
+            # What the site's context processor gives the pages.
+            "google_login": google_login_enabled(),
+            "cookie_consent": cookie_consent(),
+        },
+    ).strip()
+
+
+def _legal_page(key):
     def view(request):
-        return render(request, template, {"legal": legal_context()})
+        return render(request, DOCUMENTS[key].template, {"legal": legal_context(key)})
 
     return view
-
-
-# The Regulamin with its annex and the withdrawal form, in the order a buyer
-# receives them.
-CONTRACT_DOCUMENTS = ("legal/terms.html", "legal/dpa.html", "legal/withdrawal.html")
 
 
 def contract_attachment():
     """The contract documents as one self-contained HTML file for the order
     confirmation email - the copy a buyer keeps on a durable medium (art. 21
     of the consumer rights act): unlike the pages, it can't change later.
-    Returns (filename, bytes, mimetype)."""
-    context = {"legal": legal_context(), "legal_base": "legal/_fragment.html"}
-    parts = [mark_safe(render_to_string(name, context)) for name in CONTRACT_DOCUMENTS]
+    The same wording as archived for the order. Returns (filename, bytes,
+    mimetype)."""
+    from apps.consents.versions import current
+
+    parts = [mark_safe(current(key).html) for key in CONTRACT]
     html = render_to_string(
         "legal/attachment.html",
         {
@@ -115,8 +177,8 @@ def contract_attachment():
     return ("Monituj-regulamin.html", html.encode(), "text/html")
 
 
-terms = _legal_page("legal/terms.html")
-privacy = _legal_page("legal/privacy.html")
-cookies = _legal_page("legal/cookies.html")
-dpa = _legal_page("legal/dpa.html")
-withdrawal = _legal_page("legal/withdrawal.html")
+terms = _legal_page(TERMS)
+privacy = _legal_page(PRIVACY)
+cookies = _legal_page(COOKIES)
+dpa = _legal_page(DPA)
+withdrawal = _legal_page(WITHDRAWAL)

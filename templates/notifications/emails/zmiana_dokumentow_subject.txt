@@ -1,1 +1,1 @@
-{% autoescape off %}Zmiany w Regulaminie od {{ effective_date }} – Monituj{% endautoescape %}
+{% autoescape off %}Zmiany w dokumentach Monituj od {{ effective_date }}{% endautoescape %}

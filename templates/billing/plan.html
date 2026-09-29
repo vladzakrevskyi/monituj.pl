@@ -28,6 +28,7 @@
 {% else %}{{ current_price }}{% if vat_rate %} netto{% endif %} {% if state.account.interval == 'year' %}rocznie{% else %}miesięcznie{% endif %}.{% if state.account.current_period_end %} Następna płatność: {{ state.account.current_period_end|d }}.{% endif %}{% endif %}
 {% else %}Bezpłatnie i bez limitu czasu.{% endif %}
 </p>
+{% if credit %}<p class="plan-status__credit">Saldo do wykorzystania: <strong>{{ credit }}</strong> – pokryje kolejne płatności{% if state.is_subscribed %}, a jeśli subskrypcja się zakończy, zwrócimy je na kartę{% else %}; zwrócimy je na kartę w ciągu 14 dni{% endif %}.</p>{% endif %}
 {% if has_customer and payments_enabled %}
 <form method="post" action="{% url 'billing:portal' %}" class="plan-status__actions">
 {% csrf_token %}

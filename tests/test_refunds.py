@@ -217,3 +217,93 @@ def test_refunds_made_by_monituj_do_not_alert_twice(
     send_pending()
 
     assert not [m for m in mail.outbox if m.to == [settings.CONTACT_EMAIL]]
+
+
+# --- The team hears of every deletion ------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_every_deletion_is_reported_to_the_team(settings, client, user):
+    # A free account, never paid: no Stripe call, still one short email.
+    _delete(client, user)
+    send_pending()
+
+    [alert] = [m for m in mail.outbox if m.to == [settings.CONTACT_EMAIL]]
+    assert alert.subject == "[Monituj – płatności] Konto usunięte"
+    body = alert.body.replace(" ", " ")
+    assert f"Konto: {user.email}" in body
+    assert "Plan w chwili usunięcia: Biuro" in body  # the trial
+    assert "korygującą" not in body
+
+
+@pytest.mark.django_db
+def test_a_deletion_with_a_refund_names_the_amount(settings, client, user, fake_stripe):
+    _subscribe(user, plan="biuro")
+    fake_stripe.subscriptions = [_current()]
+    fake_stripe.charges = [
+        {
+            "id": "ch_1",
+            "paid": True,
+            "status": "succeeded",
+            "amount_captured": 10947,
+            "amount_refunded": 0,
+        }
+    ]
+
+    _delete(client, user)
+    send_pending()
+
+    [alert] = [m for m in mail.outbox if m.to == [settings.CONTACT_EMAIL]]
+    assert alert.subject.replace(" ", " ").endswith("Konto usunięte – zwrot 72,98 zł")
+
+
+# --- Credit: shown in the panel ------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_credit_is_read_from_stripe_and_shown_in_the_panel(client, user, fake_stripe):
+    _subscribe(user, plan="start")
+    fake_stripe.subscriptions = [subscription(plan="start")]
+    fake_stripe.v1.customers.retrieve.return_value = stripe.StripeObject.construct_from(
+        {"id": "cus_1", "balance": -4100, "metadata": {}}, "k"
+    )
+    client.force_login(user)
+
+    html = client.get(reverse("billing:plan") + "?zmiana=1").content.decode()
+
+    assert "Saldo do wykorzystania: <strong>41 zł</strong>" in html.replace(" ", " ")
+    assert "zwrócimy je na kartę" in html.replace("\u00a0", " ")
+
+
+@pytest.mark.django_db
+def test_no_credit_line_without_credit(client, user, fake_stripe):
+    _subscribe(user, plan="start")
+    fake_stripe.subscriptions = [subscription(plan="start")]
+    client.force_login(user)
+
+    html = client.get(reverse("billing:plan") + "?zmiana=1").content.decode()
+
+    assert "Saldo do wykorzystania" not in html
+
+
+@pytest.mark.django_db
+def test_switch_to_monthly_explains_the_credit(
+    client, user, fake_stripe, django_capture_on_commit_callbacks
+):
+    from tests.test_billing import _expire_trial
+
+    _expire_trial(user)
+    _subscribe(user, plan="biuro", interval="year")
+    fake_stripe.subscriptions = [subscription(plan="biuro", interval="month")]
+    fake_stripe.v1.customers.retrieve.return_value = stripe.StripeObject.construct_from(
+        {"id": "cus_1", "balance": -89400, "metadata": {}}, "k"
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        _post_webhook(client, _event(event_id="evt_1"))
+    send_pending()
+
+    body = mail.outbox[0].body.replace(" ", " ")
+    assert "rozliczasz teraz miesięcznie" in body
+    assert "saldo: 894 zł" in body
+    assert "znajdziesz na fakturze" not in body

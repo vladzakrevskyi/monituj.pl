@@ -183,7 +183,7 @@ class Command(BaseCommand):
                 },
                 "subscription_update": {
                     "enabled": True,
-                    "default_allowed_updates": ["price", "promotion_code"],
+                    "default_allowed_updates": ["price"],
                     # Charge (or credit) the difference at once. With
                     # create_prorations Stripe would add it to the next
                     # renewal - after a switch to yearly, a year later.

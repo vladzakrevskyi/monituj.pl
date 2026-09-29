@@ -16,8 +16,9 @@ from apps.accounts.models import AccountToken, AccountTokenPurpose, GuestAccess,
 from apps.accounts.sender import sender_context
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
+from apps.billing import gateway
 from apps.billing.plans import format_pln
-from apps.billing.services import apply_signup_plan
+from apps.billing.services import apply_signup_plan, plan_for
 from apps.common import throttle
 from apps.common.exceptions import RateLimitedAppError, ValidationAppError
 from apps.common.security import generate_public_token, hash_token
@@ -500,10 +501,9 @@ def _cancel_subscription(user):
     not the local copy, which can lag behind - refunds the time left and
     strips the Stripe customer of personal data. If Stripe can't be asked,
     the account stays: better a retry than charges for a deleted account.
-    Returns the refunded gross grosze."""
+    Returns a gateway.Closure (what was refunded, what is left to do)."""
     import stripe
 
-    from apps.billing import gateway
     from apps.billing.services import account_for, customer_id
 
     failed = ValidationAppError(
@@ -515,12 +515,12 @@ def _cancel_subscription(user):
     # No Stripe customer ever stored: none exists (one is created only at
     # checkout, and saved under a lock in the same step).
     if not account.stripe_customer_id:
-        return 0
+        return gateway.Closure()
     if not gateway.enabled():
         # Payments off: only an account that paid in this mode needs Stripe.
         if customer_id(account):
             raise failed
-        return 0
+        return gateway.Closure()
     try:
         return gateway.close_customer(user)
     except stripe.StripeError as exc:
@@ -626,9 +626,12 @@ class AccountDeletionService:
         notices = AccountDeletionService._recipient_notices(user)
         # First, so a deleted account is never charged again. If Stripe can't
         # be reached, nothing is deleted and the link can be used again.
-        refunded = _cancel_subscription(user)
+        plan_name = plan_for(user)[0].name
+        closure = _cancel_subscription(user)
         # Invoices outlive the account (tax law), with the address on them.
         paid = user.vat_invoices.exists()
+        numbers = gateway.invoice_numbers(user)
+        user_pk = user.pk
 
         if (
             request is not None
@@ -652,10 +655,14 @@ class AccountDeletionService:
             to_email=email,
             context={
                 "backup_days": settings.LEGAL_ENTITY.get("backup_days", ""),
-                "refunded": format_pln(refunded) if refunded else "",
+                "refunded": format_pln(closure.refunded) if closure.refunded else "",
                 "paid": paid,
             },
             log=False,
+        )
+        # The team hears of every deletion - and of a correcting invoice due.
+        gateway.alert_deletion(
+            email, plan_name, closure, numbers, key=f"deletion:{user_pk}"
         )
         return email
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 import environ
@@ -191,6 +192,12 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.consents.tasks.delete_old_cookie_consents",
         "schedule": 86400.0,
     },
+    # Every legal document's wording in force, into the archive (hourly, so a
+    # new version is there soon after a deploy even if nobody accepts it).
+    "archive-legal-documents": {
+        "task": "apps.consents.tasks.archive_legal_documents",
+        "schedule": 3600.0,
+    },
     # VAT invoices for paid Stripe invoices: create in inFakt, then email.
     "issue-vat-invoices": {
         "task": "apps.billing.tasks.issue_invoices",
@@ -330,7 +337,35 @@ LEGAL_ENTITY = {
     "email_provider": env("LEGAL_EMAIL_PROVIDER", default=""),
     # Optional: a CDN / proxy all traffic passes through (e.g. Cloudflare).
     "cdn_provider": env("LEGAL_CDN_PROVIDER", default=""),
-    "effective_date": env("LEGAL_EFFECTIVE_DATE", default=""),
     "backup_days": env("LEGAL_BACKUP_DAYS", default=""),
     "hosting_location": env("LEGAL_HOSTING_LOCATION", default=""),
+}
+
+# Each legal document has its own version: the date its wording applies from,
+# from .env (2026-10-01 or 01.10.2026). Change a document's text in
+# templates/legal/ -> change its date. Regulamin and the umowa powierzenia need
+# 14 days' notice (Regulamin § 14, umowa § 6): date them ahead and run
+# notify_legal_update. Every wording in force is archived automatically
+# (consents.LegalVersion). Unset: the first versions' date.
+FIRST_LEGAL_VERSION = "2026-09-29"
+
+
+def _legal_date(name):
+    raw = env(name, default=FIRST_LEGAL_VERSION).strip()
+    for pattern in ("%Y-%m-%d", "%d.%m.%Y"):
+        try:
+            return datetime.strptime(raw, pattern).date().isoformat()
+        except ValueError:
+            continue
+    raise ImproperlyConfigured(
+        f"{name} must be a date like 2026-10-01 or 01.10.2026, got {raw!r}."
+    )
+
+
+LEGAL_VERSIONS = {
+    "regulamin": _legal_date("LEGAL_TERMS_DATE"),
+    "umowa_powierzenia": _legal_date("LEGAL_DPA_DATE"),
+    "polityka_prywatnosci": _legal_date("LEGAL_PRIVACY_DATE"),
+    "polityka_cookies": _legal_date("LEGAL_COOKIES_DATE"),
+    "odstapienie_od_umowy": _legal_date("LEGAL_WITHDRAWAL_DATE"),
 }

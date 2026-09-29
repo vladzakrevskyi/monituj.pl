@@ -32,7 +32,7 @@ from apps.billing.models import (
     VatInvoiceStatus,
 )
 from apps.billing.services import account_for, customer_id, state_for
-from apps.common import throttle
+from apps.common import legal, throttle
 from apps.common.exceptions import ApplicationError
 from apps.common.responses import (
     ajax_form_error_response,
@@ -40,6 +40,7 @@ from apps.common.responses import (
     success_response,
 )
 from apps.common.security import get_client_ip
+from apps.consents.versions import wordings
 from apps.demo.models import is_demo_user
 
 logger = logging.getLogger("monituj")
@@ -203,6 +204,12 @@ def plan_view(request):
             and not blocked
             and _profile(request.user) is not None,
             "yearly": subscribed and account.interval == plans.YEAR,
+            # Left by a downgrade or a switch to monthly (gross).
+            "credit": (
+                plans.format_pln(account.credit)
+                if account and customer_id(account) and account.credit
+                else ""
+            ),
             "current_price": (
                 plans.format_pln(state.plan.price(account.interval))
                 if subscribed
@@ -258,6 +265,7 @@ def checkout(request):
             plan=plan.code,
             interval=interval,
             text=EARLY_START_LABEL,
+            documents=wordings(legal.CONTRACT),
             ip_address=get_client_ip(request) or None,
             user_agent=request.META.get("HTTP_USER_AGENT", "")[:255],
         )

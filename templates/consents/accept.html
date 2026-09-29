@@ -6,12 +6,10 @@
 {% block content %}
 <div class="card">
 <h1>Zaktualizowaliśmy dokumenty</h1>
-<p>Od {{ effective_date }} obowiązują nowe wersje dokumentów Monituj. Przeczytaj je i zaakceptuj, aby dalej korzystać z panelu:</p>
+<p>Obowiązują nowe wersje dokumentów Monituj. Przeczytaj je i zaakceptuj, aby dalej korzystać z panelu:</p>
 <ul>
-<li><a href="{% url 'legal:terms' %}" target="_blank" rel="noopener">Regulamin</a></li>
-<li><a href="{% url 'legal:dpa' %}" target="_blank" rel="noopener">Umowa powierzenia przetwarzania danych</a></li>
-<li><a href="{% url 'legal:privacy' %}" target="_blank" rel="noopener">Polityka prywatności</a></li>
-</ul>
+{% for doc in changed %}<li><a href="{{ doc.url }}" target="_blank" rel="noopener">{{ doc.title }}</a> – od {{ doc.since }}</li>
+{% endfor %}</ul>
 <form method="post" novalidate data-ajax-form>
 {% csrf_token %}
 <input type="hidden" name="next" value="{{ next }}">
