@@ -19,6 +19,11 @@ LOGGING = {
             "formatter": "structured",
             "filters": ["request_id", "redact_sensitive"],
         },
+        # Errors to ADMINS by email - without request data (error_mail.py).
+        "error_mail": {
+            "()": "apps.common.error_mail.ErrorEmailHandler",
+            "filters": ["request_id", "redact_sensitive"],
+        },
     },
     "root": {
         "handlers": ["console"],
@@ -26,7 +31,23 @@ LOGGING = {
     },
     "loggers": {
         "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "monituj": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        # A page that crashed (500).
+        "django.request": {
+            "handlers": ["console", "error_mail"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "monituj": {
+            "handlers": ["console", "error_mail"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # A background task that failed (emails, reminders, invoices).
+        "celery.app.trace": {
+            "handlers": ["console", "error_mail"],
+            "level": "INFO",
+            "propagate": False,
+        },
         # The Stripe library logs every API call at INFO; only problems matter.
         "stripe": {"handlers": ["console"], "level": "WARNING", "propagate": False},
     },

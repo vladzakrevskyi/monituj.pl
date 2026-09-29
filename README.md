@@ -429,6 +429,7 @@ Najważniejsze zmienne:
 | `POSTGRES_PASSWORD` | Drugi wygenerowany ciąg (tylko litery i cyfry – hasło trafia do adresu URL połączenia) |
 | `EMAIL_*` | Dane SMTP. Najczęściej port 587 i `EMAIL_USE_TLS=True` |
 | `DEFAULT_FROM_EMAIL` | Nadawca wszystkich wiadomości, np. `Monituj <no-reply@monituj.pl>`. Domena musi być skonfigurowana u dostawcy SMTP |
+| `ERROR_EMAIL` | Adres, na który przychodzą błędy strony i zadań w tle (puste = `CONTACT_EMAIL`), zob. „Monitoring” |
 | `CONTACT_EMAIL` | `kontakt@monituj.pl` – tu trafiają wiadomości z formularza kontaktowego i odpowiedzi na e-maile systemowe. Ta skrzynka musi istnieć i odbierać pocztę |
 | `LEGAL_*` | Dane firmy. Puste wartości są wyróżniane na stronach prawnych jako „[uzupełnij: …]” |
 | `MAINTENANCE_MODE`, `MAINTENANCE_ALLOWED_IPS` | Tryb serwisowy – patrz sekcja „Tryb serwisowy” niżej. Domyślnie wyłączony |
@@ -674,7 +675,7 @@ MAINTENANCE_ALLOWED_IPS=83.12.34.56,2a01:4f8::1,10.0.0.0/24
 docker compose up -d --force-recreate web
 ```
 
-Wyłączenie: `MAINTENANCE_MODE=False` i ponownie `docker compose up -d`. Adres `/api/health/` działa także w trybie serwisowym. Zadania w tle (przypomnienia, usuwanie plików po terminie) nie są wstrzymywane.
+Wyłączenie: `MAINTENANCE_MODE=False` i ponownie `docker compose up -d`. Adres `/api/health/` i webhooki płatności (`/stripe/webhook/`, `/infakt/webhook/`) działają także w trybie serwisowym – zakupy i zmiany planu zapisują się od razu. Zadania w tle (przypomnienia, usuwanie plików po terminie) nie są wstrzymywane.
 
 ### Szyfrowanie dokumentów
 
@@ -819,6 +820,10 @@ Decyzje z banera cookies trafiają do anonimowego rejestru `CookieConsent` (loso
 ### Monitoring
 
 Podłącz darmowy zewnętrzny monitoring dostępności (UptimeRobot, Better Stack itp.) pod adres `https://monituj.pl/api/health/` – dostaniesz e-mail, gdy strona przestanie odpowiadać.
+
+**Błędy** przychodzą e-mailem na `ERROR_EMAIL` (puste = `CONTACT_EMAIL`), temat „[Monituj] Błąd: …”: strona, która się wysypała (500), nieudane zadanie w tle (e-maile, przypomnienia, faktury) i każdy błąd zapisany przez Monituj (np. nieudany zwrot w Stripe). W wiadomości jest opis, miejsce w kodzie, adres strony i id użytkownika – **bez danych z formularzy**, bo mogą zawierać dane klientów. Ten sam błąd przychodzi najwyżej raz na 10 minut, a najwięcej 20 wiadomości na godzinę. Pełne logi: `docker compose logs --tail 200 web worker`.
+
+**Dziennik zdarzeń** (`AuditLog`): wpisy konta są przechowywane, dopóki konto istnieje, i znikają razem z nim. Wpisy niezwiązane z żadnym kontem (nieudane logowania na nieistniejące adresy, wejścia w linki usuniętych próśb) codzienne zadanie `delete_old_audit_entries` usuwa po 12 miesiącach – tak mówi Polityka prywatności.
 
 ### Najczęstsze problemy
 

@@ -188,6 +188,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.common.tasks.delete_old_throttle_events",
         "schedule": 3600.0,
     },
+    # Audit log entries with no account behind them, after a year.
+    "delete-old-audit-entries": {
+        "task": "apps.audit.tasks.delete_old_audit_entries",
+        "schedule": 86400.0,
+    },
     "delete-old-cookie-consents": {
         "task": "apps.consents.tasks.delete_old_cookie_consents",
         "schedule": 86400.0,
@@ -237,6 +242,11 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Monituj <no-reply@monitu
 # Contact form messages go here, and replies to any email land here unless
 # a message is better answered by someone else (see EmailService).
 CONTACT_EMAIL = env("CONTACT_EMAIL", default="kontakt@monituj.pl")
+# Errors on the site and in background tasks are emailed here (without
+# request data - apps/common/error_mail.py). Empty ERROR_EMAIL: CONTACT_EMAIL.
+ADMINS = [env("ERROR_EMAIL", default="") or CONTACT_EMAIL]
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+EMAIL_SUBJECT_PREFIX = "[Monituj] "
 
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
 

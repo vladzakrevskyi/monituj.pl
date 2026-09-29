@@ -12,8 +12,10 @@ from apps.common.responses import error_response
 from apps.common.security import get_client_ip
 
 MESSAGE = "Trwają prace techniczne. Spróbuj ponownie za chwilę."
-# Load balancers and uptime checks keep working during maintenance.
-EXEMPT_PATHS = ("/api/health/",)
+# Keep working during maintenance: uptime checks, and the payment and invoice
+# webhooks - Stripe and inFakt would otherwise retry for days, and a plan
+# bought or changed meanwhile would show late.
+EXEMPT_PATHS = ("/api/health/", "/stripe/webhook/", "/infakt/webhook/")
 RETRY_AFTER_SECONDS = 600
 
 

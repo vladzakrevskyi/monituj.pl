@@ -61,6 +61,18 @@ def test_health_check_keeps_working(client):
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("name", ["billing:webhook", "billing:infakt-webhook"])
+def test_payment_webhooks_keep_working(client, name):
+    # Reaches the webhook itself (which refuses an unsigned call), not the
+    # maintenance page.
+    with _on():
+        response = client.post(reverse(name), "{}", content_type="application/json")
+
+    assert response.status_code != 503
+    assert b"Prace techniczne" not in response.content
+
+
+@pytest.mark.django_db
 def test_listed_ips_use_the_site_and_see_a_reminder(client):
     with _on("83.12.34.56,10.0.0.0/24"):
         exact = client.get(reverse("pages:faq"), REMOTE_ADDR="83.12.34.56")

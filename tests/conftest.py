@@ -51,6 +51,13 @@ def _documents_encrypted(settings):
 
 
 @pytest.fixture(autouse=True)
+def _no_error_emails(settings):
+    """Errors logged on purpose in tests don't email anyone (see
+    tests/test_error_mail.py for the emails themselves)."""
+    settings.ADMINS = []
+
+
+@pytest.fixture(autouse=True)
 def _no_legal_version_in_force(settings):
     """Nothing to accept unless a test publishes a version: every document
     is dated in the future (tests/test_consents.py sets real dates)."""
