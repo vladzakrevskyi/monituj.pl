@@ -138,8 +138,9 @@ if grep -qi cloudflare <<<"$(env_value LEGAL_CDN_PROVIDER)"; then
   if [ ! -f "$SNIPPET" ]; then
     warn "Brak $SNIPPET – IP odwiedzających są adresami Cloudflare (README: „Cloudflare przed serwerem”)."
   elif [ -n "$(find "$SNIPPET" -mtime +35)" ]; then
-    sudo -n deploy/nginx/update-cloudflare-ips.sh 2>/dev/null \
-      || warn "Lista adresów Cloudflare ma ponad 35 dni: sudo deploy/nginx/update-cloudflare-ips.sh"
+    # Updated by root's cron (README: „Cloudflare przed serwerem”) - an old
+    # file means the cron doesn't run.
+    warn "Lista adresów Cloudflare ma ponad 35 dni – czy działa /etc/cron.d/cloudflare-ips? Ręcznie: sudo /usr/local/sbin/update-cloudflare-ips"
   fi
 fi
 

@@ -1,9 +1,12 @@
 #!/bin/sh
 # Rewrites /etc/nginx/snippets/cloudflare-real-ip.conf from Cloudflare's
 # published address lists and reloads nginx. Keeps the old file if the
-# lists can't be fetched or nginx rejects the new one. Run as root, e.g.
-# monthly from cron:
-#   0 4 1 * * /srv/monituj/deploy/nginx/update-cloudflare-ips.sh
+# lists can't be fetched or nginx rejects the new one. Runs as root - from a
+# root-owned copy, never from /srv/monituj (the deploy user can change that):
+#   sudo install -o root -g root -m 755 deploy/nginx/update-cloudflare-ips.sh \
+#       /usr/local/sbin/update-cloudflare-ips
+#   /etc/cron.d/cloudflare-ips:
+#   0 4 1 * * root /usr/local/sbin/update-cloudflare-ips >> /var/log/cloudflare-ips.log 2>&1
 set -eu
 
 TARGET=/etc/nginx/snippets/cloudflare-real-ip.conf

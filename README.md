@@ -625,15 +625,21 @@ Wszystkie polecenia uruchamiasz z katalogu `/srv/monituj`.
 
 Gdy strona stoi za Cloudflare, nginx widzi adresy Cloudflare zamiast adresów odwiedzających – a z adresu IP korzysta tryb serwisowy, lista adresów panelu administratora i limity prób (logowanie, rejestracja, formularze). Prawdziwy adres podaje Cloudflare w nagłówku `CF-Connecting-IP`; nginx przyjmuje go **tylko od serwerów Cloudflare** (moduł `real_ip`), więc nikt, kto łączy się z serwerem z pominięciem Cloudflare, nie podrobi swojego adresu. Aplikacja niczego nie zmienia – dostaje od nginx już prawdziwy adres.
 
-1. Plik z adresami Cloudflare (i odświeżanie raz w miesiącu):
+1. Plik z adresami Cloudflare (i odświeżanie raz w miesiącu). Skrypt działa jako root, więc najpierw jego kopia trafia do `/usr/local/sbin` – tam może pisać tylko root. (Z `/srv/monituj` go nie uruchamiaj: te pliki może zmienić użytkownik `deploy`, a root wykonałby cudzy kod.)
 
 ```bash
-sudo /srv/monituj/deploy/nginx/update-cloudflare-ips.sh
+sudo install -o root -g root -m 755 /srv/monituj/deploy/nginx/update-cloudflare-ips.sh /usr/local/sbin/update-cloudflare-ips
 ```
 
 ```bash
-echo "0 4 1 * * root /srv/monituj/deploy/nginx/update-cloudflare-ips.sh" | sudo tee /etc/cron.d/cloudflare-ips
+sudo /usr/local/sbin/update-cloudflare-ips
 ```
+
+```bash
+echo "0 4 1 * * root /usr/local/sbin/update-cloudflare-ips >> /var/log/cloudflare-ips.log 2>&1" | sudo tee /etc/cron.d/cloudflare-ips
+```
+
+   Jeśli skrypt w repozytorium kiedyś się zmieni, powtórz polecenie `install`.
 
 2. W `/etc/nginx/sites-available/monituj.conf`, w każdym bloku `server { … }` obsługującym stronę (także w tym z `listen 443`), dopisz:
 
