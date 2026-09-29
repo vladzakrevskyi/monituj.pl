@@ -1213,6 +1213,7 @@
   margin-bottom: var(--space-4);
   border-bottom: 1px solid var(--color-border);
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
 }
 
