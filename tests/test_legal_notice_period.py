@@ -1,8 +1,8 @@
 """The notice period: a new Regulamin (and umowa powierzenia) is published
 dated ahead. Until that day the version in force is the earlier one - the
-pages show it (the new one a click away), sign-ups and purchases happen on
-it. Everyone is told (notify_legal_update, and new accounts as soon as they
-are confirmed) and accepts the new version on its day."""
+site shows only it, sign-ups and purchases happen on it. Everyone is told by
+email (notify_legal_update, and new accounts as soon as they are confirmed),
+with a link to the new wording, and accepts it on its day."""
 
 import io
 from datetime import timedelta
@@ -56,8 +56,9 @@ def test_the_page_shows_the_version_in_force_and_links_the_new_one(
     page = page_text(client.get(reverse("legal:terms")))
 
     assert "Stara treść: Regulamin" in page
-    assert "Od " in page and "obowiązuje nowa wersja" in page
-    assert "?wersja=nowa" in page
+    # Nothing on the site mentions the new version - the email does.
+    assert "nowa wersja" not in page
+    assert "?wersja=nowa" not in page
 
     new = page_text(client.get(reverse("legal:terms"), {"wersja": "nowa"}))
     assert "Stara treść" not in new
@@ -118,11 +119,11 @@ def test_people_already_here_are_asked_only_from_the_day(notice_period, monkeypa
 
 
 @pytest.mark.django_db
-def test_the_consent_checkbox_says_it_covers_the_new_version(client, notice_period):
+def test_signing_up_mentions_only_the_documents_in_force(client, notice_period):
     page = page_text(client.get(reverse("accounts:register")))
 
-    assert "w tym dniu poprosimy Cię o ich akceptację" in page
-    assert "/regulamin/?wersja=nowa" in page
+    assert "?wersja=nowa" not in page
+    assert "nowe wersje" not in page
 
 
 @pytest.mark.django_db

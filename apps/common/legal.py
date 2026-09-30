@@ -157,9 +157,9 @@ def render_body(key):
 
 def _legal_page(key):
     """A document's page. During its notice period (a new version dated
-    ahead) it shows the wording in force, from the archive, with a link to
-    the new one (?wersja=nowa) - both can be read, as the law requires of
-    the Terms in force."""
+    ahead) it shows the wording in force, from the archive, as if nothing
+    changed; the new one opens only from the announcement email
+    (?wersja=nowa), saying from when it applies."""
 
     def view(request):
         context = {"legal": legal_context(key)}
@@ -175,10 +175,6 @@ def _legal_page(key):
                     {
                         "document": DOCUMENTS[key],
                         "html": mark_safe(earlier.html),  # noqa: S308 - our own text
-                        "upcoming": {
-                            "since": since,
-                            "url": f"{request.path}?wersja=nowa",
-                        },
                     },
                 )
             context["upcoming"] = {

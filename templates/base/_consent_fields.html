@@ -1,4 +1,4 @@
-{% load legal_tags %}{% if terms_field %}
+{% if terms_field %}
 <p class="consent">
 <label for="{{ terms_field.id_for_label }}">Akceptuję <a href="{% url 'legal:terms' %}" target="_blank" rel="noopener">Regulamin</a>{% if with_dpa %} wraz z <a href="{% url 'legal:dpa' %}" target="_blank" rel="noopener">umową powierzenia przetwarzania danych</a>{% endif %}{% if not privacy_field %} i <a href="{% url 'legal:privacy' %}" target="_blank" rel="noopener">Politykę prywatności</a>{% endif %}</label>
 {{ terms_field }}
@@ -12,4 +12,3 @@
 {{ privacy_field.errors }}
 </p>
 {% endif %}
-{% upcoming_documents as upcoming %}{% if upcoming %}<p class="consent-note">Akceptujesz dokumenty obowiązujące teraz. Wkrótce wchodzą nowe wersje: {% for doc in upcoming %}<a href="{{ doc.url }}" target="_blank" rel="noopener">{{ doc.title }}</a> (od {{ doc.since }}){% if not forloop.last %}, {% endif %}{% endfor %} - w tym dniu poprosimy Cię o ich akceptację.</p>{% endif %}

@@ -730,11 +730,3 @@ label > .password-field {
     grid-template-columns: minmax(0, 1fr);
   }
 }
-
-/* During a notice period: accepting covers the current and the new wording. */
-.consent-note {
-  margin: calc(var(--space-2) * -1) 0 var(--space-4);
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--color-text-muted);
-}
