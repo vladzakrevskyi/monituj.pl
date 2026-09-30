@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect, render
@@ -200,12 +202,36 @@ def guest_request_create(request):
         if is_ajax_request(request):
             return ajax_form_error_response(form)
     else:
-        form = PublicRequestForm()
+        form, item_names = _guest_form_from_template(request.GET.get("szablon"))
     return render(
         request,
         "public/guest_request_form.html",
         {"form": form, "posted_items": item_names},
     )
+
+
+def _guest_form_from_template(slug):
+    """A ready template from the library, on the form for visitors without
+    an account (?szablon=<slug>)."""
+    from django.utils import timezone
+
+    from apps.requests import template_library
+    from apps.requests.forms import DEADLINE_DAY, next_month_day
+    from apps.requests.recurring import render_name
+
+    template = template_library.get(slug or "")
+    if template is None:
+        return PublicRequestForm(), []
+    today = timezone.localdate()
+    initial = {
+        "name": render_name(template.name, today),
+        "description": template.description,
+    }
+    if template.deadline in ("7", "14"):
+        initial["deadline"] = today + timedelta(days=int(template.deadline))
+    elif template.deadline == "day10":
+        initial["deadline"] = next_month_day(today, DEADLINE_DAY)
+    return PublicRequestForm(initial=initial), template.item_names
 
 
 def guest_request_sent(request):

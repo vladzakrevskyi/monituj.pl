@@ -8,7 +8,10 @@ Stripe takes the money; the Polish VAT invoice comes from inFakt:
    get an invoice with their NIP, private persons one with their name.
 2. The issue_invoices task (every minute) creates it in inFakt - an
    asynchronous job there - already marked paid by card, then checks the job
-   (or inFakt's webhook reports it), and emails the PDF to the buyer.
+   (or inFakt's webhook reports it), and emails the PDF to the buyer. The
+   invoice points at the buyer in inFakt's client list (client_id): found
+   by NIP or email, or added the first time. Without client_id inFakt adds
+   a new client for every invoice - a duplicate each month.
 3. The owner downloads it any time from "Plan i płatności".
 
 Anything inFakt refuses lands in status "failed" and the team gets an alert:
@@ -283,6 +286,77 @@ def _tax_symbol():
     return str(rate) if rate else "zw"
 
 
+# Our buyer fields (VatInvoice.client) -> inFakt's client fields.
+CLIENT_FIELDS = {
+    "client_company_name": "company_name",
+    "client_tax_code": "nip",
+    "client_first_name": "first_name",
+    "client_last_name": "last_name",
+    "client_street": "street",
+    "client_city": "city",
+    "client_post_code": "postal_code",
+    "client_country": "country",
+    "client_business_activity_kind": "business_activity_kind",
+}
+
+
+def _digits(value):
+    return "".join(ch for ch in str(value or "") if ch.isdigit())
+
+
+def _client_record(invoice):
+    record = {
+        field: invoice.client[key]
+        for key, field in CLIENT_FIELDS.items()
+        if invoice.client.get(key)
+    }
+    if invoice.email:
+        record["email"] = invoice.email
+    return record
+
+
+def _find_client(record):
+    """The buyer already in inFakt: a firm by its NIP, a person by email.
+    The match is checked here too - a filter inFakt ignored must never pick
+    someone else."""
+    nip = _digits(record.get("nip"))
+    email = (record.get("email") or "").lower()
+    if nip:
+        query, matches = {"q[nip_eq]": nip}, lambda c: _digits(c.get("nip")) == nip
+    elif email and record.get("business_activity_kind") == "private_person":
+        query = {"q[email_eq]": email}
+
+        def matches(c):
+            return (c.get("email") or "").lower() == email and not _digits(c.get("nip"))
+    else:
+        return None
+    found = _request("GET", "clients.json", params=query).json() or {}
+    for client in found.get("entities") or []:
+        if matches(client):
+            return client
+    return None
+
+
+def _client_id(invoice):
+    """inFakt's id of the buyer - their existing client (its details brought
+    up to date) or a new one. Stored on the invoice at once, so retrying the
+    invoice never adds the client again."""
+    if invoice.infakt_client_id:
+        return invoice.infakt_client_id
+    record = _client_record(invoice)
+    existing = _find_client(record)
+    if existing is not None:
+        client_id = existing["id"]
+        _request("PUT", f"clients/{client_id}.json", json={"client": record})
+    else:
+        client_id = _request("POST", "clients.json", json={"client": record}).json()[
+            "id"
+        ]
+    invoice.infakt_client_id = client_id
+    invoice.save(update_fields=["infakt_client_id"])
+    return client_id
+
+
 def _payload(invoice):
     day = timezone.localtime(invoice.paid_at).date().isoformat()
     body = {
@@ -294,7 +368,9 @@ def _payload(invoice):
             "payment_method": "card",
             "currency": "PLN",
             "notes": f"Zapłacono kartą przez Stripe ({invoice.stripe_invoice_id}).",
-            **{k: v for k, v in invoice.client.items() if k.startswith("client_")},
+            # The buyer from inFakt's client list: without it inFakt adds a
+            # new client for every invoice.
+            "client_id": invoice.infakt_client_id,
             **(
                 {"sale_type": invoice.client["sale_type"]}
                 if "sale_type" in invoice.client
@@ -374,6 +450,7 @@ def _email_failed(invoice, error):
 
 
 def _create(invoice):
+    _client_id(invoice)
     response = _request("POST", "async/invoices.json", json=_payload(invoice))
     data = response.json()
     invoice.infakt_mode = mode()

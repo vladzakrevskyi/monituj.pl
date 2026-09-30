@@ -83,5 +83,12 @@ def client_detail(request, client_id):
         client = ClientService.get_owned_client(request.user, client_id)
         return success_response(serialize_client(client))
 
+    if request.GET.get("with_history") == "1":
+        # The client with every request, file and recurring place - how an
+        # owner answers the client's right to erasure (apps/requests/deletion).
+        from apps.requests import deletion
+
+        removed = deletion.delete_client_with_history(client, django_request=request)
+        return success_response({"deleted": True, **removed})
     ClientService.delete(client, request=request)
     return success_response({"deleted": True})

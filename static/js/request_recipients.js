@@ -45,19 +45,3 @@
     showTiming();
   }
 })();
-
-document.querySelectorAll("form[data-confirm]").forEach((form) => {
-  form.addEventListener("submit", async (event) => {
-    if (form.dataset.confirmed || typeof Modal === "undefined") return;
-    event.preventDefault();
-    const confirmed = await Modal.confirm({
-      title: "Na pewno?",
-      message: form.dataset.confirm,
-      confirmLabel: "Tak",
-      danger: form.querySelector(".btn-danger") !== null,
-    });
-    if (!confirmed) return;
-    form.dataset.confirmed = "1";
-    form.requestSubmit();
-  });
-});

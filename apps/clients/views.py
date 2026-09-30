@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -7,21 +9,27 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from apps.clients.forms import ClientFilterForm, ClientForm
+from apps.clients.models import Client
 from apps.clients.services import ClientService
 from apps.common.exceptions import ApplicationError
-from apps.common.filters import active_filter_count, query_without_page, status_tabs
+from apps.common.filters import active_filter_count, status_tabs
 from apps.common.responses import (
     ajax_form_error_response,
     is_ajax_request,
     success_response,
 )
 
+# The filter fields a bulk action carries along, to find "all" again.
+FILTER_FIELDS = ("q", "status", "missing", "activity_from", "activity_to", "sort")
 
-@login_required
-def client_list(request):
-    filters = ClientFilterForm(request.GET)
-    results = ClientService.filter_for_owner(
-        request.user,
+
+def _filtered(owner, params):
+    """The owner's clients as the list shows them with these filters - also
+    for "delete all on every page". -> (filters, all matching before the
+    status tab, the status tab, the rows shown)."""
+    filters = ClientFilterForm(params)
+    everything = ClientService.filter_for_owner(
+        owner,
         search=(filters.value("q") or "").strip(),
         missing=filters.value("missing"),
         activity_from=filters.value("activity_from"),
@@ -29,9 +37,18 @@ def client_list(request):
         sort=filters.value("sort") or "name",
     )
     status_filter = filters.value("status") or ""
-    tabs = status_tabs(request, ClientFilterForm.STATUS_CHOICES, results, status_filter)
+    results = everything
     if status_filter:
-        results = [c for c in results if c.status_code == status_filter]
+        results = [c for c in everything if c.status_code == status_filter]
+    return filters, everything, status_filter, results
+
+
+@login_required
+def client_list(request):
+    filters, everything, status_filter, results = _filtered(request.user, request.GET)
+    tabs = status_tabs(
+        request, ClientFilterForm.STATUS_CHOICES, everything, status_filter
+    )
     page_obj = Paginator(results, 20).get_page(request.GET.get("page", 1))
 
     advanced_count = active_filter_count(
@@ -46,12 +63,57 @@ def client_list(request):
             "page_obj": page_obj,
             "filters": filters,
             "status_tabs": tabs,
-            "page_query": query_without_page(request),
             "has_filters": bool(request.GET.get("q") or advanced_count),
             "advanced_count": advanced_count,
             "create_form": ClientForm(auto_id="id_create_%s"),
+            "filter_params": [
+                (key, value)
+                for key in FILTER_FIELDS
+                for value in request.GET.getlist(key)
+                if value
+            ],
         },
     )
+
+
+@login_required
+@require_http_methods(["POST"])
+def client_bulk_delete(request):
+    """The list's "Usuń zaznaczonych": the ticked clients, or with all=1
+    every client matching the filters sent along. A client with requests
+    goes with all of them, their files and history (apps/requests/deletion)."""
+    from apps.requests import deletion
+
+    if request.POST.get("all") == "1":
+        ids = [c.pk for c in _filtered(request.user, request.POST)[3]]
+    else:
+        ids = [int(i) for i in request.POST.getlist("ids") if i.isdigit()]
+    query = urlencode(
+        [
+            (key, value)
+            for key in FILTER_FIELDS
+            for value in request.POST.getlist(key)
+            if value
+        ]
+    )
+    back = reverse("clients:list") + (f"?{query}" if query else "")
+    clients = list(Client.objects.filter(owner=request.user, pk__in=ids))
+    if not clients:
+        messages.info(request, "Nie zaznaczono żadnego klienta.")
+        return redirect(back)
+    removed = {"requests": 0, "files": 0}
+    for client in clients:
+        gone = deletion.delete_client_with_history(client, django_request=request)
+        removed["requests"] += gone["requests"]
+        removed["files"] += gone["files"]
+    message = f"Usunięto klientów: {len(clients)}."
+    if removed["requests"]:
+        message += f" Razem z nimi prośby: {removed['requests']}"
+        if removed["files"]:
+            message += f" i przesłane pliki: {removed['files']}"
+        message += "."
+    messages.success(request, message)
+    return redirect(back)
 
 
 @login_required

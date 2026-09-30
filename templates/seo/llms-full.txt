@@ -37,7 +37,7 @@ Każda prośba ma unikalny, trudny do odgadnięcia link. Pliki są szyfrowane na
 
 ## Cena
 
-Płaci się za liczbę próśb w toku - wysłanych, niezamkniętych i wciąż czekających na dokumenty. Przypomnienia, klienci i wszystkie funkcje są w każdym planie. Ceny netto (+23% VAT), płatność kartą przez Stripe, miesięcznie albo rocznie (2 miesiące gratis):
+Płaci się za liczbę próśb w toku - wysłanych, niezamkniętych i wciąż czekających na dokumenty. Plany różnią się też liczbą własnych szablonów próśb (Free 1, Start 5, Biuro 20, Pro 50); przypomnienia, klienci, gotowe szablony i pozostałe funkcje są w każdym planie. Ceny netto (+23% VAT), płatność kartą przez Stripe, miesięcznie albo rocznie (2 miesiące gratis):
 
 - Free - 0 zł, do 3 próśb w toku, bez limitu czasu.
 - Start - 39 zł/mies. (390 zł/rok), do 20 próśb w toku.
@@ -60,6 +60,16 @@ Problem: {{ segment.problem }}
 Jak pomaga Monituj: {{ segment.solution }}
 
 Przykładowe dokumenty: {{ segment.checklist|join:", " }}.
+{% endfor %}
+## Gotowe szablony list dokumentów
+{% for template in templates %}
+### {{ template.title }}
+
+Strona: {{ template.url }}
+
+{{ template.summary }}
+
+Dokumenty: {% for name, hint in template.items %}{{ name }}{% if hint %} ({{ hint }}){% endif %}{% if not forloop.last %}; {% endif %}{% endfor %}.
 {% endfor %}
 ## Najczęstsze pytania
 {% for item in faq %}

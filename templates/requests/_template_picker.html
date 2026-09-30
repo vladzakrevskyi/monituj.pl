@@ -1,0 +1,22 @@
+{% comment %}
+"Zacznij od szablonu": picking one reloads the form filled from it
+(?szablon=<id or slug>, request_templates.form_values). Without JavaScript the
+"Użyj" button does the same. It sits inside the request form, so its fields
+belong to the separate GET form #template-picker-form (form.html).
+{% endcomment %}
+<div class="template-picker" data-template-picker>
+<label for="template-select" class="template-picker__label">Zacznij od szablonu</label>
+<div class="template-picker__row">
+<select name="szablon" id="template-select" form="template-picker-form" data-template-select>
+<option value="">Bez szablonu - zacznij od zera</option>
+{% if templates.own %}<optgroup label="Moje szablony">
+{% for item in templates.own %}<option value="{{ item.pk }}"{% if active_template and active_template.pk == item.pk %} selected{% endif %}>{{ item.title }}</option>
+{% endfor %}</optgroup>{% endif %}
+{% for group in templates.ready_groups %}<optgroup label="Gotowe: {{ group.title }}">
+{% for item in group.templates %}<option value="{{ item.slug }}"{% if active_template.slug == item.slug %} selected{% endif %}>{{ item.title }}</option>
+{% endfor %}</optgroup>
+{% endfor %}</select>
+<noscript><button type="submit" form="template-picker-form" class="btn btn-secondary">Użyj</button></noscript>
+</div>
+<p class="template-picker__hint text-muted">{% if active_template %}Wypełniliśmy formularz szablonem „{{ active_template.title }}” - zmień, co chcesz.{% if suggest_recurring %} Tę prośbę zwykle wysyła się co miesiąc: zaznacz niżej „Powtarzaj automatycznie”.{% endif %} {% endif %}<a href="{% url 'requests:templates' %}">Twoje szablony</a></p>
+</div>

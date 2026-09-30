@@ -1,0 +1,41 @@
+{% extends "pages/base_page.html" %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Ścieżka">
+<a href="{% url 'landing' %}">Monituj</a><span aria-hidden="true">/</span>
+<span aria-current="page">Szablony dokumentów</span>
+</nav>
+{% endblock %}
+{% block hero_eyebrow %}Szablony dokumentów{% endblock %}
+{% block hero_title %}Gotowe listy dokumentów <strong>do zebrania od klientów</strong>{% endblock %}
+{% block hero_lead %}Co przygotować do rozliczenia miesiąca, zatrudnienia, kredytu czy sprawy spadkowej - listy dla firm w Polsce, z wyjaśnieniem każdego dokumentu. Wyślij je klientowi w Monituj jednym kliknięciem.{% endblock %}
+{% block hero_actions %}
+<nav class="chip-nav" aria-label="Branże">
+{% for group in groups %}<a class="chip" href="#{{ group.segment.slug }}">{{ group.segment.title }}</a>{% endfor %}
+</nav>
+{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container">
+{% for group in groups %}
+<div class="template-section" id="{{ group.segment.slug }}">
+<div class="template-section__head">
+<h2>{{ group.segment.title }}</h2>
+<a class="link-arrow" href="{% url 'pages:segment' group.segment.slug %}">Monituj dla branży &rarr;</a>
+</div>
+<div class="template-grid">
+{% for template in group.templates %}
+<a class="template-card" href="{% url 'pages:template' template.slug %}">
+<span class="template-card__count">{{ template.items|length }} dokumentów</span>
+<h3>{{ template.title }}</h3>
+<p>{{ template.summary }}</p>
+<span class="template-card__more">Zobacz listę &rarr;</span>
+</a>
+{% endfor %}
+</div>
+</div>
+{% endfor %}
+</div>
+</section>
+{% endblock %}

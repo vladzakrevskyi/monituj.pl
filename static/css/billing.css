@@ -619,3 +619,9 @@
   font-weight: 600;
   color: var(--color-success);
 }
+
+.plan-card__templates {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: 14px;
+}

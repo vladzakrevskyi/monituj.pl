@@ -40,6 +40,7 @@ def with_stats(queryset):
             distinct=True,
         ),
         last_activity=Max("requests__updated_at"),
+        request_count=Count("requests", distinct=True),
     )
 
 

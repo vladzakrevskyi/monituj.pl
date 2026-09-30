@@ -5,7 +5,7 @@
 
 {% block hero_eyebrow %}Cennik{% endblock %}
 {% block hero_title %}Płacisz za prośby <strong>w toku</strong>, nie za przypomnienia{% endblock %}
-{% block hero_lead %}Plan zależy od tego, ile próśb o dokumenty prowadzisz jednocześnie. Przypomnienia, klienci i wszystkie funkcje są w każdym planie. Każdy płatny plan wypróbujesz przez {{ trial_days }} dni za darmo - bez karty.{% endblock %}
+{% block hero_lead %}Plan zależy od tego, ile próśb o dokumenty prowadzisz jednocześnie i ile zapisujesz własnych szablonów. Przypomnienia, klienci, gotowe szablony i wszystkie pozostałe funkcje są w każdym planie. Każdy płatny plan wypróbujesz przez {{ trial_days }} dni za darmo - bez karty.{% endblock %}
 
 {% block page_body %}
 <section class="section section--flush-top">
@@ -25,6 +25,7 @@
 {% include "pages/_check.html" with text="Automatyczne i ręczne przypomnienia bez limitu" %}
 {% include "pages/_check.html" with text="Klienci bez limitu" %}
 {% include "pages/_check.html" with text="Prośby cykliczne i wysyłka do wielu klientów" %}
+{% include "pages/_check.html" with text="Gotowe szablony list dokumentów dla branż" %}
 {% include "pages/_check.html" with text="Panel ze statusami i listą braków" %}
 {% include "pages/_check.html" with text="Akceptacja i odrzucanie dokumentów" %}
 {% include "pages/_check.html" with text="Hasła dostępu i automatyczne usuwanie plików" %}

@@ -63,6 +63,20 @@ def sitemap_entries():
                 "priority": "0.8",
             }
         )
+    from apps.requests import template_library
+
+    template_modified = _modified(
+        TEMPLATES_DIR / "pages/template_page.html",
+        Path(template_library.__file__),
+    )
+    for template in template_library.TEMPLATES:
+        entries.append(
+            {
+                "loc": absolute_url(reverse("pages:template", args=[template.slug])),
+                "lastmod": template_modified,
+                "priority": "0.7",
+            }
+        )
     return entries
 
 
@@ -108,6 +122,17 @@ def _llms_context():
         }
         for segment in SEGMENTS
     ]
+    from apps.requests import template_library
+
+    templates = [
+        {
+            "title": template.title,
+            "summary": template.summary,
+            "items": template.items,
+            "url": absolute_url(reverse("pages:template", args=[template.slug])),
+        }
+        for template in template_library.TEMPLATES
+    ]
     legal = [
         {
             "title": seo.PAGES[name]["label"],
@@ -118,6 +143,7 @@ def _llms_context():
     return {
         "pages": pages,
         "segments": segments,
+        "templates": templates,
         "faq": FAQ,
         "legal": legal,
         "contact_email": settings.CONTACT_EMAIL,

@@ -227,3 +227,45 @@ class RecurringRequest(TimeStampedModel):
 
     def __str__(self):
         return f"{self.name} ({self.get_interval_display().lower()})"
+
+
+class RequestTemplate(TimeStampedModel):
+    """A saved pattern for new requests: what to ask for, the deadline and
+    the settings - never the clients. Using it fills the new request form;
+    the request keeps its own copy, so editing the template later changes
+    nothing already sent (apps/requests/request_templates.py)."""
+
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="request_templates"
+    )
+    # The template's own label in the picker, e.g. "Miesięczne - KPiR".
+    title = models.CharField(max_length=120)
+    # The request's name; may hold {miesiąc} and {data} like a recurring one.
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    item_names = models.JSONField(default=list)
+    # One of the form's deadline buttons ("7", "14", "day10", "days",
+    # "none"); "days" uses deadline_days.
+    deadline_choice = models.CharField(max_length=8, default="14")
+    deadline_days = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    reminders_enabled = models.BooleanField(default=True)
+    first_reminder_after_days = models.PositiveSmallIntegerField(default=2)
+    reminder_frequency_days = models.PositiveSmallIntegerField(default=3)
+    max_reminders = models.PositiveSmallIntegerField(default=3)
+    retention_days = models.PositiveSmallIntegerField(
+        default=DEFAULT_RETENTION_DAYS,
+        validators=[MinValueValidator(1), MaxValueValidator(MAX_RETENTION_DAYS)],
+    )
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["title", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "title"], name="unique_template_title_per_owner"
+            )
+        ]
+
+    def __str__(self):
+        return self.title

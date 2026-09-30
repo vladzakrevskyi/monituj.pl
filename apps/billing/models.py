@@ -149,6 +149,9 @@ class VatInvoice(models.Model):
     infakt_mode = models.CharField(max_length=8, blank=True)
     infakt_task = models.CharField(max_length=64, blank=True, db_index=True)
     infakt_uuid = models.CharField(max_length=64, blank=True)
+    # The buyer in inFakt's client list - found (NIP, email) or added once,
+    # kept so a retried invoice reuses it (invoicing._client_id).
+    infakt_client_id = models.PositiveBigIntegerField(null=True, blank=True)
     number = models.CharField(max_length=64, blank=True)
     issued_at = models.DateTimeField(null=True, blank=True)
     emailed_at = models.DateTimeField(null=True, blank=True)

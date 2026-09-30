@@ -96,3 +96,29 @@ dialog[open] {
     padding: var(--space-5);
   }
 }
+
+/* An optional checkbox under the message (Modal.confirmWithOption), on a
+   light, translucent red. ".modal label.modal__option" beats forms.css'
+   label:has(> checkbox). */
+.modal label.modal__option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: rgb(200 30 30 / 8%);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.modal label.modal__option[hidden] {
+  display: none;
+}
+
+.modal__option input {
+  flex-shrink: 0;
+  margin: 2px 0 0;
+}

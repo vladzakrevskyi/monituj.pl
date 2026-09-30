@@ -1,0 +1,100 @@
+{% extends "base/app_base.html" %}
+{% load static %}
+
+{% block page_name %}{% if template %}Edycja szablonu{% else %}Nowy szablon{% endif %}{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'requests:templates' %}" title="Wróć: Szablony próśb">&larr; Szablony próśb</a>
+<div class="card">
+<h1>{% if template %}Szablon „{{ template.title }}”{% else %}Nowy szablon{% endif %}</h1>
+<p class="card-lead">Szablon zapamiętuje, o co prosisz - klientów wybierzesz przy wysyłce. Zmiany nie dotyczą próśb już wysłanych.</p>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+{% include "base/_form_flash.html" %}
+<p>
+{{ form.title.label_tag }}
+{{ form.title }}
+<small class="help-text">{{ form.title.help_text }}</small>
+{{ form.title.errors }}
+</p>
+<p>
+{{ form.name.label_tag }}
+{{ form.name }}
+<small class="help-text">{{ form.name.help_text }}</small>
+{{ form.name.errors }}
+</p>
+
+<div class="item-builder">
+<label for="item-name-input">Dokumenty</label>
+<div class="item-input-row" data-error-for="items">
+<input type="text" id="item-name-input" placeholder="Wpisz dokument i naciśnij Enter">
+<button type="button" id="add-item-button" class="btn btn-dark">Dodaj</button>
+</div>
+{{ form.items.errors }}
+<ul id="item-list" class="item-list"></ul>
+{{ posted_items|json_script:"posted-items-data" }}
+</div>
+
+<p class="form-divider">Termin</p>
+<div class="option-row" role="radiogroup" aria-label="Termin">
+{% for value, label in form.fields.deadline_choice.choices %}<label class="option-chip option-chip--choice"><input type="radio" name="deadline_choice" value="{{ value }}"{% if form.deadline_choice.value == value %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}
+</div>
+<p>
+{{ form.deadline_days.label_tag }}
+{{ form.deadline_days }}
+<small class="help-text">Dla „Inna liczba dni”.</small>
+{{ form.deadline_days.errors }}
+</p>
+
+<p class="form-divider">Przypomnienia</p>
+<div class="option-row" role="radiogroup" aria-label="Przypomnienia">
+{% for value, label in form.fields.reminder_preset.choices %}<label class="option-chip option-chip--choice"><input type="radio" name="reminder_preset" value="{{ value }}"{% if form.reminder_preset.value == value %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}
+</div>
+<div class="field-row">
+<p>
+{{ form.first_reminder_after_days.label_tag }}
+{{ form.first_reminder_after_days }}
+</p>
+<p>
+{{ form.reminder_frequency_days.label_tag }}
+{{ form.reminder_frequency_days }}
+</p>
+<p>
+{{ form.max_reminders.label_tag }}
+{{ form.max_reminders }}
+</p>
+</div>
+<p class="form-hint text-muted">Liczby dotyczą ustawienia „Własne”.</p>
+
+<p class="form-divider">Przechowywanie plików</p>
+<div class="field-row">
+<p>
+{{ form.retention_choice.label_tag }}
+{{ form.retention_choice }}
+{{ form.retention_choice.errors }}
+</p>
+<p>
+{{ form.retention_custom_days.label_tag }}
+{{ form.retention_custom_days }}
+{{ form.retention_custom_days.errors }}
+</p>
+</div>
+
+<p class="form-divider">Wiadomość do klienta</p>
+<p>
+{{ form.description }}
+{{ form.description.errors }}
+</p>
+
+<div class="form-actions">
+<button type="submit" class="btn btn-primary btn-lg">Zapisz szablon</button>
+<a class="btn btn-secondary btn-lg" href="{% url 'requests:templates' %}">Anuluj</a>
+</div>
+</form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/request_items.js' %}"></script>
+{% endblock %}

@@ -207,3 +207,152 @@ td.cell-actions {
     white-space: normal;
   }
 }
+
+/* Row checkboxes and the bulk actions bar (requests_bulk.js) */
+th.cell-check,
+td.cell-check {
+  width: 1%;
+  padding-right: 0;
+}
+
+.cell-check input {
+  display: block;
+  margin: 0;
+}
+
+.bulk-bar {
+  position: sticky;
+  bottom: var(--space-4);
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  width: fit-content;
+  max-width: 100%;
+  margin: var(--space-4) auto 0;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-black);
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 12px 32px rgb(11 11 12 / 25%);
+}
+
+.bulk-bar[hidden] {
+  display: none;
+}
+
+.bulk-bar__check {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+.bulk-bar__count {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bulk-bar__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: rgb(255 255 255 / 40%);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.bulk-bar__link:hover {
+  text-decoration-color: #fff;
+}
+
+.bulk-bar__link[hidden] {
+  display: none;
+}
+
+.bulk-bar__delete {
+  margin-left: var(--space-2);
+}
+
+/* Phones have no table header: its "select the page" checkbox moves here.
+   (.table-scroll > : stronger than forms.css' label:has(> checkbox).) */
+.table-scroll > .select-page-mobile {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .table-scroll > .select-page-mobile {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: 0 0 var(--space-3);
+    padding: 0 var(--space-5);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+  }
+
+  .select-page-mobile input {
+    margin: 0;
+  }
+}
+
+/* Phones: the bulk bar in two tidy rows across the screen -
+   [☑] Zaznaczono: 20 ........ [Usuń]
+   Zaznacz wszystkie (145)     Odznacz */
+@media (max-width: 720px) {
+  .bulk-bar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "check count delete"
+      "all all clear";
+    align-items: center;
+    gap: var(--space-3) var(--space-3);
+    width: 100%;
+    padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  }
+
+  .bulk-bar__check {
+    grid-area: check;
+  }
+
+  .bulk-bar__count {
+    grid-area: count;
+  }
+
+  .bulk-bar__delete {
+    grid-area: delete;
+    margin-left: 0;
+  }
+
+  /* One line across the bar above the second row. */
+  .bulk-bar::before {
+    content: "";
+    grid-column: 1 / -1;
+    grid-row: 2;
+    align-self: start;
+    border-top: 1px solid rgb(255 255 255 / 15%);
+  }
+
+  .bulk-bar [data-bulk-everything],
+  .bulk-bar [data-bulk-clear] {
+    padding-top: var(--space-3);
+  }
+
+  .bulk-bar [data-bulk-everything] {
+    grid-area: all;
+    justify-self: start;
+  }
+
+  .bulk-bar [data-bulk-clear] {
+    grid-area: clear;
+    justify-self: end;
+  }
+}

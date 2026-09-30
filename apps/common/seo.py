@@ -21,7 +21,7 @@ DEFAULT_DESCRIPTION = (
 )
 DEFAULT_OG_IMAGE = "images/og/default.png"
 GUIDE_PUBLISHED = "2026-09-24"
-GUIDE_MODIFIED = "2026-09-24"
+GUIDE_MODIFIED = "2026-09-30"
 OG_IMAGE_SIZE = (1200, 630)
 
 # Every page title has the same shape: "<page name> | monituj.pl" - short
@@ -96,6 +96,17 @@ PAGES = {
         "label": "Jak zbierać dokumenty od klientów",
         "template": "pages/guide.html",
         "og_type": "article",
+    },
+    "pages:templates": {
+        "name": "Szablony list dokumentów od klientów",
+        "description": (
+            "Gotowe listy dokumentów dla biur rachunkowych, kadr, kancelarii, "
+            "pośredników i firm B2B - aktualne dla Polski. Użyj ich w Monituj za "
+            "darmo."
+        ),
+        "priority": "0.8",
+        "label": "Szablony dokumentów",
+        "template": "pages/templates_library.html",
     },
     "pages:security": {
         "name": "Bezpieczne przesyłanie dokumentów i RODO",
@@ -343,6 +354,7 @@ def software_application():
             "Prośby cykliczne wysyłane automatycznie co miesiąc, tydzień lub dzień",
             "Wysyłka jednej prośby do wielu klientów naraz",
             "Pobieranie wszystkich plików prośby w archiwum ZIP",
+            "Szablony próśb: własne i gotowe listy dokumentów dla branż",
             "Przesyłanie plików przez klienta bez zakładania konta",
             "Akceptacja i odrzucanie dokumentów z podaniem powodu",
             "Automatyczne usuwanie plików po ustalonym czasie (RODO)",
@@ -413,6 +425,35 @@ def segment_seo(request, segment):
                     ]
                 ),
                 faq_page(segment["faq"]),
+            )
+        ],
+    )
+
+
+def template_seo(request, template, segment):
+    """A ready template's page: its list is what people search for."""
+    return build(
+        request,
+        f"Lista dokumentów: {template.title}",
+        template.summary,
+        og_image=f"images/og/segment-{segment['slug']}.png",
+        jsonld=[
+            graph(
+                breadcrumbs(
+                    [
+                        (PAGES["pages:templates"]["label"], "/szablony/"),
+                        (template.title, request.path),
+                    ]
+                ),
+                {
+                    "@type": "ItemList",
+                    "name": f"Lista dokumentów: {template.title}",
+                    "numberOfItems": len(template.items),
+                    "itemListElement": [
+                        {"@type": "ListItem", "position": position, "name": name}
+                        for position, (name, _) in enumerate(template.items, start=1)
+                    ],
+                },
             )
         ],
     )

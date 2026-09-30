@@ -268,29 +268,72 @@
 
 .pagination {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-3);
+  justify-content: flex-end;
+  gap: var(--space-2);
   margin-top: var(--space-5);
   font-size: 14px;
   font-weight: 500;
   color: var(--color-text-muted);
 }
 
-.pagination a {
+.pagination__step,
+.pagination__page {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: 36px;
   min-height: 36px;
-  padding: 0 14px;
+  padding: 0 10px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   background: var(--color-bg);
   color: var(--color-text);
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
-.pagination a:hover {
+a.pagination__step:hover,
+a.pagination__page:hover {
   border-color: var(--color-black);
   text-decoration: none;
+}
+
+.pagination__page.is-current {
+  border-color: var(--color-black);
+  background: var(--color-black);
+  color: #fff;
+}
+
+.pagination__step.is-disabled {
+  border-color: var(--color-border);
+  color: var(--color-text-faint);
+}
+
+.pagination__gap {
+  min-width: 20px;
+  text-align: center;
+}
+
+/* On a phone: « ‹ 4 z 20 › » instead of the numbers. */
+.pagination__compact {
+  display: none;
+  padding: 0 var(--space-2);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .pagination__page,
+  .pagination__gap {
+    display: none;
+  }
+
+  .pagination__compact {
+    display: inline;
+  }
 }
 
 /* Document list builder (request forms) */
@@ -1714,4 +1757,98 @@
 .backup-codes code {
   font-size: 15px;
   letter-spacing: 0.04em;
+}
+
+/* Request templates: the form's picker and the "Szablony" page */
+.template-picker {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.template-picker__label {
+  font-weight: 600;
+}
+
+.template-picker__row {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.template-picker__row select {
+  min-width: 0;
+}
+
+.template-picker__hint {
+  margin: var(--space-2) 0 0;
+  font-size: 14px;
+}
+
+.save-template {
+  margin: var(--space-5) 0 var(--space-3);
+}
+
+.save-template__title {
+  margin-top: var(--space-3);
+}
+
+.template-usage {
+  font-size: 14px;
+  font-weight: 400;
+  margin-left: var(--space-2);
+}
+
+.template-group {
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.template-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.template-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.template-list .template-row:first-child {
+  border-top: 0;
+}
+
+.template-row__main {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.template-row__title {
+  display: block;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.template-row__meta {
+  display: block;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.template-row__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }

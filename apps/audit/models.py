@@ -33,6 +33,7 @@ class AuditEvent(models.TextChoices):
     DOCUMENTS_ANONYMIZED = "DOCUMENTS_ANONYMIZED", "Documents anonymized"
     REQUEST_CLOSED = "REQUEST_CLOSED", "Request closed"
     REQUEST_REOPENED = "REQUEST_REOPENED", "Request reopened"
+    REQUEST_DELETED = "REQUEST_DELETED", "Request deleted"
     ACCOUNT_DELETION_REQUESTED = (
         "ACCOUNT_DELETION_REQUESTED",
         "Account deletion requested",

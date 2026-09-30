@@ -63,6 +63,20 @@ FAQ = [
     {
         "category": "firma",
         "home": False,
+        "q": "Czy mogę zapisać prośbę jako szablon?",
+        "a": (
+            "Tak. Zaznacz „Zapisz jako szablon” przy wysyłaniu albo kliknij "
+            "„Zapisz jako szablon” na stronie wysłanej prośby. Następnym razem "
+            "wybierzesz szablon, a formularz wypełni się listą dokumentów, "
+            "terminem i ustawieniami - zostanie tylko wskazać klienta. Masz też "
+            "gotowe szablony dla biur rachunkowych, kadr, kancelarii, pośredników "
+            "i firm B2B, dostępne w każdym planie. Liczba własnych szablonów "
+            "zależy od planu: Free 1, Start 5, Biuro 20, Pro 50."
+        ),
+    },
+    {
+        "category": "firma",
+        "home": False,
         "q": "Czy mogę wysłać jedną prośbę do kilku klientów naraz?",
         "a": (
             "Tak. Wybierasz kilku klientów albo wklejasz kilka adresów email - "
@@ -171,7 +185,9 @@ FAQ = [
             "Plan Free jest bezpłatny i pozwala mieć 3 prośby w toku. Start "
             "kosztuje 39 zł netto miesięcznie (20 próśb), Biuro 89 zł (75 próśb), "
             "a Pro 179 zł (250 próśb); przy płatności rocznej 2 miesiące są "
-            "gratis. Przypomnienia, klienci i wszystkie funkcje są w każdym planie."
+            "gratis. Plany różnią się liczbą próśb w toku i własnych szablonów - "
+            "przypomnienia, klienci, gotowe szablony i pozostałe funkcje są w "
+            "każdym."
         ),
     },
     {

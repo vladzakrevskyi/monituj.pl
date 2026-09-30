@@ -27,9 +27,3 @@ def active_filter_count(request, keys, defaults=None):
         for key in keys
         if request.GET.get(key) and request.GET.get(key) != defaults.get(key)
     )
-
-
-def query_without_page(request):
-    params = request.GET.copy()
-    params.pop("page", None)
-    return params.urlencode()

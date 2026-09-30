@@ -232,10 +232,14 @@ def welcome_url(request, user):
     from django.contrib import messages
     from django.urls import reverse
 
+    from apps.requests.request_templates import signup_template_url
+
     account = account_for(user)
     state = state_for(user, account)
+    # A ready template picked in the library: straight to sending it.
+    template_url = signup_template_url(request)
     if not account.trial_plan or state.source != "trial":
-        return reverse("accounts:panel")
+        return template_url or reverse("accounts:panel")
     from apps.common.formatting import format_date
 
     messages.success(
@@ -244,4 +248,4 @@ def welcome_url(request, user):
         f"{format_date(state.trial_ends_at)}. Potem wybierzesz plan albo konto "
         "przejdzie na bezpłatny Free.",
     )
-    return reverse("billing:plan")
+    return template_url or reverse("billing:plan")

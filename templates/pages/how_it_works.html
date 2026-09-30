@@ -20,7 +20,7 @@
 <span class="timeline__num">2</span>
 <div class="timeline__body">
 <h2>Tworzysz prośbę o dokumenty</h2>
-<p>W jednym formularzu określasz wszystko, czego potrzebujesz - dla jednego klienta albo kilku naraz:</p>
+<p>W jednym formularzu określasz wszystko, czego potrzebujesz - dla jednego klienta albo kilku naraz. Możesz zacząć od <a href="{% url 'pages:templates' %}">gotowego szablonu dla swojej branży</a> albo od własnego, zapisanego wcześniej:</p>
 <ul class="check-list">
 {% include "pages/_check.html" with text="listę dokumentów - każdy z osobnym statusem" %}
 {% include "pages/_check.html" with text="termin, widoczny dla Ciebie i dla klienta" %}
@@ -28,6 +28,7 @@
 {% include "pages/_check.html" with text="harmonogram automatycznych przypomnień" %}
 {% include "pages/_check.html" with text="opcjonalnie: automatyczne powtarzanie - co dzień, tydzień, 2 tygodnie albo miesiąc" %}
 {% include "pages/_check.html" with text="okres przechowywania plików - maksymalnie rok" %}
+{% include "pages/_check.html" with text="opcjonalnie: zapis jako szablon na następny raz" %}
 </ul>
 </div>
 </li>

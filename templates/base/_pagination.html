@@ -1,0 +1,12 @@
+{% comment %}Rendered by {% pagination page_obj %} (apps/common/templatetags/pagination.py).{% endcomment %}
+{% if num_pages > 1 %}
+<nav class="pagination" aria-label="Strony listy">
+{% if first_url %}<a class="pagination__step" href="{{ first_url }}" title="Pierwsza strona" aria-label="Pierwsza strona">&laquo;</a>{% else %}<span class="pagination__step is-disabled" aria-hidden="true">&laquo;</span>{% endif %}
+{% if previous_url %}<a class="pagination__step" href="{{ previous_url }}" title="Poprzednia strona" aria-label="Poprzednia strona">&lsaquo;</a>{% else %}<span class="pagination__step is-disabled" aria-hidden="true">&lsaquo;</span>{% endif %}
+{% for page in pages %}{% if page.gap %}<span class="pagination__gap" aria-hidden="true">&hellip;</span>{% elif page.current %}<span class="pagination__page is-current" aria-current="page">{{ page.number }}</span>{% else %}<a class="pagination__page" href="{{ page.url }}" title="Strona {{ page.number }}">{{ page.number }}</a>{% endif %}
+{% endfor %}
+<span class="pagination__compact" aria-hidden="true">{{ number }} z {{ num_pages }}</span>
+{% if next_url %}<a class="pagination__step" href="{{ next_url }}" title="Następna strona" aria-label="Następna strona">&rsaquo;</a>{% else %}<span class="pagination__step is-disabled" aria-hidden="true">&rsaquo;</span>{% endif %}
+{% if last_url %}<a class="pagination__step" href="{{ last_url }}" title="Ostatnia strona ({{ num_pages }})" aria-label="Ostatnia strona">&raquo;</a>{% else %}<span class="pagination__step is-disabled" aria-hidden="true">&raquo;</span>{% endif %}
+</nav>
+{% endif %}

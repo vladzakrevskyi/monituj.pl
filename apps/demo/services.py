@@ -17,7 +17,7 @@ from apps.demo.models import DEMO_EMAIL_DOMAIN, DemoAccount
 from apps.documents.models import Document, DocumentStatus
 from apps.documents.storage import save_document_file
 from apps.reminders.models import Reminder, ReminderKind
-from apps.requests.models import Request, RequestItem
+from apps.requests.models import Request, RequestItem, RequestTemplate
 from apps.requests.models import RequestItemStatus as Status
 
 DEMO_LIFETIME = timedelta(hours=24)
@@ -242,7 +242,34 @@ class _Seeder:
             uploaded=self.at(4, 17, 34),
         )
         self.item(year_end, "Protokół inwentaryzacji", Status.BRAK)
+        self.templates()
         return september
+
+    def templates(self):
+        """Two own templates, so "Szablony" isn't empty in the demo."""
+        RequestTemplate.objects.create(
+            owner=self.user,
+            title="Miesięczne - KPiR",
+            name="Dokumenty za {miesiąc}",
+            item_names=[
+                "Faktury kosztowe spoza KSeF",
+                "Wyciągi bankowe",
+                "Raport miesięczny z kasy fiskalnej",
+            ],
+            deadline_choice="day10",
+            last_used_at=self.at(2),
+        )
+        RequestTemplate.objects.create(
+            owner=self.user,
+            title="Nowy klient - start",
+            name="Dokumenty na start współpracy",
+            item_names=[
+                "Podpisana umowa o usługi księgowe",
+                "Pełnomocnictwo UPL-1",
+                "Pełnomocnictwo ZUS-PEL",
+            ],
+            deadline_choice="7",
+        )
 
 
 class DemoService:

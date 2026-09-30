@@ -58,7 +58,26 @@
 </div>
 </section>
 
-<section class="section section--flush-top">
+{% if templates %}<section class="section section--flush-top">
+<div class="container">
+<div class="section-head">
+<p class="eyebrow">Gotowe szablony</p>
+<h2 class="display-2">Listy dokumentów <strong>gotowe do wysłania</strong></h2>
+</div>
+<div class="template-grid">
+{% for template in templates %}
+<a class="template-card" href="{% url 'pages:template' template.slug %}">
+<span class="template-card__count">{{ template.items|length }} dokumentów</span>
+<h3>{{ template.title }}</h3>
+<p>{{ template.summary }}</p>
+<span class="template-card__more">Zobacz listę &rarr;</span>
+</a>
+{% endfor %}
+</div>
+</div>
+</section>
+
+{% endif %}<section class="section section--flush-top">
 <div class="container container--narrow">
 <div class="section-head">
 <p class="eyebrow">Jak to działa</p>

@@ -1,5 +1,5 @@
 {% extends "base/app_base.html" %}
-{% load badges formatting %}
+{% load pagination badges formatting %}
 
 {% block page_name %}Dokumenty klienta {{ client.name }}{% endblock %}
 {% block page_class %}page--wide{% endblock %}
@@ -66,15 +66,5 @@
 </table>
 </div>
 
-{% if page_obj.paginator.num_pages > 1 %}
-<div class="pagination">
-{% if page_obj.has_previous %}
-<a href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}" title="Poprzednia strona">&larr; Poprzednia</a>
-{% endif %}
-<span>Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</span>
-{% if page_obj.has_next %}
-<a href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}" title="Następna strona">Następna &rarr;</a>
-{% endif %}
-</div>
-{% endif %}
+{% pagination page_obj %}
 {% endblock %}

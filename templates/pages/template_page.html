@@ -1,0 +1,75 @@
+{% extends "pages/base_page.html" %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Ścieżka">
+<a href="{% url 'landing' %}">Monituj</a><span aria-hidden="true">/</span>
+<a href="{% url 'pages:templates' %}">Szablony dokumentów</a><span aria-hidden="true">/</span>
+<span aria-current="page">{{ template.title }}</span>
+</nav>
+{% endblock %}
+{% block hero_eyebrow %}{{ segment.title }}{% endblock %}
+{% block hero_title %}Lista dokumentów: <strong>{{ template.title }}</strong>{% endblock %}
+{% block hero_lead %}{{ template.summary }}{% endblock %}
+{% block hero_actions %}
+<div class="hero__actions">
+<a class="btn btn-dark btn-lg" href="{{ use_url }}">Użyj szablonu za darmo</a>
+<a class="btn btn-secondary btn-lg" href="{{ guest_url }}">Wyślij bez konta</a>
+</div>
+{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<article class="template-sheet">
+<p class="template-sheet__head">Prośba „{{ template.name }}”</p>
+<ol class="template-items">
+{% for name, hint in template.items %}<li><strong>{{ name }}</strong>{% if hint %}<span>{{ hint }}</span>{% endif %}</li>
+{% endfor %}</ol>
+<dl class="template-sheet__meta">
+<div><dt>Termin</dt><dd>{{ deadline_text }}{% if template.monthly %} - najlepiej jako prośba cykliczna, wysyłana co miesiąc{% endif %}</dd></div>
+<div><dt>Wiadomość do klienta</dt><dd>{{ template.description }}</dd></div>
+</dl>
+<p class="template-sheet__foot">W Monituj każdy dokument ma własny status, a klient dostaje przypomnienia, dopóki nie prześle kompletu. Listę dopasujesz do siebie przed wysłaniem. Szablon jest pomocą, a nie poradą prawną ani podatkową - sprawdź, czy pasuje do Twojej sprawy.</p>
+</article>
+
+<div class="section-head">
+<h2 class="display-2">Jak wysłać tę listę <strong>w 2 minuty</strong></h2>
+</div>
+<ol class="timeline">
+<li class="timeline__step">
+<span class="timeline__num">1</span>
+<div class="timeline__body">
+<h3>Wybierasz szablon</h3>
+<p>Formularz prośby wypełni się tą listą, terminem i wiadomością. Dodasz albo usuniesz dokumenty, jeśli trzeba.</p>
+</div>
+</li>
+<li class="timeline__step">
+<span class="timeline__num">2</span>
+<div class="timeline__body">
+<h3>Wskazujesz klienta</h3>
+<p>Jednego albo kilku naraz - każdy dostaje własny link i przesyła pliki bez zakładania konta.</p>
+</div>
+</li>
+<li class="timeline__step">
+<span class="timeline__num">3</span>
+<div class="timeline__body">
+<h3>Monituj pilnuje reszty</h3>
+<p>Przypomina o brakach, aż dotrze komplet, a Ty widzisz status każdego dokumentu.</p>
+</div>
+</li>
+</ol>
+<div class="section-cta">
+<a class="btn btn-dark btn-lg" href="{{ use_url }}">Użyj szablonu za darmo</a>
+</div>
+
+<div class="note-card">
+<h2>Inne szablony - {{ segment.title }}</h2>
+<nav class="chip-nav" aria-label="Inne szablony">
+{% for other in related %}<a class="chip" href="{% url 'pages:template' other.slug %}">{{ other.title }}</a>{% endfor %}
+<a class="chip" href="{% url 'pages:segment' segment.slug %}">Monituj dla branży: {{ segment.title }}</a>
+<a class="chip" href="{% url 'pages:templates' %}">Wszystkie szablony</a>
+</nav>
+</div>
+</div>
+</section>
+{% endblock %}

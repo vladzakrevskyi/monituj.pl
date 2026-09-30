@@ -22,6 +22,7 @@ EVENT_LABELS_PL = {
     AuditEvent.REQUEST_UPDATED: "Zaktualizowano prośbę",
     AuditEvent.REQUEST_CLOSED: "Zamknięto prośbę",
     AuditEvent.REQUEST_REOPENED: "Otwarto ponownie prośbę",
+    AuditEvent.REQUEST_DELETED: "Usunięto prośbę",
     AuditEvent.INVITATION_SENT: "Wysłano zaproszenie z linkiem",
     AuditEvent.DOCUMENT_UPLOADED: "Klient przesłał dokument",
     AuditEvent.DOCUMENT_ACCEPTED: "Dokument zaakceptowany",

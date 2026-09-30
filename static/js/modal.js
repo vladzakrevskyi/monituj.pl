@@ -38,7 +38,7 @@ const Modal = (function () {
     if (focusTarget) focusTarget.focus();
   }
 
-  function build({ title, message, confirmLabel, cancelLabel, danger, field }) {
+  function build({ title, message, confirmLabel, cancelLabel, danger, field, option }) {
     const dialog = document.createElement("dialog");
     dialog.innerHTML = `
       <div class="modal__inner">
@@ -48,6 +48,7 @@ const Modal = (function () {
           <label></label>
           <textarea rows="3"></textarea>
         </div>
+        <label class="modal__option" hidden><input type="checkbox"> <span></span></label>
         <div class="modal-actions">
           <button type="button" class="btn" data-modal-confirm></button>
           <button type="button" class="btn btn-secondary" data-modal-close></button>
@@ -71,6 +72,11 @@ const Modal = (function () {
       wrap.querySelector("textarea").id = id;
       wrap.querySelector("textarea").placeholder = field.placeholder || "";
     }
+    if (option) {
+      const wrap = dialog.querySelector(".modal__option");
+      wrap.hidden = false;
+      wrap.querySelector("span").textContent = noOrphans(option);
+    }
     document.body.appendChild(dialog);
     enhance(dialog);
     return dialog;
@@ -82,6 +88,26 @@ const Modal = (function () {
       let result = false;
       dialog.querySelector("[data-modal-confirm]").addEventListener("click", () => {
         result = true;
+        dialog.close();
+      });
+      dialog.addEventListener("close", () => {
+        dialog.remove();
+        resolve(result);
+      });
+      open(dialog);
+      dialog.querySelector("[data-modal-confirm]").focus();
+    });
+  }
+
+  // Like confirm, with one checkbox (options.option is its label).
+  // -> null when cancelled, otherwise {checked}.
+  function confirmWithOption(options) {
+    return new Promise((resolve) => {
+      const dialog = build(options);
+      const box = dialog.querySelector(".modal__option input");
+      let result = null;
+      dialog.querySelector("[data-modal-confirm]").addEventListener("click", () => {
+        result = { checked: box.checked };
         dialog.close();
       });
       dialog.addEventListener("close", () => {
@@ -125,5 +151,35 @@ const Modal = (function () {
     if (dialog) open(dialog);
   });
 
-  return { open, confirm, prompt, enhance };
+  return { open, confirm, confirmWithOption, prompt, enhance };
 })();
+
+// <form data-confirm="Question?"> asks before sending, on every page.
+// data-confirm-title and data-confirm-label name the dialog and its button;
+// data-confirm-option adds a checkbox that sets the form's hidden input
+// named by data-confirm-option-input to "1".
+document.querySelectorAll("form[data-confirm]").forEach((form) => {
+  form.addEventListener("submit", async (event) => {
+    if (form.dataset.confirmed) return;
+    event.preventDefault();
+    const options = {
+      title: form.dataset.confirmTitle || "Na pewno?",
+      message: form.dataset.confirm,
+      confirmLabel: form.dataset.confirmLabel || "Tak",
+      danger: form.querySelector(".btn-danger, .btn-danger-solid") !== null,
+    };
+    if (form.dataset.confirmOption) {
+      const answer = await Modal.confirmWithOption({
+        ...options,
+        option: form.dataset.confirmOption,
+      });
+      if (!answer) return;
+      const input = form.querySelector(`input[name="${form.dataset.confirmOptionInput}"]`);
+      if (input) input.value = answer.checked ? "1" : "";
+    } else if (!(await Modal.confirm(options))) {
+      return;
+    }
+    form.dataset.confirmed = "1";
+    form.requestSubmit();
+  });
+});

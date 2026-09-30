@@ -1,0 +1,69 @@
+{% extends "base/app_base.html" %}
+
+{% block page_name %}Szablony próśb{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'requests:list' %}" title="Wróć: Przypomnienia">&larr; Przypomnienia</a>
+<div class="page-header">
+<div>
+<h1>Szablony próśb</h1>
+<p class="page-header__sub">Lista dokumentów, termin i ustawienia gotowe do użycia jednym kliknięciem.</p>
+</div>
+<div class="page-header__actions">
+{% if usage.at_limit %}<span class="text-muted">Limit szablonów wykorzystany</span>{% else %}<a class="btn btn-primary" href="{% url 'requests:template-create' %}">Nowy szablon</a>{% endif %}
+</div>
+</div>
+
+<section class="card">
+<h2 class="card-title">Moje szablony <span class="text-muted template-usage">{{ usage.used }} z {{ usage.limit }}{% if usage.plan %} w planie {{ usage.plan.name }}{% endif %}</span></h2>
+{% if usage.at_limit and usage.plan %}<p class="alert alert--info">Wykorzystano wszystkie szablony planu {{ usage.plan.name }}. Usuń szablon, którego nie używasz, albo <a href="{% url 'billing:plan' %}">zmień plan</a>.</p>{% endif %}
+{% if own %}
+<ul class="template-list">
+{% for template in own %}
+<li class="template-row">
+<div class="template-row__main">
+<a class="template-row__title" href="{% url 'requests:template-edit' template.pk %}">{{ template.title }}</a>
+<span class="template-row__meta">„{{ template.name }}” · {{ template.item_names|length }} dok. · {{ template.deadline_text }}</span>
+</div>
+<div class="template-row__actions">
+<a class="btn btn-primary btn-sm" href="{% url 'requests:create' %}?szablon={{ template.pk }}">Użyj</a>
+<a class="btn btn-secondary btn-sm" href="{% url 'requests:template-edit' template.pk %}">Edytuj</a>
+<form method="post" action="{% url 'requests:template-delete' template.pk %}" class="inline-form" data-confirm="Usunąć szablon „{{ template.title }}”? Prośby wysłane z niego zostaną bez zmian.">
+{% csrf_token %}
+<button type="submit" class="btn btn-danger btn-sm">Usuń</button>
+</form>
+</div>
+</li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="text-muted mb-0">Nie masz jeszcze własnych szablonów. Zapisz szablon przy wysyłaniu prośby, przyciskiem „Zapisz jako szablon” na stronie prośby albo skopiuj gotowy poniżej.</p>
+{% endif %}
+</section>
+
+<section class="card">
+<h2 class="card-title">Gotowe szablony</h2>
+<p class="text-muted">Przygotowane dla typowych spraw w Polsce - użyj od razu albo zapisz jako swój i dopasuj. Nie wliczają się do limitu.</p>
+{% for group in ready_groups %}
+<h3 class="template-group">{{ group.title }}</h3>
+<ul class="template-list">
+{% for template in group.templates %}
+<li class="template-row">
+<div class="template-row__main">
+<a class="template-row__title" href="{% url 'pages:template' template.slug %}" target="_blank" rel="noopener">{{ template.title }}</a>
+<span class="template-row__meta">{{ template.items|length }} dok. · {{ template.summary }}</span>
+</div>
+<div class="template-row__actions">
+<a class="btn btn-primary btn-sm" href="{% url 'requests:create' %}?szablon={{ template.slug }}">Użyj</a>
+<form method="post" action="{% url 'requests:template-copy' template.slug %}" class="inline-form">
+{% csrf_token %}
+<button type="submit" class="btn btn-secondary btn-sm"{% if usage.at_limit %} disabled title="Limit szablonów wykorzystany"{% endif %}>Zapisz jako mój</button>
+</form>
+</div>
+</li>
+{% endfor %}
+</ul>
+{% endfor %}
+</section>
+{% endblock %}

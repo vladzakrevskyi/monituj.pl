@@ -54,7 +54,7 @@
 <p>Dokumenty klientów to często dane osobowe i finansowe. Zbieranie ich w zwykłej skrzynce mailowej oznacza kopie rozsiane po wielu miejscach bez kontroli, kto ma do nich dostęp i jak długo. Lepiej, gdy każdy klient ma własny, trudny do odgadnięcia link (w razie potrzeby z hasłem), pliki trafiają do prywatnego magazynu, a po ustalonym czasie są automatycznie usuwane. Pamiętaj też o umowie powierzenia z dostawcą narzędzia - to Ty pozostajesz administratorem danych klientów.</p>
 
 <h2 id="listy">Gotowe listy dokumentów dla branż</h2>
-<p>Przykładowe listy, od których możesz zacząć - z opisem, jak zebrać je bez pogoni:</p>
+<p>Przykładowe listy, od których możesz zacząć - z opisem, jak zebrać je bez pogoni. Szczegółowe listy z wyjaśnieniem każdego dokumentu (np. do kredytu hipotecznego, zatrudnienia albo sprawy spadkowej) znajdziesz w <a href="{% url 'pages:templates' %}">szablonach list dokumentów</a>:</p>
 <ul class="article__links">
 {% for segment in segments %}
 <li><a href="{% url 'pages:segment' segment.slug %}">{{ segment.title }}</a> - {{ segment.teaser }}</li>

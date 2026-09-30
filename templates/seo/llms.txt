@@ -9,7 +9,7 @@ Najważniejsze fakty:
 - Przypomnienia wychodzą o tej godzinie, o której wysłano prośbę, według strefy czasowej odbiorcy (między 8:00 a 20:00), i wyłączają się same po skompletowaniu dokumentów.
 - Odbiorca ma jeden stały link ze wszystkimi prośbami wysłanymi na jego adres, od wszystkich nadawców.
 - Bezpieczeństwo: unikalne linki, opcjonalne hasło do prośby, prywatny magazyn plików, sprawdzanie typu pliku, automatyczne usuwanie plików po wybranym okresie (maks. 365 dni), umowa powierzenia (RODO).
-- Cena: płaci się za liczbę próśb w toku (prowadzonych jednocześnie), nie za przypomnienia. Free - 0 zł, do 3 próśb w toku, bez limitu czasu; Start - 39 zł netto/mies., do 20; Biuro - 89 zł netto/mies., do 75; Pro - 179 zł netto/mies., do 250. Rocznie 2 miesiące gratis. Każdy płatny plan można wypróbować przez 30 dni za darmo, bez karty (domyślnie Biuro). Jedną prośbę dziennie można wysłać nawet bez zakładania konta.
+- Cena: płaci się za liczbę próśb w toku (prowadzonych jednocześnie), nie za przypomnienia. Free - 0 zł, do 3 próśb w toku, bez limitu czasu; Start - 39 zł netto/mies., do 20; Biuro - 89 zł netto/mies., do 75; Pro - 179 zł netto/mies., do 250. Własne szablony próśb: Free 1, Start 5, Biuro 20, Pro 50 (gotowe szablony dla wszystkich). Rocznie 2 miesiące gratis. Każdy płatny plan można wypróbować przez 30 dni za darmo, bez karty (domyślnie Biuro). Jedną prośbę dziennie można wysłać nawet bez zakładania konta.
 - Język: polski. Rynek: Polska.
 
 ## Strony
@@ -19,6 +19,10 @@ Najważniejsze fakty:
 ## Branże
 
 {% for segment in segments %}- [{{ segment.title }}]({{ segment.url }}): {{ segment.teaser }}
+{% endfor %}
+## Szablony list dokumentów
+
+{% for template in templates %}- [{{ template.title }}]({{ template.url }}): {{ template.summary }}
 {% endfor %}
 ## Optional
 

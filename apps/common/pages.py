@@ -1,5 +1,6 @@
 from django.http import Http404
 from django.shortcuts import render
+from django.urls import reverse
 
 from apps.common import seo
 from apps.common.content import FAQ, FAQ_CATEGORIES, SEGMENTS
@@ -59,6 +60,64 @@ def segment(request, slug):
         {
             "segment": current,
             "others": others,
+            "templates": _segment_templates(slug),
             "seo": seo.segment_seo(request, current),
         },
     )
+
+
+def _segment_templates(slug):
+    from apps.requests import template_library
+
+    return template_library.for_segment(slug)
+
+
+def templates_library(request):
+    """The ready request templates, by industry - public and indexed."""
+    from apps.requests import template_library
+
+    groups = [
+        {"segment": segment, "templates": template_library.for_segment(segment["slug"])}
+        for segment in SEGMENTS
+    ]
+    return render(request, "pages/templates_library.html", {"groups": groups})
+
+
+def template_page(request, slug):
+    """One ready template: the list with what each document means, and a way
+    to use it - in the panel, after signing up, or without an account."""
+    from apps.requests import template_library
+
+    template = template_library.get(slug)
+    if template is None:
+        raise Http404
+    segment = next(s for s in SEGMENTS if s["slug"] == template.segment)
+    if request.user.is_authenticated:
+        use_url = f"{reverse('requests:create')}?szablon={slug}"
+    else:
+        use_url = f"{reverse('accounts:register')}?szablon={slug}"
+    return render(
+        request,
+        "pages/template_page.html",
+        {
+            "template": template,
+            "segment": segment,
+            "related": [
+                t
+                for t in template_library.for_segment(segment["slug"])
+                if t.slug != slug
+            ],
+            "use_url": use_url,
+            "guest_url": f"{reverse('public:guest-request-create')}?szablon={slug}",
+            "deadline_text": _deadline_text(template.deadline),
+            "seo": seo.template_seo(request, template, segment),
+        },
+    )
+
+
+def _deadline_text(choice):
+    if choice in ("7", "14"):
+        return f"{choice} dni od wysłania"
+    if choice == "day10":
+        return "do 10. dnia miesiąca"
+    return "bez terminu"

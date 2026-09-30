@@ -1,5 +1,5 @@
 {% extends "base/app_base.html" %}
-{% load static badges formatting %}
+{% load pagination static badges formatting %}
 
 {% block page_name %}Przypomnienia{% endblock %}
 {% block page_class %}page--wide{% endblock %}
@@ -49,9 +49,11 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 </nav>
 
 <div class="table-scroll">
+{% if page_obj.object_list %}<label class="select-page-mobile"><input type="checkbox" data-select-page> Zaznacz wszystkie na tej stronie</label>{% endif %}
 <table>
 <thead>
 <tr>
+<th class="cell-check">{% if page_obj.object_list %}<input type="checkbox" data-select-page aria-label="Zaznacz wszystkie na tej stronie">{% endif %}</th>
 <th>Nazwa</th>
 <th>Klient</th>
 <th>Termin</th>
@@ -64,6 +66,7 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 <tbody>
 {% for schedule in planned %}
 <tr>
+<td class="cell-check"></td>
 <td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'requests:recurring-edit' schedule.id %}">{{ schedule.next_name }}</a><span class="cell-sub"><span class="badge badge--neutral">Cykliczna</span> {{ schedule.when }}{% if schedule.active %} · pierwsza {{ schedule.next_run_on|date:"j.m" }}{% endif %}</span>{% if schedule.last_result.skipped %}<span class="cell-note">Nie wyszła {{ schedule.last_run_at|d }}: {{ schedule.last_result.skipped }}</span>{% endif %}</td>
 <td class="cell-muted" data-label="Klient">{{ schedule.clients_count }} {% if schedule.clients_count == 1 %}klient{% else %}klientów{% endif %}</td>
 <td class="cell-muted" data-label="Termin">{{ schedule.deadline_text|capfirst }}</td>
@@ -79,6 +82,7 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 {% endfor %}
 {% for request_obj in page_obj.object_list %}
 <tr>
+<td class="cell-check"><input type="checkbox" name="ids" value="{{ request_obj.id }}" form="bulk-form" data-select-row aria-label="Zaznacz: {{ request_obj.name }}"></td>
 <td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'requests:detail' request_obj.id %}">{{ request_obj.name }}</a>{% if request_obj.schedule %}<span class="cell-sub"><span class="badge badge--neutral">Cykliczna</span> <a href="{% url 'requests:recurring-edit' request_obj.schedule.id %}" title="Harmonogram: wyślij teraz, wstrzymaj, zmień">{{ request_obj.schedule.when }} · {% if request_obj.schedule.active %}następna {{ request_obj.schedule.next_run_on|date:"j.m" }}{% else %}wstrzymana{% endif %}</a></span>{% endif %}</td>
 <td data-label="Klient"><a class="link-plain" href="{% url 'clients:documents' request_obj.client.id %}">{{ request_obj.client.name }}</a></td>
 <td class="cell-muted" data-label="Termin">{% if request_obj.deadline %}{{ request_obj.deadline|dt }}{% else %}Bez terminu{% endif %}</td>
@@ -97,21 +101,29 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 </td>
 </tr>
 {% empty %}
-{% if not planned %}<tr class="table-empty"><td colspan="7">{% if has_filters or filters.data.status %}Brak przypomnień pasujących do filtrów.{% else %}Brak przypomnień.{% endif %}</td></tr>{% endif %}
+{% if not planned %}<tr class="table-empty"><td colspan="8">{% if has_filters or filters.data.status %}Brak przypomnień pasujących do filtrów.{% else %}Brak przypomnień.{% endif %}</td></tr>{% endif %}
 {% endfor %}
 </tbody>
 </table>
 </div>
 
-{% if page_obj.paginator.num_pages > 1 %}
-<div class="pagination">
-{% if page_obj.has_previous %}
-<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.previous_page_number }}" title="Poprzednia strona">&larr; Poprzednia</a>
+{% if page_obj.object_list %}
+<form method="post" action="{% url 'requests:bulk-delete' %}" id="bulk-form" class="bulk-bar" data-bulk data-total="{{ page_obj.paginator.count }}" data-confirm-title="Usunąć prośby ({n})?" data-confirm-message="Zaznaczone prośby znikną razem z historią i przesłanymi plikami, a linki u klientów przestaną działać. Tego nie można cofnąć." data-confirm-option="Usuń też klientów tych próśb - razem ze wszystkimi ich prośbami, także niezaznaczonymi." hidden>
+{% csrf_token %}
+{% for key, value in filter_params %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
+<input type="hidden" name="all" value="" data-bulk-all>
+<input type="hidden" name="with_clients" value="" data-bulk-option>
+<input type="checkbox" class="bulk-bar__check" data-select-page aria-label="Zaznacz wszystkie na tej stronie" title="Zaznacz wszystkie na tej stronie">
+<span class="bulk-bar__count" data-bulk-count aria-live="polite"></span>
+{% if page_obj.paginator.num_pages > 1 %}<button type="button" class="bulk-bar__link" data-bulk-everything hidden>Zaznacz wszystkie ({{ page_obj.paginator.count }})</button>{% endif %}
+<button type="button" class="bulk-bar__link" data-bulk-clear>Odznacz</button>
+<button type="submit" class="btn btn-danger-solid btn-sm bulk-bar__delete">Usuń</button>
+</form>
 {% endif %}
-<span>Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</span>
-{% if page_obj.has_next %}
-<a href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.next_page_number }}" title="Następna strona">Następna &rarr;</a>
-{% endif %}
-</div>
-{% endif %}
+
+{% pagination page_obj %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/bulk.js' %}"></script>
 {% endblock %}

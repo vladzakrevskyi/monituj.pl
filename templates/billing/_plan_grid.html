@@ -35,7 +35,7 @@ of _price_switches.html around it (CSS only, see billing.css).
 <p class="plan-card__sub">Bez karty i bez limitu czasu</p>
 </div>
 {% endif %}
-<p class="plan-card__limit"><strong>{{ card.limit.0 }}</strong> {{ card.limit.1 }} w toku jednocześnie</p>
+<p class="plan-card__limit"><strong>{{ card.limit.0 }}</strong> {{ card.limit.1 }} w toku jednocześnie<span class="plan-card__templates">Własne szablony próśb: {{ card.plan.templates }}</span></p>
 {% if panel %}
 {% if state.is_subscribed and not card.current and card.plan.is_paid and state.used > card.plan.active_requests %}<p class="plan-card__warning">Masz {{ state.used }} próśb w toku. Po zmianie nic się nie zatrzyma, ale nową prośbę wyślesz dopiero, gdy będzie ich mniej niż {{ card.plan.active_requests }}.</p>{% endif %}
 {% if card.plan.is_paid %}

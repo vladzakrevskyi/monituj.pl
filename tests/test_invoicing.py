@@ -73,12 +73,39 @@ class FakeInfakt:
         self.create_status = 201
         self.job = {"processing_code": 201, "invoice_uuid": "uuid-1"}
         self.down = False
+        # inFakt's client list; ignore_filters=True answers like an API that
+        # doesn't know the filter - with everyone.
+        self.clients = []
+        self.ignore_filters = False
+        self.invoices_down = False
+
+    def _clients(self, params):
+        found = self.clients
+        if not self.ignore_filters:
+            if "q[nip_eq]" in params:
+                found = [c for c in found if c.get("nip") == params["q[nip_eq]"]]
+            if "q[email_eq]" in params:
+                found = [c for c in found if c.get("email") == params["q[email_eq]"]]
+        return _response(200, {"metainfo": {}, "entities": found})
 
     def __call__(self, method, url, headers=None, timeout=None, **kwargs):
         self.calls.append((method, url, kwargs, headers))
         if self.down:
             raise requests.ConnectionError("down")
         path = url.split("/api/v3/", 1)[1]
+        if path == "clients.json" and method == "GET":
+            return self._clients(kwargs.get("params") or {})
+        if path == "clients.json" and method == "POST":
+            client = {"id": 100 + len(self.clients), **kwargs["json"]["client"]}
+            self.clients.append(client)
+            return _response(201, client)
+        if path.startswith("clients/") and method == "PUT":
+            client_id = int(path.split("/")[1].split(".")[0])
+            client = next(c for c in self.clients if c["id"] == client_id)
+            client.update(kwargs["json"]["client"])
+            return _response(200, client)
+        if method == "POST" and path == "async/invoices.json" and self.invoices_down:
+            raise requests.ConnectionError("timeout")
         if method == "POST" and path == "async/invoices.json":
             if self.create_status == 422:
                 return _response(422, {"errors": {"client_tax_code": ["zły NIP"]}})
@@ -236,7 +263,12 @@ def test_invoice_is_created_paid_by_card_and_emailed_with_the_pdf(user, infakt):
     assert data["status"] == "paid"
     assert data["payment_method"] == "card"
     assert data["paid_date"] == data["sale_date"] == "2026-09-28"
-    assert data["client_first_name"] == "Jan"
+    # The buyer is a client in inFakt's list, not typed into the invoice
+    # (that would add a new client every time).
+    assert data["client_id"] == 100
+    assert not any(key.startswith("client_") and key != "client_id" for key in data)
+    assert infakt.clients[0]["first_name"] == "Jan"
+    assert infakt.clients[0]["email"] == "owner@example.com"
     assert data["services"] == [
         {
             "name": invoice.description,
@@ -456,3 +488,73 @@ def test_wrong_nip_gives_a_private_invoice_and_tells_the_team(settings, user, in
     alert = mail.outbox[-1]
     assert alert.to == [settings.CONTACT_EMAIL]
     assert "4434434434" in alert.body
+
+
+# --- the buyer in inFakt's client list ------------------------------------------
+
+
+def _client_posts(infakt):
+    return [
+        c for c in infakt.calls if c[0] == "POST" and c[1].endswith("/clients.json")
+    ]
+
+
+@pytest.mark.django_db
+def test_every_invoice_of_a_firm_uses_one_infakt_client(infakt):
+    firm = [{"type": "eu_vat", "value": "PL5213017228"}]
+    for number in (1, 2, 3):
+        invoicing.queue_from_stripe(
+            stripe_invoice(invoice_id=f"in_{number}", name="Biuro", tax_ids=firm)
+        )
+        _run_until_done()
+
+    assert len(_client_posts(infakt)) == 1
+    assert len(infakt.clients) == 1
+    ids = {
+        k["json"]["invoice"]["client_id"]
+        for m, u, k, h in infakt.calls
+        if u.endswith("async/invoices.json")
+    }
+    assert ids == {infakt.clients[0]["id"]}
+
+
+@pytest.mark.django_db
+def test_a_known_client_gets_the_new_details(infakt):
+    infakt.clients.append(
+        {"id": 7, "nip": "5213017228", "company_name": "Stara nazwa", "city": "Łódź"}
+    )
+
+    invoicing.queue_from_stripe(
+        stripe_invoice(tax_ids=[{"type": "eu_vat", "value": "PL5213017228"}])
+    )
+    _run_until_done()
+
+    assert not _client_posts(infakt)
+    assert infakt.clients[0]["city"] == "Warszawa"
+    assert infakt.created_payload()["invoice"]["client_id"] == 7
+
+
+@pytest.mark.django_db
+def test_a_filter_inFakt_ignored_never_picks_someone_else(infakt):
+    infakt.ignore_filters = True
+    infakt.clients.append({"id": 7, "nip": "1111111111", "company_name": "Inna"})
+    infakt.clients.append({"id": 8, "email": "owner@example.com", "nip": "222"})
+
+    invoicing.queue_from_stripe(stripe_invoice())
+    _run_until_done()
+
+    assert len(_client_posts(infakt)) == 1
+    assert infakt.created_payload()["invoice"]["client_id"] not in (7, 8)
+
+
+@pytest.mark.django_db
+def test_a_retried_invoice_does_not_add_the_client_again(infakt):
+    infakt.invoices_down = True
+    invoicing.queue_from_stripe(stripe_invoice())
+    invoicing.process()
+    invoicing.process()
+    infakt.invoices_down = False
+    _run_until_done()
+
+    assert len(_client_posts(infakt)) == 1
+    assert VatInvoice.objects.get().status == VatInvoiceStatus.ISSUED

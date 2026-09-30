@@ -12,6 +12,7 @@
 {% if plan_state.at_limit %}
 <p class="alert alert--info">Masz już {{ plan_state.used }} z {{ plan_state.limit }} próśb w toku - tyle obejmuje plan {{ plan_state.plan.name }}. <a href="{% url 'billing:plan' %}">Zmień plan</a> albo zamknij prośbę, na którą już nie czekasz.</p>
 {% endif %}
+<form method="get" action="{% url 'requests:create' %}" id="template-picker-form" hidden>{% if request.GET.client %}<input type="hidden" name="client" value="{{ request.GET.client }}">{% endif %}</form>
 <form method="post" novalidate data-ajax-form data-request-form>
 {% csrf_token %}
 {% include "base/_form_flash.html" %}
@@ -30,9 +31,11 @@
 
 <section class="form-step">
 <h2 class="form-step__title"><span class="form-step__num">1</span>Czego potrzebujesz?</h2>
+{% include "requests/_template_picker.html" %}
 <p>
 <label for="{{ form.name.id_for_label }}">Nazwa prośby</label>
 <input type="text" name="name" id="{{ form.name.id_for_label }}" maxlength="255" placeholder="Np. Dokumenty za wrzesień"{% if form.name.value %} value="{{ form.name.value }}"{% endif %}>
+{% if form.name.value and "{" in form.name.value %}<small class="help-text">{miesiąc} zamienimy na miesiąc, którego dotyczą dokumenty (poprzedni), np. „wrzesień 2026”.</small>{% endif %}
 {{ form.name.errors }}
 </p>
 <div class="item-builder">
@@ -161,6 +164,16 @@
 </div>
 </details>
 
+<div class="save-template" data-save-template>
+<label>{{ form.save_as_template }} {{ form.save_as_template.label }} <span class="text-muted">- {% if template_usage.plan %}{{ template_usage.used }} z {{ template_usage.limit }} w planie {{ template_usage.plan.name }}{% else %}lista, termin i ustawienia na następny raz{% endif %}</span></label>
+<p class="save-template__title" data-save-template-title{% if not form.save_as_template.value %} hidden{% endif %}>
+<label for="{{ form.template_title.id_for_label }}">{{ form.template_title.label }}</label>
+<input type="text" name="template_title" id="{{ form.template_title.id_for_label }}" maxlength="120" placeholder="Domyślnie: nazwa prośby"{% if form.template_title.value %} value="{{ form.template_title.value }}"{% endif %}>
+{{ form.template_title.errors }}
+</p>
+{{ form.save_as_template.errors }}
+</div>
+
 <p class="request-summary" data-summary aria-live="polite"></p>
 <div class="form-actions">
 <button type="submit" class="btn btn-primary btn-lg" data-submit>Wyślij prośbę</button>
@@ -173,4 +186,5 @@
 {% block extra_js %}
 <script src="{% static 'js/request_items.js' %}"></script>
 <script src="{% static 'js/request_form.js' %}"></script>
+<script src="{% static 'js/request_templates.js' %}"></script>
 {% endblock %}

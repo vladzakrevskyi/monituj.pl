@@ -1,10 +1,12 @@
 """Monituj plans.
 
-A plan limits one thing: how many requests can be in progress at the same
-time - sent, not closed and still waiting for documents. Reminders, clients
-and every feature are the same on all plans, so someone with one request
-never pays what an office with hundreds does, and nobody is charged for the
-reminders that make the product work.
+A plan limits two things: how many requests can be in progress at the same
+time - sent, not closed and still waiting for documents - and how many own
+request templates the account keeps (apps/requests/request_templates.py;
+the ready ones are for everyone). Reminders, clients and every other feature
+are the same on all plans, so someone with one request never pays what an
+office with hundreds does, and nobody is charged for the reminders that make
+the product work.
 
 Prices are net amounts in grosze; VAT (settings.BILLING_VAT_RATE) is added
 on top by Stripe. The Stripe prices are found by their lookup keys, so the
@@ -27,6 +29,7 @@ class Plan:
     code: str
     name: str
     active_requests: int
+    templates: int
     monthly: int
     yearly: int
     tagline: str
@@ -39,12 +42,14 @@ class Plan:
         return self.yearly if interval == YEAR else self.monthly
 
 
-FREE = Plan("free", "Free", 3, 0, 0, "Na start i pojedyncze prośby.")
+FREE = Plan("free", "Free", 3, 1, 0, 0, "Na start i pojedyncze prośby.")
 START = Plan(
-    "start", "Start", 20, 3900, 39000, "Dla jednoosobowej firmy i małej kancelarii."
+    "start", "Start", 20, 5, 3900, 39000, "Dla jednoosobowej firmy i małej kancelarii."
 )
-BIURO = Plan("biuro", "Biuro", 75, 8900, 89000, "Dla biura rachunkowego i działu kadr.")
-PRO = Plan("pro", "Pro", 250, 17900, 179000, "Dla dużego biura z setkami klientów.")
+BIURO = Plan(
+    "biuro", "Biuro", 75, 20, 8900, 89000, "Dla biura rachunkowego i działu kadr."
+)
+PRO = Plan("pro", "Pro", 250, 50, 17900, 179000, "Dla dużego biura z setkami klientów.")
 
 PLANS = {plan.code: plan for plan in (FREE, START, BIURO, PRO)}
 PAID_PLANS = (START, BIURO, PRO)
@@ -82,6 +87,15 @@ def format_pln(amount):
     if grosze:
         return f"{whole},{grosze:02d} zł"
     return f"{whole} zł"
+
+
+def templates_phrase(count):
+    """'1 szablon', '5 szablonów', '2 szablony'."""
+    if count == 1:
+        return "1 szablon"
+    if count % 10 in (2, 3, 4) and count % 100 not in (12, 13, 14):
+        return f"{count} szablony"
+    return f"{count} szablonów"
 
 
 def requests_phrase(count):

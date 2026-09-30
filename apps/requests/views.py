@@ -1,9 +1,11 @@
+from urllib.parse import urlencode
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.http import FileResponse, Http404
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.formats import date_format
 from django.views.decorators.http import require_http_methods
@@ -12,7 +14,7 @@ from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService, translate_event
 from apps.clients.services import ClientService
 from apps.common.exceptions import ApplicationError
-from apps.common.filters import active_filter_count, query_without_page, status_tabs
+from apps.common.filters import active_filter_count, status_tabs
 from apps.common.forms import add_service_error
 from apps.common.responses import (
     ajax_form_error_response,
@@ -23,7 +25,7 @@ from apps.documents import archive
 from apps.notifications import inbox
 from apps.reminders.schedule import recipient_zone, send_clock
 from apps.reminders.services import ReminderScheduleService
-from apps.requests import received, recurring
+from apps.requests import received, recurring, request_templates
 from apps.requests.forms import (
     RecurringRequestForm,
     RequestEditForm,
@@ -35,12 +37,14 @@ from apps.requests.models import RecurringRequest, Request, RequestItem
 from apps.requests.services import RequestService, compute_status
 
 
-@login_required
-def request_list(request):
-    filters = RequestFilterForm(request.GET, owner=request.user)
+def _filtered(owner, params):
+    """The owner's requests as the list shows them with these filters (the
+    query string) - also for "delete all on every page". -> (filters, all
+    matching before the status tab, the status tab, the rows shown)."""
+    filters = RequestFilterForm(params, owner=owner)
     client = filters.value("client")
-    results = RequestService.filter_for_owner(
-        request.user,
+    everything = RequestService.filter_for_owner(
+        owner,
         search=(filters.value("q") or "").strip(),
         client_id=client.pk if client else None,
         deadline_from=filters.value("deadline_from"),
@@ -48,13 +52,31 @@ def request_list(request):
         reminders=filters.value("reminders"),
         sort=filters.value("sort") or "newest",
     )
-
     status_filter = filters.value("status") or ""
-    tabs = status_tabs(
-        request, RequestFilterForm.STATUS_CHOICES, results, status_filter
-    )
+    results = everything
     if status_filter:
-        results = [r for r in results if r.status_code == status_filter]
+        results = [r for r in everything if r.status_code == status_filter]
+    return filters, everything, status_filter, results
+
+
+# The filter fields a bulk action carries along, to find "all" again.
+FILTER_FIELDS = (
+    "q",
+    "status",
+    "client",
+    "deadline_from",
+    "deadline_to",
+    "reminders",
+    "sort",
+)
+
+
+@login_required
+def request_list(request):
+    filters, everything, status_filter, results = _filtered(request.user, request.GET)
+    tabs = status_tabs(
+        request, RequestFilterForm.STATUS_CHOICES, everything, status_filter
+    )
     page_obj = Paginator(results, 20).get_page(request.GET.get("page", 1))
     for request_obj in page_obj.object_list:
         status = compute_status(request_obj)
@@ -74,9 +96,14 @@ def request_list(request):
             "page_obj": page_obj,
             "filters": filters,
             "status_tabs": tabs,
-            "page_query": query_without_page(request),
             "has_filters": bool(request.GET.get("q") or advanced_count),
             "advanced_count": advanced_count,
+            "filter_params": [
+                (key, value)
+                for key in FILTER_FIELDS
+                for value in request.GET.getlist(key)
+                if value
+            ],
             # Not sent yet, so no row of their own - listed on top of the
             # first page, unless the list is narrowed down.
             "planned": (
@@ -123,13 +150,16 @@ def _planned(owner):
 @require_http_methods(["GET", "POST"])
 def request_create(request):
     item_names = []
+    template = None
     if request.method == "POST":
         form = RequestForm(request.POST, owner=request.user)
         item_names = form.item_names()
         if form.is_valid() and form.is_recurring:
             try:
                 form.save_sender_name(request.user)
-                return _save_recurring(request, form, item_names)
+                response = _save_recurring(request, form, item_names)
+                _save_template(request, form, item_names)
+                return response
             except ApplicationError as exc:
                 add_service_error(form, exc)
         elif form.is_valid() and form.to_many:
@@ -151,6 +181,7 @@ def request_create(request):
                     f"Prośba „{form.cleaned_data['name']}” wysłana do "
                     f"{clients_phrase(len(sent))} - wiadomości dotrą w ciągu minuty.",
                 )
+                _save_template(request, form, item_names)
                 redirect_url = reverse("requests:list")
                 if is_ajax_request(request):
                     return success_response({"redirect_url": redirect_url})
@@ -183,6 +214,7 @@ def request_create(request):
                     request=request,
                 )
                 messages.success(request, "Przypomnienie zostało utworzone.")
+                _save_template(request, form, item_names)
                 redirect_url = reverse("requests:detail", args=[request_obj.pk])
                 if is_ajax_request(request):
                     return success_response({"redirect_url": redirect_url})
@@ -192,7 +224,15 @@ def request_create(request):
         if is_ajax_request(request):
             return ajax_form_error_response(form)
     else:
-        form = RequestForm(owner=request.user, initial=_last_used(request.user))
+        initial = _last_used(request.user)
+        template = request_templates.find(request.user, request.GET.get("szablon"))
+        if template is not None:
+            values, item_names = request_templates.form_values(
+                template, recurring.owner_now(request.user).date()
+            )
+            initial.update(values)
+            request_templates.mark_used(template)
+        form = RequestForm(owner=request.user, initial=initial)
     preselected = request.GET.get("client", "")
     return render(
         request,
@@ -208,8 +248,29 @@ def request_create(request):
                 for c in form.fields["clients"].queryset
             ],
             "preselected": int(preselected) if preselected.isdigit() else None,
+            "templates": request_templates.picker(request.user),
+            "active_template": template if not form.is_bound else None,
+            "template_usage": request_templates.usage(request.user),
+            "suggest_recurring": getattr(template, "monthly", False),
         },
     )
+
+
+def _save_template(request, form, item_names):
+    """ "Zapisz jako szablon" ticked while sending. The request went out
+    already, so a problem here is only a warning."""
+    if not form.cleaned_data.get("save_as_template"):
+        return
+    try:
+        template = request_templates.save(
+            request.user, **form.template_values(item_names)
+        )
+    except ApplicationError as exc:
+        messages.warning(
+            request, f"Prośba wysłana, ale szablonu nie zapisano: {exc.message}"
+        )
+        return
+    messages.success(request, f"Zapisano szablon „{template.title}”.")
 
 
 # What accounting offices ask for most - after the owner's own habits.
@@ -338,6 +399,10 @@ def request_detail(request, request_id):
             "recipient_timezone": recipient_zone(request_obj).key,
             "automatic_sent": sum(1 for r in reminders if r.kind == "automatic"),
             "has_files": archive.documents_of(request_obj).exists(),
+            # For "Usuń też klienta": what else goes with them.
+            "client_other_requests": request_obj.client.requests.exclude(
+                pk=request_obj.pk
+            ).count(),
             "schedule": _schedule_of(request_obj),
         },
     )
@@ -443,6 +508,72 @@ def request_close(request, request_id):
             "nie może już przesyłać plików.",
         )
     return redirect("requests:detail", request_id=request_obj.pk)
+
+
+def _deleted_message(removed, name=None):
+    what = (
+        f"prośbę „{name}”"
+        if name and removed["requests"] == 1
+        else f"prośby: {removed['requests']}"
+    )
+    message = f"Usunięto {what}"
+    if removed["clients"]:
+        message += f" oraz klientów: {removed['clients']}"
+    message += "."
+    if removed["files"]:
+        message += f" Przesłane pliki ({removed['files']}) zostały trwale usunięte."
+    return message
+
+
+@login_required
+@require_http_methods(["POST"])
+def request_delete(request, request_id):
+    """ "Usuń prośbę": the request, its files and history, for good - and
+    with "Usuń też klienta" the client with all their requests."""
+    from apps.requests import deletion
+
+    request_obj = get_object_or_404(Request, pk=request_id, created_by=request.user)
+    name = request_obj.name
+    removed = deletion.delete_request(
+        request_obj,
+        with_client=request.POST.get("with_client") == "1",
+        django_request=request,
+    )
+    messages.success(request, _deleted_message(removed, name))
+    return redirect("requests:list")
+
+
+@login_required
+@require_http_methods(["POST"])
+def request_bulk_delete(request):
+    """The list's "Usuń zaznaczone": the ticked rows, or with all=1 every
+    request matching the filters sent along - on every page."""
+    from apps.requests import deletion
+
+    if request.POST.get("all") == "1":
+        ids = [r.pk for r in _filtered(request.user, request.POST)[3]]
+    else:
+        ids = [int(i) for i in request.POST.getlist("ids") if i.isdigit()]
+    back = reverse("requests:list")
+    query = urlencode(
+        [
+            (key, value)
+            for key in FILTER_FIELDS
+            for value in request.POST.getlist(key)
+            if value
+        ]
+    )
+    if not ids:
+        messages.info(request, "Nie zaznaczono żadnej prośby.")
+        return redirect(f"{back}?{query}" if query else back)
+    removed = deletion.delete_requests(
+        request.user,
+        ids,
+        with_clients=request.POST.get("with_clients") == "1",
+        django_request=request,
+    )
+    messages.success(request, _deleted_message(removed))
+    return redirect(f"{back}?{query}" if query else back)
 
 
 @login_required

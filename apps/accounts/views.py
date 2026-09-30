@@ -47,6 +47,7 @@ from apps.common.responses import (
     success_response,
 )
 from apps.demo.models import is_demo_user
+from apps.requests import request_templates
 
 DEMO_SETTINGS_MESSAGE = (
     "W wersji demo nie można zmieniać ustawień konta. Załóż własne konto, "
@@ -85,6 +86,7 @@ def register(request):
             return ajax_form_error_response(form)
     else:
         form = RegistrationForm()
+        request_templates.remember_for_signup(request)
     return render(
         request,
         "accounts/register.html",

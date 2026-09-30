@@ -1,5 +1,5 @@
 {% extends "base/app_base.html" %}
-{% load formatting %}
+{% load pagination formatting %}
 
 {% block page_name %}Powiadomienia{% endblock %}
 
@@ -26,17 +26,7 @@
 {% endfor %}
 </ul>
 
-{% if page_obj.paginator.num_pages > 1 %}
-<div class="pagination">
-{% if page_obj.has_previous %}
-<a href="?page={{ page_obj.previous_page_number }}" title="Poprzednia strona">&larr; Poprzednia</a>
-{% endif %}
-<span>Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}</span>
-{% if page_obj.has_next %}
-<a href="?page={{ page_obj.next_page_number }}" title="Następna strona">Następna &rarr;</a>
-{% endif %}
-</div>
-{% endif %}
+{% pagination page_obj %}
 {% else %}
 <div class="card">
 <p class="mb-0">Nie masz jeszcze powiadomień. Gdy klient prześle dokument, zobaczysz to tutaj.</p>
