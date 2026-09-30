@@ -166,6 +166,9 @@ class GuestRequestService:
                     fields.append("password")
                 owner.save(update_fields=fields)
                 GuestAccess.objects.get_or_create(user=owner)
+                from apps.consents import announcements
+
+                announcements.welcome(owner)
             # Inside the transaction: if sending is refused (daily limit),
             # the request stays unconfirmed instead of silently unsent.
             RequestService.deliver(

@@ -1,0 +1,17 @@
+{% extends "base/base.html" %}
+{% comment %}
+A document's wording in force during its notice period - taken from the
+archive (consents.LegalVersion), while the new wording, dated ahead, is one
+click away (?wersja=nowa). See apps/common/legal.py _legal_page.
+{% endcomment %}
+
+{% block page_name %}{{ document.title }}{% endblock %}
+{% block page_class %}page--legal{% endblock %}
+
+{% block content %}
+{% include "legal/_tabs.html" %}
+<article class="card legal">
+<p class="legal-notice">Od {{ upcoming.since }} obowiązuje nowa wersja tego dokumentu. <a href="{{ upcoming.url }}">Przeczytaj nową wersję</a></p>
+{{ html }}
+</article>
+{% endblock %}

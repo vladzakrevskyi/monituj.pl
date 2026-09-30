@@ -19,7 +19,12 @@ from apps.common.responses import (
 )
 from apps.consents.forms import LegalAcceptanceForm
 from apps.consents.models import AcceptanceMethod, CookieConsent
-from apps.consents.services import needs_acceptance, record_acceptance, to_accept
+from apps.consents.services import (
+    needs_acceptance,
+    record_acceptance,
+    to_accept,
+    version_in_force,
+)
 
 COOKIE_LOGS_PER_IP_HOUR = 60
 MAX_BODY = 2048
@@ -59,7 +64,7 @@ def accept(request):
                 {
                     "title": legal.DOCUMENTS[key].title,
                     "url": reverse(legal.DOCUMENTS[key].url_name),
-                    "since": legal.effective_date_display(key),
+                    "since": legal.version_display(version_in_force(key)),
                 }
                 for key in to_accept(request.user)
             ],

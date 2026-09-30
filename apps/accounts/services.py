@@ -24,6 +24,7 @@ from apps.common import throttle
 from apps.common.exceptions import RateLimitedAppError, ValidationAppError
 from apps.common.security import generate_public_token, hash_token
 from apps.common.site import absolute_url
+from apps.consents import announcements
 from apps.consents.models import AcceptanceMethod
 from apps.consents.services import record_acceptance
 from apps.documents.models import Document
@@ -194,6 +195,8 @@ class VerificationService:
         AuditService.log(
             AuditEvent.EMAIL_VERIFIED, actor=user, target=user, request=request
         )
+        # New legal versions announced ahead: this new account hears too.
+        announcements.welcome(user)
         return user
 
 

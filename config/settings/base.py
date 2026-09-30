@@ -213,6 +213,12 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.consents.tasks.archive_legal_documents",
         "schedule": 3600.0,
     },
+    # The announcement of new legal versions to people who joined after
+    # notify_legal_update ran - they are asked to accept on the day too.
+    "send-legal-announcements": {
+        "task": "apps.consents.tasks.send_legal_announcements",
+        "schedule": 3600.0,
+    },
     # VAT invoices for paid Stripe invoices: create in inFakt, then email.
     "issue-vat-invoices": {
         "task": "apps.billing.tasks.issue_invoices",

@@ -43,6 +43,7 @@ from apps.billing.services import apply_signup_plan
 from apps.common import throttle
 from apps.common.exceptions import RateLimitedAppError, ValidationAppError
 from apps.common.site import absolute_url
+from apps.consents import announcements
 from apps.consents.models import AcceptanceMethod
 from apps.consents.services import record_acceptance
 from apps.demo.models import is_demo_user
@@ -301,6 +302,7 @@ class GoogleAuthService:
             metadata={"method": "google"},
         )
         record_acceptance(user, AcceptanceMethod.GOOGLE, request)
+        announcements.welcome(user)
         apply_signup_plan(user, request)
         return user, account
 

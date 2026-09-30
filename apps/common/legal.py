@@ -104,6 +104,11 @@ def effective_date_display(key):
     return date_format(effective_date(key), "j E Y")
 
 
+def version_display(version):
+    """ "2026-10-15" -> "15 października 2026"."""
+    return date_format(date.fromisoformat(version), "j E Y")
+
+
 def legal_context(key=None):
     """The operator's details for the documents - and, for one document,
     the date its wording applies from."""
@@ -151,8 +156,36 @@ def render_body(key):
 
 
 def _legal_page(key):
+    """A document's page. During its notice period (a new version dated
+    ahead) it shows the wording in force, from the archive, with a link to
+    the new one (?wersja=nowa) - both can be read, as the law requires of
+    the Terms in force."""
+
     def view(request):
-        return render(request, DOCUMENTS[key].template, {"legal": legal_context(key)})
+        context = {"legal": legal_context(key)}
+        if not in_force(key):
+            from apps.consents.versions import in_force as wording_in_force
+
+            earlier = wording_in_force(key)
+            since = effective_date_display(key)
+            if earlier is not None and request.GET.get("wersja") != "nowa":
+                return render(
+                    request,
+                    "legal/in_force.html",
+                    {
+                        "document": DOCUMENTS[key],
+                        "html": mark_safe(earlier.html),  # noqa: S308 - our own text
+                        "upcoming": {
+                            "since": since,
+                            "url": f"{request.path}?wersja=nowa",
+                        },
+                    },
+                )
+            context["upcoming"] = {
+                "since": since,
+                "current_url": request.path if earlier is not None else None,
+            }
+        return render(request, DOCUMENTS[key].template, context)
 
     return view
 
@@ -168,8 +201,13 @@ def contract_attachment():
     from weasyprint.urls import URLFetcher
 
     from apps.consents.versions import current
+    from apps.consents.versions import in_force as wording_in_force
 
-    parts = [mark_safe(current(key).html) for key in CONTRACT]
+    # The wording in force - during a notice period the earlier one: the
+    # contract is concluded on it.
+    parts = [
+        mark_safe((wording_in_force(key) or current(key)).html) for key in CONTRACT
+    ]
     html = render_to_string(
         "legal/attachment.html",
         {

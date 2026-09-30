@@ -2,7 +2,10 @@
 
 A wording is archived the first time it matters - someone accepts it or
 buys a plan on it - and once a day for every document, so even a policy
-nobody has to accept (cookies) keeps its history. The archive is keyed by
+nobody has to accept (cookies) keeps its history. The archive also serves
+the notice period: a new version dated ahead is on the site at once, but
+until its day the one in force is the latest earlier archived wording
+(in_force) - the pages, sign-ups and purchases use that one. The archive is keyed by
 the text itself (SHA-256), not by the date: a text edited without a new
 date still gets its own row, and the team is told."""
 
@@ -70,11 +73,40 @@ def _alert_changed_without_new_version(key, version):
     )
 
 
+def in_force(key):
+    """The wording in force today. Normally the current one; while a new
+    version dated ahead waits for its day (the notice period), the latest
+    archived earlier one - the pages show it, and signing up or buying then
+    happens on it. None only if no earlier wording was ever archived."""
+    if legal.in_force(key):
+        return current(key)
+    return (
+        LegalVersion.objects.filter(document=key, version__lt=legal.version(key))
+        .order_by("-version", "-created_at")
+        .first()
+    )
+
+
+def upcoming(key):
+    """The new wording waiting for its day - or None when the document has
+    no notice period running (or nothing earlier to compare with)."""
+    if legal.in_force(key) or in_force(key) is None:
+        return None
+    return current(key)
+
+
 def wordings(keys):
-    """{document: {"version": ..., "sha256": ...}} for the given documents -
-    what is stored with a purchase."""
-    return {
-        key: {"version": row.version, "sha256": row.sha256}
-        for key in keys
-        for row in [current(key)]
-    }
+    """{document: {"version", "sha256"[, "next": {"version", "sha256"}]}}
+    for the given documents - what is stored with a purchase: the wording in
+    force, and the one announced to follow it."""
+    found = {}
+    for key in keys:
+        row = in_force(key) or current(key)
+        found[key] = {"version": row.version, "sha256": row.sha256}
+        following = upcoming(key)
+        if following is not None:
+            found[key]["next"] = {
+                "version": following.version,
+                "sha256": following.sha256,
+            }
+    return found

@@ -25,6 +25,7 @@ from apps.billing.models import BillingNotice, CheckoutConsent
 from apps.billing.services import PAID_STATUSES, stripe_mode, within_grace
 from apps.common import legal
 from apps.common.site import absolute_url
+from apps.consents.services import version_in_force
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
 
@@ -154,7 +155,17 @@ def _contract(notice):
     return {
         "early_start_at": consent.created_at if consent else None,
         "withdraw_until": concluded + timedelta(days=WITHDRAWAL_DAYS),
-        "terms_version": legal.effective_date_display(legal.TERMS),
+        # The Terms in force when bought - and, during a notice period, the
+        # day the announced new version applies (accepted on that day).
+        "terms_version": legal.version_display(
+            version_in_force(legal.TERMS) or legal.version(legal.TERMS)
+        ),
+        "terms_next": (
+            legal.effective_date_display(legal.TERMS)
+            if not legal.in_force(legal.TERMS)
+            and version_in_force(legal.TERMS) is not None
+            else ""
+        ),
         "contract_email": settings.LEGAL_ENTITY.get("email") or settings.CONTACT_EMAIL,
         "withdrawal_url": absolute_url(reverse("legal:withdrawal")),
     }

@@ -3,7 +3,7 @@ from django.utils import timezone
 from apps.common import legal
 from apps.common.security import get_client_ip
 from apps.consents.models import LegalAcceptance
-from apps.consents.versions import current
+from apps.consents.versions import current, in_force
 
 # Accepted together, always: the Terms with the data processing agreement,
 # and the Privacy policy (read - the account runs on the contract, not on
@@ -20,7 +20,9 @@ def record_acceptance(user, method, request=None):
     user_agent = request.META.get("HTTP_USER_AGENT", "")[:255] if request else ""
     rows = []
     for document in ALL_DOCUMENTS:
-        wording = current(document)
+        # The wording in force - during a notice period the earlier one; the
+        # new version is accepted on its day, like by everyone else.
+        wording = in_force(document) or current(document)
         rows.append(
             LegalAcceptance(
                 user=user,
@@ -39,16 +41,27 @@ def record_acceptance(user, method, request=None):
     user.save(update_fields=["terms_accepted_at", "privacy_policy_accepted_at"])
 
 
+def version_in_force(key):
+    """The version (date) that applies today - during a notice period the
+    earlier one; None when there is none yet (nothing to accept)."""
+    if legal.in_force(key):
+        return legal.version(key)
+    wording = in_force(key)
+    return wording.version if wording is not None else None
+
+
 def to_accept(user):
     """The documents whose version in force this person hasn't accepted yet -
-    including accounts from before versions were recorded."""
+    including accounts from before versions were recorded. A version
+    announced ahead is asked for only from its day."""
     accepted = set(
         LegalAcceptance.objects.filter(user=user).values_list("document", "version")
     )
     return [
         key
         for key in ALL_DOCUMENTS
-        if legal.in_force(key) and (key, legal.version(key)) not in accepted
+        for version in [version_in_force(key)]
+        if version and (key, version) not in accepted
     ]
 
 

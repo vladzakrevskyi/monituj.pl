@@ -20,3 +20,12 @@ def delete_old_cookie_consents():
 @shared_task
 def archive_legal_documents():
     return versions.archive_all()
+
+
+@shared_task
+def send_legal_announcements():
+    """The current announcement of new legal versions to people who joined
+    after it went out (announcements.send - nobody gets it twice)."""
+    from apps.consents import announcements
+
+    return announcements.send()

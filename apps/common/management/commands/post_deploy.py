@@ -26,7 +26,10 @@ from django.utils import timezone
 from apps.billing import gateway, gus, invoicing
 from apps.billing.models import BillingNotice, VatInvoice, VatInvoiceStatus
 from apps.common import legal
+from apps.consents import announcements
+from apps.consents.models import LegalAnnouncement
 from apps.consents.versions import archive_all
+from apps.consents.versions import in_force as wording_in_force
 
 
 class Command(BaseCommand):
@@ -106,11 +109,34 @@ class Command(BaseCommand):
             + (" · KSeF" if settings.INFAKT_SEND_TO_KSEF else "")
         )
         self.stdout.write(f"  GUS:         {settings.GUS_MODE}")
+        announced = LegalAnnouncement.objects.filter(
+            announced=announcements.announced_key()
+        ).exists()
         for key, doc in legal.DOCUMENTS.items():
             state = "obowiązuje" if legal.in_force(key) else "od tego dnia"
             self.stdout.write(
                 f"  {doc.title}: {legal.effective_date_display(key)} ({state})"
             )
+            if not legal.in_force(key):
+                earlier = wording_in_force(key)
+                if earlier is None:
+                    warn(
+                        f"{doc.title}: nowa wersja od "
+                        f"{legal.effective_date_display(key)}, a w archiwum nie ma "
+                        "wersji obowiązującej teraz - strona pokazuje tylko nową."
+                    )
+                else:
+                    self.stdout.write(
+                        f"    do tego dnia obowiązuje wersja z "
+                        f"{legal.version_display(earlier.version)} (z archiwum)"
+                    )
+                    if key in legal.ACCEPTED and not announced:
+                        warn(
+                            f"{doc.title}: nowa wersja od "
+                            f"{legal.effective_date_display(key)} nie została "
+                            "ogłoszona - uruchom notify_legal_update --changes "
+                            '"…", żeby powiadomić użytkowników.'
+                        )
 
         if settings.DEBUG:
             warn("DEBUG=True na produkcji.")

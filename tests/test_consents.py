@@ -359,13 +359,16 @@ def test_update_email_goes_once_to_every_real_account(published, verified_user):
     call_command("notify_legal_update", changes="Nowy cennik.")
     call_command("notify_legal_update", changes="Nowy cennik.")
 
-    assert [m.to for m in mail.outbox] == [[verified_user.email]]
+    # The newcomer signed up on the version in force, so hears too - once.
+    assert sorted(m.to[0] for m in mail.outbox) == sorted(
+        [verified_user.email, newcomer.email]
+    )
     body = mail.outbox[0].body.replace("\u00a0", " ")
     assert "Nowy cennik." in body
     # Only the document that changed.
     assert "Regulamin (od " in body
     assert "Polityka prywatności" not in body
-    assert LegalUpdateNotice.objects.count() == 1
+    assert LegalUpdateNotice.objects.count() == 2
 
 
 # --- 5. cookie consent register -------------------------------------------

@@ -115,3 +115,17 @@ class CookieConsent(models.Model):
 
     def __str__(self):
         return f"{self.consent_id} {self.choices}"
+
+
+class LegalAnnouncement(models.Model):
+    """What notify_legal_update announced about a set of new versions - kept
+    so people who join during the notice period get the same email
+    (apps/consents/announcements.py)."""
+
+    # The versions announced, e.g. "regulamin:2026-10-15|umowa_powierzenia:…".
+    announced = models.CharField(max_length=255, unique=True)
+    changes = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.announced
