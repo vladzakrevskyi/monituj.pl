@@ -358,6 +358,7 @@ def software_application():
             "Przesyłanie plików przez klienta bez zakładania konta",
             "Akceptacja i odrzucanie dokumentów z podaniem powodu",
             "Automatyczne usuwanie plików po ustalonym czasie (RODO)",
+            "Usuwanie próśb i klientów z całą historią, także wielu naraz",
         ],
         "offers": _offers(),
         "publisher": {"@id": absolute_url("/#organization")},

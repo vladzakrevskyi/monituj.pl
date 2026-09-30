@@ -243,6 +243,20 @@ FAQ = [
     {
         "category": "konto",
         "home": False,
+        "q": "Czy mogę usunąć prośbę albo klienta?",
+        "a": (
+            "Tak, w każdej chwili. Prośbę usuniesz na jej stronie, a kilka naraz - "
+            "zaznaczając je na liście (także wszystkie pasujące do filtrów). "
+            "Klienta usuniesz na liście klientów - razem ze wszystkimi "
+            "wysłanymi mu prośbami, plikami i historią. Tak spełnisz żądanie "
+            "klienta usunięcia jego danych (RODO). Usuniętych danych nie da się "
+            "przywrócić. Jeśli chcesz tylko zakończyć zbieranie dokumentów, "
+            "zamknij prośbę - zostanie w historii."
+        ),
+    },
+    {
+        "category": "konto",
+        "home": False,
         "q": "Jak usunąć konto?",
         "a": (
             "W Ustawieniach, w sekcji „Usunięcie konta”. Podajesz hasło, a my "
@@ -454,7 +468,9 @@ SEGMENT_PAGES = {
                     "Administratorem danych jest Twoje biuro, a Monituj przetwarza "
                     "je w Twoim imieniu na podstawie umowy powierzenia. Pliki są "
                     "automatycznie usuwane po okresie, który ustawisz - pobierz je "
-                    "wcześniej do swojego programu księgowego."
+                    "wcześniej do swojego programu księgowego. Gdy klient poprosi "
+                    "o usunięcie danych, usuniesz go razem ze wszystkimi prośbami "
+                    "i plikami."
                 ),
             },
         ],
