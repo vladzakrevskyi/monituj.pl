@@ -1,9 +1,9 @@
 {% load formatting %}{% autoescape off %}Okres próbny planu {{ trial_plan }} trwa do {{ trial_ends_at|dt }}. Potem konto przejdzie na bezpłatny plan {{ free_plan }}, w którym możesz mieć jednocześnie {{ free_limit }} w toku.
 {% if over_free_limit %}
-Masz teraz więcej próśb w toku, niż obejmuje plan Free. Nic się nie zatrzyma – przypomnienia będą wysyłane, a klienci mogą przesyłać pliki – ale nowe prośby wyślesz dopiero po wybraniu planu albo gdy część obecnych się zakończy.
+Masz teraz więcej próśb w toku, niż obejmuje plan Free. Nic się nie zatrzyma - przypomnienia będą wysyłane, a klienci mogą przesyłać pliki - ale nowe prośby wyślesz dopiero po wybraniu planu albo gdy część obecnych się zakończy.
 {% endif %}
 Jeśli chcesz dalej wysyłać więcej próśb, wybierz plan. Płacisz miesięcznie albo rocznie i możesz zrezygnować w każdej chwili:
 {{ plan_url }}
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

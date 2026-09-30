@@ -1,4 +1,4 @@
-{% load formatting %}{% autoescape off %}{% if sender_name %}{{ sender_name }} prosi{% else %}Otrzymujesz prośbę{% endif %} o przesłanie dokumentów. Nie musisz zakładać konta – wystarczy otworzyć link i dodać pliki.
+{% load formatting %}{% autoescape off %}{% if sender_name %}{{ sender_name }} prosi{% else %}Otrzymujesz prośbę{% endif %} o przesłanie dokumentów. Nie musisz zakładać konta - wystarczy otworzyć link i dodać pliki.
 
 Od: {{ sender_from }}
 {% if sender_firm %}Firma: {{ sender_firm }}

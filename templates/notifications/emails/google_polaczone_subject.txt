@@ -1,1 +1,1 @@
-{% autoescape off %}Dodano logowanie przez Google – Monituj{% endautoescape %}
+{% autoescape off %}Dodano logowanie przez Google - Monituj{% endautoescape %}

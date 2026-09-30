@@ -1,1 +1,1 @@
-{% autoescape off %}Prośba o zmianę adresu email – Monituj{% endautoescape %}
+{% autoescape off %}Prośba o zmianę adresu email - Monituj{% endautoescape %}

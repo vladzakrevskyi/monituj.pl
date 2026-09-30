@@ -5,7 +5,7 @@
 
 {% block hero_eyebrow %}Cennik{% endblock %}
 {% block hero_title %}Płacisz za prośby <strong>w toku</strong>, nie za przypomnienia{% endblock %}
-{% block hero_lead %}Plan zależy od tego, ile próśb o dokumenty prowadzisz jednocześnie. Przypomnienia, klienci i wszystkie funkcje są w każdym planie. Każdy płatny plan wypróbujesz przez {{ trial_days }} dni za darmo – bez karty.{% endblock %}
+{% block hero_lead %}Plan zależy od tego, ile próśb o dokumenty prowadzisz jednocześnie. Przypomnienia, klienci i wszystkie funkcje są w każdym planie. Każdy płatny plan wypróbujesz przez {{ trial_days }} dni za darmo - bez karty.{% endblock %}
 
 {% block page_body %}
 <section class="section section--flush-top">
@@ -16,7 +16,7 @@
 {% include "billing/_price_switches.html" with yearly=False gross=False %}
 </div>
 {% include "billing/_plan_grid.html" with panel=False %}
-<p class="plan-picker__foot">{% if vat_rate %}Do ceny netto doliczamy {{ vat_rate }}% VAT – przełącznik nad planami pokazuje ceny netto albo brutto. {% endif %}Płatność kartą przez Stripe, z góry za miesiąc albo rok. Zrezygnujesz w każdej chwili – plan działa do końca opłaconego okresu. Szczegóły w <a href="{% url 'legal:terms' %}#platnosci">Regulaminie</a>.</p>
+<p class="plan-picker__foot">{% if vat_rate %}Do ceny netto doliczamy {{ vat_rate }}% VAT - przełącznik nad planami pokazuje ceny netto albo brutto. {% endif %}Płatność kartą przez Stripe, z góry za miesiąc albo rok. Zrezygnujesz w każdej chwili - plan działa do końca opłaconego okresu. Szczegóły w <a href="{% url 'legal:terms' %}#platnosci">Regulaminie</a>.</p>
 </div>
 
 <div class="plan-features">
@@ -35,15 +35,15 @@
 <div class="plan-explainer">
 <div>
 <h2>Co to jest prośba w toku?</h2>
-<p>To prośba wysłana do klienta, na którą wciąż czekasz: nie jest zamknięta i brakuje w niej co najmniej jednego dokumentu. Prośba do kilku klientów liczy się jako kilka – po jednej na klienta. Gdy klient prześle komplet albo zamkniesz prośbę, zwalnia się miejsce na następną – zakończone prośby nie liczą się do limitu.</p>
+<p>To prośba wysłana do klienta, na którą wciąż czekasz: nie jest zamknięta i brakuje w niej co najmniej jednego dokumentu. Prośba do kilku klientów liczy się jako kilka - po jednej na klienta. Gdy klient prześle komplet albo zamkniesz prośbę, zwalnia się miejsce na następną - zakończone prośby nie liczą się do limitu.</p>
 </div>
 <div>
 <h2>Co, jeśli skończy się limit?</h2>
-<p>Nic się nie zatrzymuje: przypomnienia są wysyłane, a klienci przesyłają pliki. Nową prośbę wyślesz po zmianie planu albo gdy któraś z obecnych się zakończy. Prośba cykliczna, która się nie zmieści, nie wychodzi – dostaniesz o tym email.</p>
+<p>Nic się nie zatrzymuje: przypomnienia są wysyłane, a klienci przesyłają pliki. Nową prośbę wyślesz po zmianie planu albo gdy któraś z obecnych się zakończy. Prośba cykliczna, która się nie zmieści, nie wychodzi - dostaniesz o tym email.</p>
 </div>
 <div>
 <h2>Bez konta</h2>
-<p>Jedną prośbę dziennie możesz wysłać bez rejestracji – <a href="{% url 'public:guest-request-create' %}">wyślij prośbę bez konta</a>. Takie konto działa w planie {{ free_plan.name }}.</p>
+<p>Jedną prośbę dziennie możesz wysłać bez rejestracji - <a href="{% url 'public:guest-request-create' %}">wyślij prośbę bez konta</a>. Takie konto działa w planie {{ free_plan.name }}.</p>
 </div>
 </div>
 </div>

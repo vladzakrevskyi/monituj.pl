@@ -229,7 +229,7 @@ def test_every_deletion_is_reported_to_the_team(settings, client, user):
     send_pending()
 
     [alert] = [m for m in mail.outbox if m.to == [settings.CONTACT_EMAIL]]
-    assert alert.subject == "[Monituj – płatności] Konto usunięte"
+    assert alert.subject == "[Monituj - płatności] Konto usunięte"
     body = alert.body.replace(" ", " ")
     assert f"Konto: {user.email}" in body
     assert "Plan w chwili usunięcia: Biuro" in body  # the trial
@@ -254,7 +254,7 @@ def test_a_deletion_with_a_refund_names_the_amount(settings, client, user, fake_
     send_pending()
 
     [alert] = [m for m in mail.outbox if m.to == [settings.CONTACT_EMAIL]]
-    assert alert.subject.replace(" ", " ").endswith("Konto usunięte – zwrot 72,98 zł")
+    assert alert.subject.replace(" ", " ").endswith("Konto usunięte - zwrot 72,98 zł")
 
 
 # --- Credit: shown in the panel ------------------------------------------------------

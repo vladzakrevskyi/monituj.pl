@@ -33,7 +33,7 @@ from apps.requests.services import (
 
 INVALID_LINK_MESSAGE = (
     "Link jest nieprawidłowy lub wygasł. Prośby niepotwierdzone w ciągu 48 godzin "
-    "są usuwane – wyślij ją ponownie."
+    "są usuwane - wyślij ją ponownie."
 )
 SENDER_UNAVAILABLE_MESSAGE = "Z tego adresu nie można wysłać prośby."
 

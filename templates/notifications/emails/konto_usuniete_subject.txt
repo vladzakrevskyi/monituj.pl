@@ -1,1 +1,1 @@
-{% autoescape off %}Twoje konto zostało usunięte – Monituj{% endautoescape %}
+{% autoescape off %}Twoje konto zostało usunięte - Monituj{% endautoescape %}

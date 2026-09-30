@@ -60,8 +60,8 @@ def _alert_changed_without_new_version(key, version):
             f"a wersja (data) jest ta sama: {version}.",
             "Jeśli to zmiana merytoryczna, nadaj dokumentowi nową datę w .env "
             "(LEGAL_TERMS_DATE, LEGAL_DPA_DATE, LEGAL_PRIVACY_DATE, "
-            "LEGAL_COOKIES_DATE, LEGAL_WITHDRAWAL_DATE) i – dla Regulaminu i "
-            "umowy powierzenia – uprzedź użytkowników (notify_legal_update). "
+            "LEGAL_COOKIES_DATE, LEGAL_WITHDRAWAL_DATE) i - dla Regulaminu i "
+            "umowy powierzenia - uprzedź użytkowników (notify_legal_update). "
             "Obie wersje tekstu są w /admin/ → „Wersje dokumentów”.",
             "To samo się dzieje, gdy zmienisz dane w .env widoczne w "
             "dokumentach (np. dostawcę hostingu).",

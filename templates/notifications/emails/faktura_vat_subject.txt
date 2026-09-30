@@ -1,1 +1,1 @@
-{% autoescape off %}Faktura VAT {{ number }} – Monituj{% endautoescape %}
+{% autoescape off %}Faktura VAT {{ number }} - Monituj{% endautoescape %}

@@ -14,7 +14,7 @@
 
 {% if security_hint %}
 <div class="security-hint">
-<p class="security-hint__text"><strong>Chroń konto kodem z telefonu.</strong> Włącz weryfikację dwuetapową – samo hasło nie wystarczy, by ktoś wszedł na Twoje konto.</p>
+<p class="security-hint__text"><strong>Chroń konto kodem z telefonu.</strong> Włącz weryfikację dwuetapową - samo hasło nie wystarczy, by ktoś wszedł na Twoje konto.</p>
 <div class="security-hint__actions">
 <a class="btn btn-secondary btn-sm" href="{% url 'accounts:two-factor' %}">Włącz</a>
 <form method="post" action="{% url 'accounts:security-hint-hide' %}" class="inline-form">
@@ -57,7 +57,7 @@
 <h2 class="card-title">Ostatnia aktywność</h2>
 <ul class="history-list">
 {% for entry in recent_activity %}
-<li><span class="history-time">{{ entry.created_at|dt }}</span><span>{{ entry.label_pl }}{% if entry.actor and entry.actor != user %} &mdash; {{ entry.actor.email }}{% endif %}</span></li>
+<li><span class="history-time">{{ entry.created_at|dt }}</span><span>{{ entry.label_pl }}{% if entry.actor and entry.actor != user %} - {{ entry.actor.email }}{% endif %}</span></li>
 {% empty %}
 <li>Brak aktywności.</li>
 {% endfor %}

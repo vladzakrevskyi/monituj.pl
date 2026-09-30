@@ -1,1 +1,1 @@
-{% autoescape off %}Twój panel w Monituj – zachowaj ten link{% endautoescape %}
+{% autoescape off %}Twój panel w Monituj - zachowaj ten link{% endautoescape %}

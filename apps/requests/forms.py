@@ -348,7 +348,7 @@ class RequestForm(
         max_length=255,
         required=False,
         help_text=(
-            "Twoje imię i nazwisko albo nazwa firmy – odbiorca zobaczy ją razem "
+            "Twoje imię i nazwisko albo nazwa firmy - odbiorca zobaczy ją razem "
             "z Twoim adresem email. Zmienisz ją w Ustawieniach."
         ),
     )
@@ -491,13 +491,13 @@ class RequestForm(
             if cleaned_data.get("password"):
                 self.add_error(
                     "password",
-                    "Prośba cykliczna nie może mieć hasła – przy każdej wysyłce "
+                    "Prośba cykliczna nie może mieć hasła - przy każdej wysyłce "
                     "trzeba by je przekazywać od nowa.",
                 )
         elif self.to_many and cleaned_data.get("password"):
             self.add_error(
                 "password",
-                "Hasło ustawisz tylko w prośbie do jednego klienta – jedno "
+                "Hasło ustawisz tylko w prośbie do jednego klienta - jedno "
                 "hasło znane wielu osobom niczego nie chroni.",
             )
         return cleaned_data

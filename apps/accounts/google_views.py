@@ -56,7 +56,7 @@ def _check_inbox(request, email):
                 "title": CHECK_INBOX_TITLE,
                 "message": (
                     f"Wysłaliśmy link potwierdzający na {email}. Otwórz go w tej "
-                    "przeglądarce w ciągu 30 minut – potem logowanie przez Google "
+                    "przeglądarce w ciągu 30 minut - potem logowanie przez Google "
                     "zadziała od razu. Prosimy o to, bo Google nie prowadzi tej "
                     "skrzynki, więc sprawdzamy, że nadal należy do Ciebie."
                 ),
@@ -86,7 +86,7 @@ def google_connect(request):
         return redirect("accounts:settings")
     if not GoogleConnectGate.take(request):
         messages.error(
-            request, "Najpierw potwierdź, że to Ty – w Ustawieniach, przy Google."
+            request, "Najpierw potwierdź, że to Ty - w Ustawieniach, przy Google."
         )
         return redirect(reverse("accounts:settings") + "#google")
     return redirect(google.authorization_url(request, "connect", user=request.user))
@@ -167,7 +167,7 @@ def google_signup(request):
             else:
                 if outcome is Outcome.CONFIRM_SENT:
                     return _check_inbox(request, result)
-                messages.success(request, "Konto założone – witaj w Monituj!")
+                messages.success(request, "Konto założone - witaj w Monituj!")
                 redirect_url = welcome_url(request, request.user)
                 if is_ajax_request(request):
                     return success_response({"redirect_url": redirect_url})
@@ -197,5 +197,5 @@ def google_confirm(request, signed):
         GoogleAuthService.confirm(request, signed)
     except ApplicationError as exc:
         return _problem(request, exc.message)
-    messages.success(request, "Gotowe – od teraz możesz logować się przez Google.")
+    messages.success(request, "Gotowe - od teraz możesz logować się przez Google.")
     return redirect(two_factor.pending_url(request) or "accounts:panel")

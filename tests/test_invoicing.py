@@ -158,7 +158,7 @@ def test_private_person_gets_an_invoice_on_their_name(user):
         "client_last_name": "Kowalski",
     }
     assert invoice.description == (
-        "Abonament Monituj Biuro (miesięczny), okres 28.09.2026–28.10.2026"
+        "Abonament Monituj Biuro (miesięczny), okres 28.09.2026-28.10.2026"
     )
 
 
@@ -178,7 +178,7 @@ def test_firm_with_nip_gets_an_invoice_on_the_firm(user):
     assert invoice.client["client_tax_code"] == "5213017228"
     assert "client_first_name" not in invoice.client
     assert invoice.description.startswith(
-        "Dopłata za zmianę planu – Abonament Monituj Biuro (roczny)"
+        "Dopłata za zmianę planu - Abonament Monituj Biuro (roczny)"
     )
 
 
@@ -248,7 +248,7 @@ def test_invoice_is_created_paid_by_card_and_emailed_with_the_pdf(user, infakt):
     assert infakt.calls[0][3]["X-inFakt-ApiKey"] == "sandbox-key"
     assert "api.sandbox-infakt.pl" in infakt.calls[0][1]
     message = mail.outbox[-1]
-    assert message.subject == "Faktura VAT 7/09/2026 – Monituj"
+    assert message.subject == "Faktura VAT 7/09/2026 - Monituj"
     assert message.to == ["owner@example.com"]
     assert message.attachments[0][0] == "Faktura-7-09-2026.pdf"
     assert message.attachments[0][1] == b"%PDF-1.4 faktura"

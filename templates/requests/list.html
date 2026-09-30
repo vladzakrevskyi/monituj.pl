@@ -67,7 +67,7 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 <td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'requests:recurring-edit' schedule.id %}">{{ schedule.next_name }}</a><span class="cell-sub"><span class="badge badge--neutral">Cykliczna</span> {{ schedule.when }}{% if schedule.active %} · pierwsza {{ schedule.next_run_on|date:"j.m" }}{% endif %}</span>{% if schedule.last_result.skipped %}<span class="cell-note">Nie wyszła {{ schedule.last_run_at|d }}: {{ schedule.last_result.skipped }}</span>{% endif %}</td>
 <td class="cell-muted" data-label="Klient">{{ schedule.clients_count }} {% if schedule.clients_count == 1 %}klient{% else %}klientów{% endif %}</td>
 <td class="cell-muted" data-label="Termin">{{ schedule.deadline_text|capfirst }}</td>
-<td class="cell-muted" data-label="Postęp">–</td>
+<td class="cell-muted" data-label="Postęp">-</td>
 <td class="cell-muted" data-label="Przypomnienia">{% if schedule.reminders_enabled %}Włączone{% else %}Wyłączone{% endif %}</td>
 <td data-label="Status">{% if schedule.active %}<span class="badge badge--neutral">Zaplanowana</span>{% else %}<span class="badge badge--neutral">Wstrzymana</span>{% endif %}</td>
 <td class="cell-right cell-actions" data-label="Akcje">

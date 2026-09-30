@@ -19,7 +19,7 @@ FAQ = [
         "home": True,
         "q": "Czym Monituj różni się od dysku w chmurze albo maila?",
         "a": (
-            "Dysk i mail tylko przechowują pliki – to Ty musisz pamiętać, czego "
+            "Dysk i mail tylko przechowują pliki - to Ty musisz pamiętać, czego "
             "brakuje, i przypominać klientom. Monituj prowadzi listę potrzebnych "
             "dokumentów, sam wysyła przypomnienia według ustalonego harmonogramu, "
             "pokazuje status każdego dokumentu i usuwa pliki po ustalonym czasie."
@@ -32,8 +32,8 @@ FAQ = [
         "a": (
             "Dla każdej prośby ustawiasz, po ilu dniach wysłać pierwsze "
             "przypomnienie, co ile dni je powtarzać i ile razy maksymalnie. "
-            "Przypomnienia wychodzą o tej godzinie, o której wysłałeś prośbę – "
-            "według zegara odbiorcy – i przestają, gdy dotrze komplet dokumentów. "
+            "Przypomnienia wychodzą o tej godzinie, o której wysłałeś prośbę - "
+            "według zegara odbiorcy - i przestają, gdy dotrze komplet dokumentów. "
             "W panelu widzisz dokładne daty kolejnych przypomnień."
         ),
     },
@@ -42,7 +42,7 @@ FAQ = [
         "home": False,
         "q": "Czy mogę przypomnieć klientowi ręcznie?",
         "a": (
-            "Tak. W każdej chwili wyślesz przypomnienie jednym kliknięciem – "
+            "Tak. W każdej chwili wyślesz przypomnienie jednym kliknięciem - "
             "niezależnie od automatycznego harmonogramu."
         ),
     },
@@ -65,7 +65,7 @@ FAQ = [
         "home": False,
         "q": "Czy mogę wysłać jedną prośbę do kilku klientów naraz?",
         "a": (
-            "Tak. Wybierasz kilku klientów albo wklejasz kilka adresów email – "
+            "Tak. Wybierasz kilku klientów albo wklejasz kilka adresów email - "
             "nowych klientów Monituj doda sam. Każdy klient dostaje osobną "
             "prośbę z własnym linkiem, więc widzi tylko swoje dokumenty, a Ty "
             "śledzisz postęp każdego z osobna."
@@ -105,7 +105,7 @@ FAQ = [
         "home": False,
         "q": "Jakie pliki może przesłać klient?",
         "a": (
-            f"{_EXTENSIONS} – do {_MAX_MB} MB na plik. Każdy plik sprawdzamy także "
+            f"{_EXTENSIONS} - do {_MAX_MB} MB na plik. Każdy plik sprawdzamy także "
             "pod kątem rzeczywistego typu zawartości, a nie tylko rozszerzenia."
         ),
     },
@@ -126,7 +126,7 @@ FAQ = [
         "a": (
             "W wiadomości i na stronie prośby widzi Twoją nazwę i adres email, "
             "z którego może Ci odpowiedzieć. Jeśli masz płatny plan na fakturę "
-            "firmową, możesz w Ustawieniach pokazywać też nazwę firmy i NIP – "
+            "firmową, możesz w Ustawieniach pokazywać też nazwę firmy i NIP - "
             "pobrane z rejestru, więc nie da się ich zmyślić."
         ),
     },
@@ -136,7 +136,7 @@ FAQ = [
         "q": "Jak długo przechowujecie dokumenty?",
         "a": (
             "Tyle, ile ustawisz dla danej prośby: 30, 90 lub 180 dni, rok albo "
-            "własny okres – maksymalnie 365 dni od przesłania pliku. Potem plik "
+            "własny okres - maksymalnie 365 dni od przesłania pliku. Potem plik "
             "jest trwale usuwany, a Ty i Twój klient dostajecie o tym powiadomienie."
         ),
     },
@@ -180,9 +180,9 @@ FAQ = [
         "q": "Czy jest okres próbny?",
         "a": (
             "Tak. Każdy płatny plan wypróbujesz przez 30 dni za darmo, bez "
-            "podawania karty – wybierz go w Cenniku przed rejestracją (domyślnie "
+            "podawania karty - wybierz go w Cenniku przed rejestracją (domyślnie "
             "Biuro). Jeśli potem nie wybierzesz planu, konto przechodzi na "
-            "bezpłatny plan Free – nic nie jest pobierane, a wszystkie dane "
+            "bezpłatny plan Free - nic nie jest pobierane, a wszystkie dane "
             "zostają."
         ),
     },
@@ -193,12 +193,12 @@ FAQ = [
         "a": (
             "Prośba wysłana do klienta, na którą wciąż czekasz: nie jest zamknięta "
             "i brakuje w niej co najmniej jednego dokumentu. Prośba do kilku "
-            "klientów to kilka próśb – po jednej na klienta. Zakończone i "
+            "klientów to kilka próśb - po jednej na klienta. Zakończone i "
             "zamknięte prośby nie wliczają się do limitu. Gdy limit się wyczerpie, "
-            "nic się nie zatrzymuje – przypomnienia są wysyłane, a klienci "
+            "nic się nie zatrzymuje - przypomnienia są wysyłane, a klienci "
             "przesyłają pliki; nową prośbę wyślesz po zmianie planu albo gdy "
             "któraś z obecnych się zakończy. Prośba cykliczna, która nie mieści "
-            "się w limicie, nie wychodzi – dostaniesz o tym email."
+            "się w limicie, nie wychodzi - dostaniesz o tym email."
         ),
     },
     {
@@ -217,7 +217,7 @@ FAQ = [
         "home": False,
         "q": "Czy mogę wysłać prośbę bez zakładania konta?",
         "a": (
-            "Tak – jedną dziennie. Wypełniasz krótki formularz, potwierdzasz go "
+            "Tak - jedną dziennie. Wypełniasz krótki formularz, potwierdzasz go "
             "linkiem z maila i prośba trafia do odbiorcy. Dostajesz też stały "
             "link do panelu: zobaczysz w nim wszystkie swoje prośby, pobierzesz "
             "pliki, zmienisz ustawienia albo zamkniesz prośbę. Gdy ustawisz "
@@ -265,7 +265,7 @@ SEGMENTS = [
         ),
         "problem": (
             "Co miesiąc ta sama pogoń: faktury, wyciągi, raporty. Część klientów "
-            "wysyła wszystko na czas, reszta – na ostatnią chwilę, w kilku mailach. "
+            "wysyła wszystko na czas, reszta - na ostatnią chwilę, w kilku mailach. "
             "A termin rozliczenia się nie przesuwa."
         ),
         "solution": (
@@ -291,7 +291,7 @@ SEGMENTS = [
             "różnymi kanałami. Trudno ustalić, co już jest, a czego wciąż brakuje."
         ),
         "solution": (
-            "Jedna prośba na sprawę – z listą, terminem i opcjonalnym hasłem "
+            "Jedna prośba na sprawę - z listą, terminem i opcjonalnym hasłem "
             "dostępu. Każdy dokument ma status, a historia pokazuje, kiedy co "
             "wpłynęło."
         ),
@@ -315,7 +315,7 @@ SEGMENTS = [
         ),
         "solution": (
             "Wysyłasz pracownikowi link z listą dokumentów. Monituj przypomina o "
-            "brakach, a Ty wiesz, czego jeszcze brakuje w aktach – bez szukania "
+            "brakach, a Ty wiesz, czego jeszcze brakuje w aktach - bez szukania "
             "załączników w skrzynce."
         ),
         "examples": [
@@ -330,7 +330,7 @@ SEGMENTS = [
         "slug": "posrednictwo",
         "title": "Nieruchomości, kredyty i ubezpieczenia",
         "icon": _ICON_HOUSE,
-        "teaser": "Wniosek rusza, gdy dotrze komplet – bez telefonów do klienta.",
+        "teaser": "Wniosek rusza, gdy dotrze komplet - bez telefonów do klienta.",
         "problem": (
             "Wniosek stoi, bo klient nie przysłał jednego zaświadczenia. Każdy "
             "dzień zwłoki to ryzyko, że transakcja się opóźni albo przepadnie."
@@ -379,16 +379,16 @@ SEGMENT_PAGES = {
     "biura-rachunkowe": {
         "seo_name": "Dokumenty od klientów biura rachunkowego",
         "seo_description": (
-            "Faktury, wyciągi i raporty od klientów przed terminem VAT i JPK – "
+            "Faktury, wyciągi i raporty od klientów przed terminem VAT i JPK - "
             "bez maili i telefonów. Monituj sam przypomina klientom biura "
             "rachunkowego o brakach."
         ),
-        "h1": "Dokumenty od klientów biura rachunkowego – na czas, bez pogoni",
+        "h1": "Dokumenty od klientów biura rachunkowego - na czas, bez pogoni",
         "lead": (
             "Co miesiąc ta sama sytuacja: zbliża się termin rozliczenia, a "
             "połowa klientów jeszcze nie przysłała faktur i wyciągów. Monituj "
             "wysyła każdemu klientowi listę dokumentów za dany miesiąc i sam "
-            "przypomina o brakach – Ty tylko księgujesz to, co już dotarło."
+            "przypomina o brakach - Ty tylko księgujesz to, co już dotarło."
         ),
         "pains": [
             "Dziesiątki maili i telefonów „prześlij, proszę, wyciąg za wrzesień”.",
@@ -398,7 +398,7 @@ SEGMENT_PAGES = {
         "benefits": [
             "Jedna prośba cykliczna wychodzi co miesiąc do wszystkich klientów sama.",
             "Każdy klient dostaje tę samą, jasną listę dokumentów na dany miesiąc.",
-            "Przypomnienia wychodzą same, aż dotrze komplet – nie musisz pamiętać.",
+            "Przypomnienia wychodzą same, aż dotrze komplet - nie musisz pamiętać.",
             "W panelu od razu widzisz, kto ma braki i czego dokładnie brakuje.",
         ],
         "checklist": [
@@ -427,7 +427,7 @@ SEGMENT_PAGES = {
                 "q": "Czy klient biura musi instalować aplikację albo zakładać konto?",
                 "a": (
                     "Nie. Klient dostaje email z linkiem, otwiera listę w "
-                    "przeglądarce i przesyła pliki – także z telefonu, np. zdjęcie "
+                    "przeglądarce i przesyła pliki - także z telefonu, np. zdjęcie "
                     "faktury. Wszystkie prośby od Twojego biura ma pod jednym "
                     "stałym linkiem."
                 ),
@@ -437,7 +437,7 @@ SEGMENT_PAGES = {
                 "a": (
                     "Administratorem danych jest Twoje biuro, a Monituj przetwarza "
                     "je w Twoim imieniu na podstawie umowy powierzenia. Pliki są "
-                    "automatycznie usuwane po okresie, który ustawisz – pobierz je "
+                    "automatycznie usuwane po okresie, który ustawisz - pobierz je "
                     "wcześniej do swojego programu księgowego."
                 ),
             },
@@ -446,23 +446,23 @@ SEGMENT_PAGES = {
     "kadry": {
         "seo_name": "Dokumenty do akt nowego pracownika",
         "seo_description": (
-            "Świadectwa pracy, badania, kwestionariusz osobowy – komplet do akt "
+            "Świadectwa pracy, badania, kwestionariusz osobowy - komplet do akt "
             "przed pierwszym dniem pracy. Monituj sam przypomina o brakach."
         ),
         "h1": "Komplet dokumentów od nowego pracownika przed pierwszym dniem",
         "lead": (
             "Nowy pracownik to lista dokumentów, które muszą trafić do akt "
             "osobowych, zanim zacznie pracę. Zamiast pilnować tego mailami i "
-            "telefonami, wysyłasz mu jeden link z listą – Monituj przypomina o "
+            "telefonami, wysyłasz mu jeden link z listą - Monituj przypomina o "
             "brakach, a Ty widzisz, czego jeszcze brakuje w aktach."
         ),
         "pains": [
-            "Pracownik obiecuje dosłać dokumenty „w poniedziałek” – i zapomina.",
+            "Pracownik obiecuje dosłać dokumenty „w poniedziałek” - i zapomina.",
             "Skany przychodzą na różne skrzynki, część jest nieczytelna.",
             "Przed pierwszym dniem pracy nie wiadomo, czy akta są kompletne.",
         ],
         "benefits": [
-            "Jedna lista dokumentów dla każdej nowej osoby – zawsze ten sam proces.",
+            "Jedna lista dokumentów dla każdej nowej osoby - zawsze ten sam proces.",
             "Nieczytelny skan odrzucasz jednym kliknięciem z informacją, co poprawić.",
             "Widzisz komplet akt przed pierwszym dniem pracy, bez szukania w poczcie.",
         ],
@@ -480,7 +480,7 @@ SEGMENT_PAGES = {
             {
                 "q": "Czy mogę wysłać listę dokumentów przed podpisaniem umowy?",
                 "a": (
-                    "Tak. Prośbę wysyłasz, kiedy chcesz – na przykład zaraz po "
+                    "Tak. Prośbę wysyłasz, kiedy chcesz - na przykład zaraz po "
                     "przyjęciu oferty. Ustawiasz termin przed pierwszym dniem "
                     "pracy, a przypomnienia wychodzą same."
                 ),
@@ -490,7 +490,7 @@ SEGMENT_PAGES = {
                 "a": (
                     "Każda prośba ma unikalny link, który możesz dodatkowo "
                     "zabezpieczyć hasłem. Pliki trafiają do prywatnego magazynu i "
-                    "są automatycznie usuwane po okresie, który ustawisz – "
+                    "są automatycznie usuwane po okresie, który ustawisz - "
                     "zdążysz przenieść je do akt."
                 ),
             },
@@ -507,11 +507,11 @@ SEGMENT_PAGES = {
     "kancelarie": {
         "seo_name": "Dokumenty od klientów kancelarii prawnej",
         "seo_description": (
-            "Pełnomocnictwa, umowy, dowody – komplet dokumentów do sprawy w "
+            "Pełnomocnictwa, umowy, dowody - komplet dokumentów do sprawy w "
             "jednym miejscu, z historią wpływu. Monituj przypomina klientom "
             "kancelarii o brakach."
         ),
-        "h1": "Komplet dokumentów do sprawy – bez dopytywania klienta",
+        "h1": "Komplet dokumentów do sprawy - bez dopytywania klienta",
         "lead": (
             "Do sprawy potrzebujesz kompletu dokumentów, a klient przysyła je na "
             "raty, różnymi kanałami. Monituj zbiera je w jednej prośbie, z "
@@ -526,7 +526,7 @@ SEGMENT_PAGES = {
         "benefits": [
             "Jedna prośba na sprawę z listą, terminem i opcjonalnym hasłem dostępu.",
             "Każdy dokument ma status, a historia pokazuje, kiedy co wpłynęło.",
-            "Przypomnienia wysyłają się same – do skutku albo do zamknięcia prośby.",
+            "Przypomnienia wysyłają się same - do skutku albo do zamknięcia prośby.",
         ],
         "checklist": [
             "Pełnomocnictwo",
@@ -549,7 +549,7 @@ SEGMENT_PAGES = {
                 "q": "Skąd wiem, kiedy klient przesłał dokument?",
                 "a": (
                     "Każda prośba ma historię zdarzeń: otwarcie linku, przesłanie "
-                    "pliku, akceptacja, odrzucenie, przypomnienia – z datą i "
+                    "pliku, akceptacja, odrzucenie, przypomnienia - z datą i "
                     "godziną."
                 ),
             },
@@ -566,13 +566,13 @@ SEGMENT_PAGES = {
     "posrednictwo": {
         "seo_name": "Dokumenty do kredytu i ubezpieczenia",
         "seo_description": (
-            "Zaświadczenia, wyciągi i dokumenty nieruchomości do wniosku – w "
+            "Zaświadczenia, wyciągi i dokumenty nieruchomości do wniosku - w "
             "komplecie i na czas. Monituj sam przypomina klientowi, czego "
             "jeszcze brakuje."
         ),
         "h1": "Wniosek kredytowy rusza, gdy dotrze komplet dokumentów",
         "lead": (
-            "Wniosek stoi, bo klient nie przysłał jednego zaświadczenia – a "
+            "Wniosek stoi, bo klient nie przysłał jednego zaświadczenia - a "
             "każdy dzień zwłoki to ryzyko, że transakcja się opóźni. Monituj "
             "wysyła klientowi listę dokumentów do wniosku i przypomina o brakach, "
             "a Ty wiesz, kiedy możesz ruszać."
@@ -589,7 +589,7 @@ SEGMENT_PAGES = {
         ],
         "checklist": [
             "Zaświadczenie o zatrudnieniu i dochodach",
-            "Wyciągi z konta za ostatnie 3–6 miesięcy",
+            "Wyciągi z konta za ostatnie 3-6 miesięcy",
             "Umowa przedwstępna lub rezerwacyjna",
             "Odpis księgi wieczystej",
             "Akt notarialny",
@@ -600,7 +600,7 @@ SEGMENT_PAGES = {
             {
                 "q": "Czy klient może przesłać dokumenty z telefonu?",
                 "a": (
-                    "Tak. Link działa w każdej przeglądarce, także na telefonie – "
+                    "Tak. Link działa w każdej przeglądarce, także na telefonie - "
                     "klient może od razu zrobić zdjęcie dokumentu i je przesłać."
                 ),
             },
@@ -615,7 +615,7 @@ SEGMENT_PAGES = {
             {
                 "q": "Jak długo przechowywane są dokumenty klienta?",
                 "a": (
-                    "Tyle, ile ustawisz dla prośby – maksymalnie rok. Potem pliki "
+                    "Tyle, ile ustawisz dla prośby - maksymalnie rok. Potem pliki "
                     "są trwale usuwane, a Ty i klient dostajecie powiadomienie."
                 ),
             },
@@ -624,7 +624,7 @@ SEGMENT_PAGES = {
     "b2b": {
         "seo_name": "Dokumenty przy onboardingu klienta B2B",
         "seo_description": (
-            "Umowy, dane rejestrowe, pełnomocnictwa – ta sama lista dokumentów "
+            "Umowy, dane rejestrowe, pełnomocnictwa - ta sama lista dokumentów "
             "dla każdego nowego klienta, z terminem i automatycznymi "
             "przypomnieniami."
         ),
@@ -658,7 +658,7 @@ SEGMENT_PAGES = {
                 "q": "Czy mogę używać tej samej listy dla każdego klienta?",
                 "a": (
                     "Tak. Każdą prośbę tworzysz z tą samą, sprawdzoną listą "
-                    "dokumentów – dzięki temu onboarding wygląda tak samo "
+                    "dokumentów - dzięki temu onboarding wygląda tak samo "
                     "niezależnie od tego, kto go prowadzi."
                 ),
             },

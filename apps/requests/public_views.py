@@ -138,7 +138,7 @@ def recipient_files_request(request, token):
         messages.success(
             request,
             "Wysłaliśmy link na adres email, na który przyszła ta prośba. Otwórz "
-            "go w ciągu godziny – zobaczysz wszystkie przesłane przez siebie pliki.",
+            "go w ciągu godziny - zobaczysz wszystkie przesłane przez siebie pliki.",
         )
     return redirect(detail_url)
 
@@ -163,7 +163,7 @@ def recipient_files_confirm(request, token, signed):
             {"title": "Link nie działa", "message": exc.message},
             status=400,
         )
-    messages.success(request, "Gotowe – widzisz teraz wszystkie swoje pliki.")
+    messages.success(request, "Gotowe - widzisz teraz wszystkie swoje pliki.")
     return redirect("public:request-detail", token=token)
 
 

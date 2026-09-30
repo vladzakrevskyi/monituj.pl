@@ -76,7 +76,7 @@ PAGES = {
         "name": "Dla biur rachunkowych, kadr i kancelarii",
         "description": (
             "Monituj dla biur rachunkowych, działów kadr, kancelarii, pośredników "
-            "kredytowych i firm B2B – wszędzie tam, gdzie praca czeka na "
+            "kredytowych i firm B2B - wszędzie tam, gdzie praca czeka na "
             "dokumenty od klientów."
         ),
         "og_image": "images/og/dla-kogo.png",
@@ -125,7 +125,7 @@ PAGES = {
         "name": "Pytania o zbieranie dokumentów od klientów",
         "description": (
             "Jak działają przypomnienia o dokumentach, czy klient musi zakładać "
-            "konto, jak długo przechowujemy pliki i ile to kosztuje – odpowiedzi "
+            "konto, jak długo przechowujemy pliki i ile to kosztuje - odpowiedzi "
             "w jednym miejscu."
         ),
         "og_image": "images/og/faq.png",
@@ -137,7 +137,7 @@ PAGES = {
         "name": "Demo Monituj bez rejestracji",
         "description": (
             "Własne konto demonstracyjne z przykładowymi klientami i prośbami o "
-            "dokumenty – gotowe w jedno kliknięcie, bez podawania adresu email."
+            "dokumenty - gotowe w jedno kliknięcie, bez podawania adresu email."
         ),
         "og_image": "images/og/demo.png",
         "priority": "0.7",
@@ -148,7 +148,7 @@ PAGES = {
         "name": "Wyślij prośbę o dokumenty bez konta",
         "description": (
             "Poproś klienta o dokumenty w 2 minuty: lista, termin i automatyczne "
-            "przypomnienia. Bez rejestracji – potwierdzasz mailem i śledzisz "
+            "przypomnienia. Bez rejestracji - potwierdzasz mailem i śledzisz "
             "status w panelu."
         ),
         "og_image": "images/og/wyslij-prosbe.png",
@@ -223,7 +223,7 @@ PAGES = {
     "legal:withdrawal": {
         "name": "Odstąpienie od umowy",
         "description": (
-            "Jak odstąpić od umowy o płatny plan Monituj w ciągu 14 dni – "
+            "Jak odstąpić od umowy o płatny plan Monituj w ciągu 14 dni - "
             "zasady i wzór formularza odstąpienia."
         ),
         "priority": "0.2",

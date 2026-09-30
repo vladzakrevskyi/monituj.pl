@@ -1,1 +1,1 @@
-{% autoescape off %}Włączono weryfikację dwuetapową – Monituj{% endautoescape %}
+{% autoescape off %}Włączono weryfikację dwuetapową - Monituj{% endautoescape %}

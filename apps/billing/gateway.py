@@ -436,7 +436,7 @@ def alert_deletion(email, plan_name, closure, numbers, key):
     correcting invoice it needs, if any."""
     subject = "Konto usunięte"
     if closure.refunded:
-        subject += f" – zwrot {plans.format_pln(closure.refunded)}"
+        subject += f" - zwrot {plans.format_pln(closure.refunded)}"
     notices.alert_team(
         subject,
         [f"Konto: {email}", f"Plan w chwili usunięcia: {plan_name}"]
@@ -541,13 +541,13 @@ def _return_money(customer, unused, problems, reason):
         if refunded < due:
             problems.append(
                 f"Do zwrotu ręcznie: {plans.format_pln(due - refunded)} (klient "
-                f"{customer}) – płatności w Stripe nie pokrywają tej kwoty."
+                f"{customer}) - płatności w Stripe nie pokrywają tej kwoty."
             )
         return refunded
     except stripe.StripeError:
         logger.exception("Stripe refund for %s failed", customer)
         problems.append(
-            f"Zwrot {plans.format_pln(due)} się nie udał (klient {customer}) – "
+            f"Zwrot {plans.format_pln(due)} się nie udał (klient {customer}) - "
             "sprawdź w Stripe, ile już wróciło, i zwróć resztę ręcznie."
         )
         return 0
@@ -583,7 +583,7 @@ def _anonymize(customer, problems):
     except stripe.StripeError:
         logger.exception("Stripe customer %s not anonymized", customer)
         problems.append(
-            f"Nie udało się usunąć danych klienta {customer} w Stripe – usuń "
+            f"Nie udało się usunąć danych klienta {customer} w Stripe - usuń "
             "ręcznie imię, nazwę, e-mail, adres, NIP i karty."
         )
 
@@ -627,7 +627,7 @@ def _refund_credit_after_end(account, subscription):
             refunded,
             problems,
             numbers=invoice_numbers(account.user),
-            why="Subskrypcja zakończona – zwrot niewykorzystanego salda",
+            why="Subskrypcja zakończona - zwrot niewykorzystanego salda",
             key=f"credit:{subscription.get('id')}",
         )
 
@@ -870,7 +870,7 @@ def _alert_money_back(event, account):
         subject,
         [
             f"Konto: {who}",
-            f"{what} – jeśli trzeba, anuluj subskrypcję w Stripe.",
+            f"{what} - jeśli trzeba, anuluj subskrypcję w Stripe.",
         ],
         link=notices.dashboard_url(f"payments/{data.get('payment_intent') or ''}"),
         key=f"{event.type}:{event.id}",

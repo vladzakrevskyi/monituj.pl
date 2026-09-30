@@ -110,7 +110,7 @@ class ProfileForm(forms.Form):
         required=False,
         help_text=(
             "Pomaga klientom upewnić się, kto prosi o dokumenty. Nazwa i NIP "
-            "pochodzą z Twoich danych do faktury – działa, gdy płatny plan jest "
+            "pochodzą z Twoich danych do faktury - działa, gdy płatny plan jest "
             "fakturowany na firmę."
         ),
     )

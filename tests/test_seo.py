@@ -53,7 +53,7 @@ def test_page_names_use_no_separators_of_their_own():
     inside the name."""
     names = [p["name"] for p in PAGES.values()] + [s["seo_name"] for s in SEGMENTS]
     for name in names:
-        assert not set(name) & set(":–—-|"), name
+        assert not set(name) & set(":-—-|"), name
 
 
 def test_panel_page_names_use_no_separators_either():
@@ -63,7 +63,7 @@ def test_panel_page_names_use_no_separators_either():
         for name in re.findall(
             r"\{% block page_name %\}(.*?)\{% endblock %\}", template.read_text()
         ):
-            assert not set(name) & set(":–—-|"), (template, name)
+            assert not set(name) & set(":-—-|"), (template, name)
 
 
 def test_every_indexed_page_has_a_unique_title():

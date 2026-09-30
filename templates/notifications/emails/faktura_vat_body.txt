@@ -8,5 +8,5 @@ Data płatności: {{ paid_at|d }}
 Wszystkie faktury znajdziesz też w panelu, w zakładce Plan i płatności:
 {{ plan_url }}
 {% endif %}--
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

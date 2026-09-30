@@ -79,7 +79,7 @@ CONFIRM_INVALID_MESSAGE = (
 )
 CONFIRM_OTHER_BROWSER_MESSAGE = (
     "Otwórz link w tej samej przeglądarce, w której klikałeś „Zaloguj się przez "
-    "Google” – albo zacznij tutaj od nowa."
+    "Google” - albo zacznij tutaj od nowa."
 )
 
 
@@ -368,7 +368,7 @@ class GoogleAuthService:
             )
         if not user.has_usable_password():
             raise ValidationAppError(
-                "Najpierw ustaw hasło – bez niego nie mógłbyś się zalogować.",
+                "Najpierw ustaw hasło - bez niego nie mógłbyś się zalogować.",
                 code="PASSWORD_REQUIRED",
             )
         google_email = account.email

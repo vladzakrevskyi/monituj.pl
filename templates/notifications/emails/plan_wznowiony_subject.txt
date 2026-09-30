@@ -1,1 +1,1 @@
-{% autoescape off %}Subskrypcja wznowiona – plan {{ plan_name }} działa dalej{% endautoescape %}
+{% autoescape off %}Subskrypcja wznowiona - plan {{ plan_name }} działa dalej{% endautoescape %}

@@ -5,5 +5,5 @@ Następna płatność: {{ period_end|d }}{% endif %}
 
 Plan i płatności: {{ plan_url }}
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

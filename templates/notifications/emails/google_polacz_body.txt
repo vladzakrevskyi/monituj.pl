@@ -1,7 +1,7 @@
 {% autoescape off %}Ktoś chce dodać do Twojego konta Monituj logowanie przez Google. Jeśli to Ty, otwórz link w przeglądarce, w której jesteś zalogowany (ważny 30 minut):
 {{ confirm_url }}
 
-Jeśli to nie Ty, zignoruj tę wiadomość i ustaw hasło do konta – ktoś mógł przejąć Twoją sesję.
+Jeśli to nie Ty, zignoruj tę wiadomość i ustaw hasło do konta - ktoś mógł przejąć Twoją sesję.
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

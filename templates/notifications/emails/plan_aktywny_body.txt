@@ -1,4 +1,4 @@
-{% load formatting %}{% autoescape off %}Dziękujemy za zakup! Plan {{ plan_name }} jest aktywny – od teraz możesz mieć jednocześnie {{ limit }} w toku.
+{% load formatting %}{% autoescape off %}Dziękujemy za zakup! Plan {{ plan_name }} jest aktywny - od teraz możesz mieć jednocześnie {{ limit }} w toku.
 
 Plan: {{ plan_name }}
 {% if price %}Cena: {{ price }}{% if vat_rate %} netto ({{ price_gross }} z VAT){% endif %} {{ interval_label }}
@@ -8,9 +8,9 @@ Subskrypcja odnawia się automatycznie. Plan zmienisz, a subskrypcję anulujesz 
 {{ plan_url }}
 
 POTWIERDZENIE UMOWY
-Umowę o plan {{ plan_name }} zawarliśmy z chwilą płatności, na zasadach Regulaminu obowiązującego od {{ terms_version }}. Regulamin z umową powierzenia i wzorem formularza odstąpienia jest w załączniku – zachowaj go.
+Umowę o plan {{ plan_name }} zawarliśmy z chwilą płatności, na zasadach Regulaminu obowiązującego od {{ terms_version }}. Regulamin z umową powierzenia i wzorem formularza odstąpienia jest w załączniku - zachowaj go.
 {% if early_start_at %}Zgodnie z Twoim żądaniem z {{ early_start_at|dt }} usługę świadczymy od razu, przed upływem terminu na odstąpienie od umowy.
-{% endif %}Jeśli zamawiasz jako konsument (albo jako przedsiębiorca, dla którego ta umowa nie ma charakteru zawodowego), możesz odstąpić od niej bez podawania przyczyny do {{ withdraw_until|d }} – wystarczy wiadomość na {{ contract_email }}. Zapłacisz wtedy tylko za dni do odstąpienia, resztę zwrócimy w ciągu 14 dni. Jak odstąpić od umowy: {{ withdrawal_url }}
+{% endif %}Jeśli zamawiasz jako konsument (albo jako przedsiębiorca, dla którego ta umowa nie ma charakteru zawodowego), możesz odstąpić od niej bez podawania przyczyny do {{ withdraw_until|d }} - wystarczy wiadomość na {{ contract_email }}. Zapłacisz wtedy tylko za dni do odstąpienia, resztę zwrócimy w ciągu 14 dni. Jak odstąpić od umowy: {{ withdrawal_url }}
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

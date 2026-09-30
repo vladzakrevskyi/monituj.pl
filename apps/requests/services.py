@@ -35,7 +35,7 @@ DAILY_LIMIT_MESSAGE = (
 )
 GUEST_DAILY_LIMIT_MESSAGE = (
     "Z tego adresu wysłano już dziś prośbę bez hasła. Jutro możesz wysłać "
-    "kolejną – albo ustaw hasło w ustawieniach konta, aby wysyłać bez limitu."
+    "kolejną - albo ustaw hasło w ustawieniach konta, aby wysyłać bez limitu."
 )
 # Far above what an office sends in a day; stops a script, not a person.
 REQUESTS_PER_DAY = 200
@@ -46,7 +46,7 @@ OUTBOUND_PER_DAY = 300
 OUTBOUND_PER_DAY_NEW_ACCOUNT = 50
 NEW_ACCOUNT_AGE = timedelta(days=7)
 PASSWORD_FAILURES = 10
-CLOSED_MESSAGE = "Ta prośba została zamknięta – nie można już przesyłać plików."
+CLOSED_MESSAGE = "Ta prośba została zamknięta - nie można już przesyłać plików."
 # How long a request sent through the public form waits for its sender to
 # confirm it before it is deleted.
 CONFIRMATION_TTL = timedelta(hours=48)

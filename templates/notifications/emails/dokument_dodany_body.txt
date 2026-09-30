@@ -8,5 +8,5 @@ Wciąż brakuje: {{ missing_items|join:", " }}.{% endif %}
 Sprawdź dokumenty:
 {{ panel_link }}
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

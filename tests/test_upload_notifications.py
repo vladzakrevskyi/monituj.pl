@@ -57,7 +57,7 @@ def test_email_waits_until_the_recipient_stops_uploading(
 
     assert inbox.send_pending_upload_emails(now=_later(2)) == 1
     [email] = _owner_emails(user)
-    assert email.subject == "Nowe dokumenty (2): Dokumenty za wrzesien – Monituj"
+    assert email.subject == "Nowe dokumenty (2): Dokumenty za wrzesien - Monituj"
     body = email.body.replace(" ", " ")
     # One file per line, even after the typography pass.
     assert "\n- Faktury sprzedaży: a.pdf\n- Wyciąg bankowy: b.png\n" in body

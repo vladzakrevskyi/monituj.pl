@@ -2,10 +2,10 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<title>Monituj – Regulamin, umowa powierzenia i formularz odstąpienia</title>
+<title>Monituj - Regulamin, umowa powierzenia i formularz odstąpienia</title>
 <meta name="author" content="Monituj">
 <style>
-@page { size: A4; margin: 20mm 18mm 22mm; @bottom-center { content: "Monituj – dokumenty w wersji z dnia zamówienia ({{ issued }}) · strona " counter(page) " z " counter(pages); font: 8pt "DejaVu Sans", Arial, sans-serif; color: #62636d; } }
+@page { size: A4; margin: 20mm 18mm 22mm; @bottom-center { content: "Monituj - dokumenty w wersji z dnia zamówienia ({{ issued }}) · strona " counter(page) " z " counter(pages); font: 8pt "DejaVu Sans", Arial, sans-serif; color: #62636d; } }
 body { margin: 0; color: #18181b; font: 10pt/1.5 "DejaVu Sans", Arial, sans-serif; }
 .intro { padding: 8pt 10pt; background: #f7f7f8; border: 1px solid #e4e4e8; border-radius: 6pt; color: #3f3f46; }
 .document { break-before: page; }
@@ -23,7 +23,7 @@ a { color: #c24e00; text-decoration: none; }
 </style>
 </head>
 <body>
-<p class="intro">Treść dokumentów serwisu Monituj w wersji z dnia zamówienia ({{ issued }}). Zachowaj ten plik – nie zmieni się, nawet jeśli dokumenty na stronie zostaną później zaktualizowane.</p>
+<p class="intro">Treść dokumentów serwisu Monituj w wersji z dnia zamówienia ({{ issued }}). Zachowaj ten plik - nie zmieni się, nawet jeśli dokumenty na stronie zostaną później zaktualizowane.</p>
 {% for part in parts %}{{ part }}{% endfor %}
 </body>
 </html>

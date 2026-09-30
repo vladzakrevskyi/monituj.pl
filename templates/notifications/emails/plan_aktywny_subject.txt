@@ -1,1 +1,1 @@
-{% autoescape off %}Plan {{ plan_name }} jest aktywny – Monituj{% endautoescape %}
+{% autoescape off %}Plan {{ plan_name }} jest aktywny - Monituj{% endautoescape %}

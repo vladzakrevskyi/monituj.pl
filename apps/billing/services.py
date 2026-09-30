@@ -154,7 +154,7 @@ def state_for(user, account=None):
 def limit_message(state):
     return (
         f"W planie {state.plan.name} możesz mieć jednocześnie "
-        f"{plans.requests_phrase(state.limit)} w toku – tyle już masz. Zmień plan "
+        f"{plans.requests_phrase(state.limit)} w toku - tyle już masz. Zmień plan "
         "albo zamknij prośbę, na którą już nie czekasz."
     )
 
@@ -173,7 +173,7 @@ def check_request_allowed(owner, count=1):
             free = state.limit - state.used
             raise PlanLimitError(
                 f"W planie {state.plan.name} możesz mieć jednocześnie "
-                f"{plans.requests_phrase(state.limit)} w toku – wolnych miejsc "
+                f"{plans.requests_phrase(state.limit)} w toku - wolnych miejsc "
                 f"zostało {free}, a wybrano {count} klientów. Wybierz mniej "
                 "klientów albo zmień plan."
             )
@@ -240,7 +240,7 @@ def welcome_url(request, user):
 
     messages.success(
         request,
-        f"Masz {plans.TRIAL_DAYS} dni planu {state.plan.name} za darmo – do "
+        f"Masz {plans.TRIAL_DAYS} dni planu {state.plan.name} za darmo - do "
         f"{format_date(state.trial_ends_at)}. Potem wybierzesz plan albo konto "
         "przejdzie na bezpłatny Free.",
     )

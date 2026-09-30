@@ -3,5 +3,5 @@
 Jeśli kolejne próby się nie powiodą, subskrypcja wygaśnie, a konto przejdzie na bezpłatny plan Free. Sprawdź kartę albo dodaj nową w zakładce Plan i płatności:
 {{ plan_url }}
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

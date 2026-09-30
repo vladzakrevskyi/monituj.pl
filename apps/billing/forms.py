@@ -146,7 +146,7 @@ class BillingProfileForm(forms.ModelForm):
         cleaned["tax_id"] = nip
         if not valid_nip(nip):
             self.add_error(
-                "tax_id", "Ten NIP jest nieprawidłowy – sprawdź, czy nie ma literówki."
+                "tax_id", "Ten NIP jest nieprawidłowy - sprawdź, czy nie ma literówki."
             )
             return
         try:
@@ -156,7 +156,7 @@ class BillingProfileForm(forms.ModelForm):
             return
         except registry.InvalidNip:
             self.add_error(
-                "tax_id", "Ministerstwo Finansów nie zna tego NIP – sprawdź go."
+                "tax_id", "Ministerstwo Finansów nie zna tego NIP - sprawdź go."
             )
             return
         # What the register has is taken as is, whatever the browser sent;

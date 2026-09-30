@@ -1,1 +1,1 @@
-{% autoescape off %}Hasło zostało zmienione – Monituj{% endautoescape %}
+{% autoescape off %}Hasło zostało zmienione - Monituj{% endautoescape %}

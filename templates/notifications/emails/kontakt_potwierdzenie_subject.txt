@@ -1,1 +1,1 @@
-{% autoescape off %}Otrzymaliśmy Twoją wiadomość – Monituj{% endautoescape %}
+{% autoescape off %}Otrzymaliśmy Twoją wiadomość - Monituj{% endautoescape %}

@@ -62,7 +62,7 @@ def test_trial_is_of_the_plan_picked_on_the_pricing_page(client):
 
     user = User.objects.get(email="nowy@example.com")
     state = state_for(user)
-    assert "Plan Pro – 30 dni za darmo" in page
+    assert "Plan Pro - 30 dni za darmo" in page
     assert (state.plan, state.source, state.limit) == (plans.PRO, "trial", 250)
     assert SIGNUP_PLAN_SESSION_KEY not in client.session
 

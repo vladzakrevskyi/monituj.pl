@@ -28,7 +28,7 @@ class ReminderService:
     def send_manual(request_obj, actor, django_request=None):
         if request_obj.closed_at is not None or request_obj.awaiting_confirmation:
             raise ValidationAppError(
-                "Prośba jest zamknięta – otwórz ją ponownie, aby wysłać przypomnienie.",
+                "Prośba jest zamknięta - otwórz ją ponownie, aby wysłać przypomnienie.",
                 code="REQUEST_CLOSED",
             )
         annotated = with_stats(Request.objects.filter(pk=request_obj.pk)).first()

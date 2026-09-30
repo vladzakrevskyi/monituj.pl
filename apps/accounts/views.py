@@ -128,7 +128,7 @@ def verify_email(request, token):
             {"title": "Nieprawidłowy link", "message": exc.message},
         )
     GuestAccessService.login(request, user)
-    messages.success(request, "Adres email potwierdzony – witaj w Monituj!")
+    messages.success(request, "Adres email potwierdzony - witaj w Monituj!")
     return redirect(welcome_url(request, user))
 
 
@@ -193,7 +193,7 @@ def two_factor_login(request):
                     left = two_factor.remaining_backup_codes(user)
                     messages.warning(
                         request,
-                        f"Użyto kodu zapasowego – zostało {left}. "
+                        f"Użyto kodu zapasowego - zostało {left}. "
                         "Nowe wygenerujesz w Ustawieniach.",
                     )
                 if not url_has_allowed_host_and_scheme(

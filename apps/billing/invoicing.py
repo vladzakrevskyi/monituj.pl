@@ -166,9 +166,9 @@ def _description(stripe_invoice):
     name = f"Abonament Monituj {plan.name if plan else ''}".strip()
     name += " (roczny)" if yearly else " (miesięczny)"
     if stripe_invoice.get("billing_reason") == "subscription_update":
-        name = f"Dopłata za zmianę planu – {name}"
+        name = f"Dopłata za zmianę planu - {name}"
     start, end = timezone.localtime(start), timezone.localtime(end)
-    return f"{name}, okres {start:%d.%m.%Y}–{end:%d.%m.%Y}"
+    return f"{name}, okres {start:%d.%m.%Y}-{end:%d.%m.%Y}"
 
 
 def _buyer(account, stripe_invoice):
@@ -236,7 +236,7 @@ def _alert_invalid_nip(invoice):
     from apps.billing import notices
 
     notices.alert_team(
-        "Nieprawidłowy NIP przy płatności – faktura na osobę prywatną",
+        "Nieprawidłowy NIP przy płatności - faktura na osobę prywatną",
         [
             f"Klient: {invoice.email}",
             f"Podany NIP: {invoice.client['invalid_tax_id']}",
@@ -367,7 +367,7 @@ def _email_failed(invoice, error):
                 f"Faktura: {invoice.number}",
                 f"Klient: {invoice.email}",
                 f"Błąd: {invoice.error[:300]}",
-                "Wyślij fakturę z inFakt ręcznie – klient widzi ją też w panelu.",
+                "Wyślij fakturę z inFakt ręcznie - klient widzi ją też w panelu.",
             ],
             key=f"vat-email:{invoice.pk}",
         )

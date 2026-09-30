@@ -58,7 +58,7 @@ class Command(BaseCommand):
     def _stripe(self):
         if not gateway.enabled():
             self.warnings.append(
-                f"Stripe ({settings.STRIPE_MODE}): brak klucza – płatności wyłączone."
+                f"Stripe ({settings.STRIPE_MODE}): brak klucza - płatności wyłączone."
             )
             return "pominięte (brak klucza)"
         out = io.StringIO()
@@ -74,11 +74,11 @@ class Command(BaseCommand):
             self.warnings.append(
                 "Stripe utworzył nowy webhook. "
                 + line.strip()
-                + " – potem docker compose up -d --force-recreate web worker beat."
+                + " - potem docker compose up -d --force-recreate web worker beat."
             )
         if not gateway.keys().get("webhook_secret"):
             self.warnings.append(
-                f"Brak STRIPE_{settings.STRIPE_MODE.upper()}_WEBHOOK_SECRET – "
+                f"Brak STRIPE_{settings.STRIPE_MODE.upper()}_WEBHOOK_SECRET - "
                 "webhooki Stripe są odrzucane."
             )
         return f"zsynchronizowane ({settings.STRIPE_MODE})"
@@ -102,7 +102,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  Stripe:      {settings.STRIPE_MODE}")
         self.stdout.write(
             f"  inFakt:      {invoicing.mode()}"
-            + ("" if invoicing.enabled() else " (brak klucza – faktury wyłączone)")
+            + ("" if invoicing.enabled() else " (brak klucza - faktury wyłączone)")
             + (" · KSeF" if settings.INFAKT_SEND_TO_KSEF else "")
         )
         self.stdout.write(f"  GUS:         {settings.GUS_MODE}")
@@ -117,19 +117,19 @@ class Command(BaseCommand):
         if not settings.SITE_URL.startswith("https://"):
             warn(f"SITE_URL bez https: {settings.SITE_URL}")
         if getattr(settings, "MAINTENANCE_MODE", False):
-            warn("MAINTENANCE_MODE=True – odwiedzający widzą „prace techniczne”.")
+            warn("MAINTENANCE_MODE=True - odwiedzający widzą „prace techniczne”.")
         if settings.STRIPE_MODE != "live":
-            warn("Stripe w trybie sandbox – płatności są testowe.")
+            warn("Stripe w trybie sandbox - płatności są testowe.")
         if (settings.STRIPE_MODE == "live") != (invoicing.mode() == "live"):
             warn(
                 f"Stripe ({settings.STRIPE_MODE}) i inFakt ({invoicing.mode()}) "
-                "w różnych trybach – prawdziwe płatności dostaną testowe "
+                "w różnych trybach - prawdziwe płatności dostaną testowe "
                 "faktury (albo odwrotnie)."
             )
         if not invoicing.enabled() and gateway.enabled():
-            warn("Płatności działają, ale inFakt nie – faktury VAT nie powstaną.")
+            warn("Płatności działają, ale inFakt nie - faktury VAT nie powstaną.")
         if settings.GUS_MODE != "production" or not gus.enabled():
-            warn("GUS w trybie test (albo bez klucza) – dane firm są testowe.")
+            warn("GUS w trybie test (albo bez klucza) - dane firm są testowe.")
         missing = [
             field
             for field in legal.PLACEHOLDERS
@@ -148,12 +148,12 @@ class Command(BaseCommand):
         ).count()
         failed = VatInvoice.objects.filter(status=VatInvoiceStatus.FAILED).count()
         if stuck:
-            warn(f"{stuck} faktur czeka ponad godzinę – czy działa worker i beat?")
+            warn(f"{stuck} faktur czeka ponad godzinę - czy działa worker i beat?")
         if failed:
-            warn(f"{failed} faktur z błędem – /admin/ → Faktury VAT.")
+            warn(f"{failed} faktur z błędem - /admin/ → Faktury VAT.")
         unsent = BillingNotice.objects.filter(
             sent_at__isnull=True,
             created_at__lt=timezone.now() - timedelta(minutes=15),
         ).count()
         if unsent:
-            warn(f"{unsent} e-maili o płatnościach nie wysłanych od 15 min – beat?")
+            warn(f"{unsent} e-maili o płatnościach nie wysłanych od 15 min - beat?")

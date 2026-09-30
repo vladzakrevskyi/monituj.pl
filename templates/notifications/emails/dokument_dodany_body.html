@@ -1,5 +1,5 @@
 {% extends "notifications/emails/base.html" %}
-{% block preheader %}{{ client_name }} – {% for upload in uploads %}{{ upload.item }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endblock %}
+{% block preheader %}{{ client_name }} - {% for upload in uploads %}{{ upload.item }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endblock %}
 {% block eyebrow %}{% if upload_count == 1 %}Nowy dokument{% else %}Nowe dokumenty{% endif %}{% endblock %}
 {% block title %}{% if upload_count == 1 %}Dotarł nowy dokument{% else %}Dotarły nowe dokumenty ({{ upload_count }}){% endif %}{% endblock %}
 {% block content %}

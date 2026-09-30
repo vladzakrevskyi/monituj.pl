@@ -1,1 +1,1 @@
-{% autoescape off %}{% if tomorrow %}Jutro kończy się Twój okres próbny{% else %}Za 7 dni kończy się Twój okres próbny{% endif %} – Monituj{% endautoescape %}
+{% autoescape off %}{% if tomorrow %}Jutro kończy się Twój okres próbny{% else %}Za 7 dni kończy się Twój okres próbny{% endif %} - Monituj{% endautoescape %}

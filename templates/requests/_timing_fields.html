@@ -22,14 +22,14 @@ live in apps/requests/recurring.py.
 </p>
 </div>
 <p>
-<label>{{ form.workdays_only }} <span data-workdays-label data-daily="Tylko w dni robocze – pomijamy weekendy i święta" data-other="Gdy wypada w weekend albo święto – wyślij w najbliższy dzień roboczy">Gdy wypada w weekend albo święto – wyślij w najbliższy dzień roboczy</span></label>
+<label>{{ form.workdays_only }} <span data-workdays-label data-daily="Tylko w dni robocze - pomijamy weekendy i święta" data-other="Gdy wypada w weekend albo święto - wyślij w najbliższy dzień roboczy">Gdy wypada w weekend albo święto - wyślij w najbliższy dzień roboczy</span></label>
 </p>
 <p class="text-muted form-hint" data-timing-for="monthly">Gdy wybrany dzień nie istnieje w danym miesiącu (np. 31 w listopadzie), wysyłka będzie ostatniego dnia miesiąca.</p>
 {% if not hide_deadline %}<p>
 {{ form.deadline_days.label_tag }}
 {{ form.deadline_days }}
-<small class="help-text">Puste – bez terminu.</small>
+<small class="help-text">Puste - bez terminu.</small>
 {{ form.deadline_days.errors }}
 </p>
-{% endif %}<p class="text-muted form-hint">Wysyłka od 8:00. W nazwie możesz użyć <strong>{miesiąc}</strong> – miesiąc, którego dotyczą dokumenty (poprzedni względem dnia wysyłki, np. „wrzesień 2026”) – albo <strong>{data}</strong> – dzień wysyłki.</p>
+{% endif %}<p class="text-muted form-hint">Wysyłka od 8:00. W nazwie możesz użyć <strong>{miesiąc}</strong> - miesiąc, którego dotyczą dokumenty (poprzedni względem dnia wysyłki, np. „wrzesień 2026”) - albo <strong>{data}</strong> - dzień wysyłki.</p>
 </div>

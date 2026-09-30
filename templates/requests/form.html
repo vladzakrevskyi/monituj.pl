@@ -10,7 +10,7 @@
 <h1>Nowa prośba o dokumenty</h1>
 <p class="card-lead">Trzy kroki: czego potrzebujesz, od kogo i na kiedy. Resztę ustawisz, jeśli chcesz.</p>
 {% if plan_state.at_limit %}
-<p class="alert alert--info">Masz już {{ plan_state.used }} z {{ plan_state.limit }} próśb w toku – tyle obejmuje plan {{ plan_state.plan.name }}. <a href="{% url 'billing:plan' %}">Zmień plan</a> albo zamknij prośbę, na którą już nie czekasz.</p>
+<p class="alert alert--info">Masz już {{ plan_state.used }} z {{ plan_state.limit }} próśb w toku - tyle obejmuje plan {{ plan_state.plan.name }}. <a href="{% url 'billing:plan' %}">Zmień plan</a> albo zamknij prośbę, na którą już nie czekasz.</p>
 {% endif %}
 <form method="post" novalidate data-ajax-form data-request-form>
 {% csrf_token %}
@@ -63,11 +63,11 @@
 </div>
 {{ form.clients.errors }}
 <div class="new-recipients" data-new-recipients data-error-for="new_clients" hidden>
-<p class="new-recipients__title">Nowi klienci – nazwa jest opcjonalna</p>
+<p class="new-recipients__title">Nowi klienci - nazwa jest opcjonalna</p>
 <div data-new-rows></div>
 </div>
 {{ form.new_clients.errors }}
-<p class="form-hint text-muted">Jeden klient albo kilku – każdy dostanie osobną prośbę z własnym linkiem. Możesz też wkleić kilka adresów naraz.</p>
+<p class="form-hint text-muted">Jeden klient albo kilku - każdy dostanie osobną prośbę z własnym linkiem. Możesz też wkleić kilka adresów naraz.</p>
 <div data-recipient-inputs hidden></div>
 {{ client_options|json_script:"client-options" }}
 {{ preselected|json_script:"preselected-client" }}

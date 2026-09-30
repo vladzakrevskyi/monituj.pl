@@ -145,7 +145,7 @@ def llms_full_txt(request):
 @cache_control(max_age=86400, public=True)
 def web_manifest(request):
     manifest = {
-        "name": "Monituj – zbieranie dokumentów od klientów",
+        "name": "Monituj - zbieranie dokumentów od klientów",
         "short_name": "Monituj",
         "description": seo.DEFAULT_DESCRIPTION,
         "lang": "pl",

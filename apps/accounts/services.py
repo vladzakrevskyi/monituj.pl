@@ -232,7 +232,7 @@ class AuthenticationService:
                 throttle.record(resend_key)
                 VerificationService.send_verification_email(user)
             raise ValidationAppError(
-                f"Najpierw potwierdź adres email – link wysłaliśmy na {user.email}. "
+                f"Najpierw potwierdź adres email - link wysłaliśmy na {user.email}. "
                 "Po kliknięciu zalogujesz się automatycznie.",
                 code="EMAIL_NOT_VERIFIED",
             )
@@ -738,7 +738,7 @@ class GuestAccessService:
             raise ValidationAppError(INVALID_ACCESS_MESSAGE, code="INVALID_TOKEN")
         if expired:
             error = ValidationAppError(
-                "Ten link wygasł – linki z wiadomości działają przez 14 dni.",
+                "Ten link wygasł - linki z wiadomości działają przez 14 dni.",
                 code="LINK_EXPIRED",
             )
             error.user = user

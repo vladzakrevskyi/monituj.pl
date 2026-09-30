@@ -3,5 +3,5 @@
 
 Po potwierdzeniu zostaniesz wylogowany ze wszystkich urządzeń i zalogujesz się już nowym hasłem. Link jest ważny przez godzinę i może być użyty tylko raz. Jeśli to nie Ty prosiłeś o zmianę, zignoruj tę wiadomość.
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

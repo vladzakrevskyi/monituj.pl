@@ -1,1 +1,1 @@
-{% load formatting %}{% autoescape off %}Subskrypcja anulowana – plan {{ plan_name }} działa do {{ cancel_at|d }}{% endautoescape %}
+{% load formatting %}{% autoescape off %}Subskrypcja anulowana - plan {{ plan_name }} działa do {{ cancel_at|d }}{% endautoescape %}

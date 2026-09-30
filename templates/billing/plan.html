@@ -18,17 +18,17 @@
 <p class="plan-status__name">{{ state.plan.name }}
 {% if state.source == 'trial' %}<span class="badge badge--progress">Okres próbny</span>
 {% elif state.account.status == 'past_due' %}<span class="badge badge--overdue">Zaległa płatność</span>
-{% elif state.is_subscribed and state.account.cancel_at %}<span class="badge badge--overdue">Anulowany – do {{ state.account.cancel_at|d }}</span>{% endif %}
+{% elif state.is_subscribed and state.account.cancel_at %}<span class="badge badge--overdue">Anulowany - do {{ state.account.cancel_at|d }}</span>{% endif %}
 </p>
 <p class="plan-status__text">
 {% if state.source == 'demo' %}Konto demonstracyjne działa bez limitu próśb.
-{% elif state.source == 'trial' %}Za darmo do {{ state.trial_ends_at|d }} – zostało {{ trial_left }}. Potem, jeśli nie wybierzesz planu, konto przejdzie na bezpłatny plan {{ free_plan.name }}. Nic nie zostanie pobrane.
-{% elif state.is_subscribed %}{% if state.account.status == 'past_due' %}Ostatnia płatność się nie powiodła. Stripe spróbuje ponownie – zaktualizuj kartę, aby nie stracić planu.
-{% elif state.account.cancel_at %}Subskrypcja anulowana – <strong>kolejne płatności nie będą pobierane</strong>. Plan {{ state.plan.name }} działa do {{ state.account.cancel_at|d }}, potem konto przejdzie na bezpłatny plan {{ free_plan.name }} ({{ free_limit }} w toku). Dane, klienci i prośby zostają.
+{% elif state.source == 'trial' %}Za darmo do {{ state.trial_ends_at|d }} - zostało {{ trial_left }}. Potem, jeśli nie wybierzesz planu, konto przejdzie na bezpłatny plan {{ free_plan.name }}. Nic nie zostanie pobrane.
+{% elif state.is_subscribed %}{% if state.account.status == 'past_due' %}Ostatnia płatność się nie powiodła. Stripe spróbuje ponownie - zaktualizuj kartę, aby nie stracić planu.
+{% elif state.account.cancel_at %}Subskrypcja anulowana - <strong>kolejne płatności nie będą pobierane</strong>. Plan {{ state.plan.name }} działa do {{ state.account.cancel_at|d }}, potem konto przejdzie na bezpłatny plan {{ free_plan.name }} ({{ free_limit }} w toku). Dane, klienci i prośby zostają.
 {% else %}{{ current_price }}{% if vat_rate %} netto{% endif %} {% if state.account.interval == 'year' %}rocznie{% else %}miesięcznie{% endif %}.{% if state.account.current_period_end %} Następna płatność: {{ state.account.current_period_end|d }}.{% endif %}{% endif %}
 {% else %}Bezpłatnie i bez limitu czasu.{% endif %}
 </p>
-{% if credit %}<p class="plan-status__credit">Saldo do wykorzystania: <strong>{{ credit }}</strong> – pokryje kolejne płatności{% if state.is_subscribed %}, a jeśli subskrypcja się zakończy, zwrócimy je na kartę{% else %}; zwrócimy je na kartę w ciągu 14 dni{% endif %}.</p>{% endif %}
+{% if credit %}<p class="plan-status__credit">Saldo do wykorzystania: <strong>{{ credit }}</strong> - pokryje kolejne płatności{% if state.is_subscribed %}, a jeśli subskrypcja się zakończy, zwrócimy je na kartę{% else %}; zwrócimy je na kartę w ciągu 14 dni{% endif %}.</p>{% endif %}
 {% if has_customer and payments_enabled %}
 <form method="post" action="{% url 'billing:portal' %}" class="plan-status__actions">
 {% csrf_token %}
@@ -45,7 +45,7 @@
 <p class="plan-status__count"><strong>{{ state.used }}</strong> z {{ state.limit }}</p>
 <p class="plan-status__count-label">próśb w toku</p>
 <progress class="progress-bar{% if state.at_limit %} progress-bar--full{% endif %}" max="100" value="{{ state.percent }}" aria-label="Wykorzystanie limitu: {{ state.used }} z {{ state.limit }}"></progress>
-<p class="plan-status__hint">{% if state.at_limit %}Limit wykorzystany – nową prośbę wyślesz po zmianie planu albo gdy któraś z obecnych się zakończy.{% else %}Prośby zakończone i zamknięte nie wliczają się do limitu.{% endif %}</p>
+<p class="plan-status__hint">{% if state.at_limit %}Limit wykorzystany - nową prośbę wyślesz po zmianie planu albo gdy któraś z obecnych się zakończy.{% else %}Prośby zakończone i zamknięte nie wliczają się do limitu.{% endif %}</p>
 </div>
 {% endif %}
 </section>
@@ -59,13 +59,13 @@
 {% elif not payments_enabled %}
 <div class="plan-notice" role="status"><p>Płatności są chwilowo niedostępne. Spróbuj ponownie później albo <a href="{% url 'pages:contact' %}">napisz do nas</a>.</p></div>
 {% elif sandbox %}
-<div class="plan-notice plan-notice--test" role="status"><p><strong>Tryb testowy Stripe.</strong> Pieniądze nie są pobierane – użyj karty testowej 4242 4242 4242 4242, dowolnej przyszłej daty i dowolnego CVC.</p></div>
+<div class="plan-notice plan-notice--test" role="status"><p><strong>Tryb testowy Stripe.</strong> Pieniądze nie są pobierane - użyj karty testowej 4242 4242 4242 4242, dowolnej przyszłej daty i dowolnego CVC.</p></div>
 {% endif %}
 
 {% if not blocked %}
 <section class="card billing-profile" id="dane" aria-labelledby="profile-title">
 <h2 id="profile-title">Dane do faktury</h2>
-<p class="text-muted">Na te dane wystawimy fakturę VAT po każdej płatności. Sprawdzamy je, zanim cokolwiek zapłacisz: dla firmy wystarczy NIP – nazwę i adres pobieramy z rejestru GUS. Gdy płatny plan jest fakturowany na firmę, możesz pokazać odbiorcom jej nazwę i NIP (Ustawienia) – to pomaga im upewnić się, kto prosi o dokumenty.</p>
+<p class="text-muted">Na te dane wystawimy fakturę VAT po każdej płatności. Sprawdzamy je, zanim cokolwiek zapłacisz: dla firmy wystarczy NIP - nazwę i adres pobieramy z rejestru GUS. Gdy płatny plan jest fakturowany na firmę, możesz pokazać odbiorcom jej nazwę i NIP (Ustawienia) - to pomaga im upewnić się, kto prosi o dokumenty.</p>
 {% if profile %}
 <div class="billing-profile__summary" data-profile-summary>
 <div>
@@ -92,9 +92,9 @@
 </span>
 {{ profile_form.tax_id.errors }}
 </p>
-<p class="billing-profile__hint" data-registry-hint>Wpisz NIP i kliknij „Sprawdź NIP” – nazwę i adres firmy pobierzemy z rejestru GUS, tak jak będą na fakturze.</p>
-<p class="billing-profile__hint billing-profile__hint--found" data-found-hint><span data-registry-source>{% if profile.registry_source %}Dane z rejestru {{ profile.registry_source }}{% if profile.registry_status %} · VAT: {{ profile.registry_status|lower }}{% endif %}{% endif %}</span>. Pola z rejestru są zablokowane – uzupełnij tylko te, których rejestr nie zna.</p>
-<p class="billing-profile__hint" data-manual-hint>Nie znaleźliśmy tej firmy w rejestrach albo są chwilowo niedostępne – wpisz dane ręcznie.</p>
+<p class="billing-profile__hint" data-registry-hint>Wpisz NIP i kliknij „Sprawdź NIP” - nazwę i adres firmy pobierzemy z rejestru GUS, tak jak będą na fakturze.</p>
+<p class="billing-profile__hint billing-profile__hint--found" data-found-hint><span data-registry-source>{% if profile.registry_source %}Dane z rejestru {{ profile.registry_source }}{% if profile.registry_status %} · VAT: {{ profile.registry_status|lower }}{% endif %}{% endif %}</span>. Pola z rejestru są zablokowane - uzupełnij tylko te, których rejestr nie zna.</p>
+<p class="billing-profile__hint" data-manual-hint>Nie znaleźliśmy tej firmy w rejestrach albo są chwilowo niedostępne - wpisz dane ręcznie.</p>
 </div>
 <div class="field-row" data-kind="person">
 <p>
@@ -139,7 +139,7 @@
 </form>
 </section>
 {% if not profile %}
-<div class="plan-notice" role="status"><p>Uzupełnij dane do faktury powyżej – potem wybierzesz plan.</p></div>
+<div class="plan-notice" role="status"><p>Uzupełnij dane do faktury powyżej - potem wybierzesz plan.</p></div>
 {% endif %}
 {% endif %}
 
@@ -150,14 +150,14 @@
 {% include "billing/_price_switches.html" with yearly=yearly gross=False %}
 </div>
 {% if can_buy and not state.is_subscribed %}
-<p class="plan-order-note">Zamówienie jest płatne: płacisz kartą z góry cenę brutto wybranego planu, a subskrypcja odnawia się automatycznie co miesiąc albo co rok, dopóki jej nie anulujesz – w każdej chwili, w panelu.</p>
+<p class="plan-order-note">Zamówienie jest płatne: płacisz kartą z góry cenę brutto wybranego planu, a subskrypcja odnawia się automatycznie co miesiąc albo co rok, dopóki jej nie anulujesz - w każdej chwili, w panelu.</p>
 <p class="consent plan-consent">
 <label for="id_early_start">{{ early_start_label }} Zasady: <a href="{% url 'legal:terms' %}#platnosci" target="_blank" rel="noopener">Regulamin, § 5a</a> i <a href="{% url 'legal:withdrawal' %}" target="_blank" rel="noopener">odstąpienie od umowy</a>.</label>
 <input type="checkbox" name="early_start" id="id_early_start" required>
 </p>
 {% endif %}
 {% include "billing/_plan_grid.html" with panel=True %}
-<p class="plan-picker__foot">{% if vat_rate %}Do ceny netto doliczamy {{ vat_rate }}% VAT – przełącznik nad planami pokazuje ceny netto albo brutto. {% endif %}Płatność kartą przez Stripe: {% if state.is_subscribed %}przy zmianie na droższy plan albo na płatność roczną dopłacasz od razu różnicę za pozostały czas (niewykorzystana część obecnej opłaty jest odliczana), a przy zmianie na tańszy – nadwyżka zostaje zaliczona na kolejne płatności (niewykorzystaną zwracamy po zakończeniu subskrypcji){% else %}płacisz z góry za miesiąc albo rok, subskrypcja odnawia się automatycznie{% endif %}. Zrezygnujesz w każdej chwili – plan działa do końca opłaconego okresu. Po przekroczeniu limitu nic się nie zatrzymuje: przypomnienia są wysyłane, a klienci przesyłają pliki – blokowane jest tylko wysłanie nowej prośby.</p>
+<p class="plan-picker__foot">{% if vat_rate %}Do ceny netto doliczamy {{ vat_rate }}% VAT - przełącznik nad planami pokazuje ceny netto albo brutto. {% endif %}Płatność kartą przez Stripe: {% if state.is_subscribed %}przy zmianie na droższy plan albo na płatność roczną dopłacasz od razu różnicę za pozostały czas (niewykorzystana część obecnej opłaty jest odliczana), a przy zmianie na tańszy - nadwyżka zostaje zaliczona na kolejne płatności (niewykorzystaną zwracamy po zakończeniu subskrypcji){% else %}płacisz z góry za miesiąc albo rok, subskrypcja odnawia się automatycznie{% endif %}. Zrezygnujesz w każdej chwili - plan działa do końca opłaconego okresu. Po przekroczeniu limitu nic się nie zatrzymuje: przypomnienia są wysyłane, a klienci przesyłają pliki - blokowane jest tylko wysłanie nowej prośby.</p>
 </form>
 {% endif %}
 

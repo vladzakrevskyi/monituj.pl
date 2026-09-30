@@ -10,11 +10,11 @@
 <h1>Prośba cykliczna</h1>
 <div class="recurring-status">
 <p class="recurring-status__text">
-{% if schedule.active %}<span class="badge badge--progress">{{ schedule.when|capfirst }}</span> Następna wysyłka: <strong>{{ schedule.next_run_on|d }}</strong> – „{{ schedule.next_name }}”{% else %}<span class="badge badge--neutral">Wstrzymana</span> Nie wychodzi, dopóki jej nie wznowisz.{% endif %}
-{% if sent_count %}<br><span class="text-muted">Wysłane dotąd: {{ sent_count }} – znajdziesz je na liście z oznaczeniem „Cykliczna”.</span>{% endif %}
+{% if schedule.active %}<span class="badge badge--progress">{{ schedule.when|capfirst }}</span> Następna wysyłka: <strong>{{ schedule.next_run_on|d }}</strong> - „{{ schedule.next_name }}”{% else %}<span class="badge badge--neutral">Wstrzymana</span> Nie wychodzi, dopóki jej nie wznowisz.{% endif %}
+{% if sent_count %}<br><span class="text-muted">Wysłane dotąd: {{ sent_count }} - znajdziesz je na liście z oznaczeniem „Cykliczna”.</span>{% endif %}
 </p>
 <div class="recurring-status__actions">
-<form method="post" action="{% url 'requests:recurring-send' schedule.id %}" class="inline-form" data-confirm="Wysłać teraz „{{ now_name }}” do {{ clients_count }} {% if clients_count == 1 %}klienta{% else %}klientów{% endif %}? To dodatkowa wysyłka poza harmonogramem – {% if schedule.active %}następna i tak wyjdzie {{ schedule.next_run_on|d }}{% else %}harmonogram pozostaje wstrzymany{% endif %}.">
+<form method="post" action="{% url 'requests:recurring-send' schedule.id %}" class="inline-form" data-confirm="Wysłać teraz „{{ now_name }}” do {{ clients_count }} {% if clients_count == 1 %}klienta{% else %}klientów{% endif %}? To dodatkowa wysyłka poza harmonogramem - {% if schedule.active %}następna i tak wyjdzie {{ schedule.next_run_on|d }}{% else %}harmonogram pozostaje wstrzymany{% endif %}.">
 {% csrf_token %}
 <button type="submit" class="btn btn-secondary btn-sm">Wyślij teraz</button>
 </form>

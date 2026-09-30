@@ -9,5 +9,5 @@ Nowe wersje są już dostępne:
 Od {{ effective_date }} przy pierwszym wejściu do panelu poprosimy Cię o ich akceptację. Jeśli się nie zgadzasz, możesz wcześniej pobrać dokumenty klientów i usunąć konto w Ustawieniach:
 {{ settings_url }}
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

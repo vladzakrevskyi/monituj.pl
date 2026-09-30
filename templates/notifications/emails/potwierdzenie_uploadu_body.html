@@ -2,7 +2,7 @@
 {% load formatting %}
 {% block preheader %}Twój plik został bezpiecznie przesłany.{% endblock %}
 {% block eyebrow %}Dokument przesłany{% endblock %}
-{% block title %}Dokument dotarł – dziękujemy{% endblock %}
+{% block title %}Dokument dotarł - dziękujemy{% endblock %}
 {% block content %}
 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Potwierdzamy, że Twój plik został bezpiecznie przesłany{% if sender_name %} do <strong>{{ sender_name }}</strong>{% endif %}.</p>
 {% include "notifications/emails/_details_open.html" %}

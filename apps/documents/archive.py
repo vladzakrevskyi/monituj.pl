@@ -71,7 +71,7 @@ def build(request_obj):
         if unreadable:
             archive.writestr(
                 UNREADABLE_NOTE,
-                "Tych plików nie udało się otworzyć – pobierz je pojedynczo "
+                "Tych plików nie udało się otworzyć - pobierz je pojedynczo "
                 "albo napisz do nas:\n"
                 + "\n".join(
                     f"- {folder[d.request_item_id]}: {d.original_filename}"

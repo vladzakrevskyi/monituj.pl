@@ -9,7 +9,7 @@ Przejdź do usunięcia konta:
 
 Tej operacji nie można cofnąć. Jeśli musisz archiwizować dokumenty klientów, pobierz je przed potwierdzeniem.
 
-Link jest ważny przez godzinę i może być użyty tylko raz. Jeśli to nie Ty prosiłeś o usunięcie konta, zignoruj tę wiadomość i zmień hasło – ktoś może znać Twoje dane logowania.
+Link jest ważny przez godzinę i może być użyty tylko raz. Jeśli to nie Ty prosiłeś o usunięcie konta, zignoruj tę wiadomość i zmień hasło - ktoś może znać Twoje dane logowania.
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

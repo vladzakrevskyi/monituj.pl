@@ -30,17 +30,17 @@ locked - except on the legal pages, which must stay readable before deciding.{% 
 {% if category.required %}
 <summary>Pliki cookies Monituj ({{ cookie_consent.necessary_cookies|length|add:1 }})</summary>
 <ul class="cookie-list">
-{% for cookie in cookie_consent.necessary_cookies %}<li><code>{{ cookie.name }}</code> – {{ cookie.purpose }}. {{ cookie.lifetime }}.</li>
-{% endfor %}<li><code>{{ cookie_consent.consent_cookie.name }}</code> – {{ cookie_consent.consent_cookie.purpose }}. {{ cookie_consent.consent_cookie.lifetime }}.</li>
+{% for cookie in cookie_consent.necessary_cookies %}<li><code>{{ cookie.name }}</code> - {{ cookie.purpose }}. {{ cookie.lifetime }}.</li>
+{% endfor %}<li><code>{{ cookie_consent.consent_cookie.name }}</code> - {{ cookie_consent.consent_cookie.purpose }}. {{ cookie_consent.consent_cookie.lifetime }}.</li>
 </ul>
 {% else %}
 <summary>Dostawcy i pliki cookies ({{ category.services|length }})</summary>
 {% for service in category.services %}
 <div class="cookie-service">
-<p class="cookie-service__name"><strong>{{ service.name }}</strong> – {{ service.provider }}</p>
+<p class="cookie-service__name"><strong>{{ service.name }}</strong> - {{ service.provider }}</p>
 <p class="cookie-service__purpose">{{ service.purpose }}. <a href="{{ service.policy_url }}" target="_blank" rel="noopener noreferrer">Polityka prywatności dostawcy</a></p>
 <ul class="cookie-list">
-{% for cookie in service.cookies %}<li><code>{{ cookie.name }}</code> – {{ cookie.purpose }}. {{ cookie.lifetime }}.</li>
+{% for cookie in service.cookies %}<li><code>{{ cookie.name }}</code> - {{ cookie.purpose }}. {{ cookie.lifetime }}.</li>
 {% endfor %}</ul>
 </div>
 {% endfor %}

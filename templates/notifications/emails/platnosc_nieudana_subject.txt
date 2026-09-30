@@ -1,1 +1,1 @@
-{% autoescape off %}Nie udało się pobrać płatności za plan {{ plan_name }} – Monituj{% endautoescape %}
+{% autoescape off %}Nie udało się pobrać płatności za plan {{ plan_name }} - Monituj{% endautoescape %}

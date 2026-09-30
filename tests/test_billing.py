@@ -865,7 +865,7 @@ def test_each_change_is_mailed_once(
         client.get(reverse("billing:plan") + "?zmiana=1")
     send_pending()
 
-    assert [m.subject for m in mail.outbox] == ["Plan Biuro jest aktywny – Monituj"]
+    assert [m.subject for m in mail.outbox] == ["Plan Biuro jest aktywny - Monituj"]
     body = mail.outbox[0].body.replace("\u00a0", " ")
     assert "75 próśb w toku" in body
     assert "89 zł netto (109,47 zł z VAT) miesięcznie" in body.replace(" ", " ")
@@ -886,9 +886,9 @@ def test_cancelling_mails_the_end_date_and_shows_it_in_the_panel(
         html = page_text(client.get(reverse("billing:plan") + "?zmiana=1"))
     send_pending()
 
-    assert mail.outbox[0].subject.startswith("Subskrypcja anulowana – plan Biuro")
+    assert mail.outbox[0].subject.startswith("Subskrypcja anulowana - plan Biuro")
     assert "nie będą pobierane" in mail.outbox[0].body.replace("\u00a0", " ")
-    assert "Anulowany – do" in html
+    assert "Anulowany - do" in html
     assert "kolejne płatności nie będą pobierane" in html
     assert "Wznów subskrypcję" in html
     assert "Następna płatność" not in html
@@ -921,10 +921,10 @@ def test_plan_changes_and_the_end_are_mailed(
     send_pending()
     subjects = [m.subject for m in mail.outbox]
     assert subjects == [
-        "Zmieniłeś plan na Start – Monituj",
-        "Płacisz teraz rocznie – Monituj",
-        "Nie udało się pobrać płatności za plan Start – Monituj",
-        "Plan Start się zakończył – działasz w planie Free",
+        "Zmieniłeś plan na Start - Monituj",
+        "Płacisz teraz rocznie - Monituj",
+        "Nie udało się pobrać płatności za plan Start - Monituj",
+        "Plan Start się zakończył - działasz w planie Free",
     ]
     assert "Masz więcej próśb w toku" in mail.outbox[3].body.replace("\u00a0", " ")
 
@@ -1065,8 +1065,8 @@ def test_refunds_and_disputes_alert_the_team(settings, client, user, fake_stripe
 
     subjects = [m.subject for m in mail.outbox if m.to == [settings.CONTACT_EMAIL]]
     assert subjects == [
-        "[Monituj – płatności] Zwrot płatności w Stripe",
-        "[Monituj – płatności] Klient zakwestionował płatność (spór)",
+        "[Monituj - płatności] Zwrot płatności w Stripe",
+        "[Monituj - płatności] Klient zakwestionował płatność (spór)",
     ]
     body = mail.outbox[-1].body.replace("\u00a0", " ")
     assert user.email in body and "109,47 zł" in body

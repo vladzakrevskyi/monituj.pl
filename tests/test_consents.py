@@ -243,8 +243,8 @@ def test_each_document_has_its_own_version(client, published, verified_user):
     page = page_text(client.get(reverse("consents:accept")))
     terms = page_text(client.get(reverse("legal:terms")))
 
-    assert "Polityka prywatności</a> – od 20 września 2026" in page
-    assert "Regulamin</a> – od" not in page
+    assert "Polityka prywatności</a> - od 20 września 2026" in page
+    assert "Regulamin</a> - od" not in page
     assert "Obowiązuje od: 1 września 2026" in terms
 
 

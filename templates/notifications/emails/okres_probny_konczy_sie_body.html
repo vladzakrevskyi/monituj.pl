@@ -5,7 +5,7 @@
 {% block title %}{% if tomorrow %}Jutro kończy się okres próbny{% else %}Za tydzień kończy się okres próbny{% endif %}{% endblock %}
 {% block content %}
 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Okres próbny planu <strong>{{ trial_plan }}</strong> trwa do <strong>{{ trial_ends_at|dt }}</strong>. Potem konto przejdzie na bezpłatny plan {{ free_plan }}, w którym możesz mieć jednocześnie {{ free_limit }} w toku.</p>
-{% if over_free_limit %}{% include "notifications/emails/_notice.html" with text="Masz teraz więcej próśb w toku, niż obejmuje plan Free. Nic się nie zatrzyma – przypomnienia będą wysyłane, a klienci mogą przesyłać pliki – ale nowe prośby wyślesz dopiero po wybraniu planu albo gdy część obecnych się zakończy." %}{% endif %}
+{% if over_free_limit %}{% include "notifications/emails/_notice.html" with text="Masz teraz więcej próśb w toku, niż obejmuje plan Free. Nic się nie zatrzyma - przypomnienia będą wysyłane, a klienci mogą przesyłać pliki - ale nowe prośby wyślesz dopiero po wybraniu planu albo gdy część obecnych się zakończy." %}{% endif %}
 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Jeśli chcesz dalej wysyłać więcej próśb, wybierz plan. Płacisz miesięcznie albo rocznie i możesz zrezygnować w każdej chwili.</p>
 {% include "notifications/emails/_button.html" with url=plan_url label="Wybierz plan" %}
 {% endblock %}

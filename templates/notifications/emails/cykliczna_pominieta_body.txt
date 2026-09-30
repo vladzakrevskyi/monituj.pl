@@ -5,5 +5,5 @@
 Możesz to poprawić i wysłać ją ręcznie przyciskiem „Wyślij teraz” na liście próśb cyklicznych. Jeśli nic nie zrobisz, kolejna wysyłka będzie {{ next_run_on|d }}.
 {{ list_url }}
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

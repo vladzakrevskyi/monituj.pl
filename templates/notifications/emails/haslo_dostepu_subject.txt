@@ -1,1 +1,1 @@
-{% autoescape off %}Hasło do prośby o dokumenty – Monituj{% endautoescape %}
+{% autoescape off %}Hasło do prośby o dokumenty - Monituj{% endautoescape %}

@@ -360,7 +360,7 @@ def test_gmail_joins_the_existing_password_account(client, google_on, password_u
     password_user.refresh_from_db()
     assert password_user.check_password("s3cr3t-pass!")
     assert [m.subject for m in mail.outbox] == [
-        "Dodano logowanie przez Google – Monituj"
+        "Dodano logowanie przez Google - Monituj"
     ]
 
 
@@ -522,7 +522,7 @@ def test_disconnect_with_a_password(client, google_on, password_user):
     client.post(reverse("accounts:settings"), {"form_action": "google_disconnect"})
 
     assert not GoogleAccount.objects.exists()
-    assert mail.outbox[0].subject == "Odłączono logowanie przez Google – Monituj"
+    assert mail.outbox[0].subject == "Odłączono logowanie przez Google - Monituj"
 
 
 @pytest.mark.django_db

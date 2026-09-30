@@ -104,7 +104,7 @@ def test_turning_on_needs_the_password_and_a_code_from_the_app(client, owner):
     assert row.secret_key_id and secret not in row.secret
     assert len(row.backup_codes) == 10
     assert [m.subject for m in mail.outbox] == [
-        "Włączono weryfikację dwuetapową – Monituj"
+        "Włączono weryfikację dwuetapową - Monituj"
     ]
     assert AuditLog.objects.filter(event=AuditEvent.TWO_FACTOR_ENABLED).exists()
 
@@ -175,7 +175,7 @@ def test_backup_code_works_once_and_the_owner_is_told(owner):
     assert _logged_in(browser)
     assert two_factor.remaining_backup_codes(owner) == 9
     assert [m.subject for m in mail.outbox] == [
-        "Zalogowano się kodem zapasowym – Monituj"
+        "Zalogowano się kodem zapasowym - Monituj"
     ]
     again = Browser()
     _password_login(again)
@@ -320,7 +320,7 @@ def test_turning_off_needs_the_password_and_a_code(client, owner):
     assert not two_factor.is_enabled(owner)
     assert response.cookies[two_factor.DEVICE_COOKIE].value == ""
     assert [m.subject for m in mail.outbox] == [
-        "Wyłączono weryfikację dwuetapową – Monituj"
+        "Wyłączono weryfikację dwuetapową - Monituj"
     ]
 
 

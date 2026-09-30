@@ -3,7 +3,7 @@
 Pliki przesłane dla: {{ sender_from }}
 Prośba: {{ request_name }}
 
-Nie musisz nic robić – ta wiadomość ma charakter informacyjny.
+Nie musisz nic robić - ta wiadomość ma charakter informacyjny.
 --
 Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
 {% endautoescape %}

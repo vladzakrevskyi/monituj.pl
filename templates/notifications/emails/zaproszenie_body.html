@@ -4,7 +4,7 @@
 {% block eyebrow %}Prośba o dokumenty{% endblock %}
 {% block title %}{% if sender_name %}{{ sender_name }} prosi{% else %}Otrzymujesz prośbę{% endif %} o przesłanie dokumentów{% endblock %}
 {% block content %}
-<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">{% if sender_name %}<strong>{{ sender_name }}</strong> korzysta z Monituj, aby zebrać od Ciebie potrzebne dokumenty.{% else %}Ktoś korzysta z Monituj, aby zebrać od Ciebie potrzebne dokumenty.{% endif %} Nie musisz zakładać konta – wystarczy otworzyć link i dodać pliki.</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">{% if sender_name %}<strong>{{ sender_name }}</strong> korzysta z Monituj, aby zebrać od Ciebie potrzebne dokumenty.{% else %}Ktoś korzysta z Monituj, aby zebrać od Ciebie potrzebne dokumenty.{% endif %} Nie musisz zakładać konta - wystarczy otworzyć link i dodać pliki.</p>
 {% include "notifications/emails/_details_open.html" %}
 {% include "notifications/emails/_row.html" with label="Od" value=sender_from %}
 {% if sender_firm %}{% include "notifications/emails/_row.html" with label="Firma" value=sender_firm %}{% endif %}

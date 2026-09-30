@@ -34,7 +34,7 @@ def test_icon_links_fall_back_to_their_label():
 
 
 def test_titles_written_by_hand_are_kept():
-    html = '<a href="/" title="Monituj – strona główna">M Monituj</a>'
+    html = '<a href="/" title="Monituj - strona główna">M Monituj</a>'
 
     assert add_link_titles(html) == html
 

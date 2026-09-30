@@ -2,5 +2,5 @@
 
 Jeśli to nie Ty, zaloguj się, w Ustawieniach odłącz Google i zmień hasło (albo ustaw je przez „Nie pamiętasz hasła?”), a potem napisz do nas.
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

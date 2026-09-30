@@ -20,7 +20,7 @@
 </div>
 
 {% if request_obj.is_closed %}
-<p class="public-closed" role="status">Nadawca zamknął tę prośbę {{ request_obj.closed_at|dt }}. Przesyłanie plików jest wyłączone – jeśli masz jeszcze dokumenty, skontaktuj się bezpośrednio z nadawcą.</p>
+<p class="public-closed" role="status">Nadawca zamknął tę prośbę {{ request_obj.closed_at|dt }}. Przesyłanie plików jest wyłączone - jeśli masz jeszcze dokumenty, skontaktuj się bezpośrednio z nadawcą.</p>
 {% endif %}
 <h2 class="card-title mt-5">Dokumenty {% if request_obj.is_closed %}w prośbie{% else %}do przesłania{% endif %}</h2>
 <div id="items-list" data-token="{{ public_token }}">
@@ -68,7 +68,7 @@
 
 {% if hidden_files %}
 <div class="public-note public-note--files">
-<p><strong>Nie widzisz swoich plików?</strong> Pliki przesłane z innego urządzenia albo dawniej niż 2 tygodnie temu pokazujemy dopiero po potwierdzeniu, że to Ty – na wypadek, gdyby ktoś dostał ten link od Ciebie.</p>
+<p><strong>Nie widzisz swoich plików?</strong> Pliki przesłane z innego urządzenia albo dawniej niż 2 tygodnie temu pokazujemy dopiero po potwierdzeniu, że to Ty - na wypadek, gdyby ktoś dostał ten link od Ciebie.</p>
 <form method="post" action="{% url 'public:recipient-files' public_token %}">
 {% csrf_token %}
 <button type="submit" class="btn btn-secondary btn-sm">Wyślij mi link do moich plików</button>

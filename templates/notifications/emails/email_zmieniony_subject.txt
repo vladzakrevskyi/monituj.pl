@@ -1,1 +1,1 @@
-{% autoescape off %}Adres email został zmieniony – Monituj{% endautoescape %}
+{% autoescape off %}Adres email został zmieniony - Monituj{% endautoescape %}

@@ -12,7 +12,7 @@
 {% if new_codes %}
 <div class="card card--accent" id="kody">
 <h2 class="mt-0">Kody zapasowe</h2>
-<p>Zapisz je teraz – wydrukuj albo zachowaj w menedżerze haseł. <strong>Nie pokażemy ich ponownie.</strong> Każdy kod działa raz; użyj go, gdy nie masz telefonu przy sobie.</p>
+<p>Zapisz je teraz - wydrukuj albo zachowaj w menedżerze haseł. <strong>Nie pokażemy ich ponownie.</strong> Każdy kod działa raz; użyj go, gdy nie masz telefonu przy sobie.</p>
 <ul class="backup-codes">
 {% for code in new_codes %}<li><code>{{ code }}</code></li>
 {% endfor %}</ul>
@@ -22,7 +22,7 @@
 {% if enabled %}
 <div class="card">
 <h2 class="mt-0">Status: <span class="badge badge--complete">Włączona</span></h2>
-<p class="text-muted">Przy logowaniu – hasłem lub przez Google – poprosimy o kod z aplikacji. Kody zapasowe: zostało <strong>{{ remaining_codes }}</strong> z 10.</p>
+<p class="text-muted">Przy logowaniu - hasłem lub przez Google - poprosimy o kod z aplikacji. Kody zapasowe: zostało <strong>{{ remaining_codes }}</strong> z 10.</p>
 <form method="post" novalidate>
 {% csrf_token %}
 {% include "base/_form_flash.html" with form=manage_form %}
@@ -49,7 +49,7 @@
 <div class="card">
 <h2 class="mt-0">Krok 2 z 2: zeskanuj kod</h2>
 <ol class="two-factor-steps">
-<li>Otwórz aplikację uwierzytelniającą – np. Google Authenticator, Microsoft Authenticator, Authy albo menedżer haseł z kodami (1Password, Bitwarden).</li>
+<li>Otwórz aplikację uwierzytelniającą - np. Google Authenticator, Microsoft Authenticator, Authy albo menedżer haseł z kodami (1Password, Bitwarden).</li>
 <li>Dodaj konto i zeskanuj ten kod QR:</li>
 </ol>
 <div class="two-factor-qr">{{ setup.qr_svg }}</div>
@@ -73,8 +73,8 @@
 {% else %}
 <div class="card">
 <h2 class="mt-0">Status: <span class="badge badge--neutral">Wyłączona</span></h2>
-<p>Po włączeniu do logowania potrzebne będzie – oprócz hasła lub konta Google – 6-cyfrowy kod z aplikacji w telefonie. Nawet jeśli ktoś pozna Twoje hasło, bez telefonu nie zobaczy dokumentów Twoich klientów.</p>
-<p class="text-muted">Na własnym komputerze możesz zaznaczyć „Zapamiętaj to urządzenie” – wtedy kod wpiszesz raz na 30 dni.</p>
+<p>Po włączeniu do logowania potrzebne będzie - oprócz hasła lub konta Google - 6-cyfrowy kod z aplikacji w telefonie. Nawet jeśli ktoś pozna Twoje hasło, bez telefonu nie zobaczy dokumentów Twoich klientów.</p>
+<p class="text-muted">Na własnym komputerze możesz zaznaczyć „Zapamiętaj to urządzenie” - wtedy kod wpiszesz raz na 30 dni.</p>
 <form method="post" novalidate>
 {% csrf_token %}
 <input type="hidden" name="form_action" value="start">

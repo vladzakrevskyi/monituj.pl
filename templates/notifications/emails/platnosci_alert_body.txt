@@ -4,5 +4,5 @@
 {% endfor %}{% if link %}
 Stripe: {{ link }}
 {% endif %}--
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

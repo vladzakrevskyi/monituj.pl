@@ -71,7 +71,7 @@ NECESSARY_COOKIES = [
     ("csrftoken", "Ochrona formularzy przed atakami typu CSRF", "Do 1 roku"),
     (
         "tz",
-        "Strefa czasowa przeglądarki (np. „Europe/Warsaw”) – do wyświetlania dat "
+        "Strefa czasowa przeglądarki (np. „Europe/Warsaw”) - do wyświetlania dat "
         "w Twoim czasie i wysyłania przypomnień o właściwej godzinie. Nie zawiera "
         "danych, które pozwalają Cię zidentyfikować",
         "Do 1 roku",
@@ -111,7 +111,7 @@ SERVICES = {
             "identyfikator cookie, przybliżona lokalizacja, informacje o urządzeniu "
             "i odwiedzonych stronach"
         ),
-        "retention": "dane w Google Analytics – 14 miesięcy",
+        "retention": "dane w Google Analytics - 14 miesięcy",
         "transfer": GOOGLE_TRANSFER,
         "policy_url": "https://policies.google.com/privacy",
         "cookies": [
@@ -201,13 +201,13 @@ SERVICES = {
         "provider": "Microsoft Ireland Operations Ltd.",
         "category": "analytics",
         "purpose": (
-            "Mapy kliknięć i nagrania sesji – jak odwiedzający korzystają ze strony"
+            "Mapy kliknięć i nagrania sesji - jak odwiedzający korzystają ze strony"
         ),
         "data": (
             "identyfikator cookie, ruchy myszy, kliknięcia i przewijanie, informacje "
             "o urządzeniu (bez treści wpisywanych w formularze)"
         ),
-        "retention": "nagrania w Clarity – do 30 dni",
+        "retention": "nagrania w Clarity - do 30 dni",
         "transfer": "Microsoft Corporation (USA)",
         "policy_url": "https://privacy.microsoft.com/pl-pl/privacystatement",
         "cookies": [

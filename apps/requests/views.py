@@ -149,7 +149,7 @@ def request_create(request):
                 messages.success(
                     request,
                     f"Prośba „{form.cleaned_data['name']}” wysłana do "
-                    f"{clients_phrase(len(sent))} – wiadomości dotrą w ciągu minuty.",
+                    f"{clients_phrase(len(sent))} - wiadomości dotrą w ciągu minuty.",
                 )
                 redirect_url = reverse("requests:list")
                 if is_ajax_request(request):
@@ -320,7 +320,7 @@ def request_detail(request, request_id):
         if by:
             entry.label_pl += " (Ty)" if by == "owner" else " (odbiorca)"
         if (entry.metadata or {}).get("zip"):
-            entry.label_pl += " – w archiwum ZIP"
+            entry.label_pl += " - w archiwum ZIP"
     status = compute_status(request_obj)
     return render(
         request,
@@ -433,7 +433,7 @@ def request_close(request, request_id):
             messages.error(request, exc.message)
         else:
             messages.success(
-                request, "Prośba jest znowu otwarta – odbiorca może przesyłać pliki."
+                request, "Prośba jest znowu otwarta - odbiorca może przesyłać pliki."
             )
     else:
         RequestService.close(request_obj, actor=request.user, request=request)
@@ -490,7 +490,7 @@ def recurring_send_now(request, schedule_id):
         messages.error(request, exc.message)
     else:
         next_run = (
-            f"Harmonogram bez zmian – następna wysyłka "
+            f"Harmonogram bez zmian - następna wysyłka "
             f"{date_format(schedule.next_run_on, 'j E Y')}."
             if schedule.active
             else "Harmonogram pozostaje wstrzymany."

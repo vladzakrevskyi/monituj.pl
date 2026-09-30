@@ -46,7 +46,7 @@ class ContactForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 7}),
         error_messages={
             "required": REQUIRED_MESSAGE,
-            "min_length": "Napisz nieco więcej – co najmniej 10 znaków.",
+            "min_length": "Napisz nieco więcej - co najmniej 10 znaków.",
             "max_length": "Wiadomość może mieć najwyżej 5000 znaków.",
         },
     )

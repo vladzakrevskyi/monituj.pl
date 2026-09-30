@@ -8,7 +8,7 @@
 <h1>Zaktualizowaliśmy dokumenty</h1>
 <p>Obowiązują nowe wersje dokumentów Monituj. Przeczytaj je i zaakceptuj, aby dalej korzystać z panelu:</p>
 <ul>
-{% for doc in changed %}<li><a href="{{ doc.url }}" target="_blank" rel="noopener">{{ doc.title }}</a> – od {{ doc.since }}</li>
+{% for doc in changed %}<li><a href="{{ doc.url }}" target="_blank" rel="noopener">{{ doc.title }}</a> - od {{ doc.since }}</li>
 {% endfor %}</ul>
 <form method="post" novalidate data-ajax-form>
 {% csrf_token %}

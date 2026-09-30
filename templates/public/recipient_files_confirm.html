@@ -6,7 +6,7 @@
 {% block content %}
 <div class="card">
 <h1>Pokaż moje pliki</h1>
-<p>Kliknij, aby w tej przeglądarce zobaczyć wszystkie pliki przesłane w prośbie <strong>{{ request_obj.name }}</strong> – także te wysłane z innych urządzeń.</p>
+<p>Kliknij, aby w tej przeglądarce zobaczyć wszystkie pliki przesłane w prośbie <strong>{{ request_obj.name }}</strong> - także te wysłane z innych urządzeń.</p>
 <form method="post">
 {% csrf_token %}
 <button type="submit" class="btn btn-primary btn-lg btn-block">Pokaż moje pliki</button>

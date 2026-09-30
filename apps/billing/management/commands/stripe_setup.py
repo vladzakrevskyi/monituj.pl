@@ -110,7 +110,7 @@ class Command(BaseCommand):
                 "tax_behavior": "exclusive",
                 "lookup_key": key,
                 "transfer_lookup_key": True,
-                "nickname": f"{plan.name} – "
+                "nickname": f"{plan.name} - "
                 + ("rocznie" if interval == plans.YEAR else "miesięcznie"),
                 "metadata": {"plan": plan.code, "interval": interval},
             }
@@ -123,7 +123,7 @@ class Command(BaseCommand):
     def _tax_rate(self, stripe_client):
         rate = plans.vat_rate()
         if not rate:
-            self.stdout.write("  VAT: 0% – bez stawki podatku")
+            self.stdout.write("  VAT: 0% - bez stawki podatku")
             return None
         found = gateway.find_tax_rate(stripe_client, rate)
         if found:
@@ -156,7 +156,7 @@ class Command(BaseCommand):
         by_product = {}
         for price in prices:
             by_product.setdefault(price.product, []).append(price.id)
-        business_profile = {"headline": "Monituj – plan i płatności"}
+        business_profile = {"headline": "Monituj - plan i płatności"}
         # Stripe accepts only public addresses here.
         if settings.SITE_URL.startswith("https://"):
             business_profile["privacy_policy_url"] = absolute_url(
@@ -223,7 +223,7 @@ class Command(BaseCommand):
                     params={"enabled_events": sorted(gateway.HANDLED_EVENTS)},
                 )
                 self.stdout.write(
-                    f"  ~ webhook {url} (już istnieje – sekret znajdziesz w "
+                    f"  ~ webhook {url} (już istnieje - sekret znajdziesz w "
                     "panelu Stripe)"
                 )
                 return

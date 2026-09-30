@@ -39,7 +39,7 @@ class BillingAccount(TimeStampedModel):
     synced_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user} – {self.plan} ({self.status or 'bez subskrypcji'})"
+        return f"{self.user} - {self.plan} ({self.status or 'bez subskrypcji'})"
 
 
 class StripeEvent(models.Model):
@@ -104,14 +104,14 @@ class CheckoutConsent(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
-        return f"{self.email} – {self.plan} ({self.created_at:%Y-%m-%d})"
+        return f"{self.email} - {self.plan} ({self.created_at:%Y-%m-%d})"
 
 
 class VatInvoiceStatus(models.TextChoices):
     PENDING = "pending", "Do wystawienia"
     PROCESSING = "processing", "Wystawiana w inFakt"
     ISSUED = "issued", "Wystawiona"
-    FAILED = "failed", "Błąd – wystaw ręcznie"
+    FAILED = "failed", "Błąd - wystaw ręcznie"
 
 
 class VatInvoice(models.Model):

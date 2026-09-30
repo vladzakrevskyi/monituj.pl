@@ -5,5 +5,5 @@ Zmiana nie zostanie zastosowana, dopóki nowy adres nie zostanie potwierdzony li
 
 Jeśli to nie Ty prosiłeś o tę zmianę, zalecamy natychmiast zmienić hasło do konta.
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

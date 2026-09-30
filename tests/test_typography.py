@@ -18,8 +18,8 @@ def test_chains_of_short_words_are_glued_fully():
 
 
 def test_numbers_and_dashes_do_not_hang():
-    assert fix_orphans_text("za 5 minut – gotowe") == (
-        f"za{NBSP}5{NBSP}minut{NBSP}– gotowe"
+    assert fix_orphans_text("za 5 minut - gotowe") == (
+        f"za{NBSP}5{NBSP}minut{NBSP}- gotowe"
     )
 
 

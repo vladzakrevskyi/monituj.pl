@@ -1,1 +1,1 @@
-{% autoescape off %}Zalogowano się kodem zapasowym – Monituj{% endautoescape %}
+{% autoescape off %}Zalogowano się kodem zapasowym - Monituj{% endautoescape %}

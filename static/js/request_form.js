@@ -142,7 +142,7 @@
     );
     if (!shown.length && query) {
       options.appendChild(
-        element("li", "recipient-option recipient-option--hint", "Nie ma takiego klienta – wpisz pełny adres e-mail, żeby dodać nowego."),
+        element("li", "recipient-option recipient-option--hint", "Nie ma takiego klienta - wpisz pełny adres e-mail, żeby dodać nowego."),
       );
     }
     active = shown.length ? 0 : -1;
@@ -261,7 +261,7 @@
     });
     workdays.textContent = value === "daily" ? workdays.dataset.daily : workdays.dataset.other;
     repeatSettings.hidden = !repeat.checked;
-    $("[data-timing-summary]").textContent = repeat.checked ? `– ${timingText()}` : "";
+    $("[data-timing-summary]").textContent = repeat.checked ? `- ${timingText()}` : "";
   }
 
   $("[data-insert-month]").addEventListener("click", () => {
@@ -356,9 +356,9 @@
         : "";
       summary.textContent =
         `Będziemy wysyłać „${name}” ${whom()}, ${timingText()} (od 8:00)` +
-        `${deadline ? ` – ${deadline}` : ""}.${first}`;
+        `${deadline ? ` - ${deadline}` : ""}.${first}`;
     } else {
-      summary.textContent = `Wyślemy „${name}” ${whom()}${deadline ? ` – ${deadline}` : ""}.`;
+      summary.textContent = `Wyślemy „${name}” ${whom()}${deadline ? ` - ${deadline}` : ""}.`;
     }
     if (repeat.checked) {
       submit.textContent = `Zapisz i wysyłaj ${timingText().split(",")[0]}`;

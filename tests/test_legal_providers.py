@@ -17,7 +17,7 @@ def test_cdn_is_named_in_the_privacy_policy_and_the_dpa(client, settings):
 
     assert "(CDN): Cloudflare, Inc." in privacy
     assert "Ruch do Serwisu obsługuje Cloudflare, Inc." in privacy
-    assert "(CDN) – Cloudflare, Inc." in dpa
+    assert "(CDN) - Cloudflare, Inc." in dpa
 
 
 @pytest.mark.django_db

@@ -1,4 +1,4 @@
-{% load formatting %}{% autoescape off %}Dokument dotarł – dziękujemy.
+{% load formatting %}{% autoescape off %}Dokument dotarł - dziękujemy.
 
 Plik: {{ document_name }}
 Prośba: {{ request_name }}

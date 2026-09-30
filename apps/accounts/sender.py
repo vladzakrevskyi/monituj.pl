@@ -16,7 +16,7 @@ import unicodedata
 from django.core.exceptions import ValidationError
 
 DECEPTIVE_MESSAGE = (
-    "Ta nazwa może wprowadzać odbiorców w błąd – przypomina instytucję "
+    "Ta nazwa może wprowadzać odbiorców w błąd - przypomina instytucję "
     "publiczną, bank albo Monituj. Użyj nazwy swojej firmy albo imienia i "
     "nazwiska."
 )

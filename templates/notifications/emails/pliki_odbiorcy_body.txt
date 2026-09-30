@@ -1,7 +1,7 @@
 {% autoescape off %}Ktoś poprosił o dostęp do plików, które przesłałeś w prośbie „{{ request_name }}”. Jeśli to Ty, otwórz link (działa przez godzinę):
 {{ confirm_url }}
 
-Jeśli to nie Ty, zignoruj tę wiadomość – bez kliknięcia nikt nie zobaczy Twoich plików.
+Jeśli to nie Ty, zignoruj tę wiadomość - bez kliknięcia nikt nie zobaczy Twoich plików.
 --
 Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}.
 {% endautoescape %}

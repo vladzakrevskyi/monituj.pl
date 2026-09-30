@@ -8,10 +8,10 @@
 
 <h2>2. Jakich plików cookies używamy</h2>
 {% if cookie_consent.enabled %}
-<p>Serwis Monituj używa plików cookies niezbędnych do jego działania – na nie nie potrzebujemy zgody (art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. – Prawo komunikacji elektronicznej). Na stronach informacyjnych Serwisu, wyłącznie za Twoją zgodą, używamy też cookies {{ cookie_consent.optional_genitive }} dostawców zewnętrznych, wczytywanych przez Google Tag Manager. Zgodę wyrażasz osobno dla każdej kategorii. Tych cookies nie używamy w panelu ani na stronach z linkami do próśb.</p>
+<p>Serwis Monituj używa plików cookies niezbędnych do jego działania - na nie nie potrzebujemy zgody (art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. - Prawo komunikacji elektronicznej). Na stronach informacyjnych Serwisu, wyłącznie za Twoją zgodą, używamy też cookies {{ cookie_consent.optional_genitive }} dostawców zewnętrznych, wczytywanych przez Google Tag Manager. Zgodę wyrażasz osobno dla każdej kategorii. Tych cookies nie używamy w panelu ani na stronach z linkami do próśb.</p>
 <h3>Cookies niezbędne</h3>
 {% else %}
-<p>Serwis Monituj używa wyłącznie plików cookies niezbędnych do jego działania. Nie stosujemy cookies analitycznych, reklamowych ani plików cookies podmiotów trzecich. Dlatego nie prosimy o zgodę – zgodnie z art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. – Prawo komunikacji elektronicznej zgoda nie jest wymagana dla cookies niezbędnych do świadczenia usługi.</p>
+<p>Serwis Monituj używa wyłącznie plików cookies niezbędnych do jego działania. Nie stosujemy cookies analitycznych, reklamowych ani plików cookies podmiotów trzecich. Dlatego nie prosimy o zgodę - zgodnie z art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. - Prawo komunikacji elektronicznej zgoda nie jest wymagana dla cookies niezbędnych do świadczenia usługi.</p>
 {% endif %}
 <div class="table-scroll">
 <table>
@@ -23,19 +23,19 @@
 </table>
 </div>
 {% for category in cookie_consent.optional_categories %}
-<h3>Cookies {{ category.name|lower }} – tylko za zgodą</h3>
+<h3>Cookies {{ category.name|lower }} - tylko za zgodą</h3>
 <p>{{ category.description }}</p>
 <div class="table-scroll">
 <table>
 <thead><tr><th>Nazwa</th><th>Dostawca i cel</th><th>Czas przechowywania</th></tr></thead>
 <tbody>
-{% for service in category.services %}{% for cookie in service.cookies %}<tr><td><code>{{ cookie.name }}</code></td><td>{{ service.name }} ({{ service.provider }}) – {{ cookie.purpose }}</td><td>{{ cookie.lifetime }}</td></tr>
+{% for service in category.services %}{% for cookie in service.cookies %}<tr><td><code>{{ cookie.name }}</code></td><td>{{ service.name }} ({{ service.provider }}) - {{ cookie.purpose }}</td><td>{{ cookie.lifetime }}</td></tr>
 {% endfor %}{% endfor %}</tbody>
 </table>
 </div>
 {% endfor %}
 {% if cookie_consent.enabled %}
-<p>Pliki cookies zapisywane w domenie dostawcy (np. doubleclick.net, facebook.com) podlegają jego zasadom – linki do nich znajdziesz w „Ustawieniach cookies”. Zgodę możesz w każdej chwili wycofać albo zmienić, klikając „Ustawienia cookies” w stopce strony. Po wycofaniu zgody usuwamy z Twojej przeglądarki cookies danej kategorii zapisane w domenie Serwisu i nie wczytujemy już narzędzi tej kategorii. Wycofanie zgody nie wpływa na zgodność z prawem przetwarzania przed jej wycofaniem.</p>
+<p>Pliki cookies zapisywane w domenie dostawcy (np. doubleclick.net, facebook.com) podlegają jego zasadom - linki do nich znajdziesz w „Ustawieniach cookies”. Zgodę możesz w każdej chwili wycofać albo zmienić, klikając „Ustawienia cookies” w stopce strony. Po wycofaniu zgody usuwamy z Twojej przeglądarki cookies danej kategorii zapisane w domenie Serwisu i nie wczytujemy już narzędzi tej kategorii. Wycofanie zgody nie wpływa na zgodność z prawem przetwarzania przed jej wycofaniem.</p>
 <p>Każdą decyzję w banerze (także jej zmianę) zapisujemy w rejestrze zgód, żeby móc wykazać, na co i kiedy się zgodziłeś (art. 7 ust. 1 RODO): losowy identyfikator decyzji z Twojej przeglądarki, wybrane kategorie, wersję banera i datę. Rejestr nie zawiera adresu IP ani danych konta. Wpisy przechowujemy 3 lata, a potem automatycznie usuwamy.</p>
 {% endif %}
 

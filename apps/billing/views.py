@@ -55,7 +55,7 @@ STRIPE_SYNCS_PER_HOUR = 30
 INVOICE_DOWNLOADS_PER_HOUR = 60
 GUEST_MESSAGE = "Ustaw hasło do konta, aby wybrać płatny plan."
 PROFILE_MISSING_MESSAGE = (
-    "Najpierw uzupełnij dane do faktury – bez nich nie możemy przyjąć płatności."
+    "Najpierw uzupełnij dane do faktury - bez nich nie możemy przyjąć płatności."
 )
 REGISTRY_LOOKUPS_PER_HOUR = 20
 DEMO_MESSAGE = "Konto demonstracyjne nie może kupić planu."
@@ -346,7 +346,7 @@ def checkout_return(request):
     else:
         messages.info(
             request,
-            "Płatność jest przetwarzana – plan włączy się automatycznie w ciągu "
+            "Płatność jest przetwarzana - plan włączy się automatycznie w ciągu "
             "kilku minut.",
         )
     return redirect("billing:plan")
@@ -470,7 +470,7 @@ def registry_lookup(request):
     if not valid_nip(nip):
         return error_response(
             "INVALID_NIP",
-            "Ten NIP jest nieprawidłowy – sprawdź, czy nie ma literówki.",
+            "Ten NIP jest nieprawidłowy - sprawdź, czy nie ma literówki.",
             fields={"tax_id": ["Ten NIP jest nieprawidłowy."]},
         )
     if not _may_check_registry(request):
@@ -487,7 +487,7 @@ def registry_lookup(request):
         )
     except registry.InvalidNip:
         return error_response(
-            "INVALID_NIP", "Ministerstwo Finansów nie zna tego NIP – sprawdź go."
+            "INVALID_NIP", "Ministerstwo Finansów nie zna tego NIP - sprawdź go."
         )
     if found is None:
         return error_response(

@@ -11,7 +11,7 @@ Brakujące dokumenty:
 Prześlij brakujące dokumenty:
 {{ link }}
 
-Jeśli już wszystko przesłałeś, zignoruj tę wiadomość – przypomnienia wyłączą się automatycznie, gdy komplet dokumentów dotrze.{% if portal_link %}
+Jeśli już wszystko przesłałeś, zignoruj tę wiadomość - przypomnienia wyłączą się automatycznie, gdy komplet dokumentów dotrze.{% if portal_link %}
 Wszystkie Twoje prośby o dokumenty, także od innych nadawców, w jednym miejscu:
 {{ portal_link }}
 {% endif %}

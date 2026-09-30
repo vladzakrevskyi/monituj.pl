@@ -137,9 +137,9 @@ def test_adding_a_marketing_tool_updates_banner_policies_and_csp(tracking):
     assert 'data-consent-category="marketing"' in html
     assert "https://connect.facebook.net" in response["Content-Security-Policy"]
     assert "<code>_fbp</code>" in cookie_policy
-    assert "Cookies marketingowe – tylko za zgodą" in cookie_policy
+    assert "Cookies marketingowe - tylko za zgodą" in cookie_policy
     assert "Meta Platforms Ireland Ltd. (Meta Pixel)" in privacy
-    assert "Meta Pixel – Meta Platforms, Inc. (USA)" in privacy
+    assert "Meta Pixel - Meta Platforms, Inc. (USA)" in privacy
 
 
 @pytest.mark.django_db

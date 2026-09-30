@@ -1,1 +1,1 @@
-{% autoescape off %}Reset hasła – Monituj{% endautoescape %}
+{% autoescape off %}Reset hasła - Monituj{% endautoescape %}

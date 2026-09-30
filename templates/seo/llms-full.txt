@@ -1,4 +1,4 @@
-{% autoescape off %}# Monituj – pełny opis
+{% autoescape off %}# Monituj - pełny opis
 
 Adres: {{ site_url }}
 Kontakt: {{ contact_email }}
@@ -6,16 +6,16 @@ Język i rynek: polski, Polska.
 
 ## Czym jest Monituj
 
-Monituj to polska aplikacja webowa do zbierania dokumentów od klientów, pracowników i kontrahentów. Rozwiązuje jeden konkretny problem: gonienie ludzi o brakujące dokumenty – dziesiątki maili i telefonów „prześlij, proszę…”, pliki rozrzucone po skrzynce i terminy, które przepadają, bo jednego dokumentu wciąż brakuje.
+Monituj to polska aplikacja webowa do zbierania dokumentów od klientów, pracowników i kontrahentów. Rozwiązuje jeden konkretny problem: gonienie ludzi o brakujące dokumenty - dziesiątki maili i telefonów „prześlij, proszę…”, pliki rozrzucone po skrzynce i terminy, które przepadają, bo jednego dokumentu wciąż brakuje.
 
 Monituj nie jest dyskiem na pliki. Dysk i mail tylko przechowują to, co już dotarło. Monituj pilnuje, żeby dokumenty w ogóle dotarły: prowadzi listę potrzebnych dokumentów, sam przypomina o brakach i pokazuje status każdego dokumentu.
 
 ## Jak to działa
 
 1. Firma tworzy prośbę: odbiorcę, listę potrzebnych dokumentów, termin i ustawienia przypomnień (po ilu dniach pierwsze, co ile dni kolejne, ile maksymalnie).
-2. Odbiorca dostaje email z unikalnym linkiem. Otwiera listę w przeglądarce i przesyła pliki – bez zakładania konta i bez instalowania czegokolwiek. Link można dodatkowo zabezpieczyć hasłem.
-3. Monituj sam wysyła przypomnienia o brakujących dokumentach – o tej godzinie, o której wysłano prośbę, według strefy czasowej odbiorcy (w godzinach 8:00–20:00). Przypomnienia wyłączają się, gdy dotrze komplet albo gdy firma zamknie prośbę.
-4. Firma przegląda dokumenty: akceptuje je albo odrzuca z podaniem powodu – odbiorca dostaje email, co poprawić, i przesyła nową wersję.
+2. Odbiorca dostaje email z unikalnym linkiem. Otwiera listę w przeglądarce i przesyła pliki - bez zakładania konta i bez instalowania czegokolwiek. Link można dodatkowo zabezpieczyć hasłem.
+3. Monituj sam wysyła przypomnienia o brakujących dokumentach - o tej godzinie, o której wysłano prośbę, według strefy czasowej odbiorcy (w godzinach 8:00-20:00). Przypomnienia wyłączają się, gdy dotrze komplet albo gdy firma zamknie prośbę.
+4. Firma przegląda dokumenty: akceptuje je albo odrzuca z podaniem powodu - odbiorca dostaje email, co poprawić, i przesyła nową wersję.
 5. Po wybranym okresie przechowywania (od 1 do 365 dni) pliki są trwale usuwane, a obie strony dostają powiadomienie.
 
 ## Funkcje
@@ -37,14 +37,14 @@ Każda prośba ma unikalny, trudny do odgadnięcia link. Pliki są szyfrowane na
 
 ## Cena
 
-Płaci się za liczbę próśb w toku – wysłanych, niezamkniętych i wciąż czekających na dokumenty. Przypomnienia, klienci i wszystkie funkcje są w każdym planie. Ceny netto (+23% VAT), płatność kartą przez Stripe, miesięcznie albo rocznie (2 miesiące gratis):
+Płaci się za liczbę próśb w toku - wysłanych, niezamkniętych i wciąż czekających na dokumenty. Przypomnienia, klienci i wszystkie funkcje są w każdym planie. Ceny netto (+23% VAT), płatność kartą przez Stripe, miesięcznie albo rocznie (2 miesiące gratis):
 
-- Free – 0 zł, do 3 próśb w toku, bez limitu czasu.
-- Start – 39 zł/mies. (390 zł/rok), do 20 próśb w toku.
-- Biuro – 89 zł/mies. (890 zł/rok), do 75 próśb w toku.
-- Pro – 179 zł/mies. (1790 zł/rok), do 250 próśb w toku.
+- Free - 0 zł, do 3 próśb w toku, bez limitu czasu.
+- Start - 39 zł/mies. (390 zł/rok), do 20 próśb w toku.
+- Biuro - 89 zł/mies. (890 zł/rok), do 75 próśb w toku.
+- Pro - 179 zł/mies. (1790 zł/rok), do 250 próśb w toku.
 
-Nowe konto ma 30 dni wybranego płatnego planu za darmo (domyślnie Biuro), bez karty; potem, bez wyboru planu, przechodzi na Free. Po przekroczeniu limitu nic się nie zatrzymuje – blokowane jest tylko wysłanie nowej prośby.
+Nowe konto ma 30 dni wybranego płatnego planu za darmo (domyślnie Biuro), bez karty; potem, bez wyboru planu, przechodzi na Free. Po przekroczeniu limitu nic się nie zatrzymuje - blokowane jest tylko wysłanie nowej prośby.
 
 - Załóż konto: {{ register_url }}
 - Wyślij prośbę bez konta: {{ guest_url }}

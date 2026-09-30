@@ -43,7 +43,7 @@ def accept(request):
     if request.method == "POST":
         if form.is_valid():
             record_acceptance(request.user, AcceptanceMethod.UPDATE, request)
-            messages.success(request, "Dziękujemy – nowe dokumenty zaakceptowane.")
+            messages.success(request, "Dziękujemy - nowe dokumenty zaakceptowane.")
             if is_ajax_request(request):
                 return success_response({"redirect_url": _next(request)})
             return redirect(_next(request))

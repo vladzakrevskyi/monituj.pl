@@ -5,5 +5,5 @@ Prośba i jej historia pozostają w panelu, a w miejscu plików widnieje informa
 Zobacz prośbę w panelu:
 {{ panel_link }}
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

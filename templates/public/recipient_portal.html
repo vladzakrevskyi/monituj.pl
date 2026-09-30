@@ -8,19 +8,19 @@
 <div>
 <p class="eyebrow">Moje prośby o dokumenty</p>
 <h1>Prośby do Ciebie</h1>
-<p class="page-header__sub">Wszystkie prośby o dokumenty wysłane na adres <strong>{{ recipient_email }}</strong> – od wszystkich nadawców, także zakończone. Zachowaj ten link: zawsze jest ten sam.</p>
+<p class="page-header__sub">Wszystkie prośby o dokumenty wysłane na adres <strong>{{ recipient_email }}</strong> - od wszystkich nadawców, także zakończone. Zachowaj ten link: zawsze jest ten sam.</p>
 </div>
 </div>
 
 {% if account_link %}
 <a class="received-banner" href="{{ account_link }}">
 <span class="received-banner__count" aria-hidden="true">M</span>
-<span><strong>Masz konto w Monituj.</strong> Zaloguj się, aby zobaczyć te prośby w panelu (zakładka Otrzymane) razem z przesłanymi plikami – obok próśb, które sam wysyłasz.</span>
+<span><strong>Masz konto w Monituj.</strong> Zaloguj się, aby zobaczyć te prośby w panelu (zakładka Otrzymane) razem z przesłanymi plikami - obok próśb, które sam wysyłasz.</span>
 <span class="received-banner__arrow" aria-hidden="true">&rarr;</span>
 </a>
 {% endif %}
 
 {% include "requests/_received_table.html" %}
 
-<p class="text-muted mt-5">Nie przekazuj tego linku dalej – każdy, kto go ma, zobaczy listę Twoich próśb. Chcesz sam zbierać dokumenty od innych? <a href="{% url 'pages:how-it-works' %}">Zobacz, jak działa Monituj</a>.</p>
+<p class="text-muted mt-5">Nie przekazuj tego linku dalej - każdy, kto go ma, zobaczy listę Twoich próśb. Chcesz sam zbierać dokumenty od innych? <a href="{% url 'pages:how-it-works' %}">Zobacz, jak działa Monituj</a>.</p>
 {% endblock %}

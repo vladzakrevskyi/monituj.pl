@@ -1,1 +1,1 @@
-{% autoescape off %}[Monituj – płatności] {{ subject }}{% endautoescape %}
+{% autoescape off %}[Monituj - płatności] {{ subject }}{% endautoescape %}

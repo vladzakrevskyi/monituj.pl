@@ -1,6 +1,6 @@
-{% load formatting %}{% autoescape off %}{% if kind == "interval" %}Plan {{ plan_name }} rozliczasz teraz {{ interval_label }} zamiast {{ previous_interval_label }}. {% if to_yearly %}Opłatę za rok, pomniejszoną o niewykorzystaną część dotychczasowej opłaty, pobraliśmy od razu – fakturę VAT wyślemy osobną wiadomością.{% else %}Niewykorzystaną część opłaty rocznej zaliczyliśmy na kolejne płatności{% if credit %} (saldo: {{ credit }}){% endif %} – z niej opłacimy następne miesiące, a jeśli do końca subskrypcji jej nie wykorzystasz, zwrócimy ją na kartę.{% endif %}{% elif kind == "upgraded" %}Plan zmieniony z {{ previous_plan_name }} na {{ plan_name }}. Od teraz możesz mieć jednocześnie {{ limit }} w toku. Dopłatę za pozostały czas bieżącego okresu pobraliśmy od razu – fakturę VAT wyślemy osobną wiadomością.{% else %}Plan zmieniony z {{ previous_plan_name }} na {{ plan_name }}. Możesz mieć teraz jednocześnie {{ limit }} w toku. Niewykorzystaną część poprzedniej opłaty zaliczyliśmy na kolejne płatności{% if credit %} (saldo: {{ credit }}){% endif %} – a jeśli do końca subskrypcji jej nie wykorzystasz, zwrócimy ją na kartę.{% endif %}
+{% load formatting %}{% autoescape off %}{% if kind == "interval" %}Plan {{ plan_name }} rozliczasz teraz {{ interval_label }} zamiast {{ previous_interval_label }}. {% if to_yearly %}Opłatę za rok, pomniejszoną o niewykorzystaną część dotychczasowej opłaty, pobraliśmy od razu - fakturę VAT wyślemy osobną wiadomością.{% else %}Niewykorzystaną część opłaty rocznej zaliczyliśmy na kolejne płatności{% if credit %} (saldo: {{ credit }}){% endif %} - z niej opłacimy następne miesiące, a jeśli do końca subskrypcji jej nie wykorzystasz, zwrócimy ją na kartę.{% endif %}{% elif kind == "upgraded" %}Plan zmieniony z {{ previous_plan_name }} na {{ plan_name }}. Od teraz możesz mieć jednocześnie {{ limit }} w toku. Dopłatę za pozostały czas bieżącego okresu pobraliśmy od razu - fakturę VAT wyślemy osobną wiadomością.{% else %}Plan zmieniony z {{ previous_plan_name }} na {{ plan_name }}. Możesz mieć teraz jednocześnie {{ limit }} w toku. Niewykorzystaną część poprzedniej opłaty zaliczyliśmy na kolejne płatności{% if credit %} (saldo: {{ credit }}){% endif %} - a jeśli do końca subskrypcji jej nie wykorzystasz, zwrócimy ją na kartę.{% endif %}
 {% if over_limit %}
-Masz teraz więcej próśb w toku, niż obejmuje nowy plan. Nic się nie zatrzymuje – przypomnienia są wysyłane, a klienci przesyłają pliki – ale nową prośbę wyślesz dopiero, gdy część obecnych się zakończy.
+Masz teraz więcej próśb w toku, niż obejmuje nowy plan. Nic się nie zatrzymuje - przypomnienia są wysyłane, a klienci przesyłają pliki - ale nową prośbę wyślesz dopiero, gdy część obecnych się zakończy.
 {% endif %}
 Plan: {{ plan_name }}
 {% if price %}Cena: {{ price }}{% if vat_rate %} netto ({{ price_gross }} z VAT){% endif %} {{ interval_label }}
@@ -8,5 +8,5 @@ Plan: {{ plan_name }}
 {% endif %}
 Plan i płatności: {{ plan_url }}
 --
-Monituj – {{ site_url }}
+Monituj - {{ site_url }}
 {% endautoescape %}

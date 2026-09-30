@@ -1,1 +1,1 @@
-{% autoescape off %}{% if kind == "interval" %}Płacisz teraz {{ interval_label }}{% else %}Zmieniłeś plan na {{ plan_name }}{% endif %} – Monituj{% endautoescape %}
+{% autoescape off %}{% if kind == "interval" %}Płacisz teraz {{ interval_label }}{% else %}Zmieniłeś plan na {{ plan_name }}{% endif %} - Monituj{% endautoescape %}

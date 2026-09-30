@@ -5,7 +5,7 @@
 
 {% block auth_form %}
 <h2>Ostatni krok</h2>
-<p class="text-muted">Zakładasz konto Monituj dla adresu <strong>{{ google_email }}</strong>. Będziesz logować się przez Google – hasło możesz ustawić później w ustawieniach.</p>
+<p class="text-muted">Zakładasz konto Monituj dla adresu <strong>{{ google_email }}</strong>. Będziesz logować się przez Google - hasło możesz ustawić później w ustawieniach.</p>
 <form method="post" novalidate data-ajax-form data-replace-on-success>
 {% csrf_token %}
 {% include "base/_consent_fields.html" with terms_field=form.accept_terms privacy_field=form.accept_privacy_policy with_dpa=True %}

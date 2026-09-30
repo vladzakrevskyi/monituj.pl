@@ -60,7 +60,7 @@ class LegalAcceptanceAdmin(ReadOnlyAdmin):
     @admin.display(description="Zaakceptowana treść")
     def text(self, obj):
         if obj.wording_id is None:
-            return "–"
+            return "-"
         url = reverse("admin:consents_legalversion_change", args=[obj.wording_id])
         return format_html('<a href="{}">{}</a>', url, obj.wording.sha256[:12])
 
