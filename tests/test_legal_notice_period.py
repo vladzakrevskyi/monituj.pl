@@ -154,11 +154,21 @@ def test_announcement_goes_to_everyone_once(notice_period, mailoutbox):
     here = _verified("jest@example.com")
     record_acceptance(here, AcceptanceMethod.REGISTRATION)
 
-    call_command("notify_legal_update", "--changes", "Nowe szablony.")
-    call_command("notify_legal_update", "--changes", "Nowe szablony.")
+    call_command("notify_legal_update")
+    call_command("notify_legal_update")
 
     assert [m.to for m in mailoutbox] == [["jest@example.com"]]
-    assert "Nowe szablony." in mailoutbox[0].body
+    # The new wording itself, as a PDF - not a summary of the changes.
+    message = mailoutbox[0]
+    assert "Co się zmienia" not in message.body
+    [(name, content, mimetype)] = message.attachments
+    assert (name, mimetype) == ("Monituj-nowe-dokumenty.pdf", "application/pdf")
+    text = " ".join(
+        " ".join(page.extract_text().split())
+        for page in PdfReader(io.BytesIO(content)).pages
+    )
+    assert "Regulamin serwisu Monituj" in text  # the new wording
+    assert "Stara treść" not in text
 
 
 @pytest.mark.django_db
@@ -168,7 +178,7 @@ def test_someone_joining_during_the_notice_hears_on_confirmation(
     from apps.accounts.services import RegistrationService, VerificationService
     from apps.consents import announcements
 
-    announcements.publish("Nowe szablony.")
+    announcements.publish()
     mailoutbox.clear()
     with django_capture_on_commit_callbacks(execute=True):
         RegistrationService.register(
@@ -184,7 +194,7 @@ def test_someone_joining_during_the_notice_hears_on_confirmation(
         VerificationService.verify(link)
 
     assert [m.to for m in mailoutbox] == [["nowy@example.com"]]
-    assert "Nowe szablony." in mailoutbox[0].body
+    assert mailoutbox[0].attachments
     # The hourly task doesn't send it again.
     assert announcements.send() == 0
 

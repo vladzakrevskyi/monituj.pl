@@ -1,9 +1,4 @@
-{% autoescape off %}Zmieniamy dokumenty Monituj.
-
-Co się zmienia:
-{{ changes }}
-
-Nowe wersje są już dostępne:
+{% autoescape off %}Zmieniamy dokumenty Monituj. Ich nowe wersje znajdziesz w załączniku (PDF) - zachowaj go - oraz na stronie:
 {% for doc in documents %}{{ doc.title }} (od {{ doc.since }}): {{ doc.url }}
 {% endfor %}
 Od {{ effective_date }} przy pierwszym wejściu do panelu poprosimy Cię o ich akceptację. Jeśli się nie zgadzasz, możesz wcześniej pobrać dokumenty klientów i usunąć konto w Ustawieniach:

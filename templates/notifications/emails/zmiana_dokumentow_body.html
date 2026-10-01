@@ -3,11 +3,7 @@
 {% block eyebrow %}Zmiany w dokumentach{% endblock %}
 {% block title %}Nowe wersje dokumentów od {{ effective_date }}{% endblock %}
 {% block content %}
-<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Zmieniamy dokumenty Monituj.</p>
-{% include "notifications/emails/_details_open.html" %}
-{% include "notifications/emails/_row.html" with label="Co się zmienia" value=changes %}
-{% include "notifications/emails/_details_close.html" %}
-<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Nowe wersje są już dostępne:</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Zmieniamy dokumenty Monituj. Ich nowe wersje znajdziesz w załączniku (PDF) - zachowaj go - oraz na stronie:</p>
 <ul style="margin:0 0 16px;padding-left:20px;font-size:16px;line-height:1.6;color:#3f3f46;">
 {% for doc in documents %}<li><a href="{{ doc.url }}" style="color:#c24e00;">{{ doc.title }}</a> - od {{ doc.since }}</li>
 {% endfor %}</ul>

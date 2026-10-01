@@ -1,7 +1,10 @@
 """Announcing new versions of the legal documents by email.
 
-notify_legal_update publishes the announcement (what changes, in a few
-words) and emails every account that hasn't accepted the new versions.
+notify_legal_update publishes the announcement and emails every account
+that hasn't accepted the new versions: which documents, from when, links -
+and the new wording itself as a PDF, so everyone holds the text they are
+asked to accept (a page can change, an attachment can't). There is no
+summary of the changes: the documents speak for themselves.
 Whoever joins later while it is current gets the same email as soon as
 their address is confirmed (welcome) - they sign up on the version in force
 and are asked to accept the new one on its day, like everyone, so they must
@@ -24,11 +27,9 @@ def announced_key():
     return "|".join(f"{key}:{legal.version(key)}" for key in legal.ACCEPTED)
 
 
-def publish(changes):
-    """Stores what changes for the current versions (a new run updates it)."""
-    announcement, _ = LegalAnnouncement.objects.update_or_create(
-        announced=announced_key(), defaults={"changes": changes}
-    )
+def publish():
+    """Marks the current versions as announced."""
+    announcement, _ = LegalAnnouncement.objects.get_or_create(announced=announced_key())
     return announcement
 
 
@@ -78,16 +79,20 @@ def send(user_ids=None):
     if announcement is None:
         return 0
     sent = 0
+    # One PDF per set of documents, not per person.
+    attachments = {}
     for user, new in recipients(user_ids):
         try:
             LegalUpdateNotice.objects.create(user=user, version=announcement.announced)
         except IntegrityError:
             continue  # another run got there first
+        if tuple(new) not in attachments:
+            attachments[tuple(new)] = legal.new_versions_attachment(new)
         EmailService.send(
             EmailTemplate.LEGAL_UPDATE,
             to_email=user.email,
+            attachments=[attachments[tuple(new)]],
             context={
-                "changes": announcement.changes,
                 "documents": [
                     {
                         "title": legal.DOCUMENTS[key].title,

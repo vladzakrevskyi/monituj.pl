@@ -186,39 +186,74 @@ def _legal_page(key):
     return view
 
 
-def contract_attachment():
-    """The contract documents as one PDF for the order confirmation email -
-    the copy a buyer keeps on a durable medium (art. 21 of the consumer
-    rights act): unlike the pages, it can't change later. The same wording
-    as archived for the order. Returns (filename, bytes, mimetype)."""
-    # WeasyPrint needs Pango; imported here so only the worker, which sends
-    # the email, loads it.
+def _pdf(rows, title, intro, footer):
+    """The archived wordings as one PDF - a copy on a durable medium: unlike
+    the pages, it can't change later."""
+    # WeasyPrint needs Pango; imported here so only what sends the email
+    # loads it.
     from weasyprint import HTML
     from weasyprint.urls import URLFetcher
 
-    from apps.consents.versions import current
-    from apps.consents.versions import in_force as wording_in_force
-
-    # The wording in force - during a notice period the earlier one: the
-    # contract is concluded on it.
-    parts = [
-        mark_safe((wording_in_force(key) or current(key)).html) for key in CONTRACT
-    ]
     html = render_to_string(
         "legal/attachment.html",
         {
-            "parts": parts,
-            "issued": date_format(timezone.localdate(), "j E Y"),
+            "parts": [mark_safe(row.html) for row in rows],
+            "title": title,
+            "intro": intro,
+            "footer": footer,
         },
     )
     # Nothing is loaded from outside - no image, stylesheet or file; links
     # stay links, resolved against the site.
-    pdf = HTML(
+    return HTML(
         string=html,
         base_url=absolute_url("/"),
         url_fetcher=URLFetcher(allowed_protocols=()),
     ).write_pdf()
+
+
+def contract_attachment():
+    """The contract documents for the order confirmation email - the copy a
+    buyer keeps on a durable medium (art. 21 of the consumer rights act). The
+    same wording as archived for the order. Returns (filename, bytes,
+    mimetype)."""
+    from apps.consents.versions import current
+    from apps.consents.versions import in_force as wording_in_force
+
+    issued = date_format(timezone.localdate(), "j E Y")
+    # The wording in force - during a notice period the earlier one: the
+    # contract is concluded on it.
+    pdf = _pdf(
+        [wording_in_force(key) or current(key) for key in CONTRACT],
+        title="Monituj - Regulamin, umowa powierzenia i formularz odstąpienia",
+        intro=(
+            f"Treść dokumentów serwisu Monituj w wersji z dnia zamówienia "
+            f"({issued}). Zachowaj ten plik - nie zmieni się, nawet jeśli "
+            "dokumenty na stronie zostaną później zaktualizowane."
+        ),
+        footer=f"Monituj - dokumenty w wersji z dnia zamówienia ({issued})",
+    )
     return ("Monituj-regulamin.pdf", pdf, "application/pdf")
+
+
+def new_versions_attachment(keys):
+    """The new wording of these documents for the email announcing them -
+    delivered, not only linked: a page can change, the PDF can't. Returns
+    (filename, bytes, mimetype)."""
+    from apps.consents.versions import current
+
+    since = effective_date_display(max(keys, key=effective_date))
+    pdf = _pdf(
+        [current(key) for key in keys],
+        title="Monituj - nowe wersje dokumentów",
+        intro=(
+            f"Nowe wersje dokumentów serwisu Monituj, obowiązujące od {since}. "
+            "Zachowaj ten plik - nie zmieni się, nawet jeśli dokumenty na "
+            "stronie zostaną później zaktualizowane."
+        ),
+        footer=f"Monituj - nowe wersje dokumentów od {since}",
+    )
+    return ("Monituj-nowe-dokumenty.pdf", pdf, "application/pdf")
 
 
 terms = _legal_page(TERMS)

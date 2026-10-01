@@ -356,15 +356,15 @@ def test_update_email_goes_once_to_every_real_account(published, verified_user):
     record_acceptance(newcomer, AcceptanceMethod.REGISTRATION)
     mail.outbox.clear()
 
-    call_command("notify_legal_update", changes="Nowy cennik.")
-    call_command("notify_legal_update", changes="Nowy cennik.")
+    call_command("notify_legal_update")
+    call_command("notify_legal_update")
 
     # The newcomer signed up on the version in force, so hears too - once.
     assert sorted(m.to[0] for m in mail.outbox) == sorted(
         [verified_user.email, newcomer.email]
     )
     body = mail.outbox[0].body.replace("\u00a0", " ")
-    assert "Nowy cennik." in body
+    assert "w załączniku (PDF)" in body
     # Only the document that changed.
     assert "Regulamin (od " in body
     assert "Polityka prywatności" not in body

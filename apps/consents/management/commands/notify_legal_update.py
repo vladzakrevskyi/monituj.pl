@@ -1,13 +1,14 @@
 """Tells every account about new versions of the legal documents.
 
-    python manage.py notify_legal_update --changes "Co się zmienia, krótko."
+    python manage.py notify_legal_update
 
 Run it after publishing new wording with a new date in .env (LEGAL_*_DATE) - for
 the Regulamin and the umowa powierzenia at least 14 days ahead, so people
-can read the new wording (it is on the site already) and delete the account
-before it applies. Each person is told only about the documents whose
-current version they haven't accepted; from each date the panel asks them
-to accept.
+can read the new wording and delete the account before it applies. The
+email names the documents and their date, links them and carries their new
+wording as a PDF - no summary of the changes. Each person is told only about
+the documents whose current version they haven't accepted; from each date
+the panel asks them to accept.
 
 Safe to run again: nobody is emailed twice about the same versions. The
 announcement is kept, and whoever joins during the notice period gets the
@@ -30,17 +31,12 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--changes",
-            required=True,
-            help="A short summary of what changes, shown in the email.",
-        )
-        parser.add_argument(
             "--dry-run",
             action="store_true",
             help="Only count who would get the email.",
         )
 
-    def handle(self, *args, changes, dry_run, **options):
+    def handle(self, *args, dry_run, **options):
         soon = timezone.localdate() + timedelta(days=NOTICE_DAYS)
         for key in (legal.TERMS, legal.DPA):
             if legal.effective_date(key) < soon:
@@ -56,6 +52,6 @@ class Command(BaseCommand):
             count = len(announcements.recipients())
             self.stdout.write(f"Would email {count} accounts.")
             return
-        announcements.publish(changes)
+        announcements.publish()
         sent = announcements.send()
         self.stdout.write(self.style.SUCCESS(f"Emailed {sent} accounts."))

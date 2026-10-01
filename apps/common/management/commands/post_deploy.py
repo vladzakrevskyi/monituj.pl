@@ -134,8 +134,8 @@ class Command(BaseCommand):
                         warn(
                             f"{doc.title}: nowa wersja od "
                             f"{legal.effective_date_display(key)} nie została "
-                            "ogłoszona - uruchom notify_legal_update --changes "
-                            '"…", żeby powiadomić użytkowników.'
+                            "ogłoszona - uruchom notify_legal_update, żeby "
+                            "powiadomić użytkowników."
                         )
 
         if settings.DEBUG:
