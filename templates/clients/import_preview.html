@@ -1,0 +1,114 @@
+{% extends "base/app_base.html" %}
+{% load static %}
+
+{% block page_name %}Sprawdź import{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'clients:import' %}" title="Wróć: Import klientów">&larr; Wybierz inny plik</a>
+<div class="page-header">
+<div>
+<h1>Sprawdź import</h1>
+<p class="page-header__sub">{{ draft.file_name }}</p>
+</div>
+</div>
+
+{% if problem %}
+<p class="alert alert--error">{{ problem }} Wybierz ją poniżej.</p>
+{% else %}
+<form method="post" class="card import-result">
+{% csrf_token %}
+<input type="hidden" name="naglowek" value="{% if header %}1{% else %}0{% endif %}">
+{% for column in columns %}<input type="hidden" name="kolumna" value="{{ column.field }}">{% endfor %}
+<ul class="import-result__list">
+<li class="import-result__item import-result__item--new">
+<span class="import-result__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+<span class="import-result__text">{% if new %}Dodamy <strong>{{ new }}</strong> {{ new_word }}{% else %}W pliku nie ma nowych klientów{% endif %}</span>
+</li>
+{% if existing %}
+<li class="import-result__item">
+<span class="import-result__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+<span class="import-result__text import-result__text--stack">
+<span><strong>{{ existing }}</strong> już masz (ten sam adres e-mail) - nie zdublujemy ich</span>
+<label class="import-result__option"><input type="checkbox" name="istniejacy" value="aktualizuj" data-update-existing{% if update_existing %} checked{% endif %}> Zaktualizuj ich dane z pliku</label>
+</span>
+</li>
+{% endif %}
+{% if skipped %}
+<li class="import-result__item import-result__item--skip">
+<span class="import-result__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 7v6M12 17h.01"/></svg></span>
+<span class="import-result__text">Pominiemy <strong>{{ skipped }}</strong> {{ skipped_word }} - <a href="#uwagi">zobacz dlaczego</a></span>
+</li>
+{% endif %}
+</ul>
+<div class="form-actions">
+<button type="submit" class="btn btn-primary" data-import-submit data-new="{{ new }}" data-label="{{ add_label }}" data-label-update="{{ add_update_label }}"{% if not new and not update_existing %} disabled{% endif %}>{% if update_existing and existing %}{{ add_update_label }}{% else %}{{ add_label }}{% endif %}</button>
+<a class="btn btn-secondary" href="{% url 'clients:list' %}">Anuluj</a>
+</div>
+</form>
+{% endif %}
+
+<section class="card import-columns">
+<div class="import-columns__head">
+<div>
+<h2 class="card-title">Kolumny z pliku</h2>
+{% if mapped %}<p class="import-columns__summary">{% for label, column in mapped %}<span class="import-chip"><strong>{{ label }}</strong> {{ column }}</span>{% endfor %}</p>{% endif %}
+</div>
+<button type="button" class="btn btn-secondary btn-sm" data-disclosure="#import-columns-panel" aria-controls="import-columns-panel" aria-expanded="{% if problem %}true{% else %}false{% endif %}">Zmień</button>
+</div>
+<form method="get" id="import-columns-panel" class="import-columns__panel" data-autosubmit{% if not problem %} hidden{% endif %}>
+<label class="import-columns__header"><input type="hidden" name="naglowek" value="0"><input type="checkbox" name="naglowek" value="1"{% if header %} checked{% endif %}> Pierwszy wiersz to nagłówki kolumn</label>
+<ul class="import-columns__list">
+{% for column in columns %}
+<li class="import-column">
+<label class="import-column__name" for="column-{{ column.index }}">{% if column.name %}{{ column.name }}{% else %}Kolumna {{ column.letter }}{% endif %}<span class="import-column__example">{% if column.example %}np. {{ column.example|truncatechars:40 }}{% else %}pusta{% endif %}</span></label>
+<select name="kolumna" id="column-{{ column.index }}">
+<option value=""{% if not column.field %} selected{% endif %}>Pomiń</option>
+{% for key, label in fields %}<option value="{{ key }}"{% if column.field == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
+</select>
+</li>
+{% endfor %}
+</ul>
+<div class="form-actions" data-autosubmit-fallback>
+<button type="submit" class="btn btn-secondary">Odśwież podgląd</button>
+</div>
+</form>
+</section>
+
+{% if issues %}
+<section class="card" id="uwagi">
+<h2 class="card-title">Do sprawdzenia</h2>
+<ul class="import-issues">
+{% for row in issues %}
+<li class="import-issue{% if row.skipped %} import-issue--skip{% endif %}">
+<span class="import-issue__row">Wiersz {{ row.number }}</span>
+<span class="import-issue__body">
+<span class="import-issue__who">{{ row.values.name|default:row.values.email|default:"-" }}</span>
+{% for note in row.notes %}<span class="import-issue__note">{{ note }}{% if row.skipped and forloop.last %} Pominiemy ten wiersz.{% endif %}</span>{% endfor %}
+</span>
+</li>
+{% endfor %}
+</ul>
+</section>
+{% endif %}
+
+{% if sample %}
+<section class="card">
+<h2 class="card-title">Nowi klienci{% if new > sample|length %} <span class="text-muted">- pierwszych {{ sample|length }} z {{ new }}</span>{% endif %}</h2>
+<div class="table-scroll">
+<table class="import-table">
+<thead><tr>{% for label in shown_labels %}<th>{{ label }}</th>{% endfor %}</tr></thead>
+<tbody>
+{% for row in sample %}
+<tr>{% for label, value in row.cells %}<td class="cell-wrap" data-label="{{ label }}">{{ value|default:"-"|truncatechars:80 }}</td>{% endfor %}</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/client_import.js' %}"></script>
+{% endblock %}

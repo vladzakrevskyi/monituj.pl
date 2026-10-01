@@ -6,6 +6,7 @@ from django.utils import timezone
 from apps.billing import plans, registry
 from apps.billing.invoicing import valid_nip
 from apps.billing.models import BillingProfile, BillingProfileKind
+from apps.common import nip as nip_rules
 
 EARLY_START_LABEL = (
     "Żądam rozpoczęcia świadczenia usługi przed upływem 14 dni na odstąpienie "
@@ -49,10 +50,7 @@ COMPANY_FIELDS = {
 }
 
 
-def clean_nip(value):
-    """'PL 521-301-72-28' -> '5213017228'."""
-    value = re.sub(r"[\s-]", "", value or "").upper()
-    return value[2:] if value.startswith("PL") else value
+clean_nip = nip_rules.clean
 
 
 class BillingProfileForm(forms.ModelForm):

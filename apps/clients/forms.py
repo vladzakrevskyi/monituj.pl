@@ -1,5 +1,7 @@
 from django import forms
 
+from apps.common import nip as nip_rules
+
 REQUIRED_MESSAGE = "To pole jest wymagane."
 
 
@@ -17,7 +19,19 @@ class ClientForm(forms.Form):
         },
     )
     phone = forms.CharField(label="Telefon", max_length=32, required=False)
+    nip = forms.CharField(
+        label="NIP",
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={"inputmode": "numeric"}),
+    )
     note = forms.CharField(label="Notatka", required=False, widget=forms.Textarea)
+
+    def clean_nip(self):
+        value = nip_rules.clean(self.cleaned_data["nip"])
+        if value and not nip_rules.is_valid(value):
+            raise forms.ValidationError("Nieprawidłowy NIP.")
+        return value
 
 
 class ClientFilterForm(forms.Form):
@@ -48,7 +62,7 @@ class ClientFilterForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 "type": "search",
-                "placeholder": "Szukaj po nazwie, emailu lub telefonie...",
+                "placeholder": "Szukaj po nazwie, emailu, telefonie lub NIP...",
                 "aria-label": "Szukaj klienta",
             }
         ),

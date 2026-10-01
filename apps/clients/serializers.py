@@ -8,6 +8,7 @@ def serialize_client(client):
         "name": client.name,
         "email": client.email,
         "phone": client.phone,
+        "nip": client.nip,
         "note": client.note,
         "active_requests": client.active_requests,
         "missing_documents": client.missing_items,

@@ -5,6 +5,7 @@ from django.db.models import Count, Max, Q
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.clients.models import Client
+from apps.common import nip as nip_rules
 from apps.common.exceptions import NotFoundAppError, ValidationAppError
 from apps.requests.models import RequestItem
 from apps.requests.services import (
@@ -63,6 +64,12 @@ CLIENT_SORTS = {
 }
 
 
+def _nip_search(search):
+    """'521-301' finds the NIP stored as '5213017228'."""
+    digits = nip_rules.clean(search)
+    return Q(nip__contains=digits) if digits.isdigit() else Q(pk__in=[])
+
+
 class ClientService:
     @staticmethod
     def filter_for_owner(
@@ -83,6 +90,7 @@ class ClientService:
                 Q(name__icontains=search)
                 | Q(email__icontains=search)
                 | Q(phone__icontains=search)
+                | _nip_search(search)
             )
         if missing == "yes":
             queryset = queryset.filter(missing_items__gt=0)
@@ -117,9 +125,9 @@ class ClientService:
         return client
 
     @staticmethod
-    def create(owner, name, email, phone="", note="", request=None):
+    def create(owner, name, email, phone="", note="", nip="", request=None):
         client = Client.objects.create(
-            owner=owner, name=name, email=email, phone=phone, note=note
+            owner=owner, name=name, email=email, phone=phone, nip=nip, note=note
         )
         AuditService.log(
             AuditEvent.CLIENT_CREATED, actor=owner, target=client, request=request
@@ -138,12 +146,15 @@ class ClientService:
         )
 
     @staticmethod
-    def update(client, name, email, phone="", note="", request=None):
+    def update(client, name, email, phone="", note="", nip="", request=None):
         client.name = name
         client.email = email
         client.phone = phone
+        client.nip = nip
         client.note = note
-        client.save(update_fields=["name", "email", "phone", "note", "updated_at"])
+        client.save(
+            update_fields=["name", "email", "phone", "nip", "note", "updated_at"]
+        )
         AuditService.log(
             AuditEvent.CLIENT_UPDATED,
             actor=client.owner,

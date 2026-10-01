@@ -19,6 +19,7 @@ class AuditEvent(models.TextChoices):
     CLIENT_CREATED = "CLIENT_CREATED", "Client created"
     CLIENT_UPDATED = "CLIENT_UPDATED", "Client updated"
     CLIENT_DELETED = "CLIENT_DELETED", "Client deleted"
+    CLIENTS_IMPORTED = "CLIENTS_IMPORTED", "Clients imported"
     REQUEST_CREATED = "REQUEST_CREATED", "Request created"
     REQUEST_UPDATED = "REQUEST_UPDATED", "Request updated"
     INVITATION_SENT = "INVITATION_SENT", "Invitation sent"

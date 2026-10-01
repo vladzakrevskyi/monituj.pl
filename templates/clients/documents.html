@@ -9,7 +9,7 @@
 <div class="page-header">
 <div>
 <h1>{{ client.name }}</h1>
-<p class="page-header__sub">{{ client.email }}{% if client.phone %} &middot; {{ client.phone }}{% endif %}</p>
+<p class="page-header__sub">{{ client.email }}{% if client.phone %} &middot; {{ client.phone }}{% endif %}{% if client.nip %} &middot; NIP {{ client.nip }}{% endif %}</p>
 </div>
 <div class="page-header__actions">
 <a class="btn btn-secondary" href="{% url 'clients:edit' client.id %}">Edytuj klienta</a>

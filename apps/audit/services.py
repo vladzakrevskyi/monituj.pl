@@ -18,6 +18,7 @@ EVENT_LABELS_PL = {
     AuditEvent.CLIENT_CREATED: "Dodano klienta",
     AuditEvent.CLIENT_UPDATED: "Zaktualizowano klienta",
     AuditEvent.CLIENT_DELETED: "Usunięto klienta",
+    AuditEvent.CLIENTS_IMPORTED: "Zaimportowano klientów",
     AuditEvent.REQUEST_CREATED: "Utworzono prośbę",
     AuditEvent.REQUEST_UPDATED: "Zaktualizowano prośbę",
     AuditEvent.REQUEST_CLOSED: "Zamknięto prośbę",

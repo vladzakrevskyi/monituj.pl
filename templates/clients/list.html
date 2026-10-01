@@ -10,7 +10,10 @@
 <h1>Klienci</h1>
 <p class="page-header__sub">Osoby i firmy, od których zbierasz dokumenty.</p>
 </div>
+<div class="page-header__actions">
+<a class="btn btn-secondary" href="{% url 'clients:import' %}">Importuj z pliku</a>
 <button type="button" class="btn btn-primary" data-modal-open="#create-client-dialog">Dodaj klienta</button>
+</div>
 </div>
 
 <form method="get" class="filter-panel" role="search">
@@ -66,7 +69,7 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 {% for client in page_obj.object_list %}
 <tr data-client-id="{{ client.id }}">
 <td class="cell-check"><input type="checkbox" name="ids" value="{{ client.id }}" form="bulk-form" data-select-row aria-label="Zaznacz: {{ client.name }}"></td>
-<td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'clients:documents' client.id %}">{{ client.name }}</a></td>
+<td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'clients:documents' client.id %}">{{ client.name }}</a>{% if client.nip %}<span class="cell-sub">NIP {{ client.nip }}</span>{% endif %}</td>
 <td class="cell-wrap" data-label="Email">{{ client.email }}</td>
 <td class="cell-num" data-label="Aktywne prośby">
 {% if client.active_requests %}<a class="count-link" href="{% url 'requests:list' %}?client={{ client.id }}" title="Pokaż przypomnienia klienta">{{ client.active_requests }}</a>{% else %}0{% endif %}
@@ -85,7 +88,7 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 </td>
 </tr>
 {% empty %}
-<tr id="clients-empty-row" class="table-empty"><td colspan="8">{% if has_filters or filters.data.status %}Brak klientów pasujących do filtrów.{% else %}Brak klientów.{% endif %}</td></tr>
+<tr id="clients-empty-row" class="table-empty"><td colspan="8">{% if has_filters or filters.data.status %}Brak klientów pasujących do filtrów.{% else %}Brak klientów. Dodaj pierwszego albo <a href="{% url 'clients:import' %}">zaimportuj wszystkich z pliku CSV lub Excel</a>.{% endif %}</td></tr>
 {% endfor %}
 </tbody>
 </table>

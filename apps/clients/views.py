@@ -127,6 +127,7 @@ def client_create(request):
                 name=form.cleaned_data["name"],
                 email=form.cleaned_data["email"],
                 phone=form.cleaned_data["phone"],
+                nip=form.cleaned_data["nip"],
                 note=form.cleaned_data["note"],
                 request=request,
             )
@@ -158,6 +159,7 @@ def client_edit(request, client_id):
                 name=form.cleaned_data["name"],
                 email=form.cleaned_data["email"],
                 phone=form.cleaned_data["phone"],
+                nip=form.cleaned_data["nip"],
                 note=form.cleaned_data["note"],
                 request=request,
             )
@@ -174,6 +176,7 @@ def client_edit(request, client_id):
                 "name": client.name,
                 "email": client.email,
                 "phone": client.phone,
+                "nip": client.nip,
                 "note": client.note,
             }
         )

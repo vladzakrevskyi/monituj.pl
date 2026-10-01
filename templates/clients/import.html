@@ -1,0 +1,44 @@
+{% extends "base/app_base.html" %}
+{% load static %}
+
+{% block page_name %}Import klientów{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'clients:list' %}" title="Wróć: Klienci">&larr; Klienci</a>
+<div class="page-header">
+<div>
+<h1>Import klientów</h1>
+<p class="page-header__sub">Dodaj wszystkich klientów naraz z pliku CSV albo Excel.</p>
+</div>
+</div>
+
+<section class="card">
+<form method="post" enctype="multipart/form-data" novalidate data-file-drop>
+{% csrf_token %}
+<label class="file-drop{% if form.file.errors %} has-error{% endif %}" for="id_file">
+<input type="file" name="file" id="id_file" class="file-drop__input" accept=".csv,.xlsx,.txt,text/csv">
+<svg class="file-drop__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+<span class="file-drop__title" data-file-drop-title><span class="file-drop__drag">Przeciągnij tutaj plik z klientami</span><span class="file-drop__tap">Plik z klientami</span></span>
+<span class="file-drop__hint">CSV albo Excel (XLSX), do {{ max_rows }} wierszy</span>
+<span class="btn btn-primary file-drop__button" data-file-drop-button>Wybierz plik</span>
+</label>
+{% if form.file.errors %}<p class="file-drop__error" role="alert">{{ form.file.errors.0 }}</p>{% endif %}
+<noscript><div class="form-actions"><button type="submit" class="btn btn-primary">Dalej</button></div></noscript>
+</form>
+<p class="file-drop__sample">Nie masz pliku pod ręką? <a href="{% url 'clients:import-sample' %}">Pobierz wzór</a> i uzupełnij go w Excelu.</p>
+</section>
+
+<section class="card">
+<h2 class="card-title">Jak to działa</h2>
+<ol class="steps-list">
+<li><strong>Wybierz plik</strong> - np. listę kontrahentów wyeksportowaną z programu księgowego (Optima, Symfonia, wFirma, inFakt). Wystarczy kolumna z adresem e-mail.</li>
+<li><strong>Sprawdź podgląd</strong> - kolumny rozpoznamy sami, a nic nie zapiszemy bez Twojego kliknięcia.</li>
+<li><strong>Dodaj klientów</strong> - tych, których już masz, nie zdublujemy.</li>
+</ol>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/client_import.js' %}"></script>
+{% endblock %}

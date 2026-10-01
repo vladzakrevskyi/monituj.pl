@@ -88,6 +88,19 @@ FAQ = [
     {
         "category": "firma",
         "home": False,
+        "q": "Czy mogę zaimportować klientów z Excela albo programu księgowego?",
+        "a": (
+            "Tak, w każdym planie. Na liście klientów wybierz „Importuj z "
+            "pliku” i wczytaj plik CSV albo XLSX - np. eksport kontrahentów z "
+            "programu księgowego. Kolumny z nazwą, adresem e-mail, telefonem, "
+            "NIP-em i uwagami rozpoznamy same, a na podglądzie zobaczysz, kto "
+            "zostanie dodany, zanim cokolwiek zapiszemy. Klientów, których już "
+            "masz, nie zdublujemy."
+        ),
+    },
+    {
+        "category": "firma",
+        "home": False,
         "q": "Jak pobrać wszystkie przesłane pliki?",
         "a": (
             "Pojedynczo przy każdym dokumencie albo wszystkie naraz: przycisk "

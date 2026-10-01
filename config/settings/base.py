@@ -198,6 +198,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.common.tasks.delete_old_throttle_events",
         "schedule": 3600.0,
     },
+    # Files uploaded for a client import and never imported, after a day.
+    "delete-old-client-imports": {
+        "task": "apps.clients.tasks.delete_old_client_imports",
+        "schedule": 3600.0,
+    },
     # Audit log entries with no account behind them, after a year.
     "delete-old-audit-entries": {
         "task": "apps.audit.tasks.delete_old_audit_entries",

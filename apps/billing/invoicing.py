@@ -31,6 +31,7 @@ from django.utils import timezone
 
 from apps.billing import plans
 from apps.billing.models import BillingAccount, VatInvoice, VatInvoiceStatus
+from apps.common import nip as nip_rules
 from apps.common.site import absolute_url
 
 logger = logging.getLogger("monituj")
@@ -91,16 +92,10 @@ def _stamp(value):
     return datetime.fromtimestamp(value, tz=UTC) if value else None
 
 
-NIP_WEIGHTS = (6, 5, 7, 2, 3, 4, 5, 6, 7)
-
-
 def valid_nip(nip):
-    """Polish NIP: 10 digits, the last one a checksum. Stripe doesn't check
-    it, inFakt refuses an invoice with a wrong one."""
-    if len(nip) != 10 or not nip.isdigit():
-        return False
-    check = sum(int(d) * w for d, w in zip(nip, NIP_WEIGHTS, strict=False)) % 11
-    return check != 10 and check == int(nip[9])
+    """Stripe doesn't check the NIP, inFakt refuses an invoice with a wrong
+    one."""
+    return nip_rules.is_valid(nip)
 
 
 def _client(stripe_invoice):

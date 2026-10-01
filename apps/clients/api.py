@@ -40,6 +40,7 @@ def clients_collection(request):
             name=form.cleaned_data["name"],
             email=form.cleaned_data["email"],
             phone=form.cleaned_data["phone"],
+            nip=form.cleaned_data["nip"],
             note=form.cleaned_data["note"],
             request=request,
         )
@@ -77,6 +78,7 @@ def client_detail(request, client_id):
             name=form.cleaned_data["name"],
             email=form.cleaned_data["email"],
             phone=form.cleaned_data["phone"],
+            nip=form.cleaned_data["nip"],
             note=form.cleaned_data["note"],
             request=request,
         )
