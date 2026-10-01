@@ -439,6 +439,8 @@ SEGMENT_PAGES = {
             "Trudno powiedzieć, którzy klienci są gotowi do zamknięcia miesiąca.",
         ],
         "benefits": [
+            "Klientów dodasz w kilka minut - z eksportu kontrahentów z Optimy, "
+            "Symfonii czy wFirmy, w pliku CSV albo Excel.",
             "Jedna prośba cykliczna wychodzi co miesiąc do wszystkich klientów sama.",
             "Każdy klient dostaje tę samą, jasną listę dokumentów na dany miesiąc.",
             "Przypomnienia wychodzą same, aż dotrze komplet - nie musisz pamiętać.",
@@ -464,6 +466,16 @@ SEGMENT_PAGES = {
                     "miesiąc wyśle każdemu klientowi osobną prośbę z nazwą "
                     "właściwego miesiąca i sam przypomni o brakach, a Ty widzisz, "
                     "kto już zamknął miesiąc."
+                ),
+            },
+            {
+                "q": "Mam kilkuset klientów - czy muszę dodawać ich po kolei?",
+                "a": (
+                    "Nie. Wyeksportuj listę kontrahentów z programu księgowego "
+                    "do pliku CSV albo Excel i zaimportuj ją na liście klientów. "
+                    "Kolumny z nazwą, adresem e-mail, telefonem i NIP-em "
+                    "rozpoznamy same, a przed zapisem zobaczysz podgląd. Import "
+                    "jest w każdym planie, a liczba klientów nie jest ograniczona."
                 ),
             },
             {
