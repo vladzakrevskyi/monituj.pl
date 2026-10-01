@@ -126,7 +126,9 @@ const Modal = (function () {
       let result = null;
       dialog.querySelector("[data-modal-confirm]").addEventListener("click", () => {
         const value = textarea.value.trim();
-        if (!value) {
+        // field.optional: an empty answer is fine ("" - null still means
+        // cancelled).
+        if (!value && !options.field.optional) {
           FormErrors.set(textarea, [options.field.requiredMessage || "To pole jest wymagane."]);
           textarea.focus();
           return;

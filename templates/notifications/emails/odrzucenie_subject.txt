@@ -1,1 +1,1 @@
-{% autoescape off %}Dokument wymaga ponownego przesłania - Monituj{% endautoescape %}
+{% autoescape off %}{% if needed %}Nadawca prosi jednak o dokument{% else %}Dokument wymaga ponownego przesłania{% endif %} - Monituj{% endautoescape %}

@@ -1,5 +1,6 @@
-"""Telling a sender that documents arrived: a notice in the panel at once,
-and an email a moment later.
+"""Telling a sender that documents arrived - or that the recipient doesn't
+have one ("Nie dotyczy"): a notice in the panel at once, and an email a
+moment later.
 
 The email waits until the recipient has stopped uploading for a minute, so
 ten files sent in a row make one email listing all ten, not ten emails.
@@ -9,6 +10,7 @@ when the "komplet dokumentów" email has told them everything already.
 
 from datetime import timedelta
 
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.notifications.models import (
@@ -35,39 +37,67 @@ def notify_upload(document):
     )
 
 
+def notify_not_applicable(request_item):
+    owner = request_item.request.created_by
+    if not owner.is_active:
+        return None
+    return Notification.objects.create(
+        user=owner, kind=NotificationKind.NOT_APPLICABLE, request_item=request_item
+    )
+
+
 def unread_count(user):
     return Notification.objects.filter(user=user, read_at__isnull=True).count()
 
 
 def for_user(user):
     return Notification.objects.filter(user=user).select_related(
-        "document__request_item__request__client"
+        "document__request_item__request__client", "request_item__request__client"
     )
 
 
 def mark_read(user, request_obj=None):
     notices = Notification.objects.filter(user=user, read_at__isnull=True)
     if request_obj is not None:
-        notices = notices.filter(document__request_item__request=request_obj)
+        notices = notices.filter(
+            Q(document__request_item__request=request_obj)
+            | Q(request_item__request=request_obj)
+        )
     return notices.update(read_at=timezone.now())
 
 
 def _pending_by_request():
-    pending = Notification.objects.filter(
-        kind=NotificationKind.DOCUMENT_UPLOADED, emailed_at__isnull=True
-    ).select_related("user", "document__request_item__request__client")
+    pending = Notification.objects.filter(emailed_at__isnull=True).select_related(
+        "user",
+        "document__request_item__request__client",
+        "request_item__request__client",
+    )
     groups = {}
     for notice in pending.order_by("created_at", "id"):
-        request_obj = notice.document.request_item.request
+        request_obj = notice.item.request
         groups.setdefault(request_obj.pk, (request_obj, []))[1].append(notice)
     return groups.values()
 
 
 def _progress(request_obj):
     delivered = request_obj.items.filter(
-        status__in=[RequestItemStatus.DOSTARCZONY, RequestItemStatus.ZAAKCEPTOWANY]
+        status__in=[
+            RequestItemStatus.DOSTARCZONY,
+            RequestItemStatus.ZAAKCEPTOWANY,
+            RequestItemStatus.NIE_DOTYCZY,
+        ]
     ).count()
     return f"{delivered} z {request_obj.items.count()}"
+
+
+def _entry(notice):
+    if notice.document_id:
+        return {"item": notice.item.name, "file": notice.document.original_filename}
+    return {
+        "item": notice.item.name,
+        "not_applicable": True,
+        "reason": notice.item.not_applicable_reason,
+    }
 
 
 def send_pending_upload_emails(now=None):
@@ -97,14 +127,10 @@ def send_pending_upload_emails(now=None):
             to_email=owner.email,
             context={
                 "client_name": request_obj.client.name,
-                "uploads": [
-                    {
-                        "item": n.document.request_item.name,
-                        "file": n.document.original_filename,
-                    }
-                    for n in unseen
-                ],
+                "uploads": [_entry(n) for n in unseen],
                 "upload_count": len(unseen),
+                # Only "Nie dotyczy" - the email says so instead of "Dotarł".
+                "only_not_applicable": all(not n.document_id for n in unseen),
                 "progress": _progress(request_obj),
             },
             request=request_obj,

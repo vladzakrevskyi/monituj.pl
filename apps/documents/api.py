@@ -21,6 +21,7 @@ from apps.documents.services import (
     DocumentAccessService,
     DocumentReviewService,
     GuestDeleteService,
+    NotApplicableService,
     UploadDocumentService,
 )
 from apps.documents.storage import read_document_file
@@ -174,3 +175,59 @@ def reject_item(request, request_id, item_id):
             }
         }
     )
+
+
+def _item_payload(item):
+    return {
+        "item": {
+            "id": item.pk,
+            "status": {"code": item.status, "label": item.get_status_display()},
+            "not_applicable_reason": item.not_applicable_reason,
+            "not_applicable_accepted": item.not_applicable_accepted,
+            "rejection_reason": item.rejection_reason,
+        }
+    }
+
+
+def _json_body(request):
+    try:
+        return json.loads(request.body) if request.body else {}
+    except ValueError as exc:
+        raise ValidationAppError(
+            "Nieprawidłowe dane JSON.", code="INVALID_JSON"
+        ) from exc
+
+
+@require_http_methods(["POST", "DELETE"])
+def public_not_applicable(request, token, item_id):
+    """The recipient's "Nie mam tego dokumentu" (POST, with the reason) and
+    its undo (DELETE)."""
+    request_obj = PublicAccessService.get_by_token(token)
+    if not PublicAccessService.has_access(request_obj, request):
+        return error_response(
+            "LOCKED", "Brak dostępu. Otwórz najpierw link do dokumentów.", status=403
+        )
+    item = RequestItem.objects.filter(pk=item_id, request=request_obj).first()
+    if item is None:
+        return error_response("NOT_FOUND", "Nie znaleziono dokumentu.", status=404)
+    if request.method == "DELETE":
+        NotApplicableService.undo_by_recipient(item, django_request=request)
+    else:
+        NotApplicableService.mark_by_recipient(
+            item, _json_body(request).get("reason", ""), django_request=request
+        )
+    item.refresh_from_db()
+    return success_response(_item_payload(item))
+
+
+@api_login_required
+@require_http_methods(["POST"])
+def owner_not_applicable(request, request_id, item_id):
+    request_obj = RequestService.get_owned_request(request.user, request_id)
+    item = RequestItem.objects.filter(pk=item_id, request=request_obj).first()
+    if item is None:
+        return error_response("NOT_FOUND", "Nie znaleziono dokumentu.", status=404)
+    NotApplicableService.mark_by_owner(
+        item, _json_body(request).get("reason", ""), request=request
+    )
+    return success_response(_item_payload(item))

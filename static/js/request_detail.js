@@ -18,6 +18,31 @@
     row.querySelector(".cell-actions").innerHTML = "";
   }
 
+  // The sender marks a missing document "Nie dotyczy" themselves.
+  tableBody.addEventListener("click", async (event) => {
+    const button = event.target.closest(".not-applicable-item");
+    if (!button) return;
+    const reason = await Modal.prompt({
+      title: "Oznaczyć jako „nie dotyczy”?",
+      message: `Przestaniemy przypominać klientowi o dokumencie „${button.dataset.itemName}”.`,
+      confirmLabel: "Oznacz",
+      field: {
+        label: "Powód (opcjonalnie)",
+        placeholder: "Np. klient nie miał w tym miesiącu kosztów",
+        optional: true,
+      },
+    });
+    if (reason === null) return;
+    const { ok, data } = await ButtonLoader.run(button, () =>
+      apiFetch(`/api/requests/${requestId}/items/${button.dataset.itemId}/not-applicable/`, {
+        method: "POST",
+        body: JSON.stringify({ reason }),
+      })
+    );
+    if (ok) window.location.reload();
+    else showToast(errorMessage(data), "error");
+  });
+
   tableBody.addEventListener("click", async (event) => {
     const acceptButton = event.target.closest(".accept-item");
     const rejectButton = event.target.closest(".reject-item");
@@ -27,6 +52,43 @@
     const itemId = button.dataset.itemId;
     const itemName = button.dataset.itemName;
     const row = tableBody.querySelector(`tr[data-item-id="${itemId}"]`);
+
+    // "Nie dotyczy" from the client: accept it or ask for the document after
+    // all - then the page shows the new state.
+    if ("notApplicable" in button.dataset) {
+      let reason = "";
+      if (acceptButton) {
+        const confirmed = await Modal.confirm({
+          title: "Zaakceptować, że klient nie ma dokumentu?",
+          message: `Dokument „${itemName}” zostanie oznaczony jako niepotrzebny - przypomnienia o nim nie wrócą.`,
+          confirmLabel: "Zaakceptuj",
+        });
+        if (!confirmed) return;
+      } else {
+        reason = await Modal.prompt({
+          title: "Poprosić jednak o dokument?",
+          message: `Klient dostanie maila z Twoim wyjaśnieniem, a przypomnienia o dokumencie „${itemName}” wrócą.`,
+          confirmLabel: "Poproś o dokument",
+          danger: true,
+          field: {
+            label: "Dlaczego jest potrzebny",
+            placeholder: "Np. potrzebuję go do rozliczenia VAT",
+            requiredMessage: "Napisz klientowi, dlaczego go potrzebujesz.",
+          },
+        });
+        if (!reason) return;
+      }
+      const action = acceptButton ? "accept" : "reject";
+      const { ok, data } = await ButtonLoader.run(button, () =>
+        apiFetch(`/api/requests/${requestId}/items/${itemId}/${action}/`, {
+          method: "POST",
+          body: acceptButton ? undefined : JSON.stringify({ reason }),
+        })
+      );
+      if (ok) window.location.reload();
+      else showToast(errorMessage(data), "error");
+      return;
+    }
 
     if (acceptButton) {
       const confirmed = await Modal.confirm({

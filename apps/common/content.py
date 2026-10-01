@@ -101,6 +101,19 @@ FAQ = [
     {
         "category": "firma",
         "home": False,
+        "q": "Co, jeśli klient nie ma któregoś dokumentu?",
+        "a": (
+            "Klient zaznacza przy dokumencie „Nie mam tego dokumentu” i podaje "
+            "powód - np. że w tym miesiącu nie było kosztów albo że dokument go "
+            "nie dotyczy. Przypomnienia o nim od razu ustają, a Ty dostajesz "
+            "powiadomienie. Możesz to zaakceptować albo poprosić jednak o "
+            "dokument - klient dostanie wtedy maila z Twoim wyjaśnieniem. W "
+            "prośbie cyklicznej dotyczy to tylko danego miesiąca."
+        ),
+    },
+    {
+        "category": "firma",
+        "home": False,
         "q": "Jak pobrać wszystkie przesłane pliki?",
         "a": (
             "Pojedynczo przy każdym dokumencie albo wszystkie naraz: przycisk "

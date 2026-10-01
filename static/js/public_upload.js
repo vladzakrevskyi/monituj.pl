@@ -3,7 +3,9 @@
   if (!itemsList) return;
   const token = itemsList.dataset.token;
 
-  const DELIVERED = new Set(["dostarczony", "zaakceptowany"]);
+  // Done for the recipient - "Nie dotyczy" included.
+  const DELIVERED = new Set(["dostarczony", "zaakceptowany", "nie_dotyczy"]);
+  const MISSING = new Set(["brak", "odrzucony"]);
   const DOWNLOAD_ICON =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>';
 
@@ -15,12 +17,17 @@
     });
     const progressEl = document.getElementById("request-progress");
     if (progressEl) progressEl.textContent = `${delivered} z ${items.length}`;
+    const done = document.querySelector("[data-done]");
+    if (done) done.hidden = delivered !== items.length;
   }
 
   function applyItemStatus(itemId, status) {
     const el = itemsList.querySelector(`.request-item[data-item-id="${itemId}"]`);
     if (!el) return;
     el.dataset.status = status.code;
+    // "Nie mam tego dokumentu" only while it's missing.
+    const notApplicable = el.querySelector("[data-na]");
+    if (notApplicable) notApplicable.hidden = !MISSING.has(status.code);
     const label = el.querySelector(".item-status-label");
     if (label) {
       label.textContent = status.label;
@@ -162,5 +169,60 @@
     } else {
       showToast(data && data.error ? data.error.message : "Wystąpił błąd.", "error");
     }
+  });
+
+  // "Nie mam tego dokumentu": a reason, then the page shows the new state.
+  async function sendNotApplicable(itemEl, method, reason) {
+    const errorBox = itemEl.querySelector("[data-na-error]");
+    const { ok, data } = await apiFetch(
+      `/api/public/${token}/items/${itemEl.dataset.itemId}/not-applicable/`,
+      method === "POST"
+        ? { method, body: JSON.stringify({ reason }) }
+        : { method }
+    );
+    if (ok) {
+      window.location.reload();
+      return;
+    }
+    const message = data && data.error ? data.error.message : "Wystąpił błąd.";
+    if (errorBox) errorBox.textContent = message;
+    else showToast(message, "error");
+  }
+
+  itemsList.addEventListener("click", (event) => {
+    const itemEl = event.target.closest(".request-item");
+    if (!itemEl) return;
+    const open = event.target.closest("[data-na-open]");
+    if (open) {
+      const picker = itemEl.querySelector("[data-na-picker]");
+      picker.hidden = !picker.hidden;
+      open.setAttribute("aria-expanded", String(!picker.hidden));
+      return;
+    }
+    const choice = event.target.closest("[data-na-reason]");
+    if (choice) {
+      ButtonLoader.start(choice);
+      sendNotApplicable(itemEl, "POST", choice.dataset.naReason).finally(() =>
+        ButtonLoader.stop(choice)
+      );
+      return;
+    }
+    if (event.target.closest("[data-na-undo]")) {
+      sendNotApplicable(itemEl, "DELETE");
+    }
+  });
+
+  itemsList.addEventListener("submit", (event) => {
+    const form = event.target.closest("[data-na-other]");
+    if (!form) return;
+    event.preventDefault();
+    const itemEl = form.closest(".request-item");
+    const reason = form.querySelector("input").value.trim();
+    if (!reason) {
+      itemEl.querySelector("[data-na-error]").textContent =
+        "Napisz krótko, dlaczego nie masz tego dokumentu.";
+      return;
+    }
+    sendNotApplicable(itemEl, "POST", reason);
   });
 })();

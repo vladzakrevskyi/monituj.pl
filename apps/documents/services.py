@@ -13,7 +13,7 @@ from apps.common.exceptions import (
 from apps.documents.models import Document, DocumentStatus
 from apps.documents.storage import private_storage, save_document_file
 from apps.documents.validation import validate_upload
-from apps.notifications.inbox import notify_upload
+from apps.notifications.inbox import notify_not_applicable, notify_upload
 from apps.notifications.models import EmailStatus, EmailTemplate
 from apps.notifications.services import EmailService
 from apps.requests.models import RequestItemStatus
@@ -80,8 +80,18 @@ class UploadDocumentService:
             session_key=session_key,
         )
 
+        # A file for an item marked "Nie dotyczy" means it applies after all.
         request_item.status = RequestItemStatus.DOSTARCZONY
-        request_item.save(update_fields=["status", "updated_at"])
+        request_item.not_applicable_reason = ""
+        request_item.not_applicable_accepted = False
+        request_item.save(
+            update_fields=[
+                "status",
+                "not_applicable_reason",
+                "not_applicable_accepted",
+                "updated_at",
+            ]
+        )
 
         AuditService.log(
             AuditEvent.DOCUMENT_UPLOADED, target=document, request=django_request
@@ -161,6 +171,8 @@ class UploadDocumentService:
 class DocumentReviewService:
     @staticmethod
     def accept(request_item, request=None):
+        if request_item.status == RequestItemStatus.NIE_DOTYCZY:
+            return NotApplicableService.accept(request_item, request=request)
         if request_item.status != RequestItemStatus.DOSTARCZONY:
             raise ValidationAppError(
                 "Można zaakceptować tylko dostarczony dokument.",
@@ -183,6 +195,8 @@ class DocumentReviewService:
 
     @staticmethod
     def reject(request_item, reason, request=None):
+        if request_item.status == RequestItemStatus.NIE_DOTYCZY:
+            return NotApplicableService.refuse(request_item, reason, request=request)
         if request_item.status != RequestItemStatus.DOSTARCZONY:
             raise ValidationAppError(
                 "Można odrzucić tylko dostarczony dokument.", code="ITEM_NOT_DELIVERED"
@@ -207,6 +221,147 @@ class DocumentReviewService:
             EmailTemplate.REJECTION,
             to_email=request_item.request.client.email,
             context={"item_name": request_item.name, "reason": reason},
+            request=request_item.request,
+        )
+        return request_item
+
+
+NOT_APPLICABLE_FIELDS = [
+    "status",
+    "rejection_reason",
+    "not_applicable_reason",
+    "not_applicable_accepted",
+    "updated_at",
+]
+MAX_REASON = 500
+
+
+class NotApplicableService:
+    """ "Nie mam tego dokumentu": none this month, or it isn't the recipient's
+    to give. Reminders about it stop at once and a request with nothing else
+    missing is complete; the sender sees why and may accept it or ask for
+    the document after all (back to "Odrzucony", with their reason)."""
+
+    @staticmethod
+    def _check_open(request_item):
+        if request_item.request.closed_at is not None:
+            raise ValidationAppError(CLOSED_MESSAGE, code="REQUEST_CLOSED")
+
+    @staticmethod
+    def mark_by_recipient(request_item, reason, django_request=None):
+        NotApplicableService._check_open(request_item)
+        reason = " ".join((reason or "").split())[:MAX_REASON]
+        if not reason:
+            raise ValidationAppError(
+                "Napisz krótko, dlaczego nie masz tego dokumentu.",
+                code="REASON_REQUIRED",
+            )
+        if request_item.status not in (
+            RequestItemStatus.BRAK,
+            RequestItemStatus.ODRZUCONY,
+        ):
+            raise ValidationAppError(
+                "Ten dokument jest już przesłany - usuń najpierw plik.",
+                code="ITEM_NOT_MISSING",
+            )
+        request_item.status = RequestItemStatus.NIE_DOTYCZY
+        request_item.rejection_reason = ""
+        request_item.not_applicable_reason = reason
+        request_item.not_applicable_accepted = False
+        request_item.save(update_fields=NOT_APPLICABLE_FIELDS)
+        AuditService.log(
+            AuditEvent.ITEM_NOT_APPLICABLE,
+            target=request_item,
+            request=django_request,
+            metadata={"by": "recipient", "reason": reason},
+        )
+        notify_not_applicable(request_item)
+        UploadDocumentService._maybe_send_complete_email(request_item.request)
+        return request_item
+
+    @staticmethod
+    def undo_by_recipient(request_item, django_request=None):
+        """A click by mistake - while the sender hasn't accepted it yet."""
+        NotApplicableService._check_open(request_item)
+        if (
+            request_item.status != RequestItemStatus.NIE_DOTYCZY
+            or request_item.not_applicable_accepted
+        ):
+            raise ValidationAppError("Tego nie można już cofnąć.", code="CANNOT_UNDO")
+        request_item.status = RequestItemStatus.BRAK
+        request_item.not_applicable_reason = ""
+        request_item.save(update_fields=NOT_APPLICABLE_FIELDS)
+        AuditService.log(
+            AuditEvent.NOT_APPLICABLE_UNDONE,
+            target=request_item,
+            request=django_request,
+        )
+        return request_item
+
+    @staticmethod
+    def mark_by_owner(request_item, reason="", request=None):
+        """The sender knows it already - e.g. the client said so on the phone."""
+        NotApplicableService._check_open(request_item)
+        if request_item.status not in (
+            RequestItemStatus.BRAK,
+            RequestItemStatus.ODRZUCONY,
+        ):
+            raise ValidationAppError(
+                "Można tak oznaczyć tylko brakujący dokument.",
+                code="ITEM_NOT_MISSING",
+            )
+        reason = " ".join((reason or "").split())[:MAX_REASON]
+        request_item.status = RequestItemStatus.NIE_DOTYCZY
+        request_item.rejection_reason = ""
+        request_item.not_applicable_reason = reason
+        request_item.not_applicable_accepted = True
+        request_item.save(update_fields=NOT_APPLICABLE_FIELDS)
+        AuditService.log(
+            AuditEvent.ITEM_NOT_APPLICABLE,
+            actor=request_item.request.created_by,
+            target=request_item,
+            request=request,
+            metadata={"by": "owner", "reason": reason},
+        )
+        return request_item
+
+    @staticmethod
+    def accept(request_item, request=None):
+        request_item.not_applicable_accepted = True
+        request_item.save(update_fields=["not_applicable_accepted", "updated_at"])
+        AuditService.log(
+            AuditEvent.NOT_APPLICABLE_ACCEPTED,
+            actor=request_item.request.created_by,
+            target=request_item,
+            request=request,
+        )
+        return request_item
+
+    @staticmethod
+    def refuse(request_item, reason, request=None):
+        """ "Jednak potrzebuję": reminders about it start again."""
+        NotApplicableService._check_open(request_item)
+        if not reason.strip():
+            raise ValidationAppError(
+                "Napisz klientowi, dlaczego jednak potrzebujesz tego dokumentu.",
+                code="REASON_REQUIRED",
+            )
+        request_item.status = RequestItemStatus.ODRZUCONY
+        request_item.rejection_reason = reason
+        request_item.not_applicable_reason = ""
+        request_item.not_applicable_accepted = False
+        request_item.save(update_fields=NOT_APPLICABLE_FIELDS)
+        AuditService.log(
+            AuditEvent.NOT_APPLICABLE_REFUSED,
+            actor=request_item.request.created_by,
+            target=request_item,
+            request=request,
+            metadata={"reason": reason},
+        )
+        EmailService.send(
+            EmailTemplate.REJECTION,
+            to_email=request_item.request.client.email,
+            context={"item_name": request_item.name, "reason": reason, "needed": True},
             request=request_item.request,
         )
         return request_item

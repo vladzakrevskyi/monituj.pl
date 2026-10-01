@@ -73,7 +73,7 @@
 <div class="meta-progress">
 <div class="meta-progress__row">
 <span>Postęp</span>
-<span class="text-muted">{{ request_obj.delivered_items }} z {{ request_obj.total_items }} dokumentów dostarczonych</span>
+<span class="text-muted">{{ request_obj.delivered_items }} z {{ request_obj.total_items }} dokumentów gotowych{% if not_applicable_count %} (nie dotyczy: {{ not_applicable_count }}){% endif %}</span>
 </div>
 <progress class="progress-bar" value="{{ request_obj.delivered_items }}" max="{{ request_obj.total_items|default:1 }}"></progress>
 </div>
@@ -90,7 +90,7 @@
 {% for item in items %}
 <tr data-item-id="{{ item.id }}" data-status="{{ item.status }}">
 <td class="cell-strong" data-label="Dokument">{{ item.name }}</td>
-<td data-label="Status"><span class="badge item-status-label {{ item.status|badge_class }}">{{ item.get_status_display }}</span><span class="cell-note item-rejection"{% if not item.rejection_reason %} hidden{% endif %}>{{ item.rejection_reason }}</span></td>
+<td data-label="Status"><span class="badge item-status-label {{ item.status|badge_class }}">{{ item.get_status_display }}</span><span class="cell-note item-rejection"{% if not item.rejection_reason %} hidden{% endif %}>{{ item.rejection_reason }}</span>{% if item.status == "nie_dotyczy" %}<span class="cell-note item-na-note">{% if item.not_applicable_reason %}„{{ item.not_applicable_reason }}”{% else %}Oznaczone przez Ciebie{% endif %}{% if item.not_applicable_accepted %} · zaakceptowane{% endif %}</span>{% endif %}</td>
 <td data-label="Pliki">
 <ul class="file-list">
 {% for document in item.documents.all %}
@@ -106,7 +106,16 @@
 <button type="button" class="btn btn-primary btn-sm accept-item" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">Zaakceptuj</button>
 <button type="button" class="btn btn-danger btn-sm reject-item" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">Odrzuć</button>
 </div>
-{% endif %}
+{% elif item.status == "nie_dotyczy" and not item.not_applicable_accepted and not request_obj.is_closed %}
+<div class="table-actions">
+<button type="button" class="btn btn-primary btn-sm accept-item" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-not-applicable>Zaakceptuj</button>
+<button type="button" class="btn btn-danger btn-sm reject-item" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-not-applicable>Jednak potrzebuję</button>
+</div>
+{% elif item.status == "brak" or item.status == "odrzucony" %}{% if not request_obj.is_closed %}
+<div class="table-actions">
+<button type="button" class="btn btn-secondary btn-sm not-applicable-item" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" title="Klient nie ma tego dokumentu - przestaniemy o niego przypominać">Nie dotyczy</button>
+</div>
+{% endif %}{% endif %}
 </td>
 </tr>
 {% endfor %}

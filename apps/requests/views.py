@@ -33,7 +33,12 @@ from apps.requests.forms import (
     RequestForm,
     reminder_preset_of,
 )
-from apps.requests.models import RecurringRequest, Request, RequestItem
+from apps.requests.models import (
+    RecurringRequest,
+    Request,
+    RequestItem,
+    RequestItemStatus,
+)
 from apps.requests.services import RequestService, compute_status
 
 
@@ -389,6 +394,9 @@ def request_detail(request, request_id):
         {
             "request_obj": request_obj,
             "items": items,
+            "not_applicable_count": sum(
+                1 for item in items if item.status == RequestItemStatus.NIE_DOTYCZY
+            ),
             "reminders": reminders,
             "history": history,
             "status_label": status.label,

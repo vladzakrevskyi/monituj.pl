@@ -1,0 +1,42 @@
+{% load static %}
+<section class="section section--flush-top" id="kalkulator">
+<div class="container">
+<div class="section-head">
+<p class="eyebrow">Kalkulator</p>
+<h2 class="display-2">Ile czasu zabiera Ci <strong>pogoń za dokumentami?</strong></h2>
+</div>
+<div class="calc" data-calculator data-register-url="{% url 'accounts:register' %}">
+<div class="calc__inputs">
+<label class="calc__field">
+<span class="calc__label">Klienci, od których co miesiąc zbierasz dokumenty <output data-show="clients">50</output></span>
+<input type="range" min="1" max="300" step="1" value="50" data-input="clients">
+</label>
+<label class="calc__field">
+<span class="calc__label">Ile razy w miesiącu przypominasz jednemu klientowi <output data-show="times">3</output></span>
+<input type="range" min="1" max="10" step="1" value="3" data-input="times">
+</label>
+<label class="calc__field">
+<span class="calc__label">Minuty na jedno przypomnienie - mail, telefon, sprawdzenie, czego brakuje <output data-show="minutes">5</output></span>
+<input type="range" min="1" max="30" step="1" value="5" data-input="minutes">
+</label>
+<label class="calc__field">
+<span class="calc__label">Koszt godziny Twojej pracy <output data-show="rate">80 zł</output></span>
+<input type="range" min="20" max="300" step="10" value="80" data-input="rate">
+</label>
+</div>
+<div class="calc__result" aria-live="polite">
+<p class="calc__result-label">Co miesiąc na przypominanie</p>
+<p class="calc__hours"><strong data-out="hours">12,5 h</strong></p>
+<p class="calc__money">czyli ok. <strong data-out="money">1 000 zł</strong> Twojej pracy</p>
+<div class="calc__plan">
+<p data-out="plan">Plan Biuro: 89 zł netto miesięcznie</p>
+<p class="calc__payback" data-out="payback"></p>
+</div>
+<a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Wypróbuj {{ trial_days }} dni za darmo</a>
+<p class="calc__note">To szacunek z Twoich danych. Monituj sam przypomina klientom o brakach - Tobie zostaje sprawdzenie dokumentów, które dotarły.</p>
+</div>
+</div>
+{{ calculator_plans|json_script:"calculator-plans" }}
+</div>
+</section>
+<script src="{% static 'js/calculator.js' %}" defer></script>

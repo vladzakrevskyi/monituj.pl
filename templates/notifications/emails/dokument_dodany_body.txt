@@ -1,6 +1,6 @@
-{% load formatting %}{% autoescape off %}{% if upload_count == 1 %}Dotarł nowy dokument{% else %}Dotarły nowe dokumenty ({{ upload_count }}){% endif %} od {{ client_name }} do prośby „{{ request_name }}”:
+{% load formatting %}{% autoescape off %}{% if only_not_applicable %}{{ client_name }} odpowiada w prośbie „{{ request_name }}”, że nie ma {% if upload_count == 1 %}tego dokumentu{% else %}tych dokumentów{% endif %}:{% else %}{% if upload_count == 1 %}Dotarł nowy dokument{% else %}Dotarły nowe dokumenty ({{ upload_count }}){% endif %} od {{ client_name }} do prośby „{{ request_name }}”:{% endif %}
 {% for upload in uploads %}
-- {{ upload.item }}: {{ upload.file }}{% endfor %}
+- {{ upload.item }}: {% if upload.not_applicable %}nie dotyczy{% if upload.reason %} ({{ upload.reason }}){% endif %}{% else %}{{ upload.file }}{% endif %}{% endfor %}
 
 Dostarczono: {{ progress }}.{% if missing_items %}
 Wciąż brakuje: {{ missing_items|join:", " }}.{% endif %}

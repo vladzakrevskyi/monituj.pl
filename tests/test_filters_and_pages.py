@@ -233,3 +233,19 @@ def test_legal_pages_use_configured_company_details(client, settings):
     response = client.get(reverse("legal:terms"))
     assert "Monituj Sp. z o.o." in page_text(response)
     assert b"hej@monituj.pl" in response.content
+
+
+@pytest.mark.django_db
+def test_pricing_has_the_time_calculator_with_every_plan(client):
+    import json
+
+    from apps.billing import plans
+
+    html = client.get(reverse("pages:pricing")).content.decode()
+
+    assert 'id="kalkulator"' in html
+    data = html.split('id="calculator-plans" type="application/json">')[1]
+    calculator = json.loads(data.split("</script>")[0])
+    assert [p["name"] for p in calculator] == [p.name for p in plans.PLANS.values()]
+    assert calculator[0]["net"] == 0
+    assert [p["limit"] for p in calculator] == sorted(p["limit"] for p in calculator)

@@ -11,6 +11,11 @@ urlpatterns = [
         name="upload",
     ),
     path(
+        "public/<str:token>/items/<int:item_id>/not-applicable/",
+        api.public_not_applicable,
+        name="public-not-applicable",
+    ),
+    path(
         "public/documents/<int:document_id>/",
         api.public_delete_document,
         name="public-delete",
@@ -27,5 +32,10 @@ urlpatterns = [
         "requests/<int:request_id>/items/<int:item_id>/reject/",
         api.reject_item,
         name="reject-item",
+    ),
+    path(
+        "requests/<int:request_id>/items/<int:item_id>/not-applicable/",
+        api.owner_not_applicable,
+        name="not-applicable-item",
     ),
 ]

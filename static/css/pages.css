@@ -1752,3 +1752,129 @@ a.contact-card__value:hover {
     padding: var(--space-5) var(--space-4);
   }
 }
+
+/* Cennik → Kalkulator */
+.calc {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-bg);
+}
+
+.calc__inputs {
+  display: grid;
+  gap: var(--space-5);
+  align-content: center;
+}
+
+.calc__field {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  font-weight: 500;
+}
+
+.calc__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  font-size: 15px;
+}
+
+.calc__label output {
+  flex: none;
+  min-width: 3.5em;
+  text-align: right;
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc__field input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.calc__result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--space-6);
+  border-radius: 16px;
+  background: var(--color-black);
+  color: #fff;
+}
+
+.calc__result p {
+  margin: 0;
+}
+
+.calc__result-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 60%);
+}
+
+.calc__result .calc__hours {
+  margin-top: var(--space-2);
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.calc__result .calc__money {
+  margin-top: var(--space-2);
+  font-size: 17px;
+  color: rgb(255 255 255 / 85%);
+}
+
+.calc__money strong {
+  color: #fff;
+}
+
+.calc__plan {
+  width: 100%;
+  margin: var(--space-5) 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid rgb(255 255 255 / 15%);
+  font-weight: 600;
+}
+
+.calc__result .calc__payback {
+  margin-top: var(--space-1);
+  font-weight: 400;
+  font-size: 15px;
+  color: rgb(255 255 255 / 70%);
+}
+
+.calc__result .calc__note {
+  margin-top: var(--space-4);
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 55%);
+}
+
+@media (max-width: 860px) {
+  .calc {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-5);
+  }
+
+  .calc__result {
+    padding: var(--space-5);
+  }
+
+  .calc__result .calc__hours {
+    font-size: 44px;
+  }
+}

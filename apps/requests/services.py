@@ -51,7 +51,13 @@ CLOSED_MESSAGE = "Ta prośba została zamknięta - nie można już przesyłać p
 # confirm it before it is deleted.
 CONFIRMATION_TTL = timedelta(hours=48)
 
-DELIVERED_STATUSES = [RequestItemStatus.DOSTARCZONY, RequestItemStatus.ZAAKCEPTOWANY]
+# Done for the recipient: sent, accepted - or "Nie dotyczy". Requests whose
+# items are all done are complete: no reminders, out of the plan limit.
+DELIVERED_STATUSES = [
+    RequestItemStatus.DOSTARCZONY,
+    RequestItemStatus.ZAAKCEPTOWANY,
+    RequestItemStatus.NIE_DOTYCZY,
+]
 MISSING_STATUSES = [RequestItemStatus.BRAK, RequestItemStatus.ODRZUCONY]
 NOT_DELIVERED_STATUSES = [
     RequestItemStatus.BRAK,

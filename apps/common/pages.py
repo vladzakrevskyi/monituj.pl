@@ -39,6 +39,16 @@ def _pricing_context():
         "trial_plan": plans.TRIAL_PLAN,
         "free_plan": plans.FREE,
         "vat_rate": plans.vat_rate(),
+        # For the time calculator (static/js/calculator.js): the cheapest
+        # plan that holds a request to every client at once.
+        "calculator_plans": [
+            {
+                "name": plan.name,
+                "limit": plan.active_requests,
+                "net": plan.monthly // 100,
+            }
+            for plan in (plans.FREE, *plans.PAID_PLANS)
+        ],
     }
 
 

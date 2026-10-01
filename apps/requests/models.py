@@ -84,6 +84,9 @@ class RequestItemStatus(models.TextChoices):
     DOSTARCZONY = "dostarczony", "Dostarczony"
     ZAAKCEPTOWANY = "zaakceptowany", "Zaakceptowany"
     ODRZUCONY = "odrzucony", "Odrzucony"
+    # The recipient doesn't have it - none this month, or it isn't theirs to
+    # give (apps/documents/services.py: NotApplicableService).
+    NIE_DOTYCZY = "nie_dotyczy", "Nie dotyczy"
 
 
 class RequestItem(TimeStampedModel):
@@ -96,6 +99,9 @@ class RequestItem(TimeStampedModel):
         default=RequestItemStatus.BRAK,
     )
     rejection_reason = models.TextField(blank=True)
+    # Why it's "Nie dotyczy", and whether the sender agreed.
+    not_applicable_reason = models.TextField(blank=True)
+    not_applicable_accepted = models.BooleanField(default=False)
 
     class Meta:
         indexes = [models.Index(fields=["request", "status"])]

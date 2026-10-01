@@ -1,10 +1,10 @@
-{% load formatting %}{% autoescape off %}Jeden dokument wymaga ponownego przesłania.
+{% load formatting %}{% autoescape off %}{% if needed %}Nadawca prosi jednak o dokument oznaczony przez Ciebie jako „nie dotyczy”.{% else %}Jeden dokument wymaga ponownego przesłania.{% endif %}
 
 Dokument: {{ item_name }}
 Prośba: {{ request_name }}
 Powód: {{ reason }}
 
-Prześlij poprawiony dokument:
+{% if needed %}Prześlij dokument:{% else %}Prześlij poprawiony dokument:{% endif %}
 {{ link }}{% if portal_link %}
 Wszystkie Twoje prośby o dokumenty, także od innych nadawców, w jednym miejscu:
 {{ portal_link }}

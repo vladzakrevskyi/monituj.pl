@@ -303,3 +303,106 @@
   font-size: 13px;
   color: var(--color-text-muted);
 }
+
+/* "Nie mam tego dokumentu" */
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--color-text);
+}
+
+.na {
+  margin-top: var(--space-3);
+  text-align: center;
+}
+
+.na__picker {
+  margin-top: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  text-align: left;
+}
+
+.na__title {
+  margin: 0 0 var(--space-3);
+  font-weight: 600;
+}
+
+.na__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.na__other {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.na__other input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.item-na {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-bg);
+  font-size: 14px;
+}
+
+.item-na__text {
+  margin: 0;
+  color: var(--color-text);
+}
+
+/* After the last document: where this page comes from. */
+.made-with {
+  margin: var(--space-5) 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.made-with a {
+  color: inherit;
+  font-weight: 600;
+}
+
+.public-done {
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-success-bg);
+  text-align: center;
+}
+
+.public-done__title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+.public-done .made-with {
+  margin-top: var(--space-2);
+}

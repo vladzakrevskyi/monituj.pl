@@ -34,6 +34,13 @@
 <p class="item-rejection-reason">{{ item.rejection_reason }}</p>
 {% endif %}
 
+{% if item.status == "nie_dotyczy" %}
+<div class="item-na">
+<p class="item-na__text">Nie masz tego dokumentu{% if item.not_applicable_reason %}: <strong>{{ item.not_applicable_reason }}</strong>{% endif %}.{% if item.not_applicable_accepted %} Nadawca to potwierdził.{% endif %}</p>
+{% if not request_obj.is_closed and not item.not_applicable_accepted %}<button type="button" class="link-button" data-na-undo>Cofnij - jednak go mam</button>{% endif %}
+</div>
+{% endif %}
+
 {% if item.status == "zaakceptowany" %}
 <p class="item-accepted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Dokument zaakceptowany.</p>
 {% endif %}
@@ -52,7 +59,7 @@
 {% endfor %}
 </div>
 
-{% if not request_obj.is_closed and item.status != "zaakceptowany" %}
+{% if not request_obj.is_closed and item.status != "zaakceptowany" and item.status != "nie_dotyczy" %}
 <div class="upload-zone" data-item-id="{{ item.id }}">
 <input type="file" class="upload-input" data-item-id="{{ item.id }}">
 <svg class="upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
@@ -61,9 +68,30 @@
 <progress class="upload-progress progress-bar" value="0" max="100" hidden></progress>
 <p class="upload-error" role="alert"></p>
 </div>
+<div class="na" data-na{% if item.status != "brak" and item.status != "odrzucony" %} hidden{% endif %}>
+<button type="button" class="link-button na__open" data-na-open aria-expanded="false">Nie mam tego dokumentu</button>
+<div class="na__picker" data-na-picker hidden>
+<p class="na__title">Dlaczego nie masz tego dokumentu?</p>
+<div class="na__options">
+<button type="button" class="btn btn-secondary btn-sm" data-na-reason="W tym okresie go nie było">W tym okresie go nie było</button>
+<button type="button" class="btn btn-secondary btn-sm" data-na-reason="Ten dokument mnie nie dotyczy">Ten dokument mnie nie dotyczy</button>
+</div>
+<form class="na__other" data-na-other>
+<input type="text" maxlength="500" placeholder="Inny powód…" aria-label="Inny powód">
+<button type="submit" class="btn btn-primary btn-sm">Wyślij</button>
+</form>
+<p class="upload-error" role="alert" data-na-error></p>
+</div>
+</div>
 {% endif %}
 </div>
 {% endfor %}
+</div>
+
+{# A plain link, nothing about the recipient in it and no tracking on this page - see the Regulamin, "strony próśb". Never in emails. #}
+<div class="public-done" data-done{% if status_code != "kompletny" %} hidden{% endif %}>
+<p class="public-done__title">Gotowe - w tej prośbie nie trzeba już niczego przesyłać.</p>
+<p class="made-with">Ta prośba działa dzięki Monituj. Też zbierasz dokumenty od klientów? <a href="{% url 'landing' %}?utm_source=prosba&amp;utm_medium=strona_odbiorcy" target="_blank" rel="noopener">Zobacz, jak to działa</a></p>
 </div>
 
 {% if hidden_files %}

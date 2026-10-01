@@ -1365,6 +1365,11 @@ a.pagination__page:hover {
   color: var(--color-danger);
 }
 
+/* Why the client doesn't have it - not an error. */
+.cell-note.item-na-note {
+  color: var(--color-text-muted);
+}
+
 @media (max-width: 1280px) {
   .filter-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
