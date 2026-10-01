@@ -1,0 +1,1 @@
+{% autoescape off %}{% if again %}Masz minutę? Twoja opinia o Monituj{% else %}Jak Ci się pracuje z Monituj?{% endif %}{% endautoescape %}

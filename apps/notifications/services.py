@@ -94,10 +94,12 @@ class EmailService:
         log=True,
         reply_to=None,
         attachments=None,
+        headers=None,
     ):
         """Renders and sends one email. log=False sends without leaving an
         EmailLog row - used when the data it would describe is being erased.
-        attachments: (filename, bytes, mimetype) tuples, e.g. an invoice PDF."""
+        attachments: (filename, bytes, mimetype) tuples, e.g. an invoice PDF.
+        headers: extra ones, e.g. List-Unsubscribe."""
         full_context = _base_context()
         if request is not None:
             full_context.update(_request_context(request, to_email))
@@ -138,6 +140,7 @@ class EmailService:
                 settings.DEFAULT_FROM_EMAIL,
                 [to_email],
                 reply_to=reply_to or _default_reply_to(to_email, request),
+                headers=headers,
             )
             message.attach_alternative(html_body, "text/html")
             for filename, content, mimetype in attachments or ():

@@ -1,3 +1,5 @@
+import secrets
+
 from django.conf import settings
 from django.db import models
 
@@ -46,6 +48,7 @@ class EmailTemplate(models.TextChoices):
     TRIAL_ENDED = "okres_probny_zakonczony", "Okres próbny zakończony"
     PLAN_STARTED = "plan_aktywny", "Plan aktywny"
     PLAN_CHANGED = "plan_zmieniony", "Plan zmieniony"
+    REVIEW_REQUEST = "prosba_o_opinie", "Prośba o opinię"
     PLAN_CANCELLED = "plan_anulowany", "Subskrypcja anulowana"
     PLAN_RESUMED = "plan_wznowiony", "Subskrypcja wznowiona"
     PLAN_ENDED = "plan_zakonczony", "Plan zakończony"
@@ -120,3 +123,25 @@ class Notification(TimeStampedModel):
 
     def __str__(self):
         return f"{self.kind} for {self.user_id}"
+
+
+def _review_token():
+    return secrets.token_urlsafe(24)
+
+
+class ReviewInvite(models.Model):
+    """The "Oceń Monituj" emails to one account (apps/notifications/
+    reviews.py): how many went, and whether the link was clicked or the
+    owner said no - either one ends them."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="review_invite",
+    )
+    # In the email links instead of the user id.
+    token = models.CharField(max_length=40, unique=True, default=_review_token)
+    sent_count = models.PositiveSmallIntegerField(default=0)
+    last_sent_at = models.DateTimeField(null=True, blank=True)
+    clicked_at = models.DateTimeField(null=True, blank=True)
+    declined_at = models.DateTimeField(null=True, blank=True)

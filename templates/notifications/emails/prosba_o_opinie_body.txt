@@ -1,0 +1,12 @@
+{% autoescape off %}{% if again %}Niedawno pytaliśmy, jak sprawdza się u Ciebie Monituj. Jeśli masz chwilę, będziemy bardzo wdzięczni za kilka zdań.{% else %}Masz konto w Monituj od ponad miesiąca. Będziemy wdzięczni, jeśli w kilku zdaniach napiszesz, jak się sprawdza.{% endif %} Opinię zostawisz na Trustpilot - tam inne biura i firmy sprawdzają, czy warto spróbować.
+
+Liczy się każda szczera ocena, także krytyczna. A jeśli czegoś Ci brakuje albo coś nie działa - po prostu odpowiedz na tę wiadomość. Czytamy wszystkie.
+
+Oceń Monituj:
+{{ review_url }}
+
+O opinię prosimy najwyżej dwa razy. Nie chcesz takich wiadomości?
+{{ stop_url }}
+--
+Monituj - {{ site_url }}
+{% endautoescape %}

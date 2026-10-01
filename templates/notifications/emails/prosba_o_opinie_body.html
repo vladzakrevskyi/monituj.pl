@@ -1,0 +1,10 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Kilka zdań na Trustpilot - zajmie to około minuty.{% endblock %}
+{% block eyebrow %}Twoja opinia{% endblock %}
+{% block title %}{% if again %}Masz minutę na opinię?{% else %}Jak Ci się pracuje z Monituj?{% endif %}{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">{% if again %}Niedawno pytaliśmy, jak sprawdza się u Ciebie Monituj. Jeśli masz chwilę, będziemy bardzo wdzięczni za kilka zdań.{% else %}Masz konto w Monituj od ponad miesiąca. Będziemy wdzięczni, jeśli w kilku zdaniach napiszesz, jak się sprawdza.{% endif %} Opinię zostawisz na Trustpilot - tam inne biura i firmy sprawdzają, czy warto spróbować.</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Liczy się każda szczera ocena, także krytyczna. A jeśli czegoś Ci brakuje albo coś nie działa - po prostu odpowiedz na tę wiadomość. Czytamy wszystkie.</p>
+{% include "notifications/emails/_button.html" with url=review_url label="Oceń Monituj" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ masz konto w Monituj. O opinię prosimy najwyżej dwa razy. <a href="{{ stop_url }}" style="color:#62636d;text-decoration:underline;">Nie chcę takich wiadomości</a>{% endblock %}

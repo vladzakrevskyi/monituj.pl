@@ -1,0 +1,19 @@
+{% extends "base/base.html" %}
+
+{% block page_name %}Prośby o opinię{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+{% if done %}
+<h1>Gotowe</h1>
+<p class="mb-0">Nie będziemy już prosić Cię o opinię o Monituj. Pozostałe wiadomości - np. o Twoich prośbach i koncie - przychodzą jak dotąd.</p>
+{% else %}
+<h1>Nie chcesz próśb o opinię?</h1>
+<p>Po kliknięciu nie wyślemy Ci już żadnej wiadomości z prośbą o ocenę Monituj. Wiadomości o Twoich prośbach i koncie przychodzą dalej.</p>
+<form method="post">
+<button type="submit" class="btn btn-primary">Nie wysyłajcie mi już próśb o opinię</button>
+</form>
+{% endif %}
+</div>
+{% endblock %}

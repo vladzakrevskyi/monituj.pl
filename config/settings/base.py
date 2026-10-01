@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
 from apps.common import logging_conf
@@ -198,6 +199,12 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.common.tasks.delete_old_throttle_events",
         "schedule": 3600.0,
     },
+    # "Oceń Monituj" a month after signing up (apps/notifications/reviews.py) -
+    # once a day in the morning, not at night.
+    "send-review-invites": {
+        "task": "apps.notifications.tasks.send_review_invites",
+        "schedule": crontab(hour=10, minute=0),
+    },
     # Files uploaded for a client import and never imported, after a day.
     "delete-old-client-imports": {
         "task": "apps.clients.tasks.delete_old_client_imports",
@@ -268,6 +275,10 @@ CONTACT_EMAIL = env("CONTACT_EMAIL", default="kontakt@monituj.pl")
 ADMINS = [env("ERROR_EMAIL", default="") or CONTACT_EMAIL]
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_SUBJECT_PREFIX = "[Monituj] "
+# Where "Oceń Monituj" in the review email leads (apps/notifications/reviews.py).
+TRUSTPILOT_REVIEW_URL = env(
+    "TRUSTPILOT_REVIEW_URL", default="https://pl.trustpilot.com/evaluate/monituj.pl"
+)
 
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
 

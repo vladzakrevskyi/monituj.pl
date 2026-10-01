@@ -6,3 +6,10 @@ from apps.notifications.inbox import send_pending_upload_emails
 @shared_task
 def send_upload_emails():
     return send_pending_upload_emails()
+
+
+@shared_task
+def send_review_invites():
+    from apps.notifications import reviews
+
+    return reviews.send_due()
