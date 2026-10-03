@@ -13,6 +13,9 @@ requests>=2.32
 weasyprint>=70
 pyotp>=2.9
 segno>=1.6
+# iPhone photos (HEIC) uploaded by recipients are stored as JPG.
+Pillow>=11.0
+pillow-heif>=0.21
 # Client import from Excel; defusedxml makes openpyxl parse XML safely.
 openpyxl>=3.1
 defusedxml>=0.7

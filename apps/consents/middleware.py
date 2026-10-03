@@ -23,6 +23,7 @@ GATED_VIEWS = {
     ("billing", "change"),
     ("documents_api", "download"),
     ("documents_api", "accept-item"),
+    ("documents_api", "accept-all"),
     ("documents_api", "reject-item"),
 }
 MESSAGE = (

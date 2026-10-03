@@ -23,6 +23,7 @@ from apps.common.responses import (
     success_response,
 )
 from apps.documents import archive
+from apps.documents.services import DocumentReviewService
 from apps.notifications import inbox
 from apps.reminders.schedule import recipient_zone, send_clock
 from apps.reminders.services import ReminderScheduleService
@@ -409,6 +410,7 @@ def request_detail(request, request_id):
             "not_applicable_count": sum(
                 1 for item in items if item.status == RequestItemStatus.NIE_DOTYCZY
             ),
+            "to_review": DocumentReviewService.to_review(request_obj).count(),
             "reminders": reminders,
             "history": history,
             "status_label": status.label,

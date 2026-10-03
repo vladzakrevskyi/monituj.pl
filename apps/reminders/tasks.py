@@ -1,6 +1,6 @@
 from celery import shared_task
 
-from apps.reminders.services import AutomaticReminderService
+from apps.reminders.services import AutomaticReminderService, DeadlineReminderService
 from apps.requests.models import Request
 
 
@@ -13,6 +13,10 @@ def send_automatic_reminders():
     )
     sent_count = 0
     for request_id in request_ids:
-        if AutomaticReminderService.maybe_send_for_request(request_id):
+        # One email at a time: the deadline one first, then (another run)
+        # the interval one counts from it.
+        if DeadlineReminderService.maybe_send_for_request(request_id):
+            sent_count += 1
+        elif AutomaticReminderService.maybe_send_for_request(request_id):
             sent_count += 1
     return sent_count

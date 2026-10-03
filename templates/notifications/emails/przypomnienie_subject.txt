@@ -1,1 +1,1 @@
-{% autoescape off %}Przypomnienie o brakujących dokumentach{% if sender_name %} - {{ sender_name }}{% endif %}{% endautoescape %}
+{% autoescape off %}{% if days_left == 0 %}Dziś mija termin przesłania dokumentów{% elif days_left %}Za {{ days_left }} dni mija termin przesłania dokumentów{% else %}Przypomnienie o brakujących dokumentach{% endif %}{% if sender_name %} - {{ sender_name }}{% endif %}{% endautoescape %}

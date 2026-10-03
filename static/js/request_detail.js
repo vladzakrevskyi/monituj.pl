@@ -137,6 +137,24 @@
     }
   });
 
+  // "Zaakceptuj wszystkie": every document waiting for a decision.
+  const acceptAll = document.getElementById("accept-all");
+  if (acceptAll) {
+    acceptAll.addEventListener("click", async () => {
+      const confirmed = await Modal.confirm({
+        title: "Zaakceptować wszystkie?",
+        message: `Zaakceptujemy wszystkie dokumenty czekające na Twoją decyzję (${acceptAll.dataset.count}) - także te, których klient nie ma. Pliki obejrzyj wcześniej.`,
+        confirmLabel: "Zaakceptuj wszystkie",
+      });
+      if (!confirmed) return;
+      const { ok, data } = await ButtonLoader.run(acceptAll, () =>
+        apiFetch(`/api/requests/${requestId}/accept-all/`, { method: "POST" })
+      );
+      if (ok) window.location.reload();
+      else showToast(errorMessage(data), "error");
+    });
+  }
+
   const remindButton = document.getElementById("send-reminder");
   if (remindButton) {
     remindButton.addEventListener("click", async () => {

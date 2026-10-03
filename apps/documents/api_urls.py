@@ -29,6 +29,11 @@ urlpatterns = [
         name="accept-item",
     ),
     path(
+        "requests/<int:request_id>/accept-all/",
+        api.accept_all,
+        name="accept-all",
+    ),
+    path(
         "requests/<int:request_id>/items/<int:item_id>/reject/",
         api.reject_item,
         name="reject-item",

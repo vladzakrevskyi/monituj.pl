@@ -4,7 +4,13 @@ A reminder is sent at the clock time the request itself was sent, in the
 sender's zone - e.g. 14:20 - but on the recipient's clock: a request sent at
 14:20 in Warsaw reminds a recipient in New York at 14:20 New York time. Times
 outside 8:00-20:00 are moved into that window, so nobody gets a reminder at
-night. When the recipient's zone is unknown, the sender's is used."""
+night. When the recipient's zone is unknown, the sender's is used.
+
+With a deadline, two more reminders: DEADLINE_DAYS_BEFORE days before it and
+on its day, at the same clock time (deadline_dates). They are skipped when
+another reminder went out shortly before (RECENT), and the interval
+reminders count from the latest reminder of either kind, so the two never
+land on the same day."""
 
 from datetime import datetime, time, timedelta
 
@@ -62,3 +68,27 @@ def due_dates(request_obj, sent_times, count):
         dates.append(due)
         due = _at_clock(due, request_obj.reminder_frequency_days, clock, recipient_tz)
     return dates
+
+
+DEADLINE_DAYS_BEFORE = 2
+# A deadline reminder isn't sent this soon after another reminder (or the
+# request itself).
+RECENT = timedelta(hours=20)
+# How long after its time a deadline reminder may still go out - the task
+# runs every few minutes; later it would be a different day's message.
+DEADLINE_WINDOW = timedelta(hours=12)
+
+
+def deadline_dates(request_obj):
+    """[(sequence, due)] - the reminder DEADLINE_DAYS_BEFORE days before the
+    deadline (1) and on its day (2), at the request's clock, on the
+    recipient's calendar. Empty without a deadline."""
+    if request_obj.deadline is None:
+        return []
+    clock = send_clock(request_obj)
+    recipient_tz = recipient_zone(request_obj)
+    day = timezone.localtime(request_obj.deadline, recipient_tz).date()
+    return [
+        (sequence, datetime.combine(day - timedelta(days=before), clock, recipient_tz))
+        for sequence, before in ((1, DEADLINE_DAYS_BEFORE), (2, 0))
+    ]

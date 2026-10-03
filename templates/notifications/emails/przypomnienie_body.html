@@ -1,8 +1,8 @@
 {% extends "notifications/emails/base.html" %}
 {% load formatting %}
-{% block preheader %}Do uzupełnienia pozostało kilka dokumentów.{% endblock %}
-{% block eyebrow %}Przypomnienie{% endblock %}
-{% block title %}Wciąż czekamy na Twoje dokumenty{% endblock %}
+{% block preheader %}{% if days_left == 0 %}Termin mija dziś - prześlij brakujące dokumenty.{% elif days_left %}Termin mija za {{ days_left }} dni.{% else %}Do uzupełnienia pozostało kilka dokumentów.{% endif %}{% endblock %}
+{% block eyebrow %}{% if days_left is not None %}Zbliża się termin{% else %}Przypomnienie{% endif %}{% endblock %}
+{% block title %}{% if days_left == 0 %}Dziś mija termin{% elif days_left %}Termin mija za {{ days_left }} dni{% else %}Wciąż czekamy na Twoje dokumenty{% endif %}{% endblock %}
 {% block content %}
 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">To przypomnienie o dokumentach, które {% if sender_name %}<strong>{{ sender_name }}</strong>{% else %}nadawca prośby{% endif %} wciąż od Ciebie potrzebuje. Przesłanie ich zajmie tylko chwilę.</p>
 {% include "notifications/emails/_details_open.html" %}

@@ -34,7 +34,10 @@ FAQ = [
             "przypomnienie, co ile dni je powtarzać i ile razy maksymalnie. "
             "Przypomnienia wychodzą o tej godzinie, o której wysłałeś prośbę - "
             "według zegara odbiorcy - i przestają, gdy dotrze komplet dokumentów. "
-            "W panelu widzisz dokładne daty kolejnych przypomnień."
+            "Jeśli prośba ma termin, Monituj przypomni też 2 dni przed nim i w "
+            "dniu terminu (chyba że dzień wcześniej wyszło już inne "
+            "przypomnienie). W panelu widzisz dokładne daty kolejnych "
+            "przypomnień."
         ),
     },
     {

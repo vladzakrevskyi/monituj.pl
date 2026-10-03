@@ -32,7 +32,9 @@ Monituj nie jest dyskiem na pliki. Dysk i mail tylko przechowują to, co już do
 - Strona odbiorcy: jeden stały link ze wszystkimi prośbami wysłanymi na jego adres, od wszystkich nadawców.
 - Prośba bez konta: jedna dziennie, potwierdzana mailem; nadawca dostaje panel pod stałym linkiem.
 - Demo: osobne konto demonstracyjne z przykładowymi danymi, usuwane po 24 godzinach.
-- Obsługiwane pliki: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX, CSV, do 20 MB na plik.
+- Obsługiwane pliki: PDF, JPG, PNG, HEIC/HEIF (zdjęcia z iPhone'a - zapisywane jako JPG), DOC, DOCX, XLS, XLSX, CSV, do 20 MB na plik.
+- Przypomnienia przed terminem: 2 dni przed terminem i w dniu terminu, jeśli wciąż brakuje dokumentów.
+- „Zaakceptuj wszystkie”: jednym kliknięciem wszystkie dokumenty czekające na decyzję.
 
 ## Bezpieczeństwo i RODO
 

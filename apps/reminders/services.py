@@ -9,7 +9,12 @@ from apps.common.exceptions import ValidationAppError
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
 from apps.reminders.models import Reminder, ReminderKind
-from apps.reminders.schedule import due_dates
+from apps.reminders.schedule import (
+    DEADLINE_WINDOW,
+    RECENT,
+    deadline_dates,
+    due_dates,
+)
 from apps.requests.models import Request
 from apps.requests.services import (
     RequestStatus,
@@ -91,15 +96,13 @@ class AutomaticReminderService:
         if compute_status(annotated) == RequestStatus.COMPLETE:
             return False
 
-        automatic_reminders = Reminder.objects.filter(
+        count = Reminder.objects.filter(
             request=request_obj, kind=ReminderKind.AUTOMATIC
-        ).order_by("sent_at")
-        count = automatic_reminders.count()
+        ).count()
         if count >= request_obj.max_reminders:
             return False
 
-        sent_times = list(automatic_reminders.values_list("sent_at", flat=True))
-        (due_at,) = due_dates(request_obj, sent_times, 1)
+        (due_at,) = due_dates(request_obj, _interval_anchor(request_obj), 1)
         if timezone.now() < due_at:
             return False
 
@@ -118,6 +121,79 @@ class AutomaticReminderService:
         return True
 
 
+def _interval_anchor(request_obj):
+    """The reminders the next interval one counts from: automatic ones and
+    those before the deadline - so a deadline reminder isn't followed by
+    another the same day."""
+    return list(
+        Reminder.objects.filter(
+            request=request_obj,
+            kind__in=[ReminderKind.AUTOMATIC, ReminderKind.DEADLINE],
+        )
+        .order_by("sent_at")
+        .values_list("sent_at", flat=True)
+    )
+
+
+class DeadlineReminderService:
+    """Two days before the deadline and on its day - when documents are
+    still missing and reminders are on (apps/reminders/schedule.py)."""
+
+    @staticmethod
+    @transaction.atomic
+    def maybe_send_for_request(request_id, now=None):
+        now = now or timezone.now()
+        request_obj = Request.objects.select_for_update().filter(pk=request_id).first()
+        if (
+            request_obj is None
+            or request_obj.deadline is None
+            or not request_obj.reminders_enabled
+            or request_obj.awaiting_confirmation
+            or request_obj.closed_at is not None
+        ):
+            return False
+        annotated = with_stats(Request.objects.filter(pk=request_id)).first()
+        if compute_status(annotated) == RequestStatus.COMPLETE:
+            return False
+
+        sent = set(
+            Reminder.objects.filter(
+                request=request_obj, kind=ReminderKind.DEADLINE
+            ).values_list("sequence_number", flat=True)
+        )
+        for sequence, due in deadline_dates(request_obj):
+            if sequence in sent or now < due:
+                continue
+            if now >= min(due + DEADLINE_WINDOW, request_obj.deadline):
+                continue  # missed - the next one is closer
+            # Not right after another reminder, or the request itself.
+            recent = (
+                Reminder.objects.filter(
+                    request=request_obj, sent_at__gte=due - RECENT
+                ).exists()
+                or request_obj.created_at >= due - RECENT
+            )
+            if recent:
+                continue
+            Reminder.objects.create(
+                request=request_obj,
+                kind=ReminderKind.DEADLINE,
+                sequence_number=sequence,
+            )
+            AuditService.log(AuditEvent.REMINDER_SENT, target=request_obj)
+            days_left = (
+                timezone.localtime(request_obj.deadline, due.tzinfo).date() - due.date()
+            ).days
+            EmailService.send(
+                EmailTemplate.REMINDER,
+                to_email=request_obj.client.email,
+                context={"request_name": request_obj.name, "days_left": days_left},
+                request=request_obj,
+            )
+            return True
+        return False
+
+
 class ReminderScheduleService:
     @staticmethod
     def planned(request_obj, now=None):
@@ -134,16 +210,25 @@ class ReminderScheduleService:
         ):
             return []
 
-        sent_times = list(
-            Reminder.objects.filter(request=request_obj, kind=ReminderKind.AUTOMATIC)
-            .order_by("sent_at")
-            .values_list("sent_at", flat=True)
-        )
-        remaining = request_obj.max_reminders - len(sent_times)
-        if remaining <= 0:
-            return []
+        automatic = Reminder.objects.filter(
+            request=request_obj, kind=ReminderKind.AUTOMATIC
+        ).count()
+        remaining = request_obj.max_reminders - automatic
         # One that is already due goes out within minutes.
-        return [
-            timezone.localtime(max(due, now))
-            for due in due_dates(request_obj, sent_times, remaining)
+        planned = [
+            max(due, now)
+            for due in due_dates(
+                request_obj, _interval_anchor(request_obj), max(remaining, 0)
+            )
         ]
+        sent = set(
+            Reminder.objects.filter(
+                request=request_obj, kind=ReminderKind.DEADLINE
+            ).values_list("sequence_number", flat=True)
+        )
+        planned += [
+            due
+            for sequence, due in deadline_dates(request_obj)
+            if sequence not in sent and due > now
+        ]
+        return [timezone.localtime(when) for when in sorted(planned)]

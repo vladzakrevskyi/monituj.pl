@@ -124,9 +124,11 @@ class UploadDocumentService:
         storage_key = _generate_storage_key(validated.extension)
         encryption_fields = save_document_file(storage_key, validated.content)
 
-        safe_original_name = uploaded_file_name.rsplit("/", 1)[-1].rsplit("\\", 1)[-1][
-            :255
-        ]
+        safe_original_name = uploaded_file_name.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
+        if validated.converted:
+            # IMG_1234.HEIC was stored as a JPG.
+            safe_original_name = safe_original_name.rsplit(".", 1)[0] + ".jpg"
+        safe_original_name = safe_original_name[:255]
 
         return Document.objects.create(
             request_item=request_item,
@@ -197,6 +199,29 @@ class DocumentReviewService:
             request=request,
         )
         return request_item
+
+    @staticmethod
+    def to_review(request_obj):
+        """Waiting for the sender's decision: files sent, or "Nie dotyczy"
+        not accepted yet."""
+        from django.db.models import Q
+
+        return request_obj.items.filter(
+            Q(status=RequestItemStatus.DOSTARCZONY)
+            | Q(
+                status=RequestItemStatus.NIE_DOTYCZY,
+                not_applicable_accepted=False,
+            )
+        )
+
+    @staticmethod
+    def accept_all(request_obj, request=None):
+        """ "Zaakceptuj wszystkie": every item waiting for a decision. -> how
+        many."""
+        items = list(DocumentReviewService.to_review(request_obj).order_by("id"))
+        for item in items:
+            DocumentReviewService.accept(item, request=request)
+        return len(items)
 
     @staticmethod
     def reject(request_item, reason, request=None):

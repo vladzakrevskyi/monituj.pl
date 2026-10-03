@@ -8,6 +8,8 @@ from apps.requests.models import Request
 class ReminderKind(models.TextChoices):
     MANUAL = "manual", "Ręczne"
     AUTOMATIC = "automatic", "Automatyczne"
+    # Two days before the deadline and on its day (apps/reminders/schedule.py).
+    DEADLINE = "deadline", "Przed terminem"
 
 
 class Reminder(TimeStampedModel):

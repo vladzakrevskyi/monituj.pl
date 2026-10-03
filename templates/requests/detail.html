@@ -80,7 +80,7 @@
 </div>
 
 <section class="card card--flush mb-5">
-<div class="card__header"><h2>Lista dokumentów</h2></div>
+<div class="card__header"><h2>Lista dokumentów</h2>{% if to_review > 1 and not request_obj.is_closed %}<button type="button" class="btn btn-primary btn-sm" id="accept-all" data-request-id="{{ request_obj.id }}" data-count="{{ to_review }}">Zaakceptuj wszystkie ({{ to_review }})</button>{% endif %}</div>
 <div class="table-scroll">
 <table data-request-id="{{ request_obj.id }}">
 <thead>

@@ -242,3 +242,16 @@ def owner_not_applicable(request, request_id, item_id):
         item, _json_body(request).get("reason", ""), request=request
     )
     return success_response(_item_payload(item))
+
+
+@api_login_required
+@require_http_methods(["POST"])
+def accept_all(request, request_id):
+    """ "Zaakceptuj wszystkie" on the request's page."""
+    request_obj = RequestService.get_owned_request(request.account, request_id)
+    if request_obj.closed_at is not None:
+        raise ValidationAppError(
+            "Prośba jest zamknięta - otwórz ją ponownie.", code="REQUEST_CLOSED"
+        )
+    accepted = DocumentReviewService.accept_all(request_obj, request=request)
+    return success_response({"accepted": accepted})
