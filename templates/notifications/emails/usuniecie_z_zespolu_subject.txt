@@ -1,0 +1,1 @@
+{% autoescape off %}Nie należysz już do zespołu {{ firm }} - Monituj{% endautoescape %}

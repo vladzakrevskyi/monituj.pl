@@ -11,7 +11,7 @@ from apps.notifications.models import ReviewInvite
 
 @login_required
 def notification_list(request):
-    page_obj = Paginator(inbox.for_user(request.user), 30).get_page(
+    page_obj = Paginator(inbox.for_user(request.account), 30).get_page(
         request.GET.get("page", 1)
     )
     # Rendered before marking, so what's new is still highlighted this time.
@@ -20,7 +20,7 @@ def notification_list(request):
         "notifications/list.html",
         {"page_obj": page_obj, "notices": list(page_obj.object_list)},
     )
-    inbox.mark_read(request.user)
+    inbox.mark_read(request.account)
     return response
 
 

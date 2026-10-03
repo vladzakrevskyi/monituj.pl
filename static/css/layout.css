@@ -1446,3 +1446,119 @@ html.cookie-locked body {
     flex-basis: 100%;
   }
 }
+
+/* The workspace switcher: one's own account or a team's. */
+.workspace {
+  position: relative;
+  margin: var(--space-4) var(--space-4) 0;
+}
+
+.workspace__current {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-black-line);
+  border-radius: var(--radius-md);
+  background: var(--color-black-soft);
+  color: #fff;
+  cursor: pointer;
+  list-style: none;
+}
+
+.workspace__current::-webkit-details-marker {
+  display: none;
+}
+
+.workspace--team .workspace__current {
+  border-color: var(--color-primary);
+}
+
+.workspace__avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: #3a3b42;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.workspace--team .workspace__current .workspace__avatar {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.workspace__text {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+}
+
+.workspace__text strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.workspace__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.workspace__chevron {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+  transition: transform 0.15s ease;
+}
+
+.workspace[open] .workspace__chevron {
+  transform: rotate(180deg);
+}
+
+.workspace__menu {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2);
+  border: 1px solid var(--color-black-line);
+  border-radius: var(--radius-md);
+  background: var(--color-black-soft);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 40%);
+}
+
+.workspace__menu form {
+  margin: 0;
+}
+
+.workspace__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: #e4e4e8;
+  font: inherit;
+  cursor: pointer;
+}
+
+.workspace__option:hover,
+.workspace__option.is-current {
+  background: #2a2b31;
+}

@@ -1,0 +1,9 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Twoje własne konto w Monituj zostaje bez zmian.{% endblock %}
+{% block eyebrow %}Zespół{% endblock %}
+{% block title %}Nie należysz już do zespołu {{ firm }}{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Nie masz już dostępu do klientów i próśb zespołu <strong>{{ firm }}</strong>. Twoje własne konto w Monituj i pozostałe zespoły zostają bez zmian.</p>
+{% include "notifications/emails/_button.html" with url=site_url label="Przejdź do Monituj" %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ masz konto w Monituj.{% endblock %}

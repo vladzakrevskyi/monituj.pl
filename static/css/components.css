@@ -2184,3 +2184,8 @@ a.pagination__page:hover {
     gap: 2px;
   }
 }
+
+/* Zespół: the hint under "Wyślij zaproszenie". */
+.team-invite + .form-hint {
+  margin-top: var(--space-3);
+}

@@ -354,6 +354,8 @@ def software_application():
             "Prośby cykliczne wysyłane automatycznie co miesiąc, tydzień lub dzień",
             "Wysyłka jednej prośby do wielu klientów naraz",
             "Import klientów z pliku CSV lub Excel",
+            "Praca w zespole: współpracownicy z własnymi loginami",
+            "Odbiorca może zaznaczyć, że nie ma dokumentu - przypomnienia o nim ustają",
             "Pobieranie wszystkich plików prośby w archiwum ZIP",
             "Szablony próśb: własne i gotowe listy dokumentów dla branż",
             "Przesyłanie plików przez klienta bez zakładania konta",

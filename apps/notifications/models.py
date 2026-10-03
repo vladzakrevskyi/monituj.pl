@@ -49,6 +49,8 @@ class EmailTemplate(models.TextChoices):
     PLAN_STARTED = "plan_aktywny", "Plan aktywny"
     PLAN_CHANGED = "plan_zmieniony", "Plan zmieniony"
     REVIEW_REQUEST = "prosba_o_opinie", "Prośba o opinię"
+    TEAM_INVITATION = "zaproszenie_do_zespolu", "Zaproszenie do zespołu"
+    TEAM_REMOVED = "usuniecie_z_zespolu", "Usunięcie z zespołu"
     PLAN_CANCELLED = "plan_anulowany", "Subskrypcja anulowana"
     PLAN_RESUMED = "plan_wznowiony", "Subskrypcja wznowiona"
     PLAN_ENDED = "plan_zakonczony", "Plan zakończony"

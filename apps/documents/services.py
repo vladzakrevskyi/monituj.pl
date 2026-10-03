@@ -3,6 +3,7 @@ import secrets
 from django.db.models import Sum
 from django.utils import timezone
 
+from apps.accounts import team
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.common.exceptions import (
@@ -13,7 +14,11 @@ from apps.common.exceptions import (
 from apps.documents.models import Document, DocumentStatus
 from apps.documents.storage import private_storage, save_document_file
 from apps.documents.validation import validate_upload
-from apps.notifications.inbox import notify_not_applicable, notify_upload
+from apps.notifications.inbox import (
+    forget_not_applicable,
+    notify_not_applicable,
+    notify_upload,
+)
 from apps.notifications.models import EmailStatus, EmailTemplate
 from apps.notifications.services import EmailService
 from apps.requests.models import RequestItemStatus
@@ -291,6 +296,7 @@ class NotApplicableService:
         request_item.status = RequestItemStatus.BRAK
         request_item.not_applicable_reason = ""
         request_item.save(update_fields=NOT_APPLICABLE_FIELDS)
+        forget_not_applicable(request_item)
         AuditService.log(
             AuditEvent.NOT_APPLICABLE_UNDONE,
             target=request_item,
@@ -385,7 +391,7 @@ class DocumentAccessService:
         if (
             user is not None
             and user.is_authenticated
-            and request_obj.created_by_id == user.id
+            and team.can_work_in(user, request_obj.created_by_id)
         ):
             return document
 

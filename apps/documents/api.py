@@ -8,6 +8,7 @@ from django.http import FileResponse
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from apps.accounts import team
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.common import throttle
@@ -29,6 +30,7 @@ from apps.requests.models import RequestItem
 from apps.requests.services import PublicAccessService, RequestService
 
 logger = logging.getLogger("monituj")
+NOT_APPLICABLE_PER_IP_HOUR = 60
 
 
 @require_http_methods(["POST"])
@@ -94,7 +96,8 @@ def _downloader(document, request):
     """Who fetched the file, for the request's history (never their address -
     the history is shown to the sender)."""
     user = request.user
-    if user.is_authenticated and document.request_item.request.created_by_id == user.pk:
+    request_obj = document.request_item.request
+    if user.is_authenticated and team.can_work_in(user, request_obj.created_by_id):
         return "owner"
     return "recipient"
 
@@ -135,7 +138,7 @@ def download_document(request, document_id):
 @api_login_required
 @require_http_methods(["POST"])
 def accept_item(request, request_id, item_id):
-    request_obj = RequestService.get_owned_request(request.user, request_id)
+    request_obj = RequestService.get_owned_request(request.account, request_id)
     item = RequestItem.objects.filter(pk=item_id, request=request_obj).first()
     if item is None:
         return error_response("NOT_FOUND", "Nie znaleziono dokumentu.", status=404)
@@ -154,7 +157,7 @@ def accept_item(request, request_id, item_id):
 @api_login_required
 @require_http_methods(["POST"])
 def reject_item(request, request_id, item_id):
-    request_obj = RequestService.get_owned_request(request.user, request_id)
+    request_obj = RequestService.get_owned_request(request.account, request_id)
     item = RequestItem.objects.filter(pk=item_id, request=request_obj).first()
     if item is None:
         return error_response("NOT_FOUND", "Nie znaleziono dokumentu.", status=404)
@@ -210,6 +213,14 @@ def public_not_applicable(request, token, item_id):
     item = RequestItem.objects.filter(pk=item_id, request=request_obj).first()
     if item is None:
         return error_response("NOT_FOUND", "Nie znaleziono dokumentu.", status=404)
+    # Each answer tells the sender - a leaked link mustn't flood them.
+    throttle.consume(
+        throttle.ip_key("not-applicable", request),
+        NOT_APPLICABLE_PER_IP_HOUR,
+        throttle.HOUR,
+        "Zbyt wiele zmian w krótkim czasie. Spróbuj ponownie za godzinę.",
+        code="NOT_APPLICABLE_LIMIT_REACHED",
+    )
     if request.method == "DELETE":
         NotApplicableService.undo_by_recipient(item, django_request=request)
     else:
@@ -223,7 +234,7 @@ def public_not_applicable(request, token, item_id):
 @api_login_required
 @require_http_methods(["POST"])
 def owner_not_applicable(request, request_id, item_id):
-    request_obj = RequestService.get_owned_request(request.user, request_id)
+    request_obj = RequestService.get_owned_request(request.account, request_id)
     item = RequestItem.objects.filter(pk=item_id, request=request_obj).first()
     if item is None:
         return error_response("NOT_FOUND", "Nie znaleziono dokumentu.", status=404)

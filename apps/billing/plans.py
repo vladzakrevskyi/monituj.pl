@@ -33,6 +33,8 @@ class Plan:
     monthly: int
     yearly: int
     tagline: str
+    # People working in the account, the owner included (apps/accounts/team.py).
+    seats: int = 1
 
     @property
     def is_paid(self):
@@ -44,12 +46,35 @@ class Plan:
 
 FREE = Plan("free", "Free", 3, 1, 0, 0, "Na start i pojedyncze prośby.")
 START = Plan(
-    "start", "Start", 20, 5, 3900, 39000, "Dla jednoosobowej firmy i małej kancelarii."
+    "start",
+    "Start",
+    20,
+    5,
+    3900,
+    39000,
+    "Dla jednoosobowej firmy i małej kancelarii.",
+    seats=2,
 )
 BIURO = Plan(
-    "biuro", "Biuro", 75, 20, 8900, 89000, "Dla biura rachunkowego i działu kadr."
+    "biuro",
+    "Biuro",
+    75,
+    20,
+    8900,
+    89000,
+    "Dla biura rachunkowego i działu kadr.",
+    seats=5,
 )
-PRO = Plan("pro", "Pro", 250, 50, 17900, 179000, "Dla dużego biura z setkami klientów.")
+PRO = Plan(
+    "pro",
+    "Pro",
+    250,
+    50,
+    17900,
+    179000,
+    "Dla dużego biura z setkami klientów.",
+    seats=15,
+)
 
 PLANS = {plan.code: plan for plan in (FREE, START, BIURO, PRO)}
 PAID_PLANS = (START, BIURO, PRO)
@@ -96,6 +121,15 @@ def templates_phrase(count):
     if count % 10 in (2, 3, 4) and count % 100 not in (12, 13, 14):
         return f"{count} szablony"
     return f"{count} szablonów"
+
+
+def seats_phrase(count):
+    """'1 osoba', '2 osoby', '5 osób', '15 osób'."""
+    if count == 1:
+        return "1 osoba"
+    if count % 10 in (2, 3, 4) and count % 100 not in (12, 13, 14):
+        return f"{count} osoby"
+    return f"{count} osób"
 
 
 def requests_phrase(count):

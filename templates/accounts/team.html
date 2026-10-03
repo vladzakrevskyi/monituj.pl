@@ -1,0 +1,98 @@
+{% extends "base/app_base.html" %}
+{% load formatting %}
+
+{% block page_name %}Zespół{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<div>
+<h1>Zespół</h1>
+<p class="page-header__sub">Osoby, które pracują z Tobą na tych samych klientach, prośbach i szablonach. Każda ma własny login.</p>
+</div>
+</div>
+
+<section class="card">
+<h2 class="card-title">Miejsca <span class="text-muted template-usage">{{ usage.used }} z {{ usage.seats }} w planie {{ plan.name }}</span></h2>
+{% if usage.over %}<p class="alert alert--error">Plan {{ plan.name }} obejmuje {{ seats_phrase }}. {% if usage.over == 1 %}Jedna osoba czeka{% else %}{{ usage.over }} osoby czekają{% endif %} na wolne miejsce i nie może się zalogować. Wstrzymaj dostęp komuś innemu albo <a href="{% url 'billing:plan' %}">zmień plan</a>.</p>{% endif %}
+{% if demo_account %}
+<p class="mb-0">W wersji demo nie można zapraszać osób. Po założeniu konta zaprosisz zespół - w okresie próbnym do 5 osób.</p>
+{% elif usage.seats == 1 %}
+<p class="mb-0">Plan {{ plan.name }} obejmuje jedną osobę - Ciebie. Zespół jest dostępny od planu Start (2 osoby), w planie Biuro do 5 osób, a w planie Pro do 15. <a href="{% url 'billing:plan' %}">Zobacz plany</a></p>
+{% elif usage.free %}
+<form method="post" novalidate class="team-invite">
+{% csrf_token %}
+<input type="hidden" name="action" value="invite">
+<p class="team-invite__field">
+{{ form.email.label_tag }}
+{{ form.email }}
+{{ form.email.errors }}
+</p>
+<button type="submit" class="btn btn-primary">Wyślij zaproszenie</button>
+</form>
+<p class="form-hint mb-0">Wyślemy link ważny przez {{ invitation_days }} dni. Osoba ustawi własne hasło i od razu zobaczy klientów i prośby zespołu.</p>
+{% else %}
+<p class="mb-0">Wszystkie miejsca są zajęte.{% if next_plan %} Plan {{ next_plan.name }} obejmuje do {{ next_plan.seats }} osób - <a href="{% url 'billing:plan' %}">zmień plan</a>.{% endif %}</p>
+{% endif %}
+</section>
+
+<section class="card">
+<h2 class="card-title">Osoby</h2>
+<ul class="template-list">
+<li class="template-row">
+<div class="template-row__main">
+<span class="template-row__title">{{ user.display_name|default:user.email }}</span>
+<span class="template-row__meta">{{ user.email }} · właściciel konta (Ty)</span>
+</div>
+</li>
+{% for person in people %}
+<li class="template-row">
+<div class="template-row__main">
+<span class="template-row__title">{{ person.membership.user.display_name|default:person.membership.user.email }}</span>
+<span class="template-row__meta">{{ person.membership.user.email }} · {% if not person.membership.access %}<span class="badge badge--neutral">Dostęp wstrzymany</span>{% elif person.waiting %}<span class="badge badge--overdue">Czeka na wolne miejsce</span>{% else %}w zespole od {{ person.membership.joined_at|d }}{% endif %}</span>
+</div>
+<div class="template-row__actions">
+<form method="post" class="inline-form">
+{% csrf_token %}
+<input type="hidden" name="member" value="{{ person.membership.pk }}">
+{% if person.membership.access %}<button type="submit" name="action" value="pause" class="btn btn-secondary btn-sm">Wstrzymaj dostęp</button>{% else %}<button type="submit" name="action" value="resume" class="btn btn-secondary btn-sm">Przywróć dostęp</button>{% endif %}
+</form>
+<form method="post" class="inline-form" data-confirm="{{ person.membership.user.email }} straci dostęp do klientów i próśb zespołu. Wszystko, co ta osoba zrobiła, zostaje w Twoim koncie." data-confirm-title="Usunąć z zespołu?" data-confirm-label="Usuń z zespołu">
+{% csrf_token %}
+<input type="hidden" name="member" value="{{ person.membership.pk }}">
+<button type="submit" name="action" value="remove" class="btn btn-danger btn-sm">Usuń</button>
+</form>
+</div>
+</li>
+{% endfor %}
+{% for invitation in invitations %}
+<li class="template-row">
+<div class="template-row__main">
+<span class="template-row__title">{{ invitation.email }}</span>
+<span class="template-row__meta"><span class="badge badge--progress">Zaproszenie wysłane</span> ważne do {{ invitation.expires_at|d }}</span>
+</div>
+<div class="template-row__actions">
+<form method="post" class="inline-form">
+{% csrf_token %}
+<input type="hidden" name="invitation" value="{{ invitation.pk }}">
+<button type="submit" name="action" value="cancel" class="btn btn-secondary btn-sm">Usuń zaproszenie</button>
+</form>
+</div>
+</li>
+{% endfor %}
+</ul>
+{% if not people and not invitations %}<p class="text-muted mb-0">Na razie nie ma tu nikogo poza Tobą.</p>{% endif %}
+</section>
+
+<section class="card">
+<h2 class="card-title">Co może osoba z zespołu</h2>
+<ul class="steps-list">
+<li>Pracuje na tych samych klientach, prośbach, szablonach i dokumentach co Ty - w historii prośby widać, kto co zrobił.</li>
+<li>Ma własne hasło, weryfikację dwuetapową i logowanie przez Google.</li>
+<li>Nie widzi planu i płatności, nie zmienia danych firmy ani zespołu i nie może usunąć konta - to robi właściciel.</li>
+<li>Usuwa pojedyncze prośby, ale nie może usuwać wielu próśb lub klientów naraz ani klienta z całą historią - takich operacji nie da się cofnąć, więc wykonuje je tylko właściciel.</li>
+<li>Może mieć własne konto i należeć do innych zespołów - przełącza się między nimi w menu, a dane są zawsze oddzielone.</li>
+<li>Jeśli usuniesz osobę z zespołu, wszystko, co zrobiła, zostaje u Ciebie.</li>
+</ul>
+</section>
+{% endblock %}

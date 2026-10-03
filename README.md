@@ -596,17 +596,18 @@ Zatwierdź i wypchnij zmiany na swoim komputerze, potem na serwerze **jedno pole
 
 Skrypt po kolei:
 
-1. robi kopię bazy danych do `/srv/monituj-backups/` (starsze niż `LEGAL_BACKUP_DAYS` dni usuwa – tyle obiecuje Polityka prywatności); jeśli istnieje `deploy/backup.sh`, uruchamia go dodatkowo;
-2. pobiera najnowszy `main` z GitHuba (tylko fast-forward – odmówi, jeśli na serwerze ktoś zmienił pliki z repozytorium);
-3. buduje nowy obraz i sprawdza ustawienia (`check --deploy`) – zły wpis w `.env` zatrzymuje aktualizację, zanim cokolwiek zostanie podmienione;
-4. wykonuje migracje i uruchamia nowe kontenery `web`, `worker`, `beat`;
-5. sprawdza, czy strona odpowiada (`/api/health/`);
-6. uruchamia `post_deploy`: synchronizuje Stripe (produkty, ceny, VAT, portal, zdarzenia webhooka), zapisuje obowiązujące wersje dokumentów prawnych w archiwum, dopisuje do kolejki faktury VAT za płatności, których webhook zaginął, i wypisuje raport – tryby Stripe / inFakt / GUS, tryb serwisowy, puste dane firmy, zaległe faktury i e-maile;
-7. jeśli przed stroną stoi Cloudflare, przypomina o liście adresów w nginx.
+1. pobiera najnowszy `main` z GitHuba (tylko fast-forward – odmówi, jeśli na serwerze ktoś zmienił pliki z repozytorium);
+2. buduje nowy obraz i sprawdza ustawienia (`check --deploy`) – zły wpis w `.env` zatrzymuje aktualizację, zanim cokolwiek zostanie podmienione;
+3. wykonuje migracje i uruchamia nowe kontenery `web`, `worker`, `beat`;
+4. sprawdza, czy strona odpowiada (`/api/health/`);
+5. uruchamia `post_deploy`: synchronizuje Stripe (produkty, ceny, VAT, portal, zdarzenia webhooka), zapisuje obowiązujące wersje dokumentów prawnych w archiwum, dopisuje do kolejki faktury VAT za płatności, których webhook zaginął, i wypisuje raport – tryby Stripe / inFakt / GUS, tryb serwisowy, puste dane firmy, zaległe faktury i e-maile;
+6. jeśli przed stroną stoi Cloudflare, przypomina o liście adresów w nginx.
 
-Przy błędzie zatrzymuje się i wypisuje, jak wrócić do poprzedniej wersji (i jak przywrócić zrobioną właśnie kopię bazy). Opcje: `--skip-backup` (gdy kopia się nie udaje), `--update-images` (nowsze obrazy PostgreSQL i Redisa w obrębie tych samych wersji). Podczas podmiany kontenerów strona jest niedostępna przez kilka sekund.
+Skrypt nie robi kopii bazy danych – kopie całego serwera robi codziennie hosting (krok 11). Kopie bazy zrobione przez wcześniejsze wersje skryptu (`/srv/monituj-backups/`) usuwa po `LEGAL_BACKUP_DAYS` dniach, tak jak obiecuje Polityka prywatności. **Przed aktualizacją zmieniającą bazę (migracje) upewnij się, że ostatnia kopia hostingu się udała** – w razie problemu przywracasz właśnie ją.
 
-Powrót do poprzedniej wersji: `git log --oneline`, następnie `git checkout <commit>` i `docker compose up -d --build`. Jeśli nowa wersja zmieniała bazę danych (migracje), przywróć też kopię bazy zrobioną przez skrypt (polecenie wypisuje on sam przy błędzie) albo kopię całego serwera w panelu hostingu. Po powrocie wróć na gałąź: `git checkout main`.
+Przy błędzie zatrzymuje się i wypisuje, jak wrócić do poprzedniej wersji. Opcja: `--update-images` (nowsze obrazy PostgreSQL i Redisa w obrębie tych samych wersji). Podczas podmiany kontenerów strona jest niedostępna przez kilka sekund.
+
+Powrót do poprzedniej wersji: `git log --oneline`, następnie `git checkout <commit>` i `docker compose up -d --build`. Jeśli nowa wersja zmieniała bazę danych (migracje), przywróć też kopię serwera w panelu hostingu. Po powrocie wróć na gałąź: `git checkout main`.
 
 Co kilka miesięcy warto zaktualizować obrazy PostgreSQL i Redisa (w obrębie tych samych wersji 16 i 7): `deploy/deploy.sh --update-images`. Stare obrazy skrypt usuwa sam.
 

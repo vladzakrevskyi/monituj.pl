@@ -8,6 +8,21 @@
 <a class="brand" href="{% url 'accounts:panel' %}" title="Monituj - przejdź do panelu">{% include "base/_logo.html" with on_dark=True %}</a>
 {% include "base/_drawer_close.html" %}
 </div>
+{% if workspaces %}
+{# Whose clients and requests the panel shows - one's own or a team's (apps/accounts/team.py). #}
+<details class="workspace{% if team_member %} workspace--team{% endif %}">
+<summary class="workspace__current">{% for w in workspaces %}{% if w.current %}<span class="workspace__avatar" aria-hidden="true">{{ w.name|first|upper }}</span><span class="workspace__text"><span class="workspace__label">{% if w.own %}Twoje konto{% else %}Zespół{% endif %}</span><strong>{{ w.name }}</strong></span>{% endif %}{% endfor %}<svg class="workspace__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+<div class="workspace__menu">
+{% for w in workspaces %}
+<form method="post" action="{% url 'accounts:workspace' %}">
+{% csrf_token %}
+<input type="hidden" name="owner" value="{{ w.owner.pk }}">
+<button type="submit" class="workspace__option{% if w.current %} is-current{% endif %}"{% if w.current %} aria-current="true"{% endif %}><span class="workspace__avatar" aria-hidden="true">{{ w.name|first|upper }}</span><span class="workspace__text"><strong>{{ w.name }}</strong><span class="workspace__label">{% if w.own %}Twoi klienci i prośby{% else %}Zespół{% endif %}</span></span></button>
+</form>
+{% endfor %}
+</div>
+</details>
+{% endif %}
 <nav class="app-nav">
 <p class="app-nav__label">Menu</p>
 <a class="app-nav__link {% if request.path == '/panel/' %}is-active{% endif %}" href="{% url 'accounts:panel' %}">
@@ -36,10 +51,14 @@ Otrzymane
 Powiadomienia
 {% if unread_notifications %}<span class="app-nav__count" title="Nowe dokumenty od klientów">{{ unread_notifications }}</span>{% endif %}
 </a>
-<a class="app-nav__link {% if request.path|slice:':6' == '/plan/' %}is-active{% endif %}" href="{% url 'billing:plan' %}">
+{% if not team_member and not guest_account %}<a class="app-nav__link {% if request.path|slice:':8' == '/zespol/' %}is-active{% endif %}" href="{% url 'accounts:team' %}">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14.2c2.1.6 3.5 2.6 3.5 5.8"/></svg>
+Zespół
+</a>
+{% endif %}{% if not team_member %}<a class="app-nav__link {% if request.path|slice:':6' == '/plan/' %}is-active{% endif %}" href="{% url 'billing:plan' %}">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
 Plan i płatności
-</a>
+</a>{% endif %}
 <a class="app-nav__link {% if '/ustawienia/' in request.path %}is-active{% endif %}" href="{% url 'accounts:settings' %}">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
 Ustawienia

@@ -1,0 +1,4 @@
+{% autoescape off %}Nie masz już dostępu do klientów i próśb zespołu {{ firm }}. Twoje własne konto w Monituj i pozostałe zespoły zostają bez zmian.
+--
+Monituj - {{ site_url }}
+{% endautoescape %}

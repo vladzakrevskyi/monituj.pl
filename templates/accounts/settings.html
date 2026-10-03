@@ -1,4 +1,5 @@
 {% extends "base/app_base.html" %}
+{% load formatting %}
 
 {% block page_name %}Ustawienia{% endblock %}
 {% block page_class %}page--narrow{% endblock %}
@@ -63,6 +64,30 @@
 </div>
 <button type="submit" class="btn btn-primary">Ustaw hasło</button>
 </form>
+</div>
+{% endif %}
+
+{% if memberships %}
+<div class="card" id="zespoly">
+<h2 class="mt-0">Zespoły, do których należysz</h2>
+<p class="text-muted">Pracujesz w nich na klientach i prośbach firmy - przełączasz się w menu po lewej. Twoje konto i jego klienci są osobno.</p>
+<ul class="template-list">
+{% for membership in memberships %}
+<li class="template-row">
+<div class="template-row__main">
+<span class="template-row__title">{{ membership.owner.display_name|default:membership.owner.email }}</span>
+<span class="template-row__meta">{{ membership.owner.email }} · od {{ membership.joined_at|d }}</span>
+</div>
+<div class="template-row__actions">
+<form method="post" action="{% url 'accounts:team-leave' %}" class="inline-form" data-confirm="Stracisz dostęp do klientów i próśb tego zespołu. Twoja praca zostaje w koncie zespołu, a Twoje własne konto - bez zmian." data-confirm-title="Opuścić zespół?" data-confirm-label="Opuść zespół">
+{% csrf_token %}
+<input type="hidden" name="owner" value="{{ membership.owner_id }}">
+<button type="submit" class="btn btn-danger btn-sm">Opuść</button>
+</form>
+</div>
+</li>
+{% endfor %}
+</ul>
 </div>
 {% endif %}
 
@@ -187,7 +212,7 @@
 
 <div class="card card--danger" id="usun-konto">
 <h2 class="mt-0">Usunięcie konta</h2>
-<p class="text-muted">Usuniemy konto razem z klientami, prośbami, przypomnieniami i wszystkimi przesłanymi plikami. Tej operacji nie można cofnąć. Jeśli musisz archiwizować dokumenty klientów, pobierz je wcześniej.</p>
+<p class="text-muted">Usuniemy konto razem z klientami, prośbami, przypomnieniami i wszystkimi przesłanymi plikami{% if memberships %} - i opuścisz zespoły, do których należysz (ich dane zostają bez zmian){% endif %}. Tej operacji nie można cofnąć. Jeśli musisz archiwizować dokumenty klientów, pobierz je wcześniej.</p>
 <p class="text-muted">{% if has_password %}Po wpisaniu hasła wyślemy{% else %}Wyślemy{% endif %} na <strong>{{ user.email }}</strong> link potwierdzający. Konto zostanie usunięte dopiero po kliknięciu w link.</p>
 <form method="post" novalidate data-ajax-form data-reset-on-success>
 {% csrf_token %}

@@ -43,7 +43,7 @@
       const row = document.createElement("tr");
       row.className = "table-empty";
       const cell = document.createElement("td");
-      cell.colSpan = 8;
+      cell.colSpan = tableBody.closest("table").querySelectorAll("thead th").length;
       cell.textContent = "Brak klientów.";
       row.appendChild(cell);
       tableBody.appendChild(row);

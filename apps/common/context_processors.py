@@ -34,7 +34,13 @@ def _unread_notifications(request):
         return 0
     if not _in_panel(request):
         return 0
-    return unread_count(user)
+    # A team whose access waits shows nothing of its own.
+    if request.membership is not None:
+        from apps.accounts import team
+
+        if not team.has_access(request.membership):
+            return 0
+    return unread_count(request.account)
 
 
 def _plan_state(request):
@@ -44,9 +50,23 @@ def _plan_state(request):
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated or not request.resolver_match:
         return None
-    if not _in_panel(request) or is_demo_user(user):
+    # In a team's workspace the plan is the owner's - no banners there.
+    if not _in_panel(request) or is_demo_user(user) or request.membership:
         return None
     return state_for(user)
+
+
+def _workspaces(request):
+    """The switcher in the panel - only for people in some team."""
+    from apps.accounts import team
+
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated or not request.resolver_match:
+        return []
+    if not _in_panel(request) or not user.memberships.exists():
+        return []
+    current = request.account.pk
+    return [dict(w, current=w["owner"].pk == current) for w in team.workspaces(user)]
 
 
 def site(request):
@@ -71,4 +91,7 @@ def site(request):
         "contact_email": settings.CONTACT_EMAIL,
         "maintenance_bypass": getattr(request, "maintenance_bypass", False),
         "guest_account": is_guest_account(getattr(request, "user", None)),
+        # Working in a team's workspace, not one's own (apps/accounts/team.py).
+        "team_member": getattr(request, "membership", None) is not None,
+        "workspaces": _workspaces(request),
     }

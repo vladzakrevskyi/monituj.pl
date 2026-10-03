@@ -18,6 +18,12 @@ def erase_account(user):
     tokens and finally the user row. Nothing about the account survives -
     automatic reminders stop by themselves, since the hourly task only looks
     at requests that still exist."""
+    # The team hears they're out; they keep their own accounts and other
+    # teams. The user's own places in other teams go with the user row.
+    from apps.accounts import team
+
+    for membership in list(team.members(user)):
+        team.remove(user, membership)
     requests = Request.objects.filter(created_by=user)
     recipient_emails = set(
         Client.objects.filter(owner=user).values_list("email", flat=True)
@@ -30,8 +36,10 @@ def erase_account(user):
         model: ContentType.objects.get_for_model(model)
         for model in (Request, RequestItem, Document, Client, User)
     }
+    # What the user did in other firms' teams stays in their history -
+    # without the name (the actor goes with the user row).
     AuditLog.objects.filter(
-        Q(actor=user)
+        Q(actor=user, content_type__isnull=True)
         | Q(content_type=types[User], object_id=user.pk)
         | Q(content_type=types[Request], object_id__in=requests.values("pk"))
         | Q(content_type=types[RequestItem], object_id__in=items.values("pk"))

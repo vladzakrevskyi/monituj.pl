@@ -8,6 +8,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
+from apps.accounts import team
 from apps.clients import importing
 from apps.clients.models import ClientImport
 from apps.common import throttle
@@ -44,7 +45,10 @@ def client_import(request):
             else:
                 ClientImport.objects.filter(owner=request.user).delete()
                 draft = ClientImport.objects.create(
-                    owner=request.user, file_name=uploaded.name[:255], table=table
+                    owner=request.user,
+                    account=request.account,
+                    file_name=uploaded.name[:255],
+                    table=table,
                 )
                 return redirect("clients:import-preview", import_id=draft.pk)
     return render(
@@ -84,15 +88,23 @@ def client_import_preview(request, import_id):
             messages.info(request, "Ten plik został już zaimportowany albo wygasł.")
             return redirect("clients:list")
         raise Http404
+    # Into the workspace the file was uploaded in - if the person may still
+    # work there.
+    target = draft.account or draft.owner
+    if not team.can_work_in(request.user, target.pk):
+        raise Http404
     params = request.POST if request.method == "POST" else request.GET
     header, mapping = _read_choices(params, draft)
     problem = importing.mapping_problem(mapping)
-    rows = importing.check_rows(request.user, draft.table, header, mapping)
+    rows = importing.check_rows(target, draft.table, header, mapping)
     update_existing = params.get("istniejacy") == "aktualizuj"
 
     if request.method == "POST" and problem is None:
         result = importing.run_import(
-            request.user, rows, update_existing=update_existing, django_request=request
+            target,
+            rows,
+            update_existing=update_existing,
+            django_request=request,
         )
         draft.delete()
         messages.success(request, _result_message(result))
@@ -126,6 +138,12 @@ def client_import_preview(request, import_id):
         "clients/import_preview.html",
         {
             "draft": draft,
+            # Named when it isn't the workspace on screen now.
+            "target_name": None
+            if target.pk == request.account.pk
+            else (
+                "Moje konto" if target.pk == request.user.pk else team.firm_name(target)
+            ),
             "header": header,
             "columns": columns,
             "fields": importing.FIELDS,

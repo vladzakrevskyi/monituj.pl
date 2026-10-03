@@ -20,6 +20,7 @@ class AcceptanceMethod(models.TextChoices):
     GOOGLE = "google", "Rejestracja przez Google"
     GUEST_REQUEST = "prosba_bez_konta", "Prośba bez konta"
     UPDATE = "aktualizacja", "Akceptacja nowej wersji"
+    TEAM_INVITATION = "zaproszenie_do_zespolu", "Dołączenie do zespołu"
 
 
 class LegalVersion(models.Model):

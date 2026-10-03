@@ -54,6 +54,7 @@ MIDDLEWARE = [
     "apps.common.middleware.ApiExceptionMiddleware",
     # Keeps the panel closed until changed Terms are accepted.
     "apps.consents.middleware.LegalAcceptanceMiddleware",
+    "apps.accounts.middleware.WorkspaceMiddleware",
     "apps.common.typography.OrphansMiddleware",
 ]
 

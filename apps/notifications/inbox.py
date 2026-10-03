@@ -38,12 +38,29 @@ def notify_upload(document):
 
 
 def notify_not_applicable(request_item):
+    """One notice per answer - marking again before the email went out
+    doesn't add another (see forget_not_applicable)."""
     owner = request_item.request.created_by
     if not owner.is_active:
         return None
-    return Notification.objects.create(
-        user=owner, kind=NotificationKind.NOT_APPLICABLE, request_item=request_item
+    notice, _ = Notification.objects.get_or_create(
+        user=owner,
+        kind=NotificationKind.NOT_APPLICABLE,
+        request_item=request_item,
+        emailed_at__isnull=True,
+        read_at__isnull=True,
     )
+    return notice
+
+
+def forget_not_applicable(request_item):
+    """The recipient took it back before the sender was told - nothing to
+    tell any more."""
+    Notification.objects.filter(
+        kind=NotificationKind.NOT_APPLICABLE,
+        request_item=request_item,
+        emailed_at__isnull=True,
+    ).delete()
 
 
 def unread_count(user):

@@ -1,0 +1,56 @@
+{% extends "base/auth_base.html" %}
+
+{% block page_name %}Dołącz do zespołu{% endblock %}
+{% block auth_title %}{% if invalid %}Zaproszenie do <strong>zespołu</strong>{% else %}Dołącz do zespołu <strong>{{ firm }}</strong>{% endif %}{% endblock %}
+{% block auth_points %}
+{% include "base/_auth_point.html" with text="Wspólni klienci, prośby i szablony" %}
+{% include "base/_auth_point.html" with text="Własny login i hasło" %}
+{% include "base/_auth_point.html" with text="W historii widać, kto co zrobił" %}
+{% endblock %}
+
+{% block auth_form %}
+{% if invalid %}
+<h2>Link nie działa</h2>
+<p>Zaproszenie wygasło, zostało już użyte albo usunięte. Poproś osobę, która Cię zaprosiła, o nowe.</p>
+<div class="auth-links"><p><a href="{% url 'accounts:login' %}">Przejdź do logowania</a></p></div>
+{% elif user.is_authenticated %}
+<h2>Dołącz do zespołu</h2>
+{% if wrong_account %}
+<p>To zaproszenie jest dla <strong>{{ invitation.email }}</strong>, a teraz używasz konta {{ user.email }}. Wyloguj się i otwórz link ponownie.</p>
+{% elif why_not %}
+<p class="alert alert--error">{{ why_not }}</p>
+{% else %}
+<p>Po dołączeniu Twoje konto <strong>{{ user.email }}</strong> będzie pracować na klientach i prośbach zespołu <strong>{{ firm }}</strong>.</p>
+{% if error %}<p class="alert alert--error">{{ error }}</p>{% endif %}
+<form method="post">
+{% csrf_token %}
+<button type="submit" class="btn btn-primary btn-lg btn-block">Dołącz do zespołu</button>
+</form>
+{% endif %}
+{% elif exists %}
+<h2>Zaloguj się, aby dołączyć</h2>
+<p>Konto <strong>{{ invitation.email }}</strong> już istnieje w Monituj. Zaloguj się na nie - hasłem albo przez Google - a dołączysz do zespołu od razu po zalogowaniu.</p>
+<a class="btn btn-primary btn-lg btn-block" href="{% url 'accounts:login' %}">Zaloguj się</a>
+{% else %}
+<h2>Ustaw swoje konto</h2>
+<p class="text-muted">Adres: <strong>{{ invitation.email }}</strong></p>
+{% if google_login %}
+{% url 'accounts:google-start' as google_url %}{% include "base/_google_button.html" with href=google_url label="Dołącz przez Google" %}
+<p class="form-hint">Użyj konta Google z adresem {{ invitation.email }}.</p>
+{% include "base/_auth_divider.html" %}
+{% endif %}
+{% if error %}<p class="alert alert--error">{{ error }}</p>{% endif %}
+<form method="post" novalidate>
+{% csrf_token %}
+{% for field in form %}{% if field.name != "accept_terms" and field.name != "accept_privacy_policy" %}
+<p>
+{{ field.label_tag }}
+{{ field }}
+{{ field.errors }}
+</p>
+{% endif %}{% endfor %}
+{% include "base/_consent_fields.html" with terms_field=form.accept_terms privacy_field=form.accept_privacy_policy with_dpa=True %}
+<button type="submit" class="btn btn-primary btn-lg btn-block">Dołącz do zespołu</button>
+</form>
+{% endif %}
+{% endblock %}

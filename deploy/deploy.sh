@@ -2,15 +2,16 @@
 # Updates monituj.pl on the server to the latest main - one command:
 #
 #   /srv/monituj/deploy/deploy.sh                 # the usual
-#   /srv/monituj/deploy/deploy.sh --skip-backup   # only when the dump fails
 #   /srv/monituj/deploy/deploy.sh --update-images # also newer postgres/redis
 #
-# 1. database dump (kept LEGAL_BACKUP_DAYS days, as the Privacy policy says)
-# 2. latest code from GitHub (fast-forward only - never a merge on the server)
-# 3. new image, settings checked before anything is switched
-# 4. migrations, then the new containers (web, worker, beat)
-# 5. health check
-# 6. post_deploy: Stripe products/portal/webhook, legal documents archive,
+# No database dump: the hosting backs up the whole server every day (README,
+# step 11) - that is the copy to restore from.
+#
+# 1. latest code from GitHub (fast-forward only - never a merge on the server)
+# 2. new image, settings checked before anything is switched
+# 3. migrations, then the new containers (web, worker, beat)
+# 4. health check
+# 5. post_deploy: Stripe products/portal/webhook, legal documents archive,
 #    missed VAT invoices, and a report of what needs attention
 #
 # Stops at the first error and prints how to go back.
@@ -18,14 +19,13 @@
 set -Eeuo pipefail
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BACKUP_DIR="${BACKUP_DIR:-/srv/monituj-backups}"
+# Dumps made by earlier versions of this script.
+OLD_BACKUP_DIR="/srv/monituj-backups"
 HEALTH_URL="http://127.0.0.1:8000/api/health/"
 
-SKIP_BACKUP=0
 UPDATE_IMAGES=0
 for arg in "$@"; do
   case "$arg" in
-    --skip-backup) SKIP_BACKUP=1 ;;
     --update-images) UPDATE_IMAGES=1 ;;
     *) echo "Nieznana opcja: $arg" >&2; exit 2 ;;
   esac
@@ -39,15 +39,11 @@ warn() { printf '\033[33m! %s\033[0m\n' "$*"; }
 env_value() { grep -E "^$1=" .env | tail -n1 | cut -d= -f2- | tr -d '"' || true; }
 
 PREVIOUS="$(git rev-parse --short HEAD)"
-DUMP=""
 on_error() {
   printf '\n\033[31mAktualizacja przerwana (linia %s).\033[0m\n' "$1"
   echo "Kod przed aktualizacją: $PREVIOUS. Powrót:"
   echo "  git checkout $PREVIOUS && docker compose up -d --build"
-  if [ -n "$DUMP" ]; then
-    echo "Jeśli migracje zdążyły zmienić bazę, przywróć też kopię:"
-    echo "  gunzip -c $DUMP | docker compose exec -T db sh -c 'psql -q -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\"'"
-  fi
+  echo "Jeśli migracje zdążyły zmienić bazę, przywróć kopię serwera w panelu hostingu."
   echo "Logi: docker compose logs --tail 100 web"
 }
 trap 'on_error $LINENO' ERR
@@ -68,28 +64,15 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   exit 1
 fi
 
-step "1. Kopia bazy danych"
-if [ "$SKIP_BACKUP" = 1 ]; then
-  warn "Pominięta (--skip-backup)."
-else
-  mkdir -p "$BACKUP_DIR"
-  chmod 700 "$BACKUP_DIR"
-  DUMP="$BACKUP_DIR/db-$(date +%Y%m%d-%H%M%S)-$PREVIOUS.sql.gz"
-  docker compose up -d db >/dev/null
-  docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner' \
-    | gzip > "$DUMP"
-  [ -s "$DUMP" ] || { echo "Kopia jest pusta: $DUMP" >&2; exit 1; }
-  chmod 600 "$DUMP"
-  echo "  $DUMP ($(du -h "$DUMP" | cut -f1))"
-  # Not longer than backups are promised to live (LEGAL_BACKUP_DAYS).
+# Dumps from earlier versions of this script hold personal data - kept no
+# longer than the Privacy policy says backups live (LEGAL_BACKUP_DAYS).
+if [ -d "$OLD_BACKUP_DIR" ]; then
   KEEP_DAYS="$(env_value LEGAL_BACKUP_DAYS)"
-  find "$BACKUP_DIR" -name 'db-*.sql.gz' -mtime +"${KEEP_DAYS:-7}" -delete
-  if [ -x deploy/backup.sh ]; then
-    ./deploy/backup.sh || warn "deploy/backup.sh zakończył się błędem – kopia bazy jest wyżej."
-  fi
+  find "$OLD_BACKUP_DIR" -name 'db-*.sql.gz' -mtime +"${KEEP_DAYS:-7}" -delete
+  rmdir "$OLD_BACKUP_DIR" 2>/dev/null || true
 fi
 
-step "2. Kod z GitHuba"
+step "1. Kod z GitHuba"
 git fetch --quiet origin main
 NEW_COMMITS="$(git log --oneline HEAD..origin/main)"
 if [ -z "$NEW_COMMITS" ]; then
@@ -100,7 +83,7 @@ fi
 git merge --ff-only --quiet origin/main
 CURRENT="$(git rev-parse --short HEAD)"
 
-step "3. Obraz i sprawdzenie ustawień"
+step "2. Obraz i sprawdzenie ustawień"
 if [ "$UPDATE_IMAGES" = 1 ]; then
   docker compose pull db redis
 fi
@@ -109,11 +92,11 @@ docker compose build --pull
 # (e.g. a legal document date) stops here, with the old site still running.
 docker compose run --rm --no-deps web python manage.py check --deploy --fail-level ERROR
 
-step "4. Migracje i nowe kontenery"
+step "3. Migracje i nowe kontenery"
 docker compose run --rm web python manage.py migrate --noinput
 docker compose up -d --remove-orphans
 
-step "5. Czy strona odpowiada"
+step "4. Czy strona odpowiada"
 SITE_HOST="$(env_value SITE_URL | sed -E 's#^https?://##; s#/.*$##')"
 for attempt in $(seq 1 30); do
   if curl -fsS -o /dev/null -H "Host: ${SITE_HOST:-localhost}" \
@@ -129,7 +112,7 @@ for attempt in $(seq 1 30); do
   sleep 2
 done
 
-step "6. Stripe, dokumenty prawne, faktury"
+step "5. Stripe, dokumenty prawne, faktury"
 docker compose exec -T web python manage.py post_deploy
 
 # Cloudflare in front: nginx needs its current address list for real IPs.

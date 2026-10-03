@@ -103,6 +103,7 @@ def plan_cards(state=None):
         {
             "plan": plan,
             "limit": plans.requests_phrase(plan.active_requests).split(" ", 1),
+            "seats": plans.seats_phrase(plan.seats),
             "prices": _price_rows(plan, state),
             "current": state is not None
             and state.plan == plan

@@ -143,3 +143,48 @@ class TwoFactor(TimeStampedModel):
 
 def is_guest_account(user) -> bool:
     return bool(user and user.is_authenticated and hasattr(user, "guest_access"))
+
+
+class TeamMembership(models.Model):
+    """A person working in another account - a firm's team (apps/accounts/
+    team.py). Everyone also has their own account; one person may be in any
+    number of teams, and switches between them in the panel."""
+
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="team_memberships"
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="memberships")
+    joined_at = models.DateTimeField(default=timezone.now)
+    # The owner may pause someone's access (e.g. to free a seat for another).
+    access = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["joined_at", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "user"], name="unique_team_membership"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user_id} in {self.owner_id}"
+
+
+class TeamInvitation(TimeStampedModel):
+    """ "Zaproś pracownika": a link mailed to the address, valid for
+    INVITATION_DAYS (apps/accounts/team.py). Only a hash of the token is
+    kept."""
+
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="team_invitations"
+    )
+    email = models.EmailField()
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    accepted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.email} -> {self.owner_id}"

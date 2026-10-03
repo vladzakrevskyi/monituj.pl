@@ -6,7 +6,7 @@ from apps.clients.forms import ClientForm
 from apps.clients.serializers import serialize_client
 from apps.clients.services import ClientService
 from apps.common.decorators import api_login_required
-from apps.common.exceptions import ValidationAppError
+from apps.common.exceptions import PermissionDeniedAppError, ValidationAppError
 from apps.common.responses import success_response
 
 
@@ -36,7 +36,7 @@ def clients_collection(request):
             raise ValidationAppError(_first_form_error(form))
 
         client = ClientService.create(
-            owner=request.user,
+            owner=request.account,
             name=form.cleaned_data["name"],
             email=form.cleaned_data["email"],
             phone=form.cleaned_data["phone"],
@@ -44,12 +44,12 @@ def clients_collection(request):
             note=form.cleaned_data["note"],
             request=request,
         )
-        client = ClientService.get_owned_client(request.user, client.pk)
+        client = ClientService.get_owned_client(request.account, client.pk)
         return success_response(serialize_client(client), status=201)
 
     search = request.GET.get("q", "").strip()
     page = request.GET.get("page", 1)
-    page_obj = ClientService.list_for_owner(request.user, search=search, page=page)
+    page_obj = ClientService.list_for_owner(request.account, search=search, page=page)
     return success_response(
         {
             "results": [serialize_client(c) for c in page_obj.object_list],
@@ -63,7 +63,7 @@ def clients_collection(request):
 @api_login_required
 @require_http_methods(["GET", "PATCH", "DELETE"])
 def client_detail(request, client_id):
-    client = ClientService.get_owned_client(request.user, client_id)
+    client = ClientService.get_owned_client(request.account, client_id)
 
     if request.method == "GET":
         return success_response(serialize_client(client))
@@ -82,13 +82,17 @@ def client_detail(request, client_id):
             note=form.cleaned_data["note"],
             request=request,
         )
-        client = ClientService.get_owned_client(request.user, client_id)
+        client = ClientService.get_owned_client(request.account, client_id)
         return success_response(serialize_client(client))
 
     if request.GET.get("with_history") == "1":
         # The client with every request, file and recurring place - how an
         # owner answers the client's right to erasure (apps/requests/deletion).
+        from apps.accounts import team
         from apps.requests import deletion
+
+        if not team.is_owner(request):
+            raise PermissionDeniedAppError(team.OWNER_ONLY_MESSAGE)
 
         removed = deletion.delete_client_with_history(client, django_request=request)
         return success_response({"deleted": True, **removed})

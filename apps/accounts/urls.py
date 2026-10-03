@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.accounts import google_views, views
+from apps.accounts import google_views, team_views, views
 
 app_name = "accounts"
 
@@ -44,6 +44,10 @@ urlpatterns = [
     path("dostep/e/<str:signed>/", views.guest_email_access, name="guest-email-access"),
     path("dostep/<str:token>/", views.guest_access, name="guest-access"),
     path("ustawienia/", views.settings_view, name="settings"),
+    path("zespol/", team_views.team_page, name="team"),
+    path("zespol/zaproszenie/<str:token>/", team_views.team_join, name="team-join"),
+    path("zespol/opusc/", team_views.team_leave, name="team-leave"),
+    path("konto/przelacz/", team_views.workspace, name="workspace"),
     path(
         "ustawienia/weryfikacja-dwuetapowa/",
         views.two_factor_settings,

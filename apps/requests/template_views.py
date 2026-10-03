@@ -30,7 +30,7 @@ FIELD_BY_CODE = {
 @login_required
 def template_list(request):
     own = list(
-        RequestTemplate.objects.filter(owner=request.user).order_by(
+        RequestTemplate.objects.filter(owner=request.account).order_by(
             "-last_used_at", "title"
         )
     )
@@ -41,8 +41,8 @@ def template_list(request):
         "requests/templates.html",
         {
             "own": own,
-            "usage": request_templates.usage(request.user),
-            "ready_groups": request_templates.picker(request.user)["ready_groups"],
+            "usage": request_templates.usage(request.account),
+            "ready_groups": request_templates.picker(request.account)["ready_groups"],
         },
     )
 
@@ -54,7 +54,7 @@ def _save(request, form, template=None):
     data = form.cleaned_data
     try:
         return request_templates.save(
-            request.user,
+            request.account,
             title=data["title"],
             name=data["name"],
             description=data["description"],
@@ -90,10 +90,10 @@ def _form_page(request, form, template, item_names):
 @login_required
 @require_http_methods(["GET", "POST"])
 def template_create(request):
-    usage = request_templates.usage(request.user)
+    usage = request_templates.usage(request.account)
     if usage["at_limit"] and request.method == "GET":
         try:
-            request_templates.check_can_add(request.user)
+            request_templates.check_can_add(request.account)
         except ApplicationError as exc:
             messages.error(request, exc.message)
         return redirect("requests:templates")
@@ -111,7 +111,7 @@ def template_create(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def template_edit(request, template_id):
-    template = get_object_or_404(RequestTemplate, pk=template_id, owner=request.user)
+    template = get_object_or_404(RequestTemplate, pk=template_id, owner=request.account)
     if request.method == "POST":
         form = RequestTemplateForm(request.POST)
         saved = _save(request, form, template)
@@ -125,7 +125,7 @@ def template_edit(request, template_id):
 @login_required
 @require_POST
 def template_delete(request, template_id):
-    template = get_object_or_404(RequestTemplate, pk=template_id, owner=request.user)
+    template = get_object_or_404(RequestTemplate, pk=template_id, owner=request.account)
     title = template.title
     template.delete()
     messages.success(request, f"Usunięto szablon „{title}”.")
@@ -139,7 +139,7 @@ def template_copy_ready(request, slug):
     if ready is None:
         raise Http404
     try:
-        template = request_templates.copy_ready(request.user, ready)
+        template = request_templates.copy_ready(request.account, ready)
     except ApplicationError as exc:
         messages.error(request, exc.message)
         return redirect("requests:templates")
@@ -152,9 +152,9 @@ def template_copy_ready(request, slug):
 @login_required
 @require_POST
 def template_from_request(request, request_id):
-    request_obj = get_object_or_404(Request, pk=request_id, created_by=request.user)
+    request_obj = get_object_or_404(Request, pk=request_id, created_by=request.account)
     try:
-        template = request_templates.from_request(request.user, request_obj)
+        template = request_templates.from_request(request.account, request_obj)
     except ApplicationError as exc:
         messages.error(request, exc.message)
         return redirect("requests:detail", request_id=request_obj.pk)

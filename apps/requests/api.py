@@ -38,7 +38,7 @@ def _first_form_error(form):
 def requests_collection(request):
     if request.method == "POST":
         data = _parse_json_body(request)
-        form = RequestForm(data, owner=request.user)
+        form = RequestForm(data, owner=request.account)
         item_names = [
             str(name).strip() for name in data.get("items", []) if str(name).strip()
         ]
@@ -46,13 +46,13 @@ def requests_collection(request):
             raise ValidationAppError("Dodaj co najmniej jeden dokument do listy.")
         if not form.is_valid():
             raise ValidationAppError(_first_form_error(form))
-        form.save_sender_name(request.user)
+        form.save_sender_name(request.account)
 
         if form.cleaned_data.get("client"):
             client_id = form.cleaned_data["client"].pk
         else:
             new_client = ClientService.get_or_create_by_email(
-                owner=request.user,
+                owner=request.account,
                 email=form.cleaned_data["new_client_email"],
                 name=form.cleaned_data.get("new_client_name", ""),
                 request=request,
@@ -60,7 +60,7 @@ def requests_collection(request):
             client_id = new_client.pk
 
         request_obj = RequestService.create(
-            owner=request.user,
+            owner=request.account,
             client_id=client_id,
             name=form.cleaned_data["name"],
             description=form.cleaned_data["description"],
@@ -70,14 +70,14 @@ def requests_collection(request):
             reminder_settings=form.reminder_settings(),
             request=request,
         )
-        request_obj = RequestService.get_owned_request(request.user, request_obj.pk)
+        request_obj = RequestService.get_owned_request(request.account, request_obj.pk)
         return success_response(serialize_request(request_obj), status=201)
 
     search = request.GET.get("q", "").strip()
     status_filter = request.GET.get("status", "").strip() or None
     page = request.GET.get("page", 1)
     page_obj = RequestService.list_for_owner(
-        request.user, search=search, status_filter=status_filter, page=page
+        request.account, search=search, status_filter=status_filter, page=page
     )
     return success_response(
         {
@@ -92,7 +92,7 @@ def requests_collection(request):
 @api_login_required
 @require_http_methods(["GET", "PATCH"])
 def request_detail(request, request_id):
-    request_obj = RequestService.get_owned_request(request.user, request_id)
+    request_obj = RequestService.get_owned_request(request.account, request_id)
 
     if request.method == "PATCH":
         data = _parse_json_body(request)
@@ -108,7 +108,7 @@ def request_detail(request, request_id):
             reminder_settings=form.reminder_settings(),
             request=request,
         )
-        request_obj = RequestService.get_owned_request(request.user, request_id)
+        request_obj = RequestService.get_owned_request(request.account, request_id)
 
     return success_response(serialize_request(request_obj))
 
@@ -116,7 +116,7 @@ def request_detail(request, request_id):
 @api_login_required
 @require_http_methods(["POST"])
 def send_link(request, request_id):
-    request_obj = RequestService.get_owned_request(request.user, request_id)
+    request_obj = RequestService.get_owned_request(request.account, request_id)
     if request_obj.awaiting_confirmation:
         raise ValidationAppError(
             "Najpierw potwierdź wysłanie prośby linkiem z maila.",

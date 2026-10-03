@@ -1,0 +1,12 @@
+{% extends "base/app_base.html" %}
+
+{% block page_name %}Dostęp wstrzymany{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<div class="card">
+<h1>Dostęp wstrzymany</h1>
+<p>Plan konta <strong>{{ firm }}</strong> obejmuje teraz mniej osób, niż jest w zespole, albo właściciel wstrzymał Twój dostęp. Twoje konto i Twoja praca w zespole zostają - poproś właściciela konta o zmianę planu albo przywrócenie dostępu.</p>
+<p class="mb-0">Twoje konto działa bez zmian - przełącz się na nie w menu po lewej. Możesz też <a href="{% url 'accounts:settings' %}#zespoly">opuścić ten zespół</a>.</p>
+</div>
+{% endblock %}

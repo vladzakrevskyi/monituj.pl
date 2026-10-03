@@ -219,3 +219,33 @@ def test_monituj_line_only_once_everything_is_there(
     assert (
         request_record.public_token not in page.split("Zobacz, jak to działa")[0][-200:]
     )
+
+
+@pytest.mark.django_db
+def test_toggling_doesnt_flood_the_sender(client, request_record, request_item):
+    _open(client, request_record)
+
+    for _ in range(10):
+        _mark(client, request_record, request_item)
+        client.delete(_url(request_record, request_item))
+    _mark(client, request_record, request_item)
+
+    assert (
+        Notification.objects.filter(kind=NotificationKind.NOT_APPLICABLE).count() == 1
+    )
+
+
+@pytest.mark.django_db
+def test_answers_are_limited_per_hour(client, request_record, request_item, settings):
+    from apps.documents import api
+
+    _open(client, request_record)
+    api.NOT_APPLICABLE_PER_IP_HOUR, before = 3, api.NOT_APPLICABLE_PER_IP_HOUR
+    try:
+        for _ in range(3):
+            client.delete(_url(request_record, request_item))
+        response = _mark(client, request_record, request_item)
+    finally:
+        api.NOT_APPLICABLE_PER_IP_HOUR = before
+
+    assert response.status_code == 429

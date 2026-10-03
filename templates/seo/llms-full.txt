@@ -22,7 +22,10 @@ Monituj nie jest dyskiem na pliki. Dysk i mail tylko przechowują to, co już do
 
 - Prośby o dokumenty z listą, terminem i opcjonalnym hasłem.
 - Automatyczne i ręczne przypomnienia; w panelu widać daty kolejnych przypomnień.
-- Statusy dokumentów: brak, dostarczony, zaakceptowany, odrzucony (z powodem).
+- Statusy dokumentów: brak, dostarczony, zaakceptowany, odrzucony (z powodem) i „nie dotyczy” - odbiorca zaznacza, że nie ma dokumentu (np. w tym okresie go nie było) i podaje powód; przypomnienia o nim ustają, a firma może to zaakceptować albo poprosić jednak o dokument.
+- Szablony próśb: własne oraz gotowe listy dokumentów dla branż.
+- Import klientów z pliku CSV lub Excel (np. eksport kontrahentów z programu księgowego) z podglądem przed zapisem; klient może mieć NIP.
+- Praca w zespole: właściciel konta zaprasza współpracowników (Start - 2 osoby, Biuro - 5, Pro - 15, razem z właścicielem); każdy ma własny login, a historia prośby pokazuje, kto co zrobił. Jedna osoba może należeć do kilku zespołów i mieć własne konto - przełącza się między nimi w panelu, dane są zawsze oddzielone.
 - Panel z liczbą aktywnych próśb, brakujących dokumentów i ostatnią aktywnością; lista klientów z brakami.
 - Zamykanie i ponowne otwieranie prośby.
 - Zakładka „Otrzymane”: prośby, które inni wysłali na adres użytkownika.
@@ -37,7 +40,7 @@ Każda prośba ma unikalny, trudny do odgadnięcia link. Pliki są szyfrowane na
 
 ## Cena
 
-Płaci się za liczbę próśb w toku - wysłanych, niezamkniętych i wciąż czekających na dokumenty. Plany różnią się też liczbą własnych szablonów próśb (Free 1, Start 5, Biuro 20, Pro 50); przypomnienia, klienci, gotowe szablony i pozostałe funkcje są w każdym planie. Ceny netto (+23% VAT), płatność kartą przez Stripe, miesięcznie albo rocznie (2 miesiące gratis):
+Płaci się za liczbę próśb w toku - wysłanych, niezamkniętych i wciąż czekających na dokumenty. Plany różnią się też liczbą własnych szablonów próśb (Free 1, Start 5, Biuro 20, Pro 50) i liczbą osób w zespole (Free 1, Start 2, Biuro 5, Pro 15); przypomnienia, klienci, gotowe szablony, import klientów i pozostałe funkcje są w każdym planie. Ceny netto (+23% VAT), płatność kartą przez Stripe, miesięcznie albo rocznie (2 miesiące gratis):
 
 - Free - 0 zł, do 3 próśb w toku, bez limitu czasu.
 - Start - 39 zł/mies. (390 zł/rok), do 20 próśb w toku.

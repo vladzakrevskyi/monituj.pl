@@ -17,7 +17,7 @@
 {% csrf_token %}
 <button type="submit" class="btn btn-secondary" title="Zapisz tę listę dokumentów i ustawienia jako szablon nowych próśb">Zapisz jako szablon</button>
 </form>
-<form method="post" action="{% url 'requests:delete' request_obj.id %}" class="inline-form" data-confirm-title="Usunąć prośbę?" data-confirm-label="Usuń" data-confirm="Prośba „{{ request_obj.name }}” zniknie razem z historią{% if has_files %} i wszystkimi przesłanymi plikami{% endif %}. Link u klienta przestanie działać. Tego nie można cofnąć - jeśli chcesz tylko zakończyć zbieranie, zamknij prośbę." data-confirm-option="Usuń też klienta „{{ request_obj.client.name }}”{% if client_other_requests %} i jego pozostałe prośby ({{ client_other_requests }}){% endif %}." data-confirm-option-input="with_client">
+<form method="post" action="{% url 'requests:delete' request_obj.id %}" class="inline-form" data-confirm-title="Usunąć prośbę?" data-confirm-label="Usuń" data-confirm="Prośba „{{ request_obj.name }}” zniknie razem z historią{% if has_files %} i wszystkimi przesłanymi plikami{% endif %}. Link u klienta przestanie działać. Tego nie można cofnąć - jeśli chcesz tylko zakończyć zbieranie, zamknij prośbę."{% if not team_member %} data-confirm-option="Usuń też klienta „{{ request_obj.client.name }}”{% if client_other_requests %} i jego pozostałe prośby ({{ client_other_requests }}){% endif %}." data-confirm-option-input="with_client"{% endif %}>
 {% csrf_token %}
 <input type="hidden" name="with_client" value="">
 <button type="submit" class="btn btn-danger">Usuń</button>

@@ -51,11 +51,11 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 </nav>
 
 <div class="table-scroll">
-{% if page_obj.object_list %}<label class="select-page-mobile"><input type="checkbox" data-select-page> Zaznacz wszystkich na tej stronie</label>{% endif %}
+{% if page_obj.object_list and not team_member %}<label class="select-page-mobile"><input type="checkbox" data-select-page> Zaznacz wszystkich na tej stronie</label>{% endif %}
 <table>
 <thead>
 <tr>
-<th class="cell-check">{% if page_obj.object_list %}<input type="checkbox" data-select-page aria-label="Zaznacz wszystkich na tej stronie">{% endif %}</th>
+{% if not team_member %}<th class="cell-check">{% if page_obj.object_list %}<input type="checkbox" data-select-page aria-label="Zaznacz wszystkich na tej stronie">{% endif %}</th>{% endif %}
 <th>Nazwa</th>
 <th>Email</th>
 <th class="cell-num" title="Aktywne prośby">Prośby</th>
@@ -68,7 +68,7 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 <tbody id="clients-table-body">
 {% for client in page_obj.object_list %}
 <tr data-client-id="{{ client.id }}">
-<td class="cell-check"><input type="checkbox" name="ids" value="{{ client.id }}" form="bulk-form" data-select-row aria-label="Zaznacz: {{ client.name }}"></td>
+{% if not team_member %}<td class="cell-check"><input type="checkbox" name="ids" value="{{ client.id }}" form="bulk-form" data-select-row aria-label="Zaznacz: {{ client.name }}"></td>{% endif %}
 <td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'clients:documents' client.id %}">{{ client.name }}</a>{% if client.nip %}<span class="cell-sub">NIP {{ client.nip }}</span>{% endif %}</td>
 <td class="cell-wrap" data-label="Email">{{ client.email }}</td>
 <td class="cell-num" data-label="Aktywne prośby">
@@ -83,18 +83,19 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 <div class="table-actions">
 <a class="btn btn-secondary btn-sm" href="{% url 'clients:documents' client.id %}">Dokumenty</a>
 <a class="btn btn-secondary btn-sm btn-icon" href="{% url 'clients:edit' client.id %}" title="Edytuj" aria-label="Edytuj klienta {{ client.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></a>
-<button type="button" class="btn btn-danger btn-sm btn-icon delete-client" data-client-id="{{ client.id }}" data-client-name="{{ client.name }}" data-request-count="{{ client.request_count }}" title="Usuń" aria-label="Usuń klienta {{ client.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
+{% if not team_member or not client.request_count %}<button type="button" class="btn btn-danger btn-sm btn-icon delete-client" data-client-id="{{ client.id }}" data-client-name="{{ client.name }}" data-request-count="{{ client.request_count }}" title="Usuń" aria-label="Usuń klienta {{ client.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>{% endif %}
 </div>
 </td>
 </tr>
 {% empty %}
-<tr id="clients-empty-row" class="table-empty"><td colspan="8">{% if has_filters or filters.data.status %}Brak klientów pasujących do filtrów.{% else %}Brak klientów. Dodaj pierwszego albo <a href="{% url 'clients:import' %}">zaimportuj wszystkich z pliku CSV lub Excel</a>.{% endif %}</td></tr>
+<tr id="clients-empty-row" class="table-empty"><td colspan="{% if team_member %}7{% else %}8{% endif %}">{% if has_filters or filters.data.status %}Brak klientów pasujących do filtrów.{% else %}Brak klientów. Dodaj pierwszego albo <a href="{% url 'clients:import' %}">zaimportuj wszystkich z pliku CSV lub Excel</a>.{% endif %}</td></tr>
 {% endfor %}
 </tbody>
 </table>
 </div>
 
-{% if page_obj.object_list %}
+{# Deleting in bulk is the owner's (apps/accounts/team.py). #}
+{% if page_obj.object_list and not team_member %}
 <form method="post" action="{% url 'clients:bulk-delete' %}" id="bulk-form" class="bulk-bar" data-bulk data-total="{{ page_obj.paginator.count }}" data-confirm-title="Usunąć klientów ({n})?" data-confirm-message="Zaznaczeni klienci znikną razem ze wszystkimi wysłanymi im prośbami, przesłanymi plikami i historią, a z próśb cyklicznych zniknie ich adres. Linki u klientów przestaną działać. Tego nie można cofnąć." hidden>
 {% csrf_token %}
 {% for key, value in filter_params %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}

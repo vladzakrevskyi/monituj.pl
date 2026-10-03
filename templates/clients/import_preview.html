@@ -9,7 +9,7 @@
 <div class="page-header">
 <div>
 <h1>Sprawdź import</h1>
-<p class="page-header__sub">{{ draft.file_name }}</p>
+<p class="page-header__sub">{{ draft.file_name }}{% if target_name %} · import do: <strong>{{ target_name }}</strong>{% endif %}</p>
 </div>
 </div>
 

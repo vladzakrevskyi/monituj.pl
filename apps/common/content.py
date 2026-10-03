@@ -256,6 +256,21 @@ FAQ = [
     },
     {
         "category": "konto",
+        "home": True,
+        "q": "Czy mogę pracować w Monituj z zespołem?",
+        "a": (
+            "Tak, od planu Start. W zakładce Zespół zapraszasz współpracowników "
+            "mailem - każdy ustawia własne hasło i pracuje na tych samych "
+            "klientach, prośbach i szablonach, a w historii prośby widać, kto co "
+            "zrobił. Plan Start obejmuje 2 osoby, Biuro 5, a Pro 15 (razem z "
+            "Tobą). Planem, płatnościami i zespołem zarządza tylko właściciel "
+            "konta. W okresie próbnym zaprosisz do 5 osób. Ta sama osoba może "
+            "należeć do kilku zespołów i mieć własne konto - przełącza się "
+            "między nimi w panelu, a dane są zawsze oddzielone."
+        ),
+    },
+    {
+        "category": "konto",
         "home": False,
         "q": "Czy mogę wysłać prośbę bez zakładania konta?",
         "a": (

@@ -31,6 +31,15 @@ class ClientImport(models.Model):
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="client_imports"
     )
+    # The workspace the file was uploaded in - the clients go there, even if
+    # the person switched to another one before clicking "Importuj".
+    account = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
     file_name = models.CharField(max_length=255)
     # Every row of the file as text cells, the first one possibly headers.
     table = models.JSONField()

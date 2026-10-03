@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils.formats import date_format
 from django.views.decorators.http import require_http_methods
 
+from apps.accounts import team
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService, translate_event
 from apps.clients.services import ClientService
@@ -78,7 +79,9 @@ FILTER_FIELDS = (
 
 @login_required
 def request_list(request):
-    filters, everything, status_filter, results = _filtered(request.user, request.GET)
+    filters, everything, status_filter, results = _filtered(
+        request.account, request.GET
+    )
     tabs = status_tabs(
         request, RequestFilterForm.STATUS_CHOICES, everything, status_filter
     )
@@ -87,7 +90,7 @@ def request_list(request):
         status = compute_status(request_obj)
         request_obj.status_label = status.label
         request_obj.status_code = status.value
-    _attach_schedules(request.user, page_obj.object_list)
+    _attach_schedules(request.account, page_obj.object_list)
 
     advanced_count = active_filter_count(
         request,
@@ -112,7 +115,7 @@ def request_list(request):
             # Not sent yet, so no row of their own - listed on top of the
             # first page, unless the list is narrowed down.
             "planned": (
-                _planned(request.user)
+                _planned(request.account)
                 if page_obj.number == 1
                 and not status_filter
                 and not advanced_count
@@ -157,11 +160,11 @@ def request_create(request):
     item_names = []
     template = None
     if request.method == "POST":
-        form = RequestForm(request.POST, owner=request.user)
+        form = RequestForm(request.POST, owner=request.account)
         item_names = form.item_names()
         if form.is_valid() and form.is_recurring:
             try:
-                form.save_sender_name(request.user)
+                form.save_sender_name(request.account)
                 response = _save_recurring(request, form, item_names)
                 _save_template(request, form, item_names)
                 return response
@@ -169,9 +172,9 @@ def request_create(request):
                 add_service_error(form, exc)
         elif form.is_valid() and form.to_many:
             try:
-                form.save_sender_name(request.user)
+                form.save_sender_name(request.account)
                 sent = RequestService.create_many(
-                    owner=request.user,
+                    owner=request.account,
                     client_ids=form.cleaned_data["client_ids"],
                     name=form.cleaned_data["name"],
                     description=form.cleaned_data["description"],
@@ -195,20 +198,20 @@ def request_create(request):
                 add_service_error(form, exc)
         elif form.is_valid():
             try:
-                form.save_sender_name(request.user)
+                form.save_sender_name(request.account)
                 if form.cleaned_data["client_ids"]:
                     client_id = form.cleaned_data["client_ids"][0]
                 else:
                     new_name, new_email = form.cleaned_data["new_clients_list"][0]
                     new_client = ClientService.get_or_create_by_email(
-                        owner=request.user,
+                        owner=request.account,
                         email=new_email,
                         name=new_name,
                         request=request,
                     )
                     client_id = new_client.pk
                 request_obj = RequestService.create(
-                    owner=request.user,
+                    owner=request.account,
                     client_id=client_id,
                     name=form.cleaned_data["name"],
                     description=form.cleaned_data["description"],
@@ -229,15 +232,15 @@ def request_create(request):
         if is_ajax_request(request):
             return ajax_form_error_response(form)
     else:
-        initial = _last_used(request.user)
-        template = request_templates.find(request.user, request.GET.get("szablon"))
+        initial = _last_used(request.account)
+        template = request_templates.find(request.account, request.GET.get("szablon"))
         if template is not None:
             values, item_names = request_templates.form_values(
-                template, recurring.owner_now(request.user).date()
+                template, recurring.owner_now(request.account).date()
             )
             initial.update(values)
             request_templates.mark_used(template)
-        form = RequestForm(owner=request.user, initial=initial)
+        form = RequestForm(owner=request.account, initial=initial)
     preselected = request.GET.get("client", "")
     return render(
         request,
@@ -247,15 +250,15 @@ def request_create(request):
             "mode": "create",
             "posted_items": item_names,
             "schedule": "recurring" if form.is_bound and form.is_recurring else "once",
-            "suggested_items": suggested_items(request.user),
+            "suggested_items": suggested_items(request.account),
             "client_options": [
                 {"id": c.pk, "name": c.name, "email": c.email}
                 for c in form.fields["clients"].queryset
             ],
             "preselected": int(preselected) if preselected.isdigit() else None,
-            "templates": request_templates.picker(request.user),
+            "templates": request_templates.picker(request.account),
             "active_template": template if not form.is_bound else None,
-            "template_usage": request_templates.usage(request.user),
+            "template_usage": request_templates.usage(request.account),
             "suggest_recurring": getattr(template, "monthly", False),
         },
     )
@@ -268,7 +271,7 @@ def _save_template(request, form, item_names):
         return
     try:
         template = request_templates.save(
-            request.user, **form.template_values(item_names)
+            request.account, **form.template_values(item_names)
         )
     except ApplicationError as exc:
         messages.warning(
@@ -335,7 +338,7 @@ def _save_recurring(request, form, item_names):
     data = form.cleaned_data
     client_ids, new_clients = data["client_ids"], data["new_clients_list"]
     schedule, sent = recurring.create(
-        owner=request.user,
+        owner=request.account,
         client_ids=client_ids,
         new_clients=new_clients,
         name=data["name"],
@@ -371,19 +374,28 @@ def clients_phrase(count):
 @login_required
 def request_detail(request, request_id):
     try:
-        request_obj = RequestService.get_owned_request(request.user, request_id)
+        request_obj = RequestService.get_owned_request(request.account, request_id)
     except ApplicationError:
+        # A link from an email to another of the user's workspaces.
+        found = Request.objects.filter(pk=request_id).select_related("created_by")
+        found = found.first()
+        if found is not None and team.follow(request, found.created_by):
+            return redirect(request.get_full_path())
         raise Http404 from None
 
     # Whoever opens the request has seen what arrived.
-    inbox.mark_read(request.user, request_obj)
+    inbox.mark_read(request.account, request_obj)
     items = request_obj.items.all().order_by("id")
     reminders = request_obj.reminders.all().order_by("-sent_at")
     history = AuditService.history_for_request(request_obj)
+    # With a team, who did it (apps/accounts/team.py).
+    has_team = request.account.team_memberships.exists()
     for entry in history:
         entry.label_pl = translate_event(entry.event)
         by = (entry.metadata or {}).get("by")
-        if by:
+        if has_team and entry.actor is not None:
+            entry.label_pl += f" - {entry.actor.display_name or entry.actor.email}"
+        elif by:
             entry.label_pl += " (Ty)" if by == "owner" else " (odbiorca)"
         if (entry.metadata or {}).get("zip"):
             entry.label_pl += " - w archiwum ZIP"
@@ -421,7 +433,7 @@ def request_detail(request, request_id):
 def request_files_zip(request, request_id):
     """Every file of the request in one ZIP, in folders by document."""
     try:
-        request_obj = RequestService.get_owned_request(request.user, request_id)
+        request_obj = RequestService.get_owned_request(request.account, request_id)
     except ApplicationError:
         raise Http404 from None
     zipped, documents = archive.build(request_obj)
@@ -448,7 +460,7 @@ def request_files_zip(request, request_id):
 @require_http_methods(["GET", "POST"])
 def request_edit(request, request_id):
     try:
-        request_obj = RequestService.get_owned_request(request.user, request_id)
+        request_obj = RequestService.get_owned_request(request.account, request_id)
     except ApplicationError:
         raise Http404 from None
 
@@ -496,7 +508,7 @@ def request_edit(request, request_id):
 @require_http_methods(["POST"])
 def request_close(request, request_id):
     try:
-        request_obj = RequestService.get_owned_request(request.user, request_id)
+        request_obj = RequestService.get_owned_request(request.account, request_id)
     except ApplicationError:
         raise Http404 from None
     if request.POST.get("action") == "reopen":
@@ -540,7 +552,10 @@ def request_delete(request, request_id):
     with "Usuń też klienta" the client with all their requests."""
     from apps.requests import deletion
 
-    request_obj = get_object_or_404(Request, pk=request_id, created_by=request.user)
+    request_obj = get_object_or_404(Request, pk=request_id, created_by=request.account)
+    if request.POST.get("with_client") == "1" and not team.is_owner(request):
+        messages.error(request, team.OWNER_ONLY_MESSAGE)
+        return redirect("requests:detail", request_id=request_obj.pk)
     name = request_obj.name
     removed = deletion.delete_request(
         request_obj,
@@ -558,8 +573,11 @@ def request_bulk_delete(request):
     request matching the filters sent along - on every page."""
     from apps.requests import deletion
 
+    if not team.is_owner(request):
+        messages.error(request, team.OWNER_ONLY_MESSAGE)
+        return redirect("requests:list")
     if request.POST.get("all") == "1":
-        ids = [r.pk for r in _filtered(request.user, request.POST)[3]]
+        ids = [r.pk for r in _filtered(request.account, request.POST)[3]]
     else:
         ids = [int(i) for i in request.POST.getlist("ids") if i.isdigit()]
     back = reverse("requests:list")
@@ -575,7 +593,7 @@ def request_bulk_delete(request):
         messages.info(request, "Nie zaznaczono żadnej prośby.")
         return redirect(f"{back}?{query}" if query else back)
     removed = deletion.delete_requests(
-        request.user,
+        request.account,
         ids,
         with_clients=request.POST.get("with_clients") == "1",
         django_request=request,
@@ -608,7 +626,7 @@ def received_list(request):
 
 def _own_schedule(request, schedule_id):
     schedule = (
-        RecurringRequest.objects.filter(owner=request.user, pk=schedule_id)
+        RecurringRequest.objects.filter(owner=request.account, pk=schedule_id)
         .select_related("owner")
         .first()
     )
@@ -621,7 +639,7 @@ def _own_schedule(request, schedule_id):
 @require_http_methods(["POST"])
 def recurring_send_now(request, schedule_id):
     schedule = _own_schedule(request, schedule_id)
-    today = recurring.owner_now(request.user).date()
+    today = recurring.owner_now(request.account).date()
     try:
         with transaction.atomic():
             sent = recurring.run(schedule, today, request=request, extra=True)
@@ -649,7 +667,7 @@ def recurring_toggle(request, schedule_id):
     schedule.active = not schedule.active
     if schedule.active:
         # Resumed after its day passed: the next one ahead, no catching up.
-        today = recurring.owner_now(request.user).date()
+        today = recurring.owner_now(request.account).date()
         if schedule.next_run_on < today:
             recurring.reschedule(schedule, today)
     schedule.save()
@@ -680,7 +698,7 @@ def recurring_edit(request, schedule_id):
     schedule = _own_schedule(request, schedule_id)
     item_names = list(schedule.item_names)
     if request.method == "POST":
-        form = RecurringRequestForm(request.POST, owner=request.user)
+        form = RecurringRequestForm(request.POST, owner=request.account)
         item_names = form.item_names()
         if form.is_valid():
             data = form.cleaned_data
@@ -697,7 +715,9 @@ def recurring_edit(request, schedule_id):
             for field, value in {**timing, **form.request_settings()}.items():
                 setattr(schedule, field, value)
             if timing_changed:
-                recurring.reschedule(schedule, recurring.owner_now(request.user).date())
+                recurring.reschedule(
+                    schedule, recurring.owner_now(request.account).date()
+                )
             schedule.save()
             schedule.clients.set(data["clients"])
             messages.success(
@@ -716,7 +736,7 @@ def recurring_edit(request, schedule_id):
             return ajax_form_error_response(form)
     else:
         form = RecurringRequestForm(
-            owner=request.user,
+            owner=request.account,
             initial={
                 "name": schedule.name,
                 "description": schedule.description,
@@ -741,7 +761,7 @@ def recurring_edit(request, schedule_id):
             "schedule": _described(schedule),
             # What "send now" sends: named after today, not the next run.
             "now_name": recurring.render_name(
-                schedule.name, recurring.owner_now(request.user).date()
+                schedule.name, recurring.owner_now(request.account).date()
             ),
             "clients_count": schedule.clients.count(),
             "sent_count": schedule.requests.count(),

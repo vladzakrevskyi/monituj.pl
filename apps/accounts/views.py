@@ -145,9 +145,8 @@ def login_view(request):
                 AuthenticationService.login(
                     request, form.cleaned_data["email"], form.cleaned_data["password"]
                 )
-                redirect_url = two_factor.pending_url(request) or reverse(
-                    "accounts:panel"
-                )
+                # ?next= from e.g. a team invitation - only within the site.
+                redirect_url = two_factor.pending_url(request) or _safe_next(request)
                 if is_ajax_request(request):
                     return success_response({"redirect_url": redirect_url})
                 return redirect(redirect_url)
@@ -385,7 +384,7 @@ def password_reset_confirm(request, token):
 def dashboard(request):
     from apps.requests.services import DashboardService
 
-    stats = DashboardService.for_owner(request.user)
+    stats = DashboardService.for_owner(request.account)
     stats["security_hint"] = two_factor.show_hint(request.user)
     return render(request, "accounts/dashboard.html", stats)
 
@@ -632,6 +631,7 @@ def settings_view(request):
             "paying_firm": paying_firm(request.user),
             "google_form": google_form,
             "two_factor_enabled": two_factor.is_enabled(request.user),
+            "memberships": request.user.memberships.select_related("owner"),
         },
     )
 

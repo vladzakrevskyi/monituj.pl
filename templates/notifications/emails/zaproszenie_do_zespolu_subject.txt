@@ -1,0 +1,1 @@
+{% autoescape off %}{{ firm }} zaprasza Cię do zespołu w Monituj{% endautoescape %}

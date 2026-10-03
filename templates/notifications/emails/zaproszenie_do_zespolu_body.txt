@@ -1,0 +1,9 @@
+{% autoescape off %}{{ firm }} ({{ owner_email }}) zaprasza Cię do wspólnej pracy w Monituj - serwisie do zbierania dokumentów od klientów. Po dołączeniu zobaczysz klientów i prośby zespołu i będziesz mieć własny login.
+
+Dołącz do zespołu:
+{{ link }}
+
+Link jest ważny przez {{ days }} dni. {% if has_account %}Masz już konto w Monituj - po kliknięciu zaloguj się na nie.{% else %}Po kliknięciu ustawisz swoje hasło.{% endif %} Jeśli nie spodziewasz się tego zaproszenia, zignoruj tę wiadomość.
+--
+Monituj - {{ site_url }}
+{% endautoescape %}

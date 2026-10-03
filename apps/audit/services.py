@@ -19,6 +19,11 @@ EVENT_LABELS_PL = {
     AuditEvent.CLIENT_UPDATED: "Zaktualizowano klienta",
     AuditEvent.CLIENT_DELETED: "Usunięto klienta",
     AuditEvent.CLIENTS_IMPORTED: "Zaimportowano klientów",
+    AuditEvent.TEAM_INVITED: "Zaproszono osobę do zespołu",
+    AuditEvent.TEAM_JOINED: "Dołączono do zespołu",
+    AuditEvent.TEAM_ACCESS_CHANGED: "Zmieniono dostęp osoby z zespołu",
+    AuditEvent.TEAM_MEMBER_REMOVED: "Usunięto osobę z zespołu",
+    AuditEvent.TEAM_LEFT: "Opuszczono zespół",
     AuditEvent.REQUEST_CREATED: "Utworzono prośbę",
     AuditEvent.REQUEST_UPDATED: "Zaktualizowano prośbę",
     AuditEvent.REQUEST_CLOSED: "Zamknięto prośbę",
@@ -76,6 +81,17 @@ class AuditService:
             request_id = getattr(request, "request_id", "")
             ip_address = _client_ip(request)
             user_agent = request.META.get("HTTP_USER_AGENT", "")[:255]
+            # Services log the account they work on; when a team member did
+            # it in the team's workspace, the history names the member
+            # (apps/accounts/team.py).
+            account = getattr(request, "account", None)
+            if (
+                actor is not None
+                and account is not None
+                and getattr(request, "membership", None) is not None
+                and actor.pk == account.pk
+            ):
+                actor = request.user
 
         return AuditLog.objects.create(
             actor=actor,

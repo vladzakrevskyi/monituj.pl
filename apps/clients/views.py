@@ -8,6 +8,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from apps.accounts import team
 from apps.clients.forms import ClientFilterForm, ClientForm
 from apps.clients.models import Client
 from apps.clients.services import ClientService
@@ -45,7 +46,9 @@ def _filtered(owner, params):
 
 @login_required
 def client_list(request):
-    filters, everything, status_filter, results = _filtered(request.user, request.GET)
+    filters, everything, status_filter, results = _filtered(
+        request.account, request.GET
+    )
     tabs = status_tabs(
         request, ClientFilterForm.STATUS_CHOICES, everything, status_filter
     )
@@ -84,8 +87,11 @@ def client_bulk_delete(request):
     goes with all of them, their files and history (apps/requests/deletion)."""
     from apps.requests import deletion
 
+    if not team.is_owner(request):
+        messages.error(request, team.OWNER_ONLY_MESSAGE)
+        return redirect("clients:list")
     if request.POST.get("all") == "1":
-        ids = [c.pk for c in _filtered(request.user, request.POST)[3]]
+        ids = [c.pk for c in _filtered(request.account, request.POST)[3]]
     else:
         ids = [int(i) for i in request.POST.getlist("ids") if i.isdigit()]
     query = urlencode(
@@ -97,7 +103,7 @@ def client_bulk_delete(request):
         ]
     )
     back = reverse("clients:list") + (f"?{query}" if query else "")
-    clients = list(Client.objects.filter(owner=request.user, pk__in=ids))
+    clients = list(Client.objects.filter(owner=request.account, pk__in=ids))
     if not clients:
         messages.info(request, "Nie zaznaczono żadnego klienta.")
         return redirect(back)
@@ -123,7 +129,7 @@ def client_create(request):
         form = ClientForm(request.POST)
         if form.is_valid():
             ClientService.create(
-                owner=request.user,
+                owner=request.account,
                 name=form.cleaned_data["name"],
                 email=form.cleaned_data["email"],
                 phone=form.cleaned_data["phone"],
@@ -147,7 +153,7 @@ def client_create(request):
 @require_http_methods(["GET", "POST"])
 def client_edit(request, client_id):
     try:
-        client = ClientService.get_owned_client(request.user, client_id)
+        client = ClientService.get_owned_client(request.account, client_id)
     except ApplicationError:
         raise Http404 from None
 
@@ -195,8 +201,12 @@ CLIENT_DOCUMENT_TABS = [
 @login_required
 def client_documents(request, client_id):
     try:
-        client = ClientService.get_owned_client(request.user, client_id)
+        client = ClientService.get_owned_client(request.account, client_id)
     except ApplicationError:
+        # A link to another of the user's workspaces.
+        found = Client.objects.filter(pk=client_id).select_related("owner").first()
+        if found is not None and team.follow(request, found.owner):
+            return redirect(request.get_full_path())
         raise Http404 from None
 
     status_filter = request.GET.get("status", "all")

@@ -7,9 +7,10 @@ Najważniejsze fakty:
 - Dla kogo: biura rachunkowe, działy kadr i HR, kancelarie, pośrednicy kredytowi, nieruchomości i ubezpieczenia, firmy usługowe B2B - wszędzie, gdzie praca czeka na dokumenty od innych osób.
 - Jak działa: prośba z listą dokumentów i terminem → email z linkiem do klienta → klient przesyła pliki w przeglądarce → automatyczne przypomnienia o brakach → akceptacja lub odrzucenie z podaniem powodu → komplet.
 - Przypomnienia wychodzą o tej godzinie, o której wysłano prośbę, według strefy czasowej odbiorcy (między 8:00 a 20:00), i wyłączają się same po skompletowaniu dokumentów.
-- Odbiorca ma jeden stały link ze wszystkimi prośbami wysłanymi na jego adres, od wszystkich nadawców.
+- Odbiorca ma jeden stały link ze wszystkimi prośbami wysłanymi na jego adres, od wszystkich nadawców; może też zaznaczyć, że nie ma danego dokumentu (z powodem) - przypomnienia o nim ustają.
+- Import klientów z pliku CSV lub Excel; praca w zespole - współpracownicy z własnymi loginami, jedna osoba może należeć do kilku zespołów.
 - Bezpieczeństwo: unikalne linki, opcjonalne hasło do prośby, prywatny magazyn plików, sprawdzanie typu pliku, automatyczne usuwanie plików po wybranym okresie (maks. 365 dni), umowa powierzenia (RODO).
-- Cena: płaci się za liczbę próśb w toku (prowadzonych jednocześnie), nie za przypomnienia. Free - 0 zł, do 3 próśb w toku, bez limitu czasu; Start - 39 zł netto/mies., do 20; Biuro - 89 zł netto/mies., do 75; Pro - 179 zł netto/mies., do 250. Własne szablony próśb: Free 1, Start 5, Biuro 20, Pro 50 (gotowe szablony dla wszystkich). Rocznie 2 miesiące gratis. Każdy płatny plan można wypróbować przez 30 dni za darmo, bez karty (domyślnie Biuro). Jedną prośbę dziennie można wysłać nawet bez zakładania konta.
+- Cena: płaci się za liczbę próśb w toku (prowadzonych jednocześnie), nie za przypomnienia. Free - 0 zł, do 3 próśb w toku, bez limitu czasu; Start - 39 zł netto/mies., do 20; Biuro - 89 zł netto/mies., do 75; Pro - 179 zł netto/mies., do 250. Własne szablony próśb: Free 1, Start 5, Biuro 20, Pro 50 (gotowe szablony dla wszystkich). Osoby w zespole (każda z własnym loginem): Free 1, Start 2, Biuro 5, Pro 15. Rocznie 2 miesiące gratis. Każdy płatny plan można wypróbować przez 30 dni za darmo, bez karty (domyślnie Biuro). Jedną prośbę dziennie można wysłać nawet bez zakładania konta.
 - Język: polski. Rynek: Polska.
 
 ## Strony
