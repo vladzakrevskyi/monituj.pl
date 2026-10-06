@@ -12,7 +12,7 @@ from tests.test_seo import _head, _jsonld
 
 
 def test_the_files_are_there():
-    for path in (film.WIDE, film.TALL, film.WIDE_POSTER, film.TALL_POSTER):
+    for path in (film.WIDE, film.TALL, film.WIDE_POSTER, film.TALL_POSTER, film.THUMB):
         assert finders.find(path), path
 
 
@@ -25,11 +25,17 @@ def test_chapters_run_in_order_within_the_film():
 
 
 @pytest.mark.django_db
-def test_home_page_has_the_film_the_hero_button_and_the_dialog(client):
+def test_home_page_has_the_film_the_hero_card_and_the_dialog(client):
+    minutes, seconds = divmod(film.SECONDS, 60)
     page = client.get("/").content.decode()
 
     assert 'id="film"' in page
-    assert 'data-video-open aria-controls="film-dialog"' in page
+    assert (
+        'class="film-card" href="#film" data-video-open aria-controls="film-dialog"'
+        in page
+    )
+    assert "video/monituj-promo-thumb" in page
+    assert f">{minutes}:{seconds:02d}</span>" in page
     assert '<dialog class="video-dialog" id="film-dialog" data-modal-custom' in page
     assert page.count("data-promo-video") == 2  # the section and the dialog
     assert page.count("data-chapter ") == len(film.CHAPTERS)  # chapters once

@@ -1995,44 +1995,125 @@ a.contact-card__value:hover {
   color: var(--color-on-primary);
 }
 
-/* "Zobacz film" in the hero: a play button, lighter than the two CTAs. */
-.play-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-1) var(--space-2) var(--space-1) 0;
-  color: var(--color-text);
-  font-weight: 600;
-  text-decoration: none;
+/* "Zobacz, jak to działa" in the hero: a card with a still from the film,
+   as wide as the two buttons above it together. */
+.hero__actions--film {
+  display: grid;
+  grid-template-columns: auto auto;
+  width: max-content;
+  max-width: 100%;
 }
 
-.play-link__icon {
-  display: inline-flex;
+.hero__actions--film > *,
+.hero__actions--film .btn {
+  width: 100%;
+}
+
+.film-card {
+  grid-column: 1 / -1;
+  /* The buttons set the width; the card's text wraps to fit it. */
+  width: 0;
+  min-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.film-card:hover {
+  color: var(--color-text);
+  text-decoration: none;
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.film-card__thumb {
+  position: relative;
+  flex: 0 0 58%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-black);
+}
+
+.film-card__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.film-card__thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(11 11 12 / 22%);
+}
+
+.film-card__play {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  display: flex;
   align-items: center;
   justify-content: center;
-  flex: none;
   width: 44px;
   height: 44px;
+  margin: -22px 0 0 -22px;
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-on-primary);
-  box-shadow: 0 0 0 6px var(--color-primary-bg);
+  box-shadow: 0 0 0 6px rgb(255 107 0 / 30%);
   transition: transform 0.15s ease;
 }
 
-.play-link__icon svg {
+.film-card__play svg {
   width: 16px;
   height: 16px;
   margin-left: 3px;
 }
 
-.play-link:hover .play-link__icon {
-  transform: scale(1.06);
+.film-card:hover .film-card__play {
+  transform: scale(1.08);
 }
 
-.play-link__time {
+.film-card__clock {
+  position: absolute;
+  z-index: 1;
+  right: 6px;
+  bottom: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgb(11 11 12 / 80%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.film-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.film-card__text strong {
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.film-card__text span {
+  font-size: 14px;
+  line-height: 1.4;
   color: var(--color-text-muted);
-  font-weight: 400;
 }
 
 /* The film's dialog is exactly the film plus a row for the close button:
@@ -2104,10 +2185,9 @@ a.contact-card__value:hover {
 }
 
 @media (max-width: 720px) {
-  .play-link {
+  .hero__actions--film {
+    grid-template-columns: minmax(0, 1fr);
     width: 100%;
-    justify-content: center;
-    padding: var(--space-2) 0;
   }
 
   .promo-video__chapters button {

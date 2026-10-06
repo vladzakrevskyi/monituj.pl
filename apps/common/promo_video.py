@@ -10,6 +10,7 @@ WIDE = "video/monituj-promo-16x9.mp4"
 TALL = "video/monituj-promo-9x16.mp4"
 WIDE_POSTER = "video/monituj-promo-16x9.jpg"
 TALL_POSTER = "video/monituj-promo-9x16.jpg"
+THUMB = "video/monituj-promo-thumb.jpg"  # the hero card: a still from the panel
 TITLE = "Monituj w dwie minuty"
 DESCRIPTION = (
     "Jak zacząć z Monituj: zakładasz konto, dodajesz klientów, wysyłasz prośbę "

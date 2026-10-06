@@ -1,4 +1,5 @@
 from django import template
+from django.templatetags.static import static
 
 from apps.common import promo_video as film
 
@@ -23,3 +24,15 @@ def promo_video(chapters=True):
 @register.simple_tag
 def promo_video_minutes():
     return film.minutes_label()
+
+
+@register.simple_tag
+def promo_video_clock():
+    """The length as a player shows it: 2:10."""
+    minutes, seconds = divmod(film.SECONDS, 60)
+    return f"{minutes}:{seconds:02d}"
+
+
+@register.simple_tag
+def promo_video_thumb():
+    return static(film.THUMB)

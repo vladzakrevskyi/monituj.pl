@@ -11,7 +11,7 @@
 <p class="eyebrow">Zbieranie dokumentów od klientów - automatycznie</p>
 <h1 class="display">Monituj <strong>pilnuje</strong> Twoich dokumentów i&nbsp;<strong>terminów</strong></h1>
 <p class="hero__lead">Przestań gonić klientów o dokumenty. Nie musisz już pamiętać, kto, co i do kiedy ma Ci przesłać. Monituj prowadzi listę brakujących dokumentów, sam przypomina klientom i pokazuje, na czym stoisz - zanim termin stanie się problemem.</p>
-<div class="hero__actions">
+<div class="hero__actions hero__actions--film">
 {% if user.is_authenticated and not demo_account %}
 <a class="btn btn-dark btn-lg" href="{% url 'accounts:panel' %}">Przejdź do panelu</a>
 <a class="btn btn-secondary btn-lg" href="{% url 'pages:how-it-works' %}">Zobacz, jak to działa</a>
@@ -19,7 +19,10 @@
 <a class="btn btn-dark btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
 {% include "demo/_button.html" with cls="btn-secondary btn-lg" label="Wypróbuj demo" %}
 {% endif %}
-<a class="play-link" href="#film" data-video-open aria-controls="film-dialog" aria-haspopup="dialog"><span class="play-link__icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 3 1.8z"/></svg></span>Zobacz film <span class="play-link__time">· {% promo_video_minutes %}</span></a>
+<a class="film-card" href="#film" data-video-open aria-controls="film-dialog" aria-haspopup="dialog" title="Zobacz film: Monituj w dwie minuty">
+<span class="film-card__thumb"><img src="{% promo_video_thumb %}" alt="" width="480" height="270"><span class="film-card__play" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 3 1.8z"/></svg></span><span class="film-card__clock" aria-hidden="true">{% promo_video_clock %}</span></span>
+<span class="film-card__text"><strong>Zobacz, jak to działa</strong><span>Film · {% promo_video_minutes %}</span></span>
+</a>
 </div>
 <ul class="check-list check-list--inline">
 {% include "pages/_check.html" with text="Bez karty kredytowej" %}
