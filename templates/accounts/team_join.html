@@ -36,7 +36,7 @@
 <p class="text-muted">Adres: <strong>{{ invitation.email }}</strong></p>
 {% if google_login %}
 {% url 'accounts:google-start' as google_url %}{% include "base/_google_button.html" with href=google_url label="Dołącz przez Google" %}
-<p class="form-hint">Użyj konta Google z adresem {{ invitation.email }}.</p>
+<p class="form-hint-after">Użyj konta Google z adresem {{ invitation.email }}.</p>
 {% include "base/_auth_divider.html" %}
 {% endif %}
 {% if error %}<p class="alert alert--error">{{ error }}</p>{% endif %}

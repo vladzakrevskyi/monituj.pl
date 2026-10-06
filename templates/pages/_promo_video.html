@@ -1,0 +1,19 @@
+{% load static l10n %}{% comment %}
+The promo film ({% promo_video %}, apps/common/promo_video.py). It plays from
+our own server - no YouTube, so no third-party cookies and nothing for the
+cookie banner. Nothing is downloaded until play; on a phone held upright
+js/promo_video.js swaps in the vertical cut.
+{% endcomment %}
+<figure class="promo-video" data-promo-video>
+<div class="promo-video__frame">
+<video controls playsinline preload="none" src="{% static film.WIDE %}" poster="{% static film.WIDE_POSTER %}" data-src-tall="{% static film.TALL %}" data-poster-tall="{% static film.TALL_POSTER %}" aria-label="Film: {{ film.TITLE }}">
+<a href="{% static film.WIDE %}">Pobierz film (MP4)</a>
+</video>
+<button type="button" class="promo-video__play" data-video-play aria-label="Odtwórz film" hidden><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 3 1.8z"/></svg></button>
+</div>
+{% if chapters %}
+<ol class="promo-video__chapters" aria-label="Rozdziały filmu">
+{% for chapter in chapters %}<li><button type="button" data-chapter data-wide="{{ chapter.wide|unlocalize }}" data-tall="{{ chapter.tall|unlocalize }}"><b>{{ chapter.number }}</b>{{ chapter.label }}</button></li>
+{% endfor %}</ol>
+{% endif %}
+</figure>

@@ -14,8 +14,10 @@ const Modal = (function () {
 
   // The dialog box itself has no padding (content sits in .modal__inner), so
   // a click whose target is the <dialog> element landed on the backdrop.
+  // data-modal-custom: a dialog with its own close button and looks (the
+  // promo film) - left alone.
   function enhance(dialog) {
-    if (dialog.dataset.modalReady) return;
+    if (dialog.dataset.modalReady || dialog.hasAttribute("data-modal-custom")) return;
     dialog.dataset.modalReady = "1";
     dialog.classList.add("modal");
     if (!dialog.querySelector(".modal__close")) {

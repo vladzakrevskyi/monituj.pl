@@ -1,4 +1,5 @@
 {% extends "pages/base_page.html" %}
+{% load static promo_video %}
 
 
 {% block hero_eyebrow %}Jak to działa{% endblock %}
@@ -6,6 +7,12 @@
 {% block hero_lead %}Monituj prowadzi każdą prośbę według tego samego procesu. Ty ustawiasz ją raz - system pilnuje terminów, przypomina klientowi i pokazuje, na jakim etapie jesteś.{% endblock %}
 
 {% block page_body %}
+<section class="section section--flush-top" id="film">
+<div class="container">
+{% promo_video %}
+</div>
+</section>
+
 <section class="section section--flush-top">
 <div class="container container--narrow">
 <ol class="timeline">
@@ -135,3 +142,5 @@
 </div>
 </section>
 {% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/promo_video.js' %}"></script>{% endblock %}

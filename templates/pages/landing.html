@@ -1,5 +1,5 @@
 {% extends "base/base.html" %}
-{% load static %}
+{% load static promo_video %}
 
 {% block page_class %}page--flush{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages.css' %}">{% endblock %}
@@ -19,6 +19,7 @@
 <a class="btn btn-dark btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
 {% include "demo/_button.html" with cls="btn-secondary btn-lg" label="Wypróbuj demo" %}
 {% endif %}
+<a class="play-link" href="#film" data-video-open aria-controls="film-dialog" aria-haspopup="dialog"><span class="play-link__icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 3 1.8z"/></svg></span>Zobacz film <span class="play-link__time">· {% promo_video_minutes %}</span></a>
 </div>
 <ul class="check-list check-list--inline">
 {% include "pages/_check.html" with text="Bez karty kredytowej" %}
@@ -111,6 +112,22 @@
 </div>
 </div>
 </section>
+
+<section class="section section--flush-top" id="film">
+<div class="container">
+<div class="section-head">
+<p class="eyebrow">Zobacz w akcji</p>
+<h2 class="display-2">Monituj <strong>w dwie minuty</strong></h2>
+<p>Od założenia konta po komplet dokumentów - tak wygląda praca z Monituj u Ciebie i u Twojego klienta.</p>
+</div>
+{% promo_video %}
+</div>
+</section>
+
+<dialog class="video-dialog" id="film-dialog" data-modal-custom aria-label="Film: Monituj w dwie minuty">
+<button type="button" class="video-dialog__close" data-video-close aria-label="Zamknij film"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+{% promo_video chapters=False %}
+</dialog>
 
 <section class="section section--flush-top">
 <div class="container">
@@ -278,3 +295,5 @@
 
 {% include "pages/_cta_band.html" %}
 {% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/promo_video.js' %}"></script>{% endblock %}

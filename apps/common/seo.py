@@ -468,6 +468,7 @@ def graph(*nodes):
 
 
 def _page_jsonld(view_name, page, request):
+    from apps.common import promo_video
     from apps.common.content import FAQ
 
     if view_name == "landing":
@@ -477,6 +478,7 @@ def _page_jsonld(view_name, page, request):
                 website(),
                 software_application(),
                 faq_page([item for item in FAQ if item["home"]]),
+                promo_video.video_object(),
             )
         ]
     nodes = [breadcrumbs([(page["label"], request.path)])]
@@ -486,4 +488,6 @@ def _page_jsonld(view_name, page, request):
         nodes.append(faq_page(FAQ))
     if view_name == "pages:pricing":
         nodes.append(software_application())
+    if view_name == "pages:how-it-works":
+        nodes.append(promo_video.video_object())
     return [graph(*nodes)]

@@ -1878,3 +1878,239 @@ a.contact-card__value:hover {
     font-size: 44px;
   }
 }
+
+/* --- The promo film (pages/_promo_video.html, js/promo_video.js) --------- */
+
+.promo-video {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.promo-video__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-black);
+  box-shadow: var(--shadow-lg);
+}
+
+.promo-video__frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--color-black);
+}
+
+.promo-video__play {
+  position: absolute;
+  /* Below the title on the poster. */
+  inset: 83% auto auto 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin: -36px 0 0 -36px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 0 0 8px rgb(255 107 0 / 25%), var(--shadow-lg);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.promo-video__play[hidden] {
+  display: none;
+}
+
+.promo-video__play:hover {
+  transform: scale(1.06);
+}
+
+.promo-video__play svg {
+  width: 26px;
+  height: 26px;
+  margin-left: 4px;
+}
+
+/* The vertical cut on a phone: as tall as the screen allows. */
+.promo-video--tall .promo-video__frame {
+  aspect-ratio: 9 / 16;
+  width: min(100%, calc(80svh * 9 / 16));
+  margin: 0 auto;
+}
+
+.promo-video__chapters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  list-style: none;
+  margin: var(--space-5) 0 0;
+  padding: 0;
+}
+
+.promo-video__chapters button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.promo-video__chapters button:hover {
+  border-color: var(--color-border-strong);
+}
+
+.promo-video__chapters button[aria-current] {
+  border-color: var(--color-primary);
+  background: var(--color-primary-bg);
+}
+
+.promo-video__chapters b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-black);
+  color: #fff;
+  font-size: 13px;
+}
+
+.promo-video__chapters button[aria-current] b {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* "Zobacz film" in the hero: a play button, lighter than the two CTAs. */
+.play-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2) var(--space-1) 0;
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.play-link__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 0 0 6px var(--color-primary-bg);
+  transition: transform 0.15s ease;
+}
+
+.play-link__icon svg {
+  width: 16px;
+  height: 16px;
+  margin-left: 3px;
+}
+
+.play-link:hover .play-link__icon {
+  transform: scale(1.06);
+}
+
+.play-link__time {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* The film's dialog is exactly the film plus a row for the close button:
+   no background of its own, so nothing shows around the picture. Sized by
+   the screen's width and height, whichever runs out first. */
+.video-dialog {
+  --film-room: calc(100dvh - 56px - var(--space-6));
+  width: min(1120px, calc(100vw - var(--space-4) * 2), calc(var(--film-room) * 16 / 9));
+  max-width: none;
+  max-height: none;
+  padding: 56px 0 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.video-dialog:has(.promo-video--tall) {
+  width: min(calc(100vw - var(--space-4) * 2), calc(var(--film-room) * 9 / 16));
+}
+
+.video-dialog .promo-video {
+  max-width: none;
+}
+
+.video-dialog .promo-video__frame,
+.video-dialog .promo-video--tall .promo-video__frame {
+  width: 100%;
+  border-radius: var(--radius-lg);
+}
+
+.video-dialog::backdrop {
+  background: rgba(11, 11, 12, 0.85);
+}
+
+.video-dialog__close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.video-dialog__close:hover {
+  background: var(--color-bg-muted);
+  transform: scale(1.05);
+}
+
+.video-dialog__close:focus {
+  outline: none;
+}
+
+.video-dialog__close:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-primary);
+}
+
+.video-dialog__close svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 720px) {
+  .play-link {
+    width: 100%;
+    justify-content: center;
+    padding: var(--space-2) 0;
+  }
+
+  .promo-video__chapters button {
+    font-size: 14px;
+  }
+}
