@@ -39,7 +39,7 @@ sudo_log="$(journalctl --since "$SINCE" -t sudo --no-pager -o short-iso 2>/dev/n
 say ""
 say "sudo - polecenia: $(printf '%s' "$sudo_log" | grep -c . || true)"
 printf '%s\n' "$sudo_log" | sed -E 's/^([^ ]+) [^ ]+ sudo[^:]*: +([^ ]+) :.*COMMAND=(.*)$/  \1  \2: \3/' \
-  | grep -v 'monituj-security' | cut -c1-200 | tail -n 30 >>"$REPORT"
+  | cut -c1-200 | tail -n 30 >>"$REPORT"
 
 # --- fail2ban
 if command -v fail2ban-client >/dev/null 2>&1; then
@@ -54,16 +54,22 @@ fi
 # --- the database: connections that didn't come from the site's containers.
 # The site connects over the Docker network; a connection from inside the
 # database container ([local]) or from the host (the network's gateway) is
-# someone at the server's console.
+# someone at the server's console. Docker's own health check (pg_isready,
+# every 5 s, from inside the container) is counted apart and not flagged -
+# so a connection that calls itself "pg_isready" would pass as one; this
+# catches a person at a psql prompt, not someone hiding on purpose.
 gateway="$(compose ps -q db 2>/dev/null | xargs -r docker inspect -f '{{range .NetworkSettings.Networks}}{{.Gateway}}{{end}}' 2>/dev/null)"
-db_log="$(compose logs --since 24h --no-log-prefix db 2>/dev/null | grep 'connection authorized' || true)"
+db_all="$(compose logs --since 24h --no-log-prefix db 2>/dev/null | grep 'connection authorized' || true)"
+db_health="$(printf '%s\n' "$db_all" | grep -c 'application_name=pg_isready' || true)"
+db_log="$(printf '%s\n' "$db_all" | grep -v 'application_name=pg_isready' || true)"
 outside="$(printf '%s\n' "$db_log" | grep -E "host=\[local\]|host=${gateway:-none} " || true)"
+outside_count="$(printf '%s' "$outside" | grep -c . || true)"
 say ""
-say "Baza danych - połączenia aplikacji: $(printf '%s' "$db_log" | grep -c . || true)"
+say "Baza danych - połączenia aplikacji: $(( $(printf '%s' "$db_log" | grep -c . || true) - outside_count )) (kontrole stanu Dockera: $db_health)"
 if [ -n "$outside" ]; then
-  say "! połączenia z bazą spoza aplikacji: $(printf '%s\n' "$outside" | grep -c .) (konsola serwera - jeśli to nie Ty, ktoś czytał bazę)"
+  say "! połączenia z bazą spoza aplikacji: $outside_count (konsola serwera - jeśli to nie Ty, ktoś czytał bazę)"
   printf '%s\n' "$outside" | cut -c1-160 | tail -n 10 | sed 's/^/  /' >>"$REPORT"
-elif [ -z "$db_log" ]; then
+elif [ -z "$db_all" ]; then
   say "! brak wpisów o połączeniach z bazą - czy baza loguje połączenia (docker-compose.prod.yml: log_connections)?"
 fi
 

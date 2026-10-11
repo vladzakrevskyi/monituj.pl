@@ -13,6 +13,9 @@ COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
 STATE_DIR="${STATE_DIR:-/var/lib/monituj-security}"
 LOG="${LOG:-/var/log/monituj-security.log}"
 export COMPOSE_FILE
+# Times in the alarms, the daily report and $LOG as the site shows them,
+# whatever zone the server's clock is set to (REPORT_TZ in $CONF changes it).
+export TZ="${REPORT_TZ:-Europe/Warsaw}"
 
 compose() { (cd "$APP_DIR" && timeout 120 docker compose "$@"); }
 

@@ -42,6 +42,8 @@ services:
       - log_connections=on
       - -c
       - "log_line_prefix=%m [%p] host=%h "
+      - -c
+      - log_timezone=Europe/Warsaw
     logging:
       driver: json-file
       options:
