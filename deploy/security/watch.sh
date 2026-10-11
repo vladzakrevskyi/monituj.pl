@@ -10,9 +10,13 @@
 . /usr/local/lib/monituj-security/lib.sh || exit 1
 mkdir -p "$STATE_DIR" && chmod 700 "$STATE_DIR"
 # Not in the middle of a deploy (deploy.sh holds this lock): containers
-# stop and start then.
-exec 9>/tmp/monituj-deploy.lock
-flock -n 9 || exit 0
+# stop and start then. Opened for reading only: the file belongs to the
+# deploy user, and Linux (fs.protected_regular) refuses even root a write
+# to someone else's file in /tmp. No file - no deploy has run since boot.
+DEPLOY_LOCK=/tmp/monituj-deploy.lock
+if [ -r "$DEPLOY_LOCK" ] && { exec 9<"$DEPLOY_LOCK"; } 2>/dev/null; then
+  flock -n 9 || exit 0
+fi
 ACCEPT=0
 [ "${1:-}" = "--accept" ] && ACCEPT=1
 

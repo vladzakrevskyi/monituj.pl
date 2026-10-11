@@ -27,5 +27,6 @@ monituj_alert() {
   if ! printf '%s\n' "$details" | compose exec -T web \
       python manage.py security_alert "$subject" --key "$key" >>"$LOG" 2>&1; then
     log "NIE WYSŁANO (strona nie działa?): $subject"
+    return 1
   fi
 }

@@ -63,6 +63,13 @@ rkhunter --propupd --nocolors >/dev/null 2>&1 || true
 
 echo "5. Stan wyjściowy plików, portów i kontenerów"
 /usr/local/sbin/monituj-security-watch --accept
+for state in files ports containers code; do
+  [ -f "/var/lib/monituj-security/$state" ] || {
+    echo "Nie udało się zapisać stanu wyjściowego ($state) - kontrola co 10 minut nie zadziała." >&2
+    echo "Zobacz: sudo bash -x /usr/local/sbin/monituj-security-watch --accept" >&2
+    exit 1
+  }
+done
 
 echo
 echo "Gotowe. Od teraz:"
@@ -73,7 +80,16 @@ echo "Dziennik na serwerze: /var/log/monituj-security.log"
 if [ "${1:-}" = "--test" ]; then
   # shellcheck disable=SC1091
   . "$LIB/lib.sh"
-  echo "To tylko próba - instalacja monitoringu na $(hostname)." \
-    | monituj_alert "próba alarmu z serwera" "test:$(date +%s)"
-  echo "Wysłano próbny alarm - sprawdź skrzynkę."
+  # Straight through the site, so its answer shows here: "wysłano", or why not.
+  if answer="$(echo "To tylko próba - instalacja monitoringu na $(hostname)." \
+      | compose exec -T web python manage.py security_alert \
+          "próba alarmu z serwera" --key "test:$(date +%s)" 2>&1)" \
+      && printf '%s' "$answer" | grep -q "wysłano"; then
+    echo "Wysłano próbny alarm - sprawdź skrzynkę."
+  else
+    echo "Próbny alarm NIE został wysłany:" >&2
+    printf '%s\n' "$answer" | tail -n 5 >&2
+    echo "Sprawdź: czy kontener web działa (docker compose ps), SECURITY_ALERTS i SECURITY_EMAIL w .env." >&2
+    exit 1
+  fi
 fi
