@@ -211,6 +211,12 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.clients.tasks.delete_old_client_imports",
         "schedule": 3600.0,
     },
+    # The daily security report, if the server's cron didn't send it at 7:00
+    # (apps/common/security_digest.py).
+    "send-security-digest-fallback": {
+        "task": "apps.common.tasks.send_security_digest_fallback",
+        "schedule": crontab(hour=9, minute=30),
+    },
     # Audit log entries with no account behind them, after a year.
     "delete-old-audit-entries": {
         "task": "apps.audit.tasks.delete_old_audit_entries",
@@ -274,6 +280,14 @@ CONTACT_EMAIL = env("CONTACT_EMAIL", default="kontakt@monituj.pl")
 # Errors on the site and in background tasks are emailed here (without
 # request data - apps/common/error_mail.py). Empty ERROR_EMAIL: CONTACT_EMAIL.
 ADMINS = [env("ERROR_EMAIL", default="") or CONTACT_EMAIL]
+# Security alarms and the daily security report go here (apps/common/
+# security_watch.py, security_digest.py; README "Monitoring bezpieczeństwa").
+# Empty SECURITY_EMAIL: CONTACT_EMAIL. Off while developing (settings/dev.py).
+SECURITY_EMAIL = env("SECURITY_EMAIL", default="") or CONTACT_EMAIL
+SECURITY_ALERTS = env.bool("SECURITY_ALERTS", default=True)
+# An address that exists only in the database - anyone using it has read the
+# users table (`manage.py security_canary`). Empty: no canary.
+SECURITY_CANARY_EMAIL = env("SECURITY_CANARY_EMAIL", default="").strip()
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_SUBJECT_PREFIX = "[Monituj] "
 # Where "Oceń Monituj" in the review email leads (apps/notifications/reviews.py).

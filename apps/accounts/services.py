@@ -20,7 +20,7 @@ from apps.audit.services import AuditService
 from apps.billing import gateway
 from apps.billing.plans import format_pln
 from apps.billing.services import apply_signup_plan, plan_for
-from apps.common import throttle
+from apps.common import security_watch, throttle
 from apps.common.exceptions import RateLimitedAppError, ValidationAppError
 from apps.common.security import generate_public_token, hash_token
 from apps.common.site import absolute_url
@@ -221,6 +221,7 @@ class AuthenticationService:
             AuditService.log(
                 AuditEvent.USER_LOGIN_FAILED, request=request, metadata={"email": email}
             )
+            security_watch.canary_touched(email, "próba logowania", request)
             raise ValidationAppError(
                 "Nieprawidłowy adres email lub hasło.",
                 code="INVALID_CREDENTIALS",
@@ -265,8 +266,9 @@ class PasswordResetService:
                 "Zbyt wiele próśb o reset hasła. Spróbuj ponownie za godzinę.",
                 code="RESET_LIMIT_REACHED",
             )
+        security_watch.canary_touched(email, "prośba o reset hasła", request)
         user = User.objects.filter(email__iexact=email).first()
-        if user is None:
+        if user is None or security_watch.is_canary(email):
             return
         # Silently: the reply must not reveal whether the account exists.
         email_key = f"reset-email:{user.pk}"

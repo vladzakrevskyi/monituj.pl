@@ -4,6 +4,8 @@ from .base import *
 
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
+# No alarms about a developer signing in to their own admin.
+SECURITY_ALERTS = env.bool("SECURITY_ALERTS", default=False)  # noqa: F405
 
 # Static files through WhiteNoise here too, instead of runserver's own
 # handler: that one sends no Cache-Control, so browsers kept an old JS or

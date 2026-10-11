@@ -33,6 +33,20 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # Every connection is logged with the address it came from: the daily
+    # security report (deploy/security/daily-report.sh) flags the ones that
+    # didn't come from the site's own containers.
+    command:
+      - postgres
+      - -c
+      - log_connections=on
+      - -c
+      - "log_line_prefix=%m [%p] host=%h "
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

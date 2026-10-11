@@ -439,6 +439,7 @@ Najważniejsze zmienne:
 | `EMAIL_*` | Dane SMTP. Najczęściej port 587 i `EMAIL_USE_TLS=True` |
 | `DEFAULT_FROM_EMAIL` | Nadawca wszystkich wiadomości, np. `Monituj <no-reply@monituj.pl>`. Domena musi być skonfigurowana u dostawcy SMTP |
 | `ERROR_EMAIL` | Adres, na który przychodzą błędy strony i zadań w tle (puste = `CONTACT_EMAIL`), zob. „Monitoring” |
+| `SECURITY_EMAIL`, `SECURITY_CANARY_EMAIL` | Adres na alarmy i dzienny raport bezpieczeństwa (puste = `CONTACT_EMAIL`) oraz adres-przynęta w bazie – zob. „Monitoring bezpieczeństwa” |
 | `CONTACT_EMAIL` | `kontakt@monituj.pl` – tu trafiają wiadomości z formularza kontaktowego i odpowiedzi na e-maile systemowe. Ta skrzynka musi istnieć i odbierać pocztę |
 | `LEGAL_*` | Dane firmy. Puste wartości są wyróżniane na stronach prawnych jako „[uzupełnij: …]” |
 | `MAINTENANCE_MODE`, `MAINTENANCE_ALLOWED_IPS` | Tryb serwisowy – patrz sekcja „Tryb serwisowy” niżej. Domyślnie wyłączony |
@@ -835,6 +836,71 @@ Podłącz darmowy zewnętrzny monitoring dostępności (UptimeRobot, Better Stac
 
 **Dziennik zdarzeń** (`AuditLog`): wpisy konta są przechowywane, dopóki konto istnieje, i znikają razem z nim. Wpisy niezwiązane z żadnym kontem (nieudane logowania na nieistniejące adresy, wejścia w linki usuniętych próśb) codzienne zadanie `delete_old_audit_entries` usuwa po 12 miesiącach – tak mówi Polityka prywatności.
 
+### Monitoring bezpieczeństwa
+
+Zabezpieczenia (klucze SSH, zapora, fail2ban, lista adresów i weryfikacja dwuetapowa w panelu administratora) utrudniają włamanie. Ten rozdział jest o czymś innym: **żebyś się dowiedział, gdy mimo wszystko ktoś wejdzie**. Wszystko przychodzi e-mailem na `SECURITY_EMAIL` (puste = `CONTACT_EMAIL`).
+
+**Alarmy – od razu, temat „[Monituj] ALARM: …”:**
+
+| Co się stało | Skąd wiadomość |
+|---|---|
+| Logowanie konta z uprawnieniami administratora (także gdy poprawne było samo hasło, a kod weryfikacji jeszcze nie padł) | strona |
+| Panel administratora zablokowany po serii błędnych haseł | strona |
+| Konto dostało uprawnienia administratora; zmieniono hasło administratora; administrator wyłączył weryfikację dwuetapową | strona |
+| Ktoś użył adresu-przynęty z bazy (logowanie, reset hasła) | strona |
+| Logowanie SSH na serwer – kto i z jakiego adresu | serwer |
+| Zmienił się plik systemowy (konta, sudo, klucze SSH, ustawienia SSH, cron, nginx, `.env`), port, na którym serwer nasłuchuje, lista kontenerów albo kod strony różni się od repozytorium – sprawdzane co 10 minut | serwer |
+| rkhunter (cotygodniowa kontrola rootkitów) ma ostrzeżenia | serwer |
+
+Ten sam alarm przychodzi najwyżej raz na 10 minut. Większość z nich wywołasz sam (logujesz się, wdrażasz) – i o to chodzi: alarm, którego się **nie** spodziewasz, to sygnał włamania.
+
+**Raport dzienny – codziennie o 7:00, temat „[Monituj] Raport bezpieczeństwa …”:** na górze lista rzeczy do sprawdzenia, niżej logowania (udane, nieudane, adresy z największą liczbą prób), administratorzy i ich działania w panelu, zmiany na kontach, pobrania i usunięcia, a z serwera: logowania SSH, polecenia `sudo`, blokady fail2ban, połączenia z bazą spoza aplikacji, kontenery, dysk, aktualizacje. W załączniku dziennik zdarzeń bezpieczeństwa z doby (CSV). Raport przychodzi także w spokojny dzień – **brak raportu rano to też sygnał**. Jeśli serwer go nie wyśle, o 9:30 strona wysyła swoją część z dopiskiem, że raport z serwera nie dotarł.
+
+Te wiadomości to kopia śladów poza serwerem – włamywacz z dostępem do serwera może wyczyścić logi, ale nie Twoją skrzynkę. Zawierają adresy IP i adresy e-mail kont, więc trzymaj je w skrzynce, do której dostęp masz tylko Ty, i usuwaj po 12 miesiącach (tyle Polityka prywatności przewiduje dla dziennika zdarzeń).
+
+#### Instalacja (raz)
+
+1. W `.env` (opcjonalnie) `SECURITY_EMAIL=` – osobny adres na alarmy. Dodaj też adres-przynętę, np. alias swojej skrzynki z losową częścią, którego nigdzie indziej nie używasz:
+
+   ```
+   SECURITY_CANARY_EMAIL=archiwum.x7k2q9@monituj.pl
+   ```
+
+   Po `docker compose up -d` załóż przynętę w bazie:
+
+   ```bash
+   docker compose exec web python manage.py security_canary
+   ```
+
+   Powstaje nieaktywne konto i klient z tym adresem. Monituj nigdy nic tam nie wysyła, więc **każda wiadomość na ten adres** oznacza, że ktoś ma tabelę użytkowników albo klientów; próba logowania tym adresem podnosi alarm od razu.
+
+2. Część serwerowa – jedno polecenie, z próbnym alarmem na koniec:
+
+   ```bash
+   sudo /srv/monituj/deploy/security/install.sh --test
+   ```
+
+   Instaluje alarm przy logowaniu SSH (PAM), kontrolę plików co 10 minut, raport o 7:00, rkhunter raz w tygodniu i zapisuje stan wyjściowy. Serwer nie potrzebuje własnej poczty – wiadomości wychodzą przez stronę (`manage.py security_alert`, `security_digest`). Wszystko zapisuje się też w `/var/log/monituj-security.log`. Po zmianie skryptów w repozytorium uruchom instalację ponownie – `deploy.sh` o tym przypomni.
+
+3. Baza loguje każde połączenie z adresem, z którego przyszło (`docker-compose.prod.yml`, `log_connections`). Aplikacja łączy się przez sieć Dockera; połączenie z wnętrza kontenera bazy albo z samego serwera (`docker compose exec db psql …`) raport dzienny pokazuje jako „połączenia z bazą spoza aplikacji”. Jeśli to nie Ty – ktoś czytał bazę.
+
+4. Zewnętrzny monitoring (UptimeRobot, Better Stack) – dwa czujniki:
+   - dostępność: `https://monituj.pl/api/health/`, co 5 minut;
+   - **podmiana strony**: `https://monituj.pl/`, typ „keyword”, alarm gdy na stronie **zabraknie** tekstu `Monituj pilnuje` – wykrywa podmienioną stronę główną;
+   - dodatkowo wygaśnięcie certyfikatu SSL i domeny, jeśli usługa to oferuje.
+
+5. Konta wokół strony – weryfikacja dwuetapowa i powiadomienia o logowaniu: panel hostingu (stamtąd można przejąć cały serwer z pominięciem SSH), Cloudflare, GitHub, Stripe, inFakt, rejestrator domeny, skrzynka pocztowa.
+
+Sprawdzenie: `docker compose exec web python manage.py security_digest --print` pokazuje dzisiejszy raport bez wysyłania; `sudo monituj-security-report` wysyła go od razu.
+
+#### Gdy przyjdzie alarm, którego się nie spodziewasz
+
+1. Nie loguj się „żeby sprawdzić” z tego samego urządzenia, jeśli podejrzewasz, że to ono wyciekło. Zmień hasła i odwołaj sesje: panel hostingu, skrzynka, GitHub, Stripe – w tej kolejności.
+2. Odetnij dostęp: w panelu hostingu zrób ręczną kopię serwera (ślad do analizy), potem usuń nieznane klucze z `~/.ssh/authorized_keys`, nieznane konta (`/etc/passwd`) i nieznane konta administratorów w panelu Monituj. W razie wątpliwości włącz tryb serwisowy (`MAINTENANCE_MODE=True`).
+3. Wymień sekrety z `.env`: `DJANGO_SECRET_KEY`, hasło bazy, hasło SMTP, klucze Stripe i inFakt, klucz szyfrowania dokumentów (zob. „Szyfrowanie dokumentów” – stary klucz przenieś do `DOCUMENTS_ENCRYPTION_OLD_KEYS`).
+4. Ustal zakres z raportów dziennych i `/var/log/monituj-security.log`: od kiedy, z jakiego adresu, co pobrano.
+5. Jeśli mogło dojść do naruszenia ochrony danych osobowych: firmy, które zbierają dokumenty przez Monituj, zawiadom **w ciągu 48 godzin** od stwierdzenia naruszenia (tyle daje Umowa powierzenia – to one zgłaszają je dalej jako administratorzy), a naruszenie danych, których administratorem jesteś Ty (konta użytkowników), zgłoś do UODO w ciągu **72 godzin**. Skonsultuj to z prawnikiem – terminy biegną od chwili stwierdzenia naruszenia.
+
 ### Najczęstsze problemy
 
 | Objaw | Przyczyna i rozwiązanie |
@@ -862,6 +928,8 @@ Podłącz darmowy zewnętrzny monitoring dostępności (UptimeRobot, Better Stac
 - [ ] `ADMIN_URL` i `ADMIN_ALLOWED_IPS` są ustawione, a w nginx w `location /admin/` jest Twój adres IP.
 - [ ] `LEGAL_BACKUP_DAYS` odpowiada liczbie dni przechowywania kopii u hostingu.
 - [ ] Jeśli włączasz logowanie przez Google: aplikacja OAuth jest opublikowana, a adres przekierowania zgadza się z `SITE_URL`.
-- [ ] Skonfigurowany jest zewnętrzny monitoring `/api/health/`.
+- [ ] Skonfigurowany jest zewnętrzny monitoring `/api/health/` i czujnik podmiany strony głównej.
+- [ ] Monitoring bezpieczeństwa: `deploy/security/install.sh --test` uruchomione, próbny alarm dotarł, przynęta założona (`security_canary`), pierwszy raport dzienny przyszedł o 7:00.
+- [ ] Weryfikacja dwuetapowa i powiadomienia o logowaniu włączone w panelu hostingu, Cloudflare, GitHubie, Stripe, inFakt, u rejestratora domeny i w skrzynce pocztowej.
 - [ ] Płatności: `STRIPE_MODE=live`, klucz i webhook trybu live w `.env`, `stripe_setup --create-webhook` uruchomione, testowy zakup i anulowanie przeszły; e-maile i ponawianie płatności ustawione w Stripe (README „Płatności”).
 - [ ] Logowanie na serwer tylko kluczem SSH, ufw jest włączony.

@@ -20,7 +20,7 @@ from django.urls import reverse
 from apps.accounts import two_factor
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
-from apps.common import throttle
+from apps.common import security_watch, throttle
 from apps.common.maintenance import is_allowed, parse_networks
 from apps.common.security import get_client_ip, hash_token
 
@@ -39,6 +39,7 @@ def admin_login(request, extra_context=None):
     if throttle.is_limited(ip_key, FAILURES_PER_IP, WINDOW) or throttle.is_limited(
         login_key, FAILURES_PER_LOGIN, WINDOW
     ):
+        security_watch.admin_login_blocked(request, login)
         return HttpResponse(BLOCKED_MESSAGE, status=429, content_type="text/plain")
     response = admin.site.login(request, extra_context)
     user = request.user
@@ -51,6 +52,15 @@ def admin_login(request, extra_context=None):
             django_logout(request)
             two_factor.hold(request, user, backend, "admin", next_url)
             return redirect("accounts:two-factor-login")
+        # In the audit log like any other sign-in (the daily security report
+        # lists them); with a code, two_factor logs it once the code is in.
+        AuditService.log(
+            AuditEvent.USER_LOGIN,
+            actor=user,
+            target=user,
+            request=request,
+            metadata={"admin": True},
+        )
         return response
     throttle.record(ip_key)
     throttle.record(login_key)
@@ -58,6 +68,9 @@ def admin_login(request, extra_context=None):
         AuditEvent.USER_LOGIN_FAILED,
         request=request,
         metadata={"email": login, "admin": True},
+    )
+    security_watch.canary_touched(
+        login, "próba logowania do panelu administratora", request
     )
     return response
 

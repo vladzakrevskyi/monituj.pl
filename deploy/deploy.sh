@@ -127,6 +127,19 @@ if grep -qi cloudflare <<<"$(env_value LEGAL_CDN_PROVIDER)"; then
   fi
 fi
 
+# Security monitoring on the server (README: „Monitoring bezpieczeństwa”):
+# installed once with sudo, and again when its scripts change.
+SECURITY_LIB=/usr/local/lib/monituj-security
+if [ ! -f /etc/monituj-security.conf ]; then
+  warn "Monitoring bezpieczeństwa serwera nie jest zainstalowany: sudo $APP_DIR/deploy/security/install.sh --test"
+elif ! cmp -s deploy/security/lib.sh "$SECURITY_LIB/lib.sh" \
+  || ! cmp -s deploy/security/ssh-login-alert.sh "$SECURITY_LIB/ssh-login-alert.sh" \
+  || ! cmp -s deploy/security/watch.sh /usr/local/sbin/monituj-security-watch \
+  || ! cmp -s deploy/security/daily-report.sh /usr/local/sbin/monituj-security-report \
+  || ! cmp -s deploy/security/weekly-rootkit.sh /usr/local/sbin/monituj-security-rootkit; then
+  warn "Skrypty monitoringu bezpieczeństwa się zmieniły - zainstaluj je ponownie: sudo $APP_DIR/deploy/security/install.sh"
+fi
+
 docker image prune -f >/dev/null
 
 trap - ERR
