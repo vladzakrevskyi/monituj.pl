@@ -132,6 +132,7 @@
 <nav class="chip-nav" aria-label="Inne branże">
 {% for other in others %}<a class="chip" href="{% url 'pages:segment' other.slug %}">{{ other.title }}</a>{% endfor %}
 <a class="chip" href="{% url 'pages:guide' %}">Poradnik: jak zbierać dokumenty</a>
+{% if segment.slug == "biura-rachunkowe" %}<a class="chip" href="{% url 'pages:outside-ksef' %}">Poradnik: dokumenty spoza KSeF</a>{% endif %}
 </nav>
 </div>
 </div>

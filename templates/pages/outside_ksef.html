@@ -1,0 +1,91 @@
+{% extends "pages/base_page.html" %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Ścieżka">
+<a href="{% url 'landing' %}">Monituj</a><span aria-hidden="true">/</span>
+<span aria-current="page">Poradnik</span>
+</nav>
+{% endblock %}
+{% block hero_eyebrow %}Poradnik dla biur rachunkowych{% endblock %}
+{% block hero_title %}KSeF załatwił faktury. <strong>Resztę dokumentów nadal trzeba zebrać</strong>{% endblock %}
+{% block hero_lead %}Faktury krajowe pobierasz dziś z KSeF bez proszenia klienta. Ale wyciągi, paragony, faktury zagraniczne, umowy i dokumenty kadrowe wciąż przychodzą od niego - albo nie przychodzą. Zobacz, co zostało poza KSeF i jak to zbierać bez gonienia.{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<article class="article">
+
+<nav class="article__toc" aria-label="Spis treści">
+<p class="article__toc-head">W tym poradniku</p>
+<ol>
+<li><a href="#zmiana">Co KSeF zmienił w zbieraniu dokumentów</a></li>
+<li><a href="#poza-ksef">Czego w KSeF nie ma</a></li>
+<li><a href="#uprawnienia">Uprawnienia w KSeF - pierwszy krok z każdym klientem</a></li>
+<li><a href="#prosba">Comiesięczna prośba po KSeF</a></li>
+<li><a href="#szablony">Gotowe listy do użycia</a></li>
+</ol>
+</nav>
+
+<h2 id="zmiana">Co KSeF zmienił w zbieraniu dokumentów</h2>
+<p>Od 2026 roku faktury między firmami w Polsce wystawia się w Krajowym Systemie e-Faktur: od 1 lutego największe firmy, od 1 kwietnia pozostałe, a najmniejsi przedsiębiorcy mogą jeszcze do końca 2026 roku wystawiać część faktur po staremu. Biuro, któremu klient nadał uprawnienia, pobiera jego faktury sprzedażowe i kosztowe prosto z KSeF - zwykle z poziomu programu księgowego.</p>
+<p>To duża ulga: nie trzeba już prosić o „faktury za wrzesień” i czekać na plik PDF. Ale KSeF obejmuje tylko faktury ustrukturyzowane. Wszystko inne, czego potrzebujesz do zamknięcia miesiąca, nadal masz od klienta - i nadal trzeba o to poprosić, przypilnować terminu i przypomnieć.</p>
+
+<h2 id="poza-ksef">Czego w KSeF nie ma</h2>
+<p>Lista zależy od tego, czym zajmuje się klient, ale w większości firm poza KSeF zostają:</p>
+<ul>
+<li><strong>Faktury od zagranicznych kontrahentów</strong> - koszty z zagranicy, usługi i subskrypcje, zakupy wewnątrzwspólnotowe. Zagraniczny sprzedawca nie wystawia w KSeF.</li>
+<li><strong>Paragony z NIP do 450 zł i faktury z kas rejestrujących</strong> - w okresie przejściowym, do końca 2026 roku, nadal dokumentują koszt poza KSeF.</li>
+<li><strong>Bilety i opłaty za przejazd autostradą</strong> - dokumenty traktowane jak faktury, wystawiane poza systemem.</li>
+<li><strong>Faktury od najmniejszych firm</strong>, które do końca 2026 roku korzystają z możliwości wystawiania poza KSeF.</li>
+<li><strong>Wyciągi bankowe</strong> ze wszystkich rachunków firmowych i potwierdzenia przelewów.</li>
+<li><strong>Raporty kasowe i raporty z kasy fiskalnej</strong> - sprzedaż dla osób prywatnych.</li>
+<li><strong>Umowy</strong> - najmu, leasingu, kredytu, zlecenia, o dzieło - oraz polisy.</li>
+<li><strong>Dokumenty kadrowe i płacowe</strong> - listy obecności, zwolnienia, wnioski urlopowe, nowe umowy.</li>
+<li><strong>Dokumenty importowe i celne</strong>, noty księgowe, delegacje, ewidencja przebiegu pojazdu.</li>
+<li><strong>Pisma i decyzje z urzędów</strong>, które wpływają na rozliczenie.</li>
+</ul>
+<p class="article__note">Stan na październik 2026 r. Część wyjątków obowiązuje tylko w okresie przejściowym, do 31 grudnia 2026 r. - przed zmianą listy u siebie sprawdź aktualne zasady na <a href="https://ksef.podatki.gov.pl/" rel="noopener" target="_blank">ksef.podatki.gov.pl</a>.</p>
+
+<h2 id="uprawnienia">Uprawnienia w KSeF - pierwszy krok z każdym klientem</h2>
+<p>Żeby pobierać faktury klienta, biuro musi dostać od niego uprawnienia w KSeF. To nie jest dokument, który klient może przesłać - to czynność, którą musi wykonać u siebie. I dokładnie dlatego łatwo ją odłożyć „na jutro”.</p>
+<p>W Monituj taką rzecz dodajesz do prośby jako pozycję <strong>bez pliku</strong>. Klient widzi ją na liście obok dokumentów, a zamiast przesyłać plik klika „Zrobione”. Dopóki tego nie potwierdzi, Monituj przypomina mu o tym tak samo jak o brakujących dokumentach. Ty sprawdzasz u siebie, czy uprawnienia rzeczywiście są, i akceptujesz - albo odsyłasz z informacją, co się nie zgadza.</p>
+<p>Tak samo możesz poprosić o inne rzeczy, których nie da się przesłać plikiem: podpisanie pełnomocnictwa online, opłacenie składek, potwierdzenie danych do deklaracji.</p>
+
+<h2 id="prosba">Comiesięczna prośba po KSeF</h2>
+<p>Po KSeF lista jest krótsza, ale zasady te same:</p>
+<ol>
+<li><strong>Napisz wprost, czego nie przysyłać.</strong> „Faktur, które są w KSeF, nie musisz przesyłać” - jedno zdanie w opisie prośby oszczędza klientowi pracy, a Tobie duplikatów.</li>
+<li><strong>Nazwij pozycje tak, żeby nie było wątpliwości</strong>: „Faktury kosztowe spoza KSeF”, a nie „faktury”. Klient od razu wie, że chodzi o zagraniczne faktury i paragony.</li>
+<li><strong>Pozwól odpowiedzieć „nie mam”.</strong> W wielu miesiącach faktur spoza KSeF po prostu nie będzie. Klient zaznacza to jednym kliknięciem, a Ty nie czekasz na coś, co nie przyjdzie.</li>
+<li><strong>Ustaw stały termin</strong>, np. do 10. dnia miesiąca, i wysyłaj prośbę cyklicznie - sama wyjdzie w wybranym dniu miesiąca, z nazwą właściwego miesiąca.</li>
+<li><strong>Zostaw przypominanie systemowi.</strong> Przypomnienia wychodzą same, tylko o brakach, i same przestają, gdy dotrze komplet.</li>
+</ol>
+
+<h2 id="szablony">Gotowe listy do użycia</h2>
+<p>Obie listy są w Monituj jako gotowe szablony - możesz je wysłać od razu albo zapisać jako własne i zmienić:</p>
+<ul class="article__links">
+<li><a href="{% url 'pages:template' 'dokumenty-ksiegowe-za-miesiac' %}">Dokumenty księgowe za miesiąc</a> - wyciągi, faktury spoza KSeF, raport z kasy, umowy; termin do 10. dnia miesiąca.</li>
+<li><a href="{% url 'pages:template' 'nowy-klient-biura-rachunkowego' %}">Nowy klient biura rachunkowego</a> - umowa, UPL-1, ZUS-PEL i nadanie biuru uprawnień w KSeF jako pozycja bez pliku.</li>
+<li><a href="{% url 'pages:segment' 'biura-rachunkowe' %}">Monituj dla biur rachunkowych</a> - jak wygląda cały proces.</li>
+</ul>
+
+<div class="article__summary">
+<h2>W skrócie</h2>
+<ul class="check-list">
+{% include "pages/_check.html" with text="faktury krajowe pobierasz z KSeF - nie proś o nie klienta" %}
+{% include "pages/_check.html" with text="wyciągi, paragony, faktury zagraniczne, umowy i kadry nadal zbierasz" %}
+{% include "pages/_check.html" with text="nadanie uprawnień w KSeF to pozycja bez pliku - klient potwierdza" %}
+{% include "pages/_check.html" with text="stała lista, stały termin, prośba cykliczna" %}
+{% include "pages/_check.html" with text="przypomnienia wychodzą same i same się kończą" %}
+</ul>
+<p>Monituj pilnuje tej części, której KSeF nie obejmuje: wysyłasz prośbę raz, a system przypomina, zbiera i pokazuje, czego jeszcze brakuje.</p>
+<div class="hero__actions">
+<a class="btn btn-dark btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+<a class="btn btn-secondary btn-lg" href="{% url 'pages:demo' %}">Wypróbuj demo</a>
+</div>
+</div>
+
+</article>
+</div>
+</section>
+{% endblock %}

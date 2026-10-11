@@ -14,7 +14,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.common.exceptions import ValidationAppError
-from apps.requests import template_library
+from apps.requests import item_kinds, template_library
 from apps.requests.models import RequestTemplate
 
 # The Regulamin that introduced per-plan template limits applies from this
@@ -208,9 +208,10 @@ def from_request(owner, request_obj):
         title=free_title(owner, request_obj.name),
         name=name,
         description=request_obj.description,
-        item_names=list(
-            request_obj.items.order_by("id").values_list("name", flat=True)
-        ),
+        item_names=[
+            item_kinds.joined(item.name, item.is_confirm)
+            for item in request_obj.items.order_by("id")
+        ],
         deadline_choice=deadline_choice,
         deadline_days=deadline_days,
         settings=_settings_of(request_obj),

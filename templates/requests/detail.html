@@ -89,14 +89,14 @@
 <tbody id="items-table-body">
 {% for item in items %}
 <tr data-item-id="{{ item.id }}" data-status="{{ item.status }}">
-<td class="cell-strong" data-label="Dokument">{{ item.name }}</td>
-<td data-label="Status"><span class="badge item-status-label {{ item.status|badge_class }}">{{ item.get_status_display }}</span><span class="cell-note item-rejection"{% if not item.rejection_reason %} hidden{% endif %}>{{ item.rejection_reason }}</span>{% if item.status == "nie_dotyczy" %}<span class="cell-note item-na-note">{% if item.not_applicable_reason %}„{{ item.not_applicable_reason }}”{% else %}Oznaczone przez Ciebie{% endif %}{% if item.not_applicable_accepted %} · zaakceptowane{% endif %}</span>{% endif %}</td>
+<td class="cell-strong" data-label="Dokument">{{ item.name }}{% if item.is_confirm %} <span class="item-kind" title="Klient nie przesyła tu pliku - potwierdza, że to zrobił">bez pliku</span>{% endif %}</td>
+<td data-label="Status"><span class="badge item-status-label {{ item.status|badge_class }}">{{ item.status_label }}</span><span class="cell-note item-rejection"{% if not item.rejection_reason %} hidden{% endif %}>{{ item.rejection_reason }}</span>{% if item.status == "nie_dotyczy" %}<span class="cell-note item-na-note">{% if item.not_applicable_reason %}„{{ item.not_applicable_reason }}”{% else %}Oznaczone przez Ciebie{% endif %}{% if item.not_applicable_accepted %} · zaakceptowane{% endif %}</span>{% endif %}</td>
 <td data-label="Pliki">
 <ul class="file-list">
 {% for document in item.documents.all %}
 {% include "documents/_file_link.html" %}
 {% empty %}
-<li class="text-faint">&ndash;</li>
+<li class="text-faint">{% if item.is_confirm %}klient potwierdza{% else %}&ndash;{% endif %}</li>
 {% endfor %}
 </ul>
 </td>

@@ -56,6 +56,7 @@ pricing = _page("pages/pricing.html", _pricing_context)
 faq = _page("pages/faq.html")
 demo = _page("pages/demo.html")
 guide = _page("pages/guide.html")
+outside_ksef = _page("pages/outside_ksef.html")
 
 
 def segment(request, slug):

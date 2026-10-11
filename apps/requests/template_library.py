@@ -7,11 +7,15 @@ They live in code, not in the database: everyone can use them, they don't
 count towards the plan's templates, and each has a public page
 (/szablony/<slug>/) that search engines find. An item is (name, hint): the
 name goes on the request's list, the hint explains it on the public page.
+Names listed in `confirm` are things to do, not files to send - the client
+ticks "Zrobione" (apps/requests/item_kinds.py).
 
 Checked by someone who knows the trade before changing the wording here -
 these pages are read as advice."""
 
 from dataclasses import dataclass
+
+from apps.requests import item_kinds
 
 
 @dataclass(frozen=True)
@@ -30,10 +34,13 @@ class ReadyTemplate:
     monthly: bool = False
     # One sentence for the library and the search result (<= 155 chars).
     summary: str = ""
+    # Items without a file - the client confirms they are done.
+    confirm: tuple = ()
 
     @property
     def item_names(self):
-        return [name for name, _ in self.items]
+        """As the request form takes them."""
+        return [item_kinds.joined(name, name in self.confirm) for name, _ in self.items]
 
 
 TEMPLATES = [
@@ -156,8 +163,10 @@ TEMPLATES = [
                 "Do rozliczeń z ZUS w imieniu firmy.",
             ),
             (
-                "Potwierdzenie nadania biuru uprawnień w KSeF",
-                "Żebyśmy mieli dostęp do Twoich faktur w KSeF.",
+                "Nadanie biuru uprawnień w KSeF",
+                "W KSeF nadaj naszemu biuru uprawnienie do przeglądania faktur "
+                "(po NIP-ie biura). Nie wysyłasz pliku - potwierdzasz tutaj, "
+                "że to zrobione.",
             ),
             (
                 "Dokumentacja od poprzedniego biura",
@@ -174,6 +183,7 @@ TEMPLATES = [
             "Dokumenty od nowego klienta biura rachunkowego: umowa, UPL-1, "
             "ZUS-PEL, dostęp do KSeF i dokumentacja od poprzedniego biura."
         ),
+        confirm=("Nadanie biuru uprawnień w KSeF",),
     ),
     # --- kadry --------------------------------------------------------------
     ReadyTemplate(

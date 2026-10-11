@@ -16,6 +16,11 @@ urlpatterns = [
         name="public-not-applicable",
     ),
     path(
+        "public/<str:token>/items/<int:item_id>/confirm/",
+        api.public_confirm,
+        name="public-confirm",
+    ),
+    path(
         "public/documents/<int:document_id>/",
         api.public_delete_document,
         name="public-delete",

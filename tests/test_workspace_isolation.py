@@ -21,7 +21,7 @@ from tests.conftest import make_pdf_upload
 
 REFUSED = {302, 400, 403, 404, 405}
 # Recipients' side: reached by the request's secret link, not by ids.
-PUBLIC = {"upload", "public-not-applicable", "public-delete"}
+PUBLIC = {"upload", "public-not-applicable", "public-confirm", "public-delete"}
 
 
 def _id_routes():

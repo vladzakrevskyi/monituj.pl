@@ -189,9 +189,34 @@
     else showToast(message, "error");
   }
 
+  // An item without a file: "Zrobione" and its undo.
+  async function sendConfirm(itemEl, method, button) {
+    const errorBox = itemEl.querySelector("[data-confirm-error]");
+    const { ok, data } = await ButtonLoader.run(button, () =>
+      apiFetch(`/api/public/${token}/items/${itemEl.dataset.itemId}/confirm/`, { method })
+    );
+    if (ok) {
+      window.location.reload();
+      return;
+    }
+    const message = data && data.error ? data.error.message : "Wystąpił błąd.";
+    if (errorBox) errorBox.textContent = message;
+    else showToast(message, "error");
+  }
+
   itemsList.addEventListener("click", (event) => {
     const itemEl = event.target.closest(".request-item");
     if (!itemEl) return;
+    const done = event.target.closest("[data-confirm-done]");
+    if (done) {
+      sendConfirm(itemEl, "POST", done);
+      return;
+    }
+    const undone = event.target.closest("[data-confirm-undo]");
+    if (undone) {
+      sendConfirm(itemEl, "DELETE", undone);
+      return;
+    }
     const open = event.target.closest("[data-na-open]");
     if (open) {
       const picker = itemEl.querySelector("[data-na-picker]");
@@ -219,8 +244,7 @@
     const itemEl = form.closest(".request-item");
     const reason = form.querySelector("input").value.trim();
     if (!reason) {
-      itemEl.querySelector("[data-na-error]").textContent =
-        "Napisz krótko, dlaczego nie masz tego dokumentu.";
+      itemEl.querySelector("[data-na-error]").textContent = "Napisz krótko, dlaczego.";
       return;
     }
     sendNotApplicable(itemEl, "POST", reason);

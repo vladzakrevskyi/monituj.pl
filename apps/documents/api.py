@@ -19,6 +19,7 @@ from apps.common.responses import error_response, success_response
 from apps.documents.encryption import DecryptionError
 from apps.documents.services import (
     UPLOADS_PER_IP_HOUR,
+    ConfirmationService,
     DocumentAccessService,
     DocumentReviewService,
     GuestDeleteService,
@@ -65,7 +66,7 @@ def public_upload_item(request, token, item_id):
         {
             "item": {
                 "id": item.pk,
-                "status": {"code": item.status, "label": item.get_status_display()},
+                "status": {"code": item.status, "label": item.status_label},
             },
             "document": {
                 "id": document.pk,
@@ -86,7 +87,7 @@ def public_delete_document(request, document_id):
         {
             "item": {
                 "id": item.pk,
-                "status": {"code": item.status, "label": item.get_status_display()},
+                "status": {"code": item.status, "label": item.status_label},
             }
         }
     )
@@ -148,7 +149,7 @@ def accept_item(request, request_id, item_id):
         {
             "item": {
                 "id": item.pk,
-                "status": {"code": item.status, "label": item.get_status_display()},
+                "status": {"code": item.status, "label": item.status_label},
             }
         }
     )
@@ -174,7 +175,7 @@ def reject_item(request, request_id, item_id):
         {
             "item": {
                 "id": item.pk,
-                "status": {"code": item.status, "label": item.get_status_display()},
+                "status": {"code": item.status, "label": item.status_label},
             }
         }
     )
@@ -184,7 +185,7 @@ def _item_payload(item):
     return {
         "item": {
             "id": item.pk,
-            "status": {"code": item.status, "label": item.get_status_display()},
+            "status": {"code": item.status, "label": item.status_label},
             "not_applicable_reason": item.not_applicable_reason,
             "not_applicable_accepted": item.not_applicable_accepted,
             "rejection_reason": item.rejection_reason,
@@ -227,6 +228,34 @@ def public_not_applicable(request, token, item_id):
         NotApplicableService.mark_by_recipient(
             item, _json_body(request).get("reason", ""), django_request=request
         )
+    item.refresh_from_db()
+    return success_response(_item_payload(item))
+
+
+@require_http_methods(["POST", "DELETE"])
+def public_confirm(request, token, item_id):
+    """The recipient's "Zrobione" on an item without a file (POST) and its
+    undo (DELETE)."""
+    request_obj = PublicAccessService.get_by_token(token)
+    if not PublicAccessService.has_access(request_obj, request):
+        return error_response(
+            "LOCKED", "Brak dostępu. Otwórz najpierw link do dokumentów.", status=403
+        )
+    item = RequestItem.objects.filter(pk=item_id, request=request_obj).first()
+    if item is None:
+        return error_response("NOT_FOUND", "Nie znaleziono dokumentu.", status=404)
+    # Shares the "Nie mam tego dokumentu" allowance: each answer tells the sender.
+    throttle.consume(
+        throttle.ip_key("not-applicable", request),
+        NOT_APPLICABLE_PER_IP_HOUR,
+        throttle.HOUR,
+        "Zbyt wiele zmian w krótkim czasie. Spróbuj ponownie za godzinę.",
+        code="NOT_APPLICABLE_LIMIT_REACHED",
+    )
+    if request.method == "DELETE":
+        ConfirmationService.undo(item, django_request=request)
+    else:
+        ConfirmationService.confirm(item, django_request=request)
     item.refresh_from_db()
     return success_response(_item_payload(item))
 

@@ -92,13 +92,15 @@ class EmailLog(TimeStampedModel):
 class NotificationKind(models.TextChoices):
     DOCUMENT_UPLOADED = "dokument_dodany", "Dodano dokument"
     NOT_APPLICABLE = "nie_dotyczy", "Klient nie ma dokumentu"
+    # "Zrobione" on an item without a file (RequestItemKind.CONFIRM).
+    CONFIRMED = "potwierdzone", "Klient potwierdził wykonanie"
 
 
 class Notification(TimeStampedModel):
     """What a sender sees under "Powiadomienia" in the panel - and what the
     upload email is built from. Points at the document instead of copying its
     name, so deleting or anonymizing the file takes the trace with it; a
-    "Nie dotyczy" has no file and points at the item."""
+    "Nie dotyczy" or a "Zrobione" has no file and points at the item."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

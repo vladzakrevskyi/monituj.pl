@@ -97,6 +97,20 @@ PAGES = {
         "template": "pages/guide.html",
         "og_type": "article",
     },
+    "pages:outside-ksef": {
+        "name": "Dokumenty spoza KSeF dla biura rachunkowego",
+        "description": (
+            "KSeF obejmuje faktury krajowe. Wyciągi, paragony, faktury zagraniczne, "
+            "umowy i kadry nadal zbierasz od klienta. Lista i gotowy sposób na to."
+        ),
+        "og_image": "images/og/poradnik.png",
+        "priority": "0.8",
+        "label": "Dokumenty spoza KSeF",
+        "template": "pages/outside_ksef.html",
+        "og_type": "article",
+        "published": "2026-10-11",
+        "modified": "2026-10-11",
+    },
     "pages:templates": {
         "name": "Szablony list dokumentów od klientów",
         "description": (
@@ -407,8 +421,8 @@ def article(page, request):
         "inLanguage": "pl-PL",
         "mainEntityOfPage": absolute_url(request.path),
         "image": absolute_url(static(page["og_image"])),
-        "datePublished": GUIDE_PUBLISHED,
-        "dateModified": GUIDE_MODIFIED,
+        "datePublished": page.get("published", GUIDE_PUBLISHED),
+        "dateModified": page.get("modified", GUIDE_MODIFIED),
         "author": {"@id": absolute_url("/#organization")},
         "publisher": {"@id": absolute_url("/#organization")},
     }
@@ -482,7 +496,7 @@ def _page_jsonld(view_name, page, request):
             )
         ]
     nodes = [breadcrumbs([(page["label"], request.path)])]
-    if view_name == "pages:guide":
+    if page.get("og_type") == "article":
         nodes.append(article(page, request))
     if view_name == "pages:faq":
         nodes.append(faq_page(FAQ))

@@ -22,7 +22,8 @@ def serialize_request_item(item):
     return {
         "id": item.pk,
         "name": item.name,
-        "status": {"code": item.status, "label": item.get_status_display()},
+        "kind": item.kind,
+        "status": {"code": item.status, "label": item.status_label},
         "rejection_reason": item.rejection_reason,
     }
 

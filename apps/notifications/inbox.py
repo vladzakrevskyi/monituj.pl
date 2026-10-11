@@ -1,6 +1,6 @@
 """Telling a sender that documents arrived - or that the recipient doesn't
-have one ("Nie dotyczy"): a notice in the panel at once, and an email a
-moment later.
+have one ("Nie dotyczy"), or did what an item without a file asked for
+("Zrobione"): a notice in the panel at once, and an email a moment later.
 
 The email waits until the recipient has stopped uploading for a minute, so
 ten files sent in a row make one email listing all ten, not ten emails.
@@ -63,6 +63,29 @@ def forget_not_applicable(request_item):
     ).delete()
 
 
+def notify_confirmed(request_item):
+    """ "Zrobione" on an item without a file - one notice, as above."""
+    owner = request_item.request.created_by
+    if not owner.is_active:
+        return None
+    notice, _ = Notification.objects.get_or_create(
+        user=owner,
+        kind=NotificationKind.CONFIRMED,
+        request_item=request_item,
+        emailed_at__isnull=True,
+        read_at__isnull=True,
+    )
+    return notice
+
+
+def forget_confirmed(request_item):
+    Notification.objects.filter(
+        kind=NotificationKind.CONFIRMED,
+        request_item=request_item,
+        emailed_at__isnull=True,
+    ).delete()
+
+
 def unread_count(user):
     return Notification.objects.filter(user=user, read_at__isnull=True).count()
 
@@ -110,6 +133,8 @@ def _progress(request_obj):
 def _entry(notice):
     if notice.document_id:
         return {"item": notice.item.name, "file": notice.document.original_filename}
+    if notice.kind == NotificationKind.CONFIRMED:
+        return {"item": notice.item.name, "confirmed": True}
     return {
         "item": notice.item.name,
         "not_applicable": True,
@@ -146,8 +171,14 @@ def send_pending_upload_emails(now=None):
                 "client_name": request_obj.client.name,
                 "uploads": [_entry(n) for n in unseen],
                 "upload_count": len(unseen),
-                # Only "Nie dotyczy" - the email says so instead of "Dotarł".
-                "only_not_applicable": all(not n.document_id for n in unseen),
+                # Only "Nie dotyczy" / only "Zrobione" - the email says so
+                # instead of "Dotarł".
+                "only_not_applicable": all(
+                    n.kind == NotificationKind.NOT_APPLICABLE for n in unseen
+                ),
+                "only_confirmed": all(
+                    n.kind == NotificationKind.CONFIRMED for n in unseen
+                ),
                 "progress": _progress(request_obj),
             },
             request=request_obj,

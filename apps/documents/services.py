@@ -15,7 +15,9 @@ from apps.documents.models import Document, DocumentStatus
 from apps.documents.storage import private_storage, save_document_file
 from apps.documents.validation import validate_upload
 from apps.notifications.inbox import (
+    forget_confirmed,
     forget_not_applicable,
+    notify_confirmed,
     notify_not_applicable,
     notify_upload,
 )
@@ -44,6 +46,11 @@ class UploadDocumentService:
         if request_item.status == RequestItemStatus.ZAAKCEPTOWANY:
             raise ValidationAppError(
                 "Ten dokument został już zaakceptowany.", code="ITEM_ALREADY_ACCEPTED"
+            )
+        if request_item.is_confirm:
+            raise ValidationAppError(
+                "Tu nie trzeba przesyłać pliku - wystarczy potwierdzić.",
+                code="ITEM_WITHOUT_FILE",
             )
 
         stored = Document.objects.filter(
@@ -250,8 +257,62 @@ class DocumentReviewService:
         EmailService.send(
             EmailTemplate.REJECTION,
             to_email=request_item.request.client.email,
-            context={"item_name": request_item.name, "reason": reason},
+            context={
+                "item_name": request_item.name,
+                "reason": reason,
+                "confirm": request_item.is_confirm,
+            },
             request=request_item.request,
+        )
+        return request_item
+
+
+class ConfirmationService:
+    """ "Zrobione" on an item without a file (RequestItemKind.CONFIRM): the
+    recipient did what was asked - gave the office access in KSeF, signed a
+    form online - and says so. From there it is an ordinary delivered item:
+    reminders stop, the sender accepts it or sends it back with a reason."""
+
+    @staticmethod
+    def confirm(request_item, django_request=None):
+        if request_item.request.closed_at is not None:
+            raise ValidationAppError(CLOSED_MESSAGE, code="REQUEST_CLOSED")
+        if not request_item.is_confirm:
+            raise ValidationAppError(
+                "Do tego dokumentu trzeba przesłać plik.", code="ITEM_NEEDS_FILE"
+            )
+        if request_item.status not in (
+            RequestItemStatus.BRAK,
+            RequestItemStatus.ODRZUCONY,
+        ):
+            raise ValidationAppError(
+                "To jest już potwierdzone.", code="ITEM_NOT_MISSING"
+            )
+        request_item.status = RequestItemStatus.DOSTARCZONY
+        request_item.rejection_reason = ""
+        request_item.save(update_fields=["status", "rejection_reason", "updated_at"])
+        AuditService.log(
+            AuditEvent.ITEM_CONFIRMED, target=request_item, request=django_request
+        )
+        notify_confirmed(request_item)
+        UploadDocumentService._maybe_send_complete_email(request_item.request)
+        return request_item
+
+    @staticmethod
+    def undo(request_item, django_request=None):
+        """A click by mistake - while the sender hasn't accepted it yet."""
+        if request_item.request.closed_at is not None:
+            raise ValidationAppError(CLOSED_MESSAGE, code="REQUEST_CLOSED")
+        if (
+            not request_item.is_confirm
+            or request_item.status != RequestItemStatus.DOSTARCZONY
+        ):
+            raise ValidationAppError("Tego nie można już cofnąć.", code="CANNOT_UNDO")
+        request_item.status = RequestItemStatus.BRAK
+        request_item.save(update_fields=["status", "updated_at"])
+        forget_confirmed(request_item)
+        AuditService.log(
+            AuditEvent.CONFIRMATION_UNDONE, target=request_item, request=django_request
         )
         return request_item
 
@@ -392,7 +453,12 @@ class NotApplicableService:
         EmailService.send(
             EmailTemplate.REJECTION,
             to_email=request_item.request.client.email,
-            context={"item_name": request_item.name, "reason": reason, "needed": True},
+            context={
+                "item_name": request_item.name,
+                "reason": reason,
+                "needed": True,
+                "confirm": request_item.is_confirm,
+            },
             request=request_item.request,
         )
         return request_item

@@ -11,6 +11,7 @@ urlpatterns = [
     path("dla-kogo/", pages.for_whom, name="for-whom"),
     path("dla-kogo/<slug:slug>/", pages.segment, name="segment"),
     path("poradnik/jak-zbierac-dokumenty-od-klientow/", pages.guide, name="guide"),
+    path("poradnik/dokumenty-spoza-ksef/", pages.outside_ksef, name="outside-ksef"),
     path("szablony/", pages.templates_library, name="templates"),
     path("szablony/<slug:slug>/", pages.template_page, name="template"),
     path("bezpieczenstwo/", pages.security, name="security"),

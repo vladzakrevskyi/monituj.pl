@@ -91,6 +91,32 @@ FAQ = [
     {
         "category": "firma",
         "home": False,
+        "q": "Czy mogę poprosić klienta o coś, co nie jest plikiem?",
+        "a": (
+            "Tak. Każdą pozycję na liście możesz oznaczyć jako „bez pliku” - np. "
+            "„Nadaj biuru uprawnienia w KSeF” albo „Podpisz pełnomocnictwo "
+            "online”. Klient nie przesyła wtedy niczego, tylko klika „Zrobione”. "
+            "Monituj przypomina o takiej pozycji tak samo jak o brakujących "
+            "dokumentach, a Ty akceptujesz potwierdzenie albo odsyłasz je z "
+            "informacją, co się nie zgadza."
+        ),
+    },
+    {
+        "category": "firma",
+        "home": False,
+        "q": "Co z fakturami, które są w KSeF?",
+        "a": (
+            "O faktury wystawione w KSeF nie musisz prosić klienta - biuro pobiera "
+            "je z KSeF samo, gdy klient nada mu uprawnienia. W Monituj zbierasz "
+            "to, czego w KSeF nie ma: wyciągi bankowe, paragony, faktury "
+            "zagraniczne, umowy i dokumenty kadrowe. Gotowe szablony dla biur "
+            "rachunkowych mają już pozycje „spoza KSeF”, a nadanie uprawnień w "
+            "KSeF jest w nich pozycją bez pliku, którą klient tylko potwierdza."
+        ),
+    },
+    {
+        "category": "firma",
+        "home": False,
         "q": "Czy mogę zaimportować klientów z Excela albo programu księgowego?",
         "a": (
             "Tak, w każdym planie. Na liście klientów wybierz „Importuj z "

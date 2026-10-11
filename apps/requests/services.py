@@ -21,11 +21,13 @@ from apps.common.security import generate_public_token, get_client_ip, hash_ip
 from apps.common.site import absolute_url
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
+from apps.requests import item_kinds
 from apps.requests.models import (
     AnonymousRequestThrottle,
     PasswordProtectedAccess,
     Request,
     RequestItem,
+    RequestItemKind,
     RequestItemStatus,
 )
 
@@ -274,8 +276,12 @@ class RequestService:
         )
         RequestItem.objects.bulk_create(
             [
-                RequestItem(request=request_obj, name=item_name)
-                for item_name in clean_item_names
+                RequestItem(
+                    request=request_obj,
+                    name=item_name[:255],
+                    kind=RequestItemKind.CONFIRM if confirm else RequestItemKind.FILE,
+                )
+                for item_name, confirm in map(item_kinds.split, clean_item_names)
             ]
         )
         if password:

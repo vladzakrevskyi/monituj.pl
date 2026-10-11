@@ -89,10 +89,28 @@ class RequestItemStatus(models.TextChoices):
     NIE_DOTYCZY = "nie_dotyczy", "Nie dotyczy"
 
 
+class RequestItemKind(models.TextChoices):
+    FILE = "plik", "Plik do przesłania"
+    # Something to do, then "Zrobione" - no file (apps/requests/item_kinds.py).
+    CONFIRM = "potwierdzenie", "Do zrobienia - bez pliku"
+
+
+# A confirm-only item goes through the same statuses under its own words.
+CONFIRM_STATUS_LABELS = {
+    "brak": "Do zrobienia",
+    "dostarczony": "Potwierdzone",
+}
+
+
 class RequestItem(TimeStampedModel):
     request = models.ForeignKey(Request, on_delete=models.CASCADE, related_name="items")
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    kind = models.CharField(
+        max_length=16,
+        choices=RequestItemKind.choices,
+        default=RequestItemKind.FILE,
+    )
     status = models.CharField(
         max_length=32,
         choices=RequestItemStatus.choices,
@@ -108,6 +126,16 @@ class RequestItem(TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+    @property
+    def is_confirm(self):
+        return self.kind == RequestItemKind.CONFIRM
+
+    @property
+    def status_label(self):
+        if self.is_confirm and self.status in CONFIRM_STATUS_LABELS:
+            return CONFIRM_STATUS_LABELS[self.status]
+        return self.get_status_display()
 
 
 class PasswordProtectedAccess(TimeStampedModel):

@@ -23,7 +23,7 @@
 <article class="template-sheet">
 <p class="template-sheet__head">Prośba „{{ template.name }}”</p>
 <ol class="template-items">
-{% for name, hint in template.items %}<li><strong>{{ name }}</strong>{% if hint %}<span>{{ hint }}</span>{% endif %}</li>
+{% for name, hint in template.items %}<li><strong>{{ name }}{% if name in template.confirm %} <span class="item-kind">bez pliku</span>{% endif %}</strong>{% if hint %}<span>{{ hint }}</span>{% endif %}</li>
 {% endfor %}</ol>
 <dl class="template-sheet__meta">
 <div><dt>Termin</dt><dd>{{ deadline_text }}{% if template.monthly %} - najlepiej jako prośba cykliczna, wysyłana co miesiąc{% endif %}</dd></div>

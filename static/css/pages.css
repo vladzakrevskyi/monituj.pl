@@ -863,6 +863,19 @@
   color: var(--color-text-muted);
 }
 
+.note-card--flush {
+  margin-top: 0;
+}
+
+.note-card .eyebrow {
+  justify-content: center;
+}
+
+.note-card .chip-nav {
+  justify-content: center;
+  margin-top: var(--space-5);
+}
+
 /* Bezpieczeństwo */
 
 .retention-steps {
@@ -1536,6 +1549,26 @@ a.contact-card__value:hover {
 .article p {
   margin: 0 0 var(--space-4);
   color: var(--color-text);
+}
+
+.article ul:not([class]),
+.article ol:not([class]) {
+  margin: 0 0 var(--space-4);
+  padding-left: var(--space-5);
+}
+
+.article ul:not([class]) li,
+.article ol:not([class]) li {
+  margin-bottom: var(--space-2);
+}
+
+/* "Stan na ..." under a list that the law may change. */
+.article__note {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-border-strong);
+  background: var(--color-bg-subtle);
+  font-size: 15px;
+  color: var(--color-text-muted);
 }
 
 .article__toc {

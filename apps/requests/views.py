@@ -27,7 +27,7 @@ from apps.documents.services import DocumentReviewService
 from apps.notifications import inbox
 from apps.reminders.schedule import recipient_zone, send_clock
 from apps.reminders.services import ReminderScheduleService
-from apps.requests import received, recurring, request_templates
+from apps.requests import item_kinds, received, recurring, request_templates
 from apps.requests.forms import (
     RecurringRequestForm,
     RequestEditForm,
@@ -39,6 +39,7 @@ from apps.requests.models import (
     RecurringRequest,
     Request,
     RequestItem,
+    RequestItemKind,
     RequestItemStatus,
 )
 from apps.requests.services import RequestService, compute_status
@@ -299,13 +300,16 @@ SUGGESTED_ITEMS = 8
 def suggested_items(owner):
     """Documents to add with a click: the ones this owner asks for most,
     then the usual ones."""
-    own = (
+    used = (
         RequestItem.objects.filter(request__created_by=owner)
-        .values("name")
+        .values("name", "kind")
         .annotate(uses=models.Count("id"))
-        .order_by("-uses", "name")
-        .values_list("name", flat=True)[:SUGGESTED_ITEMS]
+        .order_by("-uses", "name")[:SUGGESTED_ITEMS]
     )
+    own = [
+        item_kinds.joined(row["name"], row["kind"] == RequestItemKind.CONFIRM)
+        for row in used
+    ]
     seen, names = set(), []
     for name in [*own, *COMMON_ITEMS]:
         if name.lower() not in seen:

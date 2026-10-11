@@ -22,13 +22,13 @@
 {% if request_obj.is_closed %}
 <p class="public-closed" role="status">Nadawca zamknął tę prośbę {{ request_obj.closed_at|dt }}. Przesyłanie plików jest wyłączone - jeśli masz jeszcze dokumenty, skontaktuj się bezpośrednio z nadawcą.</p>
 {% endif %}
-<h2 class="card-title mt-5">Dokumenty {% if request_obj.is_closed %}w prośbie{% else %}do przesłania{% endif %}</h2>
+<h2 class="card-title mt-5">{% if has_confirm_items %}Lista{% else %}Dokumenty{% endif %} {% if request_obj.is_closed %}w prośbie{% elif has_confirm_items %}do załatwienia{% else %}do przesłania{% endif %}</h2>
 <div id="items-list" data-token="{{ public_token }}">
 {% for item in items %}
 <div class="request-item" data-item-id="{{ item.id }}" data-status="{{ item.status }}">
 <div class="request-item__head">
 <h3>{{ item.name }}</h3>
-<span class="badge item-status-label {{ item.status|badge_class }}">{{ item.get_status_display }}</span>
+<span class="badge item-status-label {{ item.status|badge_class }}">{{ item.status_label }}</span>
 </div>
 {% if item.status == "odrzucony" and item.rejection_reason %}
 <p class="item-rejection-reason">{{ item.rejection_reason }}</p>
@@ -36,14 +36,42 @@
 
 {% if item.status == "nie_dotyczy" %}
 <div class="item-na">
-<p class="item-na__text">Nie masz tego dokumentu{% if item.not_applicable_reason %}: <strong>{{ item.not_applicable_reason }}</strong>{% endif %}.{% if item.not_applicable_accepted %} Nadawca to potwierdził.{% endif %}</p>
-{% if not request_obj.is_closed and not item.not_applicable_accepted %}<button type="button" class="link-button" data-na-undo>Cofnij - jednak go mam</button>{% endif %}
+<p class="item-na__text">{% if item.is_confirm %}To Cię nie dotyczy{% else %}Nie masz tego dokumentu{% endif %}{% if item.not_applicable_reason %}: <strong>{{ item.not_applicable_reason }}</strong>{% endif %}.{% if item.not_applicable_accepted %} Nadawca to potwierdził.{% endif %}</p>
+{% if not request_obj.is_closed and not item.not_applicable_accepted %}<button type="button" class="link-button" data-na-undo>{% if item.is_confirm %}Cofnij{% else %}Cofnij - jednak go mam{% endif %}</button>{% endif %}
 </div>
 {% endif %}
 
 {% if item.status == "zaakceptowany" %}
-<p class="item-accepted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Dokument zaakceptowany.</p>
+<p class="item-accepted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>{% if item.is_confirm %}Zaakceptowane przez nadawcę.{% else %}Dokument zaakceptowany.{% endif %}</p>
 {% endif %}
+{% if item.is_confirm %}
+{# An item without a file: something to do, then "Zrobione" (ConfirmationService). #}
+{% if item.status == "dostarczony" %}
+<div class="item-na item-na--done">
+<p class="item-na__text">Potwierdzone przez Ciebie - nadawca to sprawdzi.</p>
+{% if not request_obj.is_closed %}<button type="button" class="link-button" data-confirm-undo>Cofnij potwierdzenie</button>{% endif %}
+</div>
+{% endif %}
+{% if not request_obj.is_closed and item.status == "brak" or not request_obj.is_closed and item.status == "odrzucony" %}
+<div class="confirm-zone">
+<svg class="upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9"/></svg>
+<p class="upload-zone__hint">Tu nie trzeba przesyłać pliku. Gdy to zrobisz, potwierdź:</p>
+<button type="button" class="btn btn-primary" data-confirm-done>Zrobione</button>
+<p class="upload-error" role="alert" data-confirm-error></p>
+</div>
+<div class="na" data-na>
+<button type="button" class="link-button na__open" data-na-open aria-expanded="false">To mnie nie dotyczy</button>
+<div class="na__picker" data-na-picker hidden>
+<p class="na__title">Dlaczego Cię to nie dotyczy?</p>
+<form class="na__other" data-na-other>
+<input type="text" maxlength="500" placeholder="Napisz krótko…" aria-label="Powód">
+<button type="submit" class="btn btn-primary btn-sm">Wyślij</button>
+</form>
+<p class="upload-error" role="alert" data-na-error></p>
+</div>
+</div>
+{% endif %}
+{% else %}
 <div class="uploaded-files">
 {% for document in item.own_documents %}
 {% if document.is_anonymized %}
@@ -83,6 +111,7 @@
 <p class="upload-error" role="alert" data-na-error></p>
 </div>
 </div>
+{% endif %}
 {% endif %}
 </div>
 {% endfor %}

@@ -30,6 +30,7 @@
 <p>W jednym formularzu określasz wszystko, czego potrzebujesz - dla jednego klienta albo kilku naraz. Możesz zacząć od <a href="{% url 'pages:templates' %}">gotowego szablonu dla swojej branży</a> albo od własnego, zapisanego wcześniej:</p>
 <ul class="check-list">
 {% include "pages/_check.html" with text="listę dokumentów - każdy z osobnym statusem" %}
+{% include "pages/_check.html" with text="także rzeczy do zrobienia bez pliku - np. nadanie biuru uprawnień w KSeF; klient potwierdza je kliknięciem" %}
 {% include "pages/_check.html" with text="termin, widoczny dla Ciebie i dla klienta" %}
 {% include "pages/_check.html" with text="opcjonalne hasło dostępu do prośby" %}
 {% include "pages/_check.html" with text="harmonogram automatycznych przypomnień" %}

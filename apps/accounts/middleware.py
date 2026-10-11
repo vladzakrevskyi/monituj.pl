@@ -25,7 +25,13 @@ PANEL_NAMESPACES = {
     "documents_api",
 }
 # Recipients' side of the documents API - not the panel.
-PUBLIC_VIEWS = {"upload", "public-delete", "public-not-applicable", "download"}
+PUBLIC_VIEWS = {
+    "upload",
+    "public-delete",
+    "public-not-applicable",
+    "public-confirm",
+    "download",
+}
 PAUSED_MESSAGE = (
     "Twój dostęp do tego zespołu jest wstrzymany - plan obejmuje mniej osób. "
     "Poproś właściciela konta o zmianę planu albo przełącz się na inne konto."

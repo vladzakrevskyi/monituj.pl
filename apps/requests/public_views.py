@@ -100,6 +100,7 @@ def public_request_detail(request, token):
             "request_obj": request_obj,
             **sender_context(request_obj.created_by),
             "items": items,
+            "has_confirm_items": any(item.is_confirm for item in items),
             "status_label": status.label,
             "status_code": status.value,
             "public_token": request_obj.public_token,
