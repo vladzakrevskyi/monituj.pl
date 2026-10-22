@@ -1,7 +1,10 @@
+import time
+
 import pytest
-from django.core import mail
+from django.core import mail, signing
 from django.urls import reverse
 
+from apps.contact.forms import EXPIRED_MESSAGE, MAX_AGE, TOKEN_SALT
 from apps.contact.services import LIMIT_PER_HOUR
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
@@ -10,8 +13,17 @@ from tests.conftest import page_text
 AJAX = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
 
 
-def _message(**overrides):
+def _token(seconds_ago=30):
+    """What the page handed out that long ago."""
+    return signing.dumps(int(time.time()) - seconds_ago, salt=TOKEN_SALT)
+
+
+def _message(seconds_ago=30, **overrides):
+    """As a person sends it: the page open for a while, its script ran."""
+    token = _token(seconds_ago)
     data = {
+        "issued": token,
+        "human": token[::-1],
         "name": "Jan Kowalski",
         "email": "jan@example.com",
         "company": "Biuro Kowalski",
@@ -116,6 +128,50 @@ def test_bots_filling_the_hidden_field_get_success_but_nothing_is_sent(client):
 
     assert response.status_code == 200
     assert mail.outbox == []
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "bot",
+    [
+        {"seconds_ago": 1},  # faster than anyone types
+        {"issued": "", "human": ""},  # posted without opening the page
+        {"issued": "123:abc", "human": "cba:321"},  # a made-up token
+        {"human": ""},  # the page's script never ran
+        {"human": "something"},
+    ],
+    ids=["too-fast", "no-token", "forged-token", "no-script", "wrong-script"],
+)
+def test_bots_get_success_but_nothing_is_sent(client, bot):
+    response = client.post(reverse("pages:contact"), _message(**bot), **AJAX)
+
+    assert response.status_code == 200
+    assert response.json()["success"]
+    assert mail.outbox == []
+
+
+@pytest.mark.django_db
+def test_page_left_open_too_long_asks_to_reload_instead_of_dropping(client):
+    seconds = int(MAX_AGE.total_seconds()) + 60
+
+    response = client.post(
+        reverse("pages:contact"), _message(seconds_ago=seconds), **AJAX
+    )
+
+    assert response.status_code == 400
+    assert EXPIRED_MESSAGE in str(response.json())
+    assert mail.outbox == []
+
+
+@pytest.mark.django_db
+def test_page_hands_out_a_token_and_the_script(client):
+    page = client.get(reverse("pages:contact")).content.decode()
+
+    token = page.split('name="issued" value="')[1].split('"')[0]
+    assert isinstance(signing.loads(token, salt=TOKEN_SALT), int)
+    assert '<input type="hidden" name="human" value="">' in page
+    assert "js/contact.js" in page
+    assert "<noscript>" in page and "kontakt@monituj.pl" in page
 
 
 @pytest.mark.django_db

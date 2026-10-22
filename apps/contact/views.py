@@ -10,7 +10,7 @@ from apps.common.responses import (
     is_ajax_request,
     success_response,
 )
-from apps.contact.forms import ContactForm
+from apps.contact.forms import ContactForm, new_token
 from apps.contact.services import ContactService
 
 SENT_TITLE = "Dziękujemy za wiadomość"
@@ -40,5 +40,7 @@ def contact(request):
     else:
         form = ContactForm()
     return render(
-        request, "pages/contact.html", {"form": form, "legal": legal_context()}
+        request,
+        "pages/contact.html",
+        {"form": form, "legal": legal_context(), "contact_token": new_token()},
     )

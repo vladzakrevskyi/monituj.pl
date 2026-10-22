@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from django.conf import settings
@@ -9,6 +10,7 @@ from apps.contact.models import ContactThrottle
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import EmailService
 
+logger = logging.getLogger("monituj")
 LIMIT_PER_HOUR = 5
 LIMIT_MESSAGE = (
     "Wysłano już kilka wiadomości w krótkim czasie. Spróbuj ponownie za godzinę "
@@ -34,7 +36,9 @@ class ContactService:
             raise RateLimitedAppError(LIMIT_MESSAGE, code="CONTACT_LIMIT_REACHED")
         ContactThrottle.objects.create(ip_hash=ip_hash)
 
-        if form.is_spam():
+        reason = form.spam_reason()
+        if reason:
+            logger.info("contact form: bot message dropped (%s)", reason)
             return
 
         data = form.cleaned_data
