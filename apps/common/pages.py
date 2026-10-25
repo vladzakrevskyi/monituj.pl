@@ -57,6 +57,7 @@ faq = _page("pages/faq.html")
 demo = _page("pages/demo.html")
 guide = _page("pages/guide.html")
 outside_ksef = _page("pages/outside_ksef.html")
+client_questions = _page("pages/client_questions.html")
 
 
 def segment(request, slug):

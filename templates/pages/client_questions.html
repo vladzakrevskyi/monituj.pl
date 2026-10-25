@@ -1,0 +1,104 @@
+{% extends "pages/base_page.html" %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Ścieżka">
+<a href="{% url 'landing' %}">Monituj</a><span aria-hidden="true">/</span>
+<span aria-current="page">Poradnik</span>
+</nav>
+{% endblock %}
+{% block hero_eyebrow %}Poradnik dla biur rachunkowych{% endblock %}
+{% block hero_title %}Jak wyjaśniać z klientem <strong>niejasne operacje</strong> - i nie gubić odpowiedzi{% endblock %}
+{% block hero_lead %}Przelew bez opisu, płatność bez faktury, wydatek, który może być prywatny. Każde biuro zadaje klientom takie pytania co miesiąc. Zobacz, jak pytać, żeby klient odpowiadał za pierwszym razem, a odpowiedź nie ginęła w skrzynce.{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<article class="article">
+
+<nav class="article__toc" aria-label="Spis treści">
+<p class="article__toc-head">W tym poradniku</p>
+<ol>
+<li><a href="#skad">O co biuro pyta klienta najczęściej</a></li>
+<li><a href="#mail">Dlaczego pytania mailem i telefonem giną</a></li>
+<li><a href="#jak-pytac">Jak zadać pytanie, żeby klient odpowiedział za pierwszym razem</a></li>
+<li><a href="#po-co">Zapisz, po co pytasz</a></li>
+<li><a href="#odpowiedz">Pilnuj odpowiedzi - bez dzwonienia</a></li>
+<li><a href="#karta">Wszystko o kliencie w jednym miejscu</a></li>
+<li><a href="#kalendarz">Kalendarz i plan na dziś</a></li>
+</ol>
+</nav>
+
+<h2 id="skad">O co biuro pyta klienta najczęściej</h2>
+<p>Dokumenty to połowa pracy. Druga połowa to wyjaśnienia - bo z samego wyciągu albo faktury nie zawsze wiadomo, jak coś zaksięgować. Najczęściej chodzi o:</p>
+<ul>
+<li><strong>Przelew bez opisu</strong> - „Co to za przelew 1 250 zł z 12.09?” Zaliczka, zwrot, pożyczka, a może zapłata za fakturę, której jeszcze nie mamy.</li>
+<li><strong>Płatność bez dokumentu</strong> - na wyciągu jest wydatek, a w dokumentach nie ma do niego faktury ani paragonu.</li>
+<li><strong>Wydatek, który może być prywatny</strong> - zakup w sklepie, restauracja, paliwo. Koszt firmy czy wydatek właściciela?</li>
+<li><strong>Wpływ od nieznanego kontrahenta</strong> - za co przyszły pieniądze i czy trzeba wystawić fakturę.</li>
+<li><strong>Szczegóły do deklaracji</strong> - czy samochód jest używany także prywatnie, czy umowa najmu wciąż obowiązuje, od kiedy zmienia się bank.</li>
+</ul>
+<p>Każde takie pytanie wstrzymuje zamknięcie miesiąca u tego klienta. Dopóki nie ma odpowiedzi, operacja wisi - a termin rozliczenia się nie przesuwa.</p>
+
+<h2 id="mail">Dlaczego pytania mailem i telefonem giną</h2>
+<p>Pytanie zadane mailem trafia do skrzynki klienta pomiędzy reklamy i faktury. Jeśli nie odpowie od razu, zwykle nie odpowie wcale - i trzeba pamiętać, żeby zapytać jeszcze raz. Telefon jest szybszy, ale odpowiedź zostaje w pamięci jednej osoby, a nie w dokumentacji.</p>
+<p>Drugi problem jest po stronie biura: gdy odpowiedź przychodzi po tygodniu, często nikt już nie pamięta, <strong>po co</strong> było to pytanie - do VAT, do rozrachunków, do kosztów? Trzeba wrócić do wyciągu i odtworzyć cały tok myślenia. A jeśli pytała koleżanka, która jest na urlopie, odpowiedź może w ogóle do nikogo nie dotrzeć.</p>
+
+<h2 id="jak-pytac">Jak zadać pytanie, żeby klient odpowiedział za pierwszym razem</h2>
+<ol>
+<li><strong>Podaj konkret</strong>: kwotę, datę i kontrahenta z wyciągu. „Co to za przelew 1 250 zł z 12.09 do Hurtowni Mąki?” zamiast „proszę o wyjaśnienie operacji z września”.</li>
+<li><strong>Jedno pytanie - jedna sprawa.</strong> Pięć pytań w jednym mailu kończy się odpowiedzią na dwa. Osobne pytania łatwiej odhaczyć - Tobie i klientowi.</li>
+<li><strong>Powiedz, jaka odpowiedź Ci wystarczy.</strong> „Wystarczy jedno zdanie albo zdjęcie faktury” - klient wie, że to nie zajmie mu kwadransa.</li>
+<li><strong>Daj termin.</strong> Pytanie bez terminu przegrywa z każdą pilniejszą sprawą klienta.</li>
+<li><strong>Nie każ się logować.</strong> Każde hasło i każdy program do zainstalowania to powód, żeby odłożyć odpowiedź na później. Klient powinien odpowiedzieć z telefonu, z linku w mailu.</li>
+</ol>
+<p>W Monituj pytanie zadajesz z karty klienta albo z zakładki Pytania. Klient dostaje mail z linkiem, odpowiada słowami - bez konta - a jeśli chce, dołącza plik, np. zdjęcie brakującej faktury.</p>
+
+<h2 id="po-co">Zapisz, po co pytasz</h2>
+<p>Obok pytania zapisz krótką notatkę dla siebie: „Do VAT za wrzesień: koszt firmy czy prywatny?”, „Rozrachunki z Hurtownią - brak faktury do płatności”. W Monituj taką notatkę widzisz Ty i Twój zespół, <strong>klient nigdy</strong>.</p>
+<p>Gdy przyjdzie odpowiedź, pytanie, powód i odpowiedź są w jednym miejscu - także w mailu z powiadomieniem. Nie musisz niczego odtwarzać, od razu wiesz, co z odpowiedzią zrobić.</p>
+
+<h2 id="odpowiedz">Pilnuj odpowiedzi - bez dzwonienia</h2>
+<p>Pytanie bez odpowiedzi nie powinno zależeć od tego, czy ktoś pamięta, żeby zapytać jeszcze raz:</p>
+<ul>
+<li><strong>Przypomnienia wychodzą same</strong> - standardowo pierwsze po 2 dniach, potem co 3 dni, najwyżej 3 razy - i kończą się, gdy klient odpowie.</li>
+<li><strong>Odpowiedź przyjmujesz albo dopytujesz.</strong> „Wyjaśnione” zamyka sprawę. „Dopytaj” odsyła klientowi pytanie uzupełniające - odpowie w tym samym miejscu, a przypomnienia wrócą.</li>
+<li><strong>Widzisz, co czeka.</strong> Lista pytań pokazuje, na co klienci jeszcze nie odpowiedzieli i od jak dawna, a odpowiedzi do sprawdzenia są wyróżnione w menu.</li>
+</ul>
+
+<h2 id="karta">Wszystko o kliencie w jednym miejscu</h2>
+<p>Kiedy siadasz do księgowości jednego klienta, potrzebujesz pełnego obrazu: czego jeszcze brakuje, na co czekasz i co już ustaliliście. Na karcie klienta w Monituj masz to na jednej stronie:</p>
+<ul>
+<li><strong>Otwarte sprawy</strong> - pytania bez odpowiedzi i od jak dawna czekają, odpowiedzi do sprawdzenia i brakujące dokumenty.</li>
+<li><strong>Notatki zespołu</strong> zamiast karteczek: „dzwoniła w sprawie leasingu, oddzwonić w piątek”. Widzi je cały zespół, klient - nigdy.</li>
+<li><strong>Historia</strong> - prośby, pytania, przesłane dokumenty, przypomnienia i notatki, od najnowszych, z filtrem.</li>
+</ul>
+
+<h2 id="kalendarz">Kalendarz i plan na dziś</h2>
+<p>Ostatni element to pamięć o terminach. W kalendarzu Monituj widzisz terminy klientów, terminy odpowiedzi na pytania, dni wysyłki próśb cyklicznych i własne przypomnienia („Przypomnij mi: zadzwonić do Kowalskiego w sprawie leasingu”). Kalendarz możesz dodać do Google, Outlooka albo iPhone'a.</p>
+<p>W dni robocze o 7:30 przychodzi mail „Na dziś”: Twoje przypomnienia, terminy na dziś i jutro, prośby po terminie, pytania, które czekają na odpowiedź dłużej niż tydzień - z notatką, po co pytałeś - i to, co dotarło od wczoraj. Jeśli nic nie czeka, maila nie ma.</p>
+<p class="article__note">Kalendarz pokazuje Twoje sprawy z klientami. Terminy ustawowe - ZUS, VAT, JPK - masz w programie księgowym i w kalendarzu podatnika.</p>
+
+<div class="article__summary">
+<h2>W skrócie</h2>
+<ul class="check-list">
+{% include "pages/_check.html" with text="pytaj konkretnie: kwota, data, kontrahent" %}
+{% include "pages/_check.html" with text="jedno pytanie, jeden termin, odpowiedź z linku bez logowania" %}
+{% include "pages/_check.html" with text="zapisz, po co pytasz - klient tego nie widzi" %}
+{% include "pages/_check.html" with text="przypomnienia o pytaniu wychodzą same i same się kończą" %}
+{% include "pages/_check.html" with text="karta klienta, kalendarz i mail „Na dziś” pamiętają za Ciebie" %}
+</ul>
+<p>Monituj prowadzi pytania tak samo jak prośby o dokumenty: wysyłasz raz, a system przypomina, zbiera odpowiedź i pokazuje ją obok Twojej notatki.</p>
+<div class="hero__actions">
+<a class="btn btn-dark btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+<a class="btn btn-secondary btn-lg" href="{% url 'pages:demo' %}">Wypróbuj demo</a>
+</div>
+<ul class="article__links">
+<li><a href="{% url 'pages:outside-ksef' %}">Dokumenty spoza KSeF</a> - co nadal zbierasz od klienta i jak.</li>
+<li><a href="{% url 'pages:segment' 'biura-rachunkowe' %}">Monituj dla biur rachunkowych</a> - jak wygląda cały proces.</li>
+</ul>
+</div>
+
+</article>
+</div>
+</section>
+{% endblock %}

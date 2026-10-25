@@ -143,10 +143,14 @@ def test_unknown_industry_is_not_found(client):
 
 
 @pytest.mark.django_db
-def test_guide_is_an_article(client):
-    blocks = _jsonld(_head(client.get(reverse("pages:guide"))))
+@pytest.mark.parametrize(
+    "name", ["pages:guide", "pages:outside-ksef", "pages:client-questions"]
+)
+def test_guides_are_articles_linked_from_every_page(client, name):
+    blocks = _jsonld(_head(client.get(reverse(name))))
 
     assert "Article" in _types(blocks)
+    assert f'href="{reverse(name)}"' in client.get("/").content.decode()
 
 
 @pytest.mark.django_db

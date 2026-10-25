@@ -63,9 +63,9 @@ PAGES = {
     "pages:features": {
         "name": "Przypomnienia i statusy dokumentów klientów",
         "description": (
-            "Automatyczne przypomnienia o dokumentach, lista braków, akceptacja i "
-            "odrzucanie plików, dostęp dla klienta bez konta i usuwanie plików "
-            "zgodnie z RODO."
+            "Automatyczne przypomnienia o dokumentach, lista braków, pytania do "
+            "klientów, karta klienta i kalendarz terminów. Klient bez konta, "
+            "usuwanie plików wg RODO."
         ),
         "og_image": "images/og/funkcje.png",
         "priority": "0.8",
@@ -110,6 +110,21 @@ PAGES = {
         "og_type": "article",
         "published": "2026-10-11",
         "modified": "2026-10-11",
+    },
+    "pages:client-questions": {
+        "name": "Jak wyjaśniać z klientem niejasne operacje",
+        "description": (
+            "Przelew bez opisu, płatność bez faktury? Jak pytać klienta biura "
+            "rachunkowego, żeby odpowiadał za pierwszym razem, i nie gubić "
+            "odpowiedzi ani terminów."
+        ),
+        "og_image": "images/og/poradnik.png",
+        "priority": "0.8",
+        "label": "Pytania do klienta",
+        "template": "pages/client_questions.html",
+        "og_type": "article",
+        "published": "2026-10-25",
+        "modified": "2026-10-25",
     },
     "pages:templates": {
         "name": "Szablony list dokumentów od klientów",
@@ -374,6 +389,10 @@ def software_application():
             "Szablony próśb: własne i gotowe listy dokumentów dla branż",
             "Przesyłanie plików przez klienta bez zakładania konta",
             "Akceptacja i odrzucanie dokumentów z podaniem powodu",
+            "Pytania do klientów z odpowiedzią przez link i notatką, po co pytasz",
+            "Karta klienta: otwarte sprawy, notatki zespołu i pełna historia",
+            "Kalendarz terminów klientów, wysyłek cyklicznych i własnych przypomnień",
+            "Poranny e-mail „Na dziś” i kalendarz w Google, Outlooku i iPhonie",
             "Automatyczne usuwanie plików po ustalonym czasie (RODO)",
             "Usuwanie próśb i klientów z całą historią, także wielu naraz",
         ],

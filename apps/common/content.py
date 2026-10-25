@@ -539,9 +539,9 @@ SEGMENT_PAGES = {
     "biura-rachunkowe": {
         "seo_name": "Dokumenty od klientów biura rachunkowego",
         "seo_description": (
-            "Faktury, wyciągi i raporty od klientów przed terminem VAT i JPK - "
-            "bez maili i telefonów. Monituj sam przypomina klientom biura "
-            "rachunkowego o brakach."
+            "Faktury i wyciągi od klientów przed terminem VAT i JPK, bez maili i "
+            "telefonów. Monituj przypomina o brakach, a pytania do klientów i "
+            "terminy masz w kalendarzu."
         ),
         "h1": "Dokumenty od klientów biura rachunkowego - na czas, bez pogoni",
         "lead": (

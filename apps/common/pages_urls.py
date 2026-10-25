@@ -12,6 +12,9 @@ urlpatterns = [
     path("dla-kogo/<slug:slug>/", pages.segment, name="segment"),
     path("poradnik/jak-zbierac-dokumenty-od-klientow/", pages.guide, name="guide"),
     path("poradnik/dokumenty-spoza-ksef/", pages.outside_ksef, name="outside-ksef"),
+    path(
+        "poradnik/pytania-do-klienta/", pages.client_questions, name="client-questions"
+    ),
     path("szablony/", pages.templates_library, name="templates"),
     path("szablony/<slug:slug>/", pages.template_page, name="template"),
     path("bezpieczenstwo/", pages.security, name="security"),
