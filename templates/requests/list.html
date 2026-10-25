@@ -10,7 +10,10 @@
 <h1>Przypomnienia</h1>
 <p class="page-header__sub">Wszystkie prośby o dokumenty i ich aktualny status.</p>
 </div>
+<div class="page-header__actions">
+<a class="btn btn-secondary" href="{% url 'requests:question-create' %}">Zadaj pytanie</a>
 <a class="btn btn-primary" href="{% url 'requests:create' %}">Nowe przypomnienie</a>
+</div>
 </div>
 
 <form method="get" class="filter-panel" role="search">

@@ -411,6 +411,7 @@ def request_detail(request, request_id):
         {
             "request_obj": request_obj,
             "items": items,
+            "question": request_obj.question_item,
             "not_applicable_count": sum(
                 1 for item in items if item.status == RequestItemStatus.NIE_DOTYCZY
             ),

@@ -5,7 +5,7 @@
 {% block page_class %}page--wide{% endblock %}
 
 {% block content %}
-<a class="back-link" href="{% url 'clients:list' %}" title="Wróć: Klienci">&larr; Klienci</a>
+<a class="back-link" href="{% url 'clients:detail' client.id %}" title="Wróć: karta klienta">&larr; Karta klienta</a>
 <div class="page-header">
 <div>
 <h1>{{ client.name }}</h1>
@@ -13,6 +13,7 @@
 </div>
 <div class="page-header__actions">
 <a class="btn btn-secondary" href="{% url 'clients:edit' client.id %}">Edytuj klienta</a>
+<a class="btn btn-secondary" href="{% url 'requests:question-create' %}?client={{ client.id }}">Zadaj pytanie</a>
 <a class="btn btn-primary" href="{% url 'requests:create' %}?client={{ client.id }}">Nowe przypomnienie</a>
 </div>
 </div>

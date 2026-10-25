@@ -19,7 +19,7 @@
 <a class="btn btn-dark btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
 {% include "demo/_button.html" with cls="btn-secondary btn-lg" label="Wypróbuj demo" %}
 {% endif %}
-<a class="film-card" href="#film" data-video-open aria-controls="film-dialog" aria-haspopup="dialog" title="Zobacz film: Monituj w dwie minuty">
+<a class="film-card" href="#film" data-video-open aria-controls="film-dialog" aria-haspopup="dialog" title="Zobacz film: Monituj w trzy minuty">
 <span class="film-card__thumb"><img src="{% promo_video_thumb %}" alt="" width="480" height="270"><span class="film-card__play" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 3 1.8z"/></svg></span><span class="film-card__clock" aria-hidden="true">{% promo_video_clock %}</span></span>
 <span class="film-card__text"><strong>Zobacz, jak to działa</strong><span>Film · {% promo_video_minutes %}</span></span>
 </a>
@@ -120,14 +120,14 @@
 <div class="container">
 <div class="section-head">
 <p class="eyebrow">Zobacz w akcji</p>
-<h2 class="display-2">Monituj <strong>w dwie minuty</strong></h2>
-<p>Od założenia konta po komplet dokumentów - tak wygląda praca z Monituj u Ciebie i u Twojego klienta.</p>
+<h2 class="display-2">Monituj <strong>w trzy minuty</strong></h2>
+<p>Od założenia konta po komplet dokumentów, pytania do klientów i kalendarz - tak wygląda praca z Monituj u Ciebie i u Twojego klienta.</p>
 </div>
 {% promo_video %}
 </div>
 </section>
 
-<dialog class="video-dialog" id="film-dialog" data-modal-custom aria-label="Film: Monituj w dwie minuty">
+<dialog class="video-dialog" id="film-dialog" data-modal-custom aria-label="Film: Monituj w trzy minuty">
 <button type="button" class="video-dialog__close" data-video-close aria-label="Zamknij film"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 {% promo_video chapters=False %}
 </dialog>
@@ -169,7 +169,12 @@
 <div class="compare__row" role="row">
 <span role="rowheader">Termin</span>
 <span class="compare__no" role="cell">W kalendarzu albo w głowie</span>
-<span class="compare__yes" role="cell">Przy prośbie - widzi go Twój klient</span>
+<span class="compare__yes" role="cell">Przy prośbie i w kalendarzu Monituj - także w telefonie</span>
+</div>
+<div class="compare__row" role="row">
+<span role="rowheader">Pytanie do klienta</span>
+<span class="compare__no" role="cell">Ginie w wątku, a po tygodniu nie wiesz, po co pytałeś</span>
+<span class="compare__yes" role="cell">Czeka z przypomnieniami - razem z notatką, po co pytasz</span>
 </div>
 <div class="compare__row" role="row">
 <span role="rowheader">Status dokumentu</span>
@@ -232,6 +237,26 @@
 {% include "pages/_feature.html" with title="Pełna widoczność" text="Widzisz, u którego klienta czego brakuje, co zostało przesłane i kiedy wyjdzie następne przypomnienie." icon="eye" %}
 {% include "pages/_feature.html" with title="Profesjonalny kontakt z klientem" text="Zamiast łańcucha maili klient dostaje czytelną listę i potwierdzenie każdego przesłanego pliku." icon="user" %}
 {% include "pages/_feature.html" with title="Porządek w danych" text="Pliki są usuwane automatycznie po ustalonym czasie. Nie gromadzisz dokumentów klientów dłużej, niż to potrzebne." icon="shield" %}
+</div>
+</div>
+</section>
+
+<section class="section section--flush-top" id="pamiec-biura">
+<div class="container">
+<div class="section-head section-head--split">
+<div>
+<p class="eyebrow">Pamięć biura</p>
+<h2 class="display-2">Nie musisz pamiętać. <strong>Monituj pamięta za Ciebie.</strong></h2>
+</div>
+<p>Pytania do klientów, wszystko o kliencie w jednym miejscu i kalendarz z tym, co masz zrobić dziś - a rano mail, od czego zacząć.</p>
+</div>
+<div class="feature-grid">
+{% include "pages/_feature.html" with title="Pytania do klienta" text="„Co to za przelew 1 250 zł z 12.09?” Klient odpowiada z linku, bez konta, a Monituj przypomina, dopóki nie odpowie. Obok pytania zapisujesz, po co pytasz - widzi to tylko Twój zespół." icon="question" %}
+{% include "pages/_feature.html" with title="Karta klienta" text="Otwarte sprawy, odpowiedzi do sprawdzenia, brakujące dokumenty, notatki zespołu i cała historia klienta na jednej stronie. Siadasz do jego księgowości i wszystko masz przed sobą." icon="user" %}
+{% include "pages/_feature.html" with title="Kalendarz i „Na dziś”" text="Terminy klientów, wysyłki cykliczne i Twoje przypomnienia w jednym kalendarzu - także w telefonie. W dni robocze o 7:30 mail z listą na dziś." icon="calendar" %}
+</div>
+<div class="section-cta">
+<a class="btn btn-secondary btn-lg" href="{% url 'pages:features' %}#pamiec-biura">Zobacz, co jeszcze potrafi</a>
 </div>
 </div>
 </section>

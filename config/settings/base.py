@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "apps.demo",
     "apps.contact",
     "apps.billing",
+    "apps.agenda",
 ]
 
 MIDDLEWARE = [
@@ -210,6 +211,11 @@ CELERY_BEAT_SCHEDULE = {
     "delete-old-client-imports": {
         "task": "apps.clients.tasks.delete_old_client_imports",
         "schedule": 3600.0,
+    },
+    # "Na dziś" at 7:30 of each person's own clock (apps/agenda/digest.py).
+    "send-daily-agenda": {
+        "task": "apps.agenda.tasks.send_daily_agenda",
+        "schedule": 300.0,
     },
     # The daily security report, if the server's cron didn't send it at 7:00
     # (apps/common/security_digest.py).

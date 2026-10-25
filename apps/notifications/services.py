@@ -43,6 +43,7 @@ def _request_context(request, to_email):
     from apps.requests.links import owner_link, recipient_portal_url
 
     to_recipient = to_email.lower() == request.client.email.lower()
+    question = request.question_item
     return {
         **sender_context(request.created_by),
         "request_name": request.name,
@@ -59,6 +60,9 @@ def _request_context(request, to_email):
             .order_by("id")
             .values_list("name", flat=True)
         ),
+        # A question to the client (apps/requests/questions.py): its emails
+        # ask it instead of listing documents. Never the sender's own note.
+        "question": question.description if question is not None else "",
     }
 
 

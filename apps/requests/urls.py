@@ -1,11 +1,18 @@
 from django.urls import path
 
-from apps.requests import template_views, views
+from apps.requests import question_views, template_views, views
 
 app_name = "requests"
 
 urlpatterns = [
     path("przypomnienia/", views.request_list, name="list"),
+    path("pytania/", question_views.question_list, name="questions"),
+    path("pytania/nowe/", question_views.question_create, name="question-create"),
+    path(
+        "przypomnienia/<int:request_id>/notatka/",
+        question_views.request_note,
+        name="note",
+    ),
     path("otrzymane/", views.received_list, name="received"),
     path("przypomnienia/nowe/", views.request_create, name="create"),
     path("przypomnienia/usun/", views.request_bulk_delete, name="bulk-delete"),

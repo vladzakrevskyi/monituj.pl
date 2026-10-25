@@ -23,6 +23,7 @@ def _in_panel(request):
         "requests",
         "notifications",
         "billing",
+        "agenda",
     }
 
 
@@ -41,6 +42,29 @@ def _unread_notifications(request):
         if not team.has_access(request.membership):
             return 0
     return unread_count(request.account)
+
+
+def _answered_questions_count(request):
+    """Answers to the account's questions waiting to be read and marked
+    "Wyjaśnione" (apps/requests/questions.py)."""
+    from apps.requests.models import RequestItem, RequestItemKind, RequestItemStatus
+
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated or not request.resolver_match:
+        return 0
+    if not _in_panel(request):
+        return 0
+    if request.membership is not None:
+        from apps.accounts import team
+
+        if not team.has_access(request.membership):
+            return 0
+    return RequestItem.objects.filter(
+        request__created_by=request.account,
+        request__closed_at__isnull=True,
+        kind=RequestItemKind.QUESTION,
+        status=RequestItemStatus.DOSTARCZONY,
+    ).count()
 
 
 def _plan_state(request):
@@ -87,6 +111,7 @@ def site(request):
         },
         "received_open_count": _received_open_count(request),
         "unread_notifications": _unread_notifications(request),
+        "answered_questions_count": _answered_questions_count(request),
         "plan_state": _plan_state(request),
         "contact_email": settings.CONTACT_EMAIL,
         "maintenance_bypass": getattr(request, "maintenance_bypass", False),

@@ -35,6 +35,10 @@ class Plan:
     tagline: str
     # People working in the account, the owner included (apps/accounts/team.py).
     seats: int = 1
+    # Questions to clients waiting for an answer (apps/requests/questions.py).
+    # They don't count as requests in progress; this keeps a question with a
+    # file attached from becoming a request without a limit.
+    open_questions: int = 20
 
     @property
     def is_paid(self):
@@ -54,6 +58,7 @@ START = Plan(
     39000,
     "Dla jednoosobowej firmy i małej kancelarii.",
     seats=2,
+    open_questions=100,
 )
 BIURO = Plan(
     "biuro",
@@ -64,6 +69,7 @@ BIURO = Plan(
     89000,
     "Dla biura rachunkowego i działu kadr.",
     seats=5,
+    open_questions=400,
 )
 PRO = Plan(
     "pro",
@@ -74,6 +80,7 @@ PRO = Plan(
     179000,
     "Dla dużego biura z setkami klientów.",
     seats=15,
+    open_questions=1500,
 )
 
 PLANS = {plan.code: plan for plan in (FREE, START, BIURO, PRO)}

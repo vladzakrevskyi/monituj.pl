@@ -1,3 +1,4 @@
+from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.contrib import messages
@@ -6,11 +7,15 @@ from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods
+from django.utils import timezone
+from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.accounts import team
+from apps.audit.models import AuditEvent
+from apps.audit.services import AuditService
+from apps.clients import card
 from apps.clients.forms import ClientFilterForm, ClientForm
-from apps.clients.models import Client
+from apps.clients.models import Client, ClientNote
 from apps.clients.services import ClientService
 from apps.common.exceptions import ApplicationError
 from apps.common.filters import active_filter_count, status_tabs
@@ -234,3 +239,85 @@ def client_documents(request, client_id):
             "status_filter": status_filter,
         },
     )
+
+
+def _owned_or_follow(request, client_id):
+    """The client, or a redirect into the workspace it belongs to (a link
+    from an email), or 404. -> (client, response)."""
+    try:
+        return ClientService.get_owned_client(request.account, client_id), None
+    except ApplicationError:
+        found = Client.objects.filter(pk=client_id).select_related("owner").first()
+        if found is not None and team.follow(request, found.owner):
+            return None, redirect(request.get_full_path())
+        raise Http404 from None
+
+
+@login_required
+def client_detail(request, client_id):
+    """The client's card (apps/clients/card.py)."""
+    client, response = _owned_or_follow(request, client_id)
+    if response is not None:
+        return response
+    kind = request.GET.get("historia", "wszystko")
+    if kind not in dict(card.FILTERS):
+        kind = "wszystko"
+    try:
+        pages = max(1, min(int(request.GET.get("strony", 1)), 50))
+    except ValueError:
+        pages = 1
+    entries, has_more = card.history(client, request.user, kind=kind, pages=pages)
+    return render(
+        request,
+        "clients/detail.html",
+        {
+            "client": client,
+            "open": card.open_matters(request.account, client),
+            "notes": client.notes.select_related("author")[:50],
+            "entries": entries,
+            "has_more": has_more,
+            "history_kind": kind,
+            "history_filters": card.FILTERS,
+            "pages": pages,
+            "note_max": card.MAX_NOTE,
+            "tomorrow": timezone.localdate() + timedelta(days=1),
+        },
+    )
+
+
+@login_required
+@require_POST
+def client_note_add(request, client_id):
+    client, response = _owned_or_follow(request, client_id)
+    if response is not None:
+        return response
+    text = (request.POST.get("text") or "").strip()[: card.MAX_NOTE]
+    if text:
+        note = ClientNote.objects.create(client=client, author=request.user, text=text)
+        AuditService.log(
+            AuditEvent.CLIENT_NOTE_ADDED,
+            actor=request.user,
+            target=client,
+            request=request,
+            metadata={"note": note.pk},
+        )
+        messages.success(request, "Notatka dodana.")
+    return redirect("clients:detail", client.pk)
+
+
+@login_required
+@require_POST
+def client_note_delete(request, client_id, note_id):
+    client, response = _owned_or_follow(request, client_id)
+    if response is not None:
+        return response
+    note = ClientNote.objects.filter(pk=note_id, client=client).first()
+    if note is None:
+        raise Http404
+    # Its author, or the account's owner.
+    if note.author_id != request.user.pk and not team.is_owner(request):
+        messages.error(request, "Usunąć notatkę może jej autor albo właściciel konta.")
+    else:
+        note.delete()
+        messages.success(request, "Notatka usunięta.")
+    return redirect("clients:detail", client.pk)

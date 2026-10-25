@@ -22,6 +22,27 @@ class Client(TimeStampedModel):
         return self.name
 
 
+class ClientNote(models.Model):
+    """A dated note about a client - "dzwoniła w sprawie leasingu", "faktury
+    za paliwo przynosi papierowo" - instead of sticky notes. Seen by the
+    account's whole team on the client's card, never by the client.
+    (Client.note is the one standing note from the client's form.)"""
+
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="notes")
+    author = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        indexes = [models.Index(fields=["client", "created_at"])]
+
+    def __str__(self):
+        return self.text[:40]
+
+
 class ClientImport(models.Model):
     """A file read for importing, between the upload and the "Importuj"
     click: the table as read, nothing saved as clients yet. One per owner

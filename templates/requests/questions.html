@@ -1,0 +1,49 @@
+{% extends "base/app_base.html" %}
+{% load badges formatting %}
+
+{% block page_name %}Pytania{% endblock %}
+{% block page_class %}page--wide{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<div>
+<h1>Pytania do klientów</h1>
+<p class="page-header__sub">O co i kogo pytasz, po co - i ile już czekasz na odpowiedź.</p>
+</div>
+<a class="btn btn-primary" href="{% url 'requests:question-create' %}">Zadaj pytanie</a>
+</div>
+
+<nav class="tabs" aria-label="Status pytań">
+{% for item in tabs %}
+<a class="tabs__item{% if item.key == tab %} is-active{% endif %}" href="?tab={{ item.key }}"{% if item.key == tab %} aria-current="page"{% endif %}>{{ item.label }}<span class="tabs__count">{{ item.count }}</span></a>
+{% endfor %}
+<a class="tabs__item{% if tab == 'wszystkie' %} is-active{% endif %}" href="?tab=wszystkie"{% if tab == 'wszystkie' %} aria-current="page"{% endif %}>Wszystkie<span class="tabs__count">{{ all_count }}</span></a>
+</nav>
+
+{% if rows %}
+<ul class="question-list">
+{% for row in rows %}
+{% with request_obj=row.request item=row.item %}
+<li class="question-row">
+<a class="question-row__main" href="{% url 'requests:detail' request_obj.pk %}">
+<span class="question-row__client">{{ request_obj.client.name }}</span>
+<span class="question-row__text">{{ item.description|truncatechars:220 }}</span>
+{% if request_obj.private_note %}<span class="question-row__note"><span class="visually-hidden">Twoja notatka: </span>{{ request_obj.private_note|truncatechars:160 }}</span>{% endif %}
+{% if item.answer %}<span class="question-row__answer"><span class="visually-hidden">Odpowiedź: </span>„{{ item.answer|truncatechars:160 }}”</span>{% endif %}
+</a>
+<div class="question-row__side">
+<span class="badge {{ item.status|badge_class }}">{{ item.status_label }}</span>
+<span class="question-row__meta">{{ request_obj.created_at|d }}{% if item.status == "brak" or item.status == "odrzucony" %} · {% if row.waited == 0 %}wysłane dziś{% else %}czeka {{ row.waited }} {% if row.waited == 1 %}dzień{% else %}dni{% endif %}{% endif %}{% elif item.answered_at %} · odpowiedź {% if row.waited == 0 %}tego samego dnia{% else %}po {{ row.waited }} {% if row.waited == 1 %}dniu{% else %}dniach{% endif %}{% endif %}{% endif %}</span>
+</div>
+</li>
+{% endwith %}
+{% endfor %}
+</ul>
+{% else %}
+<div class="empty-state card">
+<h2>{% if all_count %}Tu nic nie ma{% else %}Zadaj pierwsze pytanie{% endif %}</h2>
+<p>{% if all_count %}W tej zakładce nie ma teraz żadnego pytania.{% else %}Coś się nie zgadza w dokumentach? Zapytaj klienta tutaj zamiast w mailu: odpowie jednym kliknięciem, Monituj mu przypomni, a Ty zobaczysz pytanie, swoją notatkę i odpowiedź w jednym miejscu.{% endif %}</p>
+{% if not all_count %}<a class="btn btn-primary" href="{% url 'requests:question-create' %}">Zadaj pytanie</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

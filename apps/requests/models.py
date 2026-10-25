@@ -19,6 +19,9 @@ class Request(TimeStampedModel):
     )
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    # "Notatka dla siebie": why the sender asks - for them and their team
+    # only, never on the client's page or in an email to the client.
+    private_note = models.TextField(blank=True)
     deadline = models.DateTimeField(null=True, blank=True)
     public_token = models.CharField(
         max_length=64, unique=True, editable=False, default=generate_public_token
@@ -77,6 +80,15 @@ class Request(TimeStampedModel):
     def is_closed(self) -> bool:
         return self.closed_at is not None
 
+    @property
+    def question_item(self):
+        """The question, when this request is one (apps/requests/questions.py)."""
+        if not hasattr(self, "_question_item"):
+            self._question_item = (
+                self.items.filter(kind=RequestItemKind.QUESTION).order_by("id").first()
+            )
+        return self._question_item
+
 
 class RequestItemStatus(models.TextChoices):
     BRAK = "brak", "Brak"
@@ -93,12 +105,21 @@ class RequestItemKind(models.TextChoices):
     FILE = "plik", "Plik do przesłania"
     # Something to do, then "Zrobione" - no file (apps/requests/item_kinds.py).
     CONFIRM = "potwierdzenie", "Do zrobienia - bez pliku"
+    # A question the client answers in words, a file optional
+    # (apps/requests/questions.py). Its text is the item's description.
+    QUESTION = "pytanie", "Pytanie - odpowiedź tekstem"
 
 
-# A confirm-only item goes through the same statuses under its own words.
+# Items that aren't files go through the same statuses under their own words.
 CONFIRM_STATUS_LABELS = {
     "brak": "Do zrobienia",
     "dostarczony": "Potwierdzone",
+}
+QUESTION_STATUS_LABELS = {
+    "brak": "Czeka na odpowiedź",
+    "dostarczony": "Odpowiedziano",
+    "zaakceptowany": "Wyjaśnione",
+    "odrzucony": "Dopytano",
 }
 
 
@@ -111,6 +132,9 @@ class RequestItem(TimeStampedModel):
         choices=RequestItemKind.choices,
         default=RequestItemKind.FILE,
     )
+    # A question's answer, in the client's words (RequestItemKind.QUESTION).
+    answer = models.TextField(blank=True)
+    answered_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
         max_length=32,
         choices=RequestItemStatus.choices,
@@ -132,9 +156,15 @@ class RequestItem(TimeStampedModel):
         return self.kind == RequestItemKind.CONFIRM
 
     @property
+    def is_question(self):
+        return self.kind == RequestItemKind.QUESTION
+
+    @property
     def status_label(self):
         if self.is_confirm and self.status in CONFIRM_STATUS_LABELS:
             return CONFIRM_STATUS_LABELS[self.status]
+        if self.is_question and self.status in QUESTION_STATUS_LABELS:
+            return QUESTION_STATUS_LABELS[self.status]
         return self.get_status_display()
 
 

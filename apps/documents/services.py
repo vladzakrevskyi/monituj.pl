@@ -155,6 +155,9 @@ class UploadDocumentService:
         ).first()
         if annotated is None or annotated.total_items == 0:
             return
+        # A question isn't "komplet dokumentów": its answer has its own notice.
+        if annotated.question_item is not None:
+            return
         if annotated.delivered_items != annotated.total_items:
             return
 
@@ -261,6 +264,9 @@ class DocumentReviewService:
                 "item_name": request_item.name,
                 "reason": reason,
                 "confirm": request_item.is_confirm,
+                "question": request_item.description
+                if request_item.is_question
+                else "",
             },
             request=request_item.request,
         )

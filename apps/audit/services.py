@@ -39,6 +39,8 @@ EVENT_LABELS_PL = {
     AuditEvent.NOT_APPLICABLE_REFUSED: "Poproszono jednak o dokument",
     AuditEvent.ITEM_CONFIRMED: "Klient potwierdził wykonanie",
     AuditEvent.CONFIRMATION_UNDONE: "Klient cofnął potwierdzenie",
+    AuditEvent.QUESTION_ANSWERED: "Klient odpowiedział na pytanie",
+    AuditEvent.CLIENT_NOTE_ADDED: "Dodano notatkę o kliencie",
     AuditEvent.REMINDER_SENT: "Wysłano przypomnienie",
     AuditEvent.PUBLIC_LINK_ACCESSED: "Klient otworzył link",
     AuditEvent.PASSWORD_ACCESS_FAILED: "Nieudana próba dostępu (błędne hasło)",

@@ -153,6 +153,61 @@
     background-color 0.15s ease;
 }
 
+/* A question: answered in words, a file optional. */
+.question {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.question__text {
+  margin: 0;
+  padding: var(--space-4);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.question__answer {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-success-bg);
+}
+
+.question__label {
+  margin: 0 0 var(--space-1);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.question__answer-text {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.question__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.question__form label {
+  font-weight: 700;
+}
+
+.question__form .btn {
+  align-self: flex-start;
+}
+
+.question > .link-button {
+  align-self: flex-start;
+}
+
 /* An item without a file: something to do, then "Zrobione". */
 .confirm-zone {
   display: flex;

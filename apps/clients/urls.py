@@ -19,6 +19,17 @@ urlpatterns = [
         import_views.client_import_preview,
         name="import-preview",
     ),
+    path("klienci/<int:client_id>/", views.client_detail, name="detail"),
+    path(
+        "klienci/<int:client_id>/notatki/",
+        views.client_note_add,
+        name="note-add",
+    ),
+    path(
+        "klienci/<int:client_id>/notatki/<int:note_id>/usun/",
+        views.client_note_delete,
+        name="note-delete",
+    ),
     path("klienci/<int:client_id>/edytuj/", views.client_edit, name="edit"),
     path(
         "klienci/<int:client_id>/dokumenty/",

@@ -49,7 +49,7 @@
 <div class="meta-grid">
 <div>
 <span class="meta__label">Klient</span>
-<span class="meta__value">{{ request_obj.client.name }}</span>
+<a class="meta__value" href="{% url 'clients:detail' request_obj.client.id %}" title="Karta klienta {{ request_obj.client.name }}">{{ request_obj.client.name }}</a>
 <span class="meta__sub">{{ request_obj.client.email }}</span>
 </div>
 <div>
@@ -70,15 +70,46 @@
 <span class="meta__sub">od przesłania, potem pliki są usuwane</span>
 </div>
 </div>
-<div class="meta-progress">
+{% if not question %}<div class="meta-progress">
 <div class="meta-progress__row">
 <span>Postęp</span>
 <span class="text-muted">{{ request_obj.delivered_items }} z {{ request_obj.total_items }} dokumentów gotowych{% if not_applicable_count %} (nie dotyczy: {{ not_applicable_count }}){% endif %}</span>
 </div>
 <progress class="progress-bar" value="{{ request_obj.delivered_items }}" max="{{ request_obj.total_items|default:1 }}"></progress>
-</div>
+</div>{% endif %}
 </div>
 
+{% if question %}
+<section class="card mb-5 question-card" data-question-card data-request-id="{{ request_obj.id }}" data-item-id="{{ question.id }}">
+<div class="question-card__head">
+<h2 class="card-title">Pytanie</h2>
+<span class="badge {{ question.status|badge_class }}">{{ question.status_label }}</span>
+</div>
+<p class="question-card__text">{{ question.description|linebreaksbr }}</p>
+{% if question.status == "odrzucony" and question.rejection_reason %}<p class="question-card__follow">Dopytałeś: „{{ question.rejection_reason }}” - czekasz na odpowiedź.</p>{% endif %}
+{% if question.answer %}
+<div class="question-card__answer">
+<p class="question-card__label">Odpowiedź klienta{% if question.answered_at %} · {{ question.answered_at|dt }}{% endif %}</p>
+<p class="question-card__answer-text">{{ question.answer|linebreaksbr }}</p>
+</div>
+{% elif question.status == "brak" %}
+<p class="text-muted mb-0">Klient jeszcze nie odpowiedział.</p>
+{% endif %}
+{% if question.documents.all %}
+<ul class="file-list">
+{% for document in question.documents.all %}
+{% include "documents/_file_link.html" %}
+{% endfor %}
+</ul>
+{% endif %}
+{% if question.status == "dostarczony" and not request_obj.is_closed %}
+<div class="question-card__actions">
+<button type="button" class="btn btn-primary" data-question-accept>Wyjaśnione</button>
+<button type="button" class="btn btn-secondary" data-question-ask>Dopytaj</button>
+</div>
+{% endif %}
+</section>
+{% else %}
 <section class="card card--flush mb-5">
 <div class="card__header"><h2>Lista dokumentów</h2>{% if to_review > 1 and not request_obj.is_closed %}<button type="button" class="btn btn-primary btn-sm" id="accept-all" data-request-id="{{ request_obj.id }}" data-count="{{ to_review }}">Zaakceptuj wszystkie ({{ to_review }})</button>{% endif %}</div>
 <div class="table-scroll">
@@ -122,6 +153,16 @@
 </tbody>
 </table>
 </div>
+</section>
+{% endif %}
+
+<section class="card mb-5 private-note-card">
+<form method="post" action="{% url 'requests:note' request_obj.id %}">
+{% csrf_token %}
+<label for="private-note" class="private-note-card__label">Notatka dla siebie{% if question %} - po co pytasz{% endif %} <span class="private-note__who">klient jej nie widzi - widzi ją Twój zespół</span></label>
+<textarea id="private-note" name="note" rows="3" maxlength="2000" placeholder="Np. potrzebne do VAT za wrzesień; klient obiecał do piątku">{{ request_obj.private_note }}</textarea>
+<button type="submit" class="btn btn-secondary btn-sm">Zapisz notatkę</button>
+</form>
 </section>
 
 <div class="split">

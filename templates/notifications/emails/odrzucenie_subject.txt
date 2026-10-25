@@ -1,1 +1,1 @@
-{% autoescape off %}{% if confirm %}Jedna rzecz wymaga poprawy{% elif needed %}Nadawca prosi jednak o dokument{% else %}Dokument wymaga ponownego przesłania{% endif %} - Monituj{% endautoescape %}
+{% autoescape off %}{% if question %}Pytanie uzupełniające{% if sender_name %} od {{ sender_name }}{% endif %}{% elif confirm %}Jedna rzecz wymaga poprawy{% elif needed %}Nadawca prosi jednak o dokument{% else %}Dokument wymaga ponownego przesłania{% endif %} - Monituj{% endautoescape %}

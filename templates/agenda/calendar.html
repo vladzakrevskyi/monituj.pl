@@ -1,0 +1,122 @@
+{% extends "base/app_base.html" %}
+{% load formatting %}
+
+{% block page_name %}Kalendarz{% endblock %}
+{% block page_class %}page--wide{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<div class="calendar-head">
+<h1>{{ month.title }}</h1>
+<a class="btn btn-secondary btn-icon" href="?m={{ month.previous }}" aria-label="Poprzedni miesiąc" title="Poprzedni miesiąc">‹</a>
+<a class="btn btn-secondary btn-icon" href="?m={{ month.next }}" aria-label="Następny miesiąc" title="Następny miesiąc">›</a>
+{% if not month.is_current %}<a class="btn btn-secondary" href="{% url 'agenda:calendar' %}">Dziś</a>{% endif %}
+</div>
+</div>
+
+<ul class="calendar-legend" aria-label="Legenda">
+<li><span class="calendar-dot calendar-dot--deadline"></span>Terminy klientów</li>
+<li><span class="calendar-dot calendar-dot--question"></span>Pytania - termin odpowiedzi</li>
+<li><span class="calendar-dot calendar-dot--send"></span>Wysyłki próśb cyklicznych</li>
+<li><span class="calendar-dot calendar-dot--mine"></span>Moje przypomnienia</li>
+</ul>
+
+<div class="calendar-layout">
+<div class="calendar-scroll">
+<div class="calendar" role="table" aria-label="{{ month.title }}">
+<div class="calendar__row calendar__row--head" role="row">
+{% for name in month.weekdays %}<span class="calendar__weekday" role="columnheader">{{ name }}</span>{% endfor %}
+</div>
+{% for week in month.weeks %}
+<div class="calendar__row" role="row">
+{% for cell in week %}
+<div class="calendar__day{% if not cell.in_month %} is-outside{% endif %}{% if cell.today %} is-today{% endif %}{% if cell.weekend %} is-weekend{% endif %}" role="cell">
+<span class="calendar__date">{{ cell.day.day }}{% if cell.today %} · dziś{% endif %}</span>
+{% for event in cell.events %}
+{% if event.url %}<a class="calendar-event calendar-event--{{ event.kind }}{% if event.done %} is-done{% endif %}" href="{{ event.url }}" title="{{ event.label }}{% if event.client %} - {{ event.client }}{% endif %}">{% else %}<span class="calendar-event calendar-event--{{ event.kind }}{% if event.done %} is-done{% endif %}" title="{{ event.label }}">{% endif %}{{ event.label }}{% if event.client %}<span class="calendar-event__client">{{ event.client }}</span>{% endif %}{% if event.url %}</a>{% else %}</span>{% endif %}
+{% endfor %}
+</div>
+{% endfor %}
+</div>
+{% endfor %}
+</div>
+</div>
+
+<aside class="calendar-side">
+<section class="card">
+<h2 class="card-title">Dziś, {{ summary.today|d }}</h2>
+{% if summary.reminders %}
+<ul class="today-list">
+{% for reminder in summary.reminders %}
+<li class="today-list__item">
+<form method="post" action="{% url 'agenda:reminder-done' reminder.id %}" class="inline-form">
+{% csrf_token %}
+<button type="submit" class="today-list__check" aria-label="Zrobione: {{ reminder.text }}" title="Zrobione"></button>
+</form>
+<div>
+<p class="today-list__text">{{ reminder.text }}</p>
+<p class="today-list__meta">{% if reminder.due_on < summary.today %}zaległe od {{ reminder.due_on|d }}{% else %}na dziś{% endif %}{% if reminder.client %} · <a href="{% url 'clients:detail' reminder.client.id %}">{{ reminder.client.name }}</a>{% endif %}{% if reminder.author and reminder.author != request.user %} · {{ reminder.author.display_name|default:reminder.author.email }}{% endif %}</p>
+</div>
+</li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="text-muted">Na dziś nie masz przypomnień.</p>
+{% endif %}
+<ul class="today-facts">
+{% if summary.due_today %}<li><strong>{{ summary.due_today|length }}</strong> {% if summary.due_today|length == 1 %}termin klienta mija{% else %}terminy klientów mijają{% endif %} dziś</li>{% endif %}
+{% if summary.to_review %}<li><a href="{% url 'requests:questions' %}?tab=odpowiedziano"><strong>{{ summary.to_review }}</strong> {% if summary.to_review == 1 %}odpowiedź czeka{% else %}odpowiedzi czeka{% endif %} na sprawdzenie</a></li>{% endif %}
+{% if summary.waiting_long %}<li><a href="{% url 'requests:questions' %}"><strong>{{ summary.waiting_long }}</strong> {% if summary.waiting_long == 1 %}pytanie czeka{% else %}pytań czeka{% endif %} na odpowiedź dłużej niż 7 dni</a></li>{% endif %}
+</ul>
+</section>
+
+<section class="card">
+<h2 class="card-title">Przypomnij mi</h2>
+<form method="post" action="{% url 'agenda:reminder-add' %}" novalidate class="reminder-form">
+{% csrf_token %}
+<p>
+{{ form.text.label_tag }}
+<input type="text" name="text" id="id_text" maxlength="300" required placeholder="Np. zadzwonić do Kowalskiego w sprawie leasingu">
+</p>
+<p>
+{{ form.due_on.label_tag }}
+{{ form.due_on }}
+</p>
+<p>
+{{ form.client.label_tag }}
+{{ form.client }}
+</p>
+<button type="submit" class="btn btn-primary">Dodaj przypomnienie</button>
+</form>
+</section>
+
+<section class="card calendar-phone">
+<h2 class="card-title">Kalendarz w telefonie</h2>
+<p>Dodaj ten kalendarz do Google, Outlooka albo iPhone'a. Terminy klientów, wysyłki i Twoje przypomnienia pojawią się tam same.</p>
+{% if feed_url %}
+<label for="feed-url" class="visually-hidden">Link do kalendarza</label>
+<input type="text" id="feed-url" value="{{ feed_url }}" readonly>
+<p class="form-hint text-muted">W Google: Inne kalendarze → „Z adresu URL”. Na iPhonie: <a href="{{ webcal_url }}">otwórz ten link</a>. Link jest tajny - nie wysyłaj go nikomu.</p>
+<form method="post" action="{% url 'agenda:feed-link' %}" data-confirm="Stary link przestanie działać - trzeba będzie dodać nowy w kalendarzu." data-confirm-title="Utworzyć nowy link?" data-confirm-label="Nowy link">
+{% csrf_token %}
+<button type="submit" class="btn btn-secondary btn-sm">Utwórz nowy link</button>
+</form>
+{% else %}
+<form method="post" action="{% url 'agenda:feed-link' %}">
+{% csrf_token %}
+<button type="submit" class="btn btn-secondary">Pokaż link do kalendarza</button>
+</form>
+{% endif %}
+</section>
+
+<section class="card">
+<h2 class="card-title">Poranny e-mail „Na dziś”</h2>
+<form method="post" action="{% url 'agenda:daily-email' %}" class="daily-email-form">
+{% csrf_token %}
+<label><input type="checkbox" name="daily_email"{% if agenda.daily_email %} checked{% endif %}> W dni robocze o 7:30: Twoje przypomnienia, terminy na dziś i jutro, pytania bez odpowiedzi i to, co dotarło od wczoraj.</label>
+<button type="submit" class="btn btn-secondary btn-sm">Zapisz</button>
+</form>
+</section>
+</aside>
+</div>
+{% endblock %}

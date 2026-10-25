@@ -37,6 +37,8 @@ class AuditEvent(models.TextChoices):
     NOT_APPLICABLE_REFUSED = "NOT_APPLICABLE_REFUSED", "Document needed after all"
     ITEM_CONFIRMED = "ITEM_CONFIRMED", "Item confirmed as done"
     CONFIRMATION_UNDONE = "CONFIRMATION_UNDONE", "Confirmation withdrawn"
+    QUESTION_ANSWERED = "QUESTION_ANSWERED", "Question answered"
+    CLIENT_NOTE_ADDED = "CLIENT_NOTE_ADDED", "Client note added"
     REMINDER_SENT = "REMINDER_SENT", "Reminder sent"
     PUBLIC_LINK_ACCESSED = "PUBLIC_LINK_ACCESSED", "Public link accessed"
     PASSWORD_ACCESS_FAILED = "PASSWORD_ACCESS_FAILED", "Password access failed"

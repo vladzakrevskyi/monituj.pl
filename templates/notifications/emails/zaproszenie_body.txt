@@ -1,4 +1,22 @@
-{% load formatting %}{% autoescape off %}{% if sender_name %}{{ sender_name }} prosi{% else %}Otrzymujesz prośbę{% endif %} o przesłanie dokumentów. Nie musisz zakładać konta - wystarczy otworzyć link i dodać pliki.
+{% load formatting %}{% autoescape off %}{% if question %}{% if sender_name %}{{ sender_name }} ma{% else %}Masz{% endif %} do Ciebie pytanie:
+
+{{ question }}
+
+Od: {{ sender_from }}
+{% if sender_firm %}Firma: {{ sender_firm }}
+{% endif %}{% if deadline %}Odpowiedz do: {{ deadline|dt }}
+{% endif %}
+Odpowiedz tutaj - wystarczy napisać kilka słów, możesz też dołączyć plik. Nie musisz zakładać konta:
+{{ link }}
+{% if password_protected %}
+Link jest zabezpieczony hasłem. Hasło wyślemy Ci w osobnej wiadomości.
+{% endif %}{% if portal_link %}
+Wszystkie Twoje prośby o dokumenty, także od innych nadawców, w jednym miejscu:
+{{ portal_link }}
+{% endif %}
+--
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej wiadomości, możesz ją zignorować.
+{% else %}{% if sender_name %}{{ sender_name }} prosi{% else %}Otrzymujesz prośbę{% endif %} o przesłanie dokumentów. Nie musisz zakładać konta - wystarczy otworzyć link i dodać pliki.
 
 Od: {{ sender_from }}
 {% if sender_firm %}Firma: {{ sender_firm }}
@@ -18,4 +36,4 @@ Wszystkie Twoje prośby o dokumenty, także od innych nadawców, w jednym miejsc
 {% endif %}
 --
 Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
-{% endautoescape %}
+{% endif %}{% endautoescape %}

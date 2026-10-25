@@ -808,3 +808,120 @@ class RequestFilterForm(forms.Form):
     def value(self, name):
         self.is_valid()
         return self.cleaned_data.get(name)
+
+
+QUESTION_DEADLINE_CHOICES = [
+    ("3", "3 dni"),
+    ("7", "7 dni"),
+    ("14", "14 dni"),
+    ("date", "Wybierz datę"),
+    ("none", "Bez terminu"),
+]
+QUESTION_REMINDER_CHOICES = [
+    choice for choice in REMINDER_PRESET_CHOICES if choice[0] != "custom"
+]
+
+
+class QuestionForm(forms.Form):
+    """ "Zadaj pytanie" (apps/requests/questions.py)."""
+
+    client = forms.ModelChoiceField(
+        label="Klient",
+        queryset=Client.objects.none(),
+        empty_label="Wybierz klienta",
+        error_messages={
+            "required": "Wybierz klienta.",
+            "invalid_choice": "Wybierz klienta z listy.",
+        },
+    )
+    question = forms.CharField(
+        label="Pytanie",
+        max_length=2000,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 5,
+                "placeholder": "Np. Na wyciągu za wrzesień jest przelew 1 250 zł z "
+                "12.09 dla „Jan Nowak”. Za co była ta płatność?",
+            }
+        ),
+        error_messages={
+            "required": "Napisz pytanie do klienta.",
+            "max_length": "Pytanie może mieć najwyżej 2000 znaków.",
+        },
+    )
+    note = forms.CharField(
+        label="Notatka dla siebie - po co pytasz",
+        max_length=2000,
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 3,
+                "placeholder": "Np. Wrzesień, VAT - jeśli to koszt, szukać faktury.",
+            }
+        ),
+        error_messages={"max_length": "Notatka może mieć najwyżej 2000 znaków."},
+    )
+    deadline_choice = forms.ChoiceField(
+        label="Odpowiedź potrzebna do",
+        choices=QUESTION_DEADLINE_CHOICES,
+        initial="7",
+        widget=forms.RadioSelect,
+    )
+    deadline = forms.DateField(
+        label="Data",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        error_messages={"invalid": "Podaj poprawną datę."},
+    )
+    reminder_preset = forms.ChoiceField(
+        label="Przypomnienia",
+        choices=QUESTION_REMINDER_CHOICES,
+        initial="standard",
+        widget=forms.RadioSelect,
+    )
+
+    def __init__(self, *args, owner=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["client"].queryset = Client.objects.filter(owner=owner).order_by(
+            "name"
+        )
+
+    def clean(self):
+        cleaned = super().clean()
+        choice = cleaned.get("deadline_choice")
+        today = django_timezone.localdate()
+        if choice in ("3", "7", "14"):
+            cleaned["deadline"] = _deadline_to_end_of_day(
+                today + timedelta(days=int(choice))
+            )
+        elif choice == "date":
+            day = cleaned.get("deadline")
+            if day is None:
+                self.add_error("deadline", "Wybierz datę.")
+            elif day < today:
+                self.add_error("deadline", "Wybierz dzisiejszą albo przyszłą datę.")
+            else:
+                cleaned["deadline"] = _deadline_to_end_of_day(day)
+        else:
+            cleaned["deadline"] = None
+        return cleaned
+
+    def reminder_settings(self):
+        preset = self.cleaned_data.get("reminder_preset") or "standard"
+        first, every, count = REMINDER_PRESETS.get(preset, REMINDER_PRESETS["standard"])
+        return {
+            "reminders_enabled": preset != "off",
+            "first_reminder_after_days": first,
+            "reminder_frequency_days": every,
+            "max_reminders": count,
+        }
+
+
+class PrivateNoteForm(forms.Form):
+    note = forms.CharField(
+        label="Notatka dla siebie",
+        max_length=2000,
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        error_messages={"max_length": "Notatka może mieć najwyżej 2000 znaków."},
+    )

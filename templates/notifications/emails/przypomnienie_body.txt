@@ -1,4 +1,20 @@
-{% load formatting %}{% autoescape off %}{% if days_left == 0 %}Dziś mija termin przesłania dokumentów.{% elif days_left %}Za {{ days_left }} dni mija termin przesłania dokumentów.{% else %}Wciąż czekamy na Twoje dokumenty.{% endif %}
+{% load formatting %}{% autoescape off %}{% if question %}{% if days_left == 0 %}Dziś mija termin odpowiedzi.{% elif days_left %}Za {{ days_left }} dni mija termin odpowiedzi.{% else %}Wciąż czekamy na Twoją odpowiedź.{% endif %}
+
+Pytanie: {{ question }}
+
+Od: {{ sender_from }}
+{% if deadline %}Odpowiedz do: {{ deadline|dt }}
+{% endif %}
+Odpowiedz tutaj:
+{{ link }}
+
+Jeśli już odpowiedziałeś, zignoruj tę wiadomość.{% if portal_link %}
+Wszystkie Twoje prośby o dokumenty, także od innych nadawców, w jednym miejscu:
+{{ portal_link }}
+{% endif %}
+--
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej wiadomości, możesz ją zignorować.
+{% else %}{% if days_left == 0 %}Dziś mija termin przesłania dokumentów.{% elif days_left %}Za {{ days_left }} dni mija termin przesłania dokumentów.{% else %}Wciąż czekamy na Twoje dokumenty.{% endif %}
 
 Od: {{ sender_from }}
 {% if sender_firm %}Firma: {{ sender_firm }}
@@ -17,4 +33,4 @@ Wszystkie Twoje prośby o dokumenty, także od innych nadawców, w jednym miejsc
 {% endif %}
 --
 Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
-{% endautoescape %}
+{% endif %}{% endautoescape %}

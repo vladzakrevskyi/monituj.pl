@@ -1,0 +1,137 @@
+{% extends "base/app_base.html" %}
+{% load formatting %}
+
+{% block page_name %}{{ client.name }}{% endblock %}
+{% block page_class %}page--wide{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'clients:list' %}" title="Wróć: Klienci">&larr; Klienci</a>
+<div class="page-header">
+<div>
+<h1>{{ client.name }}</h1>
+<p class="page-header__sub">{% if client.nip %}NIP {{ client.nip }} &middot; {% endif %}{{ client.email }}{% if client.phone %} &middot; {{ client.phone }}{% endif %}</p>
+</div>
+<div class="page-header__actions">
+<a class="btn btn-secondary" href="{% url 'clients:edit' client.id %}">Edytuj</a>
+<a class="btn btn-secondary" href="{% url 'requests:create' %}?client={{ client.id }}">Nowe przypomnienie</a>
+<a class="btn btn-primary" href="{% url 'requests:question-create' %}?client={{ client.id }}">Zadaj pytanie</a>
+</div>
+</div>
+
+<div class="client-card">
+<div class="client-card__side">
+
+<section class="card">
+<h2 class="card-title">Otwarte sprawy</h2>
+{% if open.to_review or open.waiting or open.missing or open.reminders %}
+<ul class="open-list">
+{% for reminder in open.reminders %}
+<li class="open-item open-item--mine">
+<span class="open-item__kind">Twoje przypomnienie · {{ reminder.due_on|d }}</span>
+<span class="open-item__title">{{ reminder.text }}</span>
+<form method="post" action="{% url 'agenda:reminder-done' reminder.id %}" class="inline-form">
+{% csrf_token %}
+<input type="hidden" name="next" value="{{ request.path }}">
+<button type="submit" class="btn-link">Zrobione</button>
+</form>
+</li>
+{% endfor %}
+{% for entry in open.to_review %}
+<li class="open-item open-item--review">
+<span class="open-item__kind">Odpowiedź do sprawdzenia</span>
+<a class="open-item__title" href="{% url 'requests:detail' entry.request.pk %}">{{ entry.item.description|truncatechars:110 }}</a>
+<span class="open-item__meta">„{{ entry.item.answer|truncatechars:90 }}”</span>
+</li>
+{% endfor %}
+{% for entry in open.waiting %}
+<li class="open-item{% if entry.days >= 14 %} open-item--late{% endif %}">
+<span class="open-item__kind">Pytanie · {% if entry.days == 0 %}wysłane dziś{% else %}czeka {{ entry.days }} {% if entry.days == 1 %}dzień{% else %}dni{% endif %}{% endif %}</span>
+<a class="open-item__title" href="{% url 'requests:detail' entry.request.pk %}">{{ entry.item.description|truncatechars:110 }}</a>
+{% if entry.request.private_note %}<span class="open-item__note">{{ entry.request.private_note|truncatechars:110 }}</span>{% endif %}
+</li>
+{% endfor %}
+{% for entry in open.missing %}
+<li class="open-item{% if entry.overdue %} open-item--late{% endif %}">
+<span class="open-item__kind">Dokumenty · {% if entry.overdue %}po terminie ({{ entry.request.deadline|d }}){% elif entry.request.deadline %}termin {{ entry.request.deadline|d }}{% else %}bez terminu{% endif %}</span>
+<a class="open-item__title" href="{% url 'requests:detail' entry.request.pk %}">{{ entry.request.name }} - brakuje {{ entry.names|length }}</a>
+<span class="open-item__meta">{{ entry.names|slice:":3"|join:", " }}{% if entry.names|length > 3 %} i {{ entry.names|length|add:"-3" }} więcej{% endif %}</span>
+</li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="text-muted mb-0">Nic nie czeka - u tego klienta wszystko jest kompletne.</p>
+{% endif %}
+</section>
+
+<section class="card">
+<h2 class="card-title">Przypomnij mi</h2>
+<form method="post" action="{% url 'agenda:reminder-add' %}" novalidate class="reminder-form reminder-form--compact">
+{% csrf_token %}
+<input type="hidden" name="client" value="{{ client.id }}">
+<input type="hidden" name="next" value="{{ request.path }}">
+<label for="card-reminder-text" class="visually-hidden">O czym przypomnieć</label>
+<input type="text" id="card-reminder-text" name="text" maxlength="300" required placeholder="Np. zadzwonić w sprawie leasingu">
+<label for="card-reminder-day" class="visually-hidden">Dnia</label>
+<input type="date" id="card-reminder-day" name="due_on" required value="{{ tomorrow|date:'Y-m-d' }}">
+<button type="submit" class="btn btn-secondary btn-sm">Przypomnij</button>
+</form>
+<p class="form-hint text-muted mb-0">Pojawi się w kalendarzu i w porannym e-mailu „Na dziś”.</p>
+</section>
+
+<section class="card">
+<h2 class="card-title">Notatki o kliencie</h2>
+<p class="form-hint text-muted">Widzi je cały zespół. Klient - nigdy.</p>
+{% if client.note %}
+<div class="client-note client-note--pinned">
+<span class="client-note__meta">Stała notatka (z danych klienta)</span>
+<p class="client-note__text">{{ client.note|linebreaksbr }}</p>
+</div>
+{% endif %}
+<form method="post" action="{% url 'clients:note-add' client.id %}" class="client-note-form">
+{% csrf_token %}
+<label for="client-note-text" class="visually-hidden">Nowa notatka</label>
+<textarea id="client-note-text" name="text" rows="2" maxlength="{{ note_max }}" placeholder="Np. dzwoniła w sprawie leasingu, oddzwonić w piątek"></textarea>
+<button type="submit" class="btn btn-secondary btn-sm">Dodaj notatkę</button>
+</form>
+{% for note in notes %}
+<div class="client-note">
+<span class="client-note__meta">{{ note.created_at|dt }}{% if note.author %} · {% if note.author == request.user %}Ty{% else %}{{ note.author.display_name|default:note.author.email }}{% endif %}{% endif %}</span>
+<p class="client-note__text">{{ note.text|linebreaksbr }}</p>
+{% if note.author == request.user or not team_member %}
+<form method="post" action="{% url 'clients:note-delete' client.id note.id %}" class="inline-form" data-confirm="Notatka zniknie na zawsze." data-confirm-title="Usunąć notatkę?" data-confirm-label="Usuń">
+{% csrf_token %}
+<button type="submit" class="btn-link client-note__delete">Usuń</button>
+</form>
+{% endif %}
+</div>
+{% endfor %}
+</section>
+</div>
+
+<section class="card client-card__history">
+<div class="history-head">
+<h2 class="card-title">Historia</h2>
+<nav class="chip-filter" aria-label="Rodzaj zdarzeń">
+{% for key, label in history_filters %}<a class="chip-filter__item{% if key == history_kind %} is-active{% endif %}" href="?historia={{ key }}"{% if key == history_kind %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
+</nav>
+</div>
+{% if entries %}
+<ol class="timeline-list">
+{% for entry in entries %}
+<li class="timeline-list__item">
+<span class="timeline-list__time">{{ entry.at|dt }}</span>
+<div class="timeline-list__body">
+<p class="timeline-list__label">{{ entry.label }}{% if entry.who %} <span class="timeline-list__who">· {{ entry.who }}</span>{% endif %}</p>
+{% for detail in entry.details %}<p class="timeline-list__detail">{% if forloop.first and entry.request %}<a href="{% url 'requests:detail' entry.request.pk %}">{{ detail }}</a>{% else %}{{ detail }}{% endif %}</p>{% endfor %}
+</div>
+</li>
+{% endfor %}
+</ol>
+{% if has_more %}<a class="btn btn-secondary btn-sm" href="?historia={{ history_kind }}&amp;strony={{ pages|add:1 }}">Pokaż starsze</a>{% endif %}
+{% else %}
+<p class="text-muted mb-0">Tu pojawi się wszystko, co dzieje się u tego klienta: prośby, pytania, przesłane dokumenty, przypomnienia i notatki.</p>
+{% endif %}
+<p class="client-card__more"><a href="{% url 'clients:documents' client.id %}">Wszystkie dokumenty klienta →</a></p>
+</section>
+</div>
+{% endblock %}

@@ -60,6 +60,7 @@ class EmailTemplate(models.TextChoices):
     RECURRING_SKIPPED = "cykliczna_pominieta", "Prośba cykliczna niewysłana"
     TWO_FACTOR_ENABLED = "2fa_wlaczona", "Weryfikacja dwuetapowa włączona"
     TWO_FACTOR_DISABLED = "2fa_wylaczona", "Weryfikacja dwuetapowa wyłączona"
+    DAILY_AGENDA = "na_dzis", "Na dziś (poranne podsumowanie)"
     BACKUP_CODE_USED = "2fa_kod_zapasowy", "Użyto kodu zapasowego"
 
 
@@ -94,6 +95,8 @@ class NotificationKind(models.TextChoices):
     NOT_APPLICABLE = "nie_dotyczy", "Klient nie ma dokumentu"
     # "Zrobione" on an item without a file (RequestItemKind.CONFIRM).
     CONFIRMED = "potwierdzone", "Klient potwierdził wykonanie"
+    # The client answered a question (apps/requests/questions.py).
+    ANSWERED = "odpowiedz", "Klient odpowiedział na pytanie"
 
 
 class Notification(TimeStampedModel):

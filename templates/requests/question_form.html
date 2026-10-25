@@ -1,0 +1,73 @@
+{% extends "base/app_base.html" %}
+{% load formatting %}
+
+{% block page_name %}Zadaj pytanie{% endblock %}
+{% block page_class %}page--narrow{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'requests:questions' %}" title="Wróć: Pytania">&larr; Pytania</a>
+<div class="card request-form">
+<h1>Zadaj pytanie klientowi</h1>
+<p class="card-lead">Klient odpowie tekstem albo plikiem, bez logowania. Monituj będzie mu przypominał, a Tobie zapamięta, o co pytasz i po co.</p>
+<form method="post" novalidate class="question-form">
+{% csrf_token %}
+{% include "base/_form_flash.html" %}
+<p>
+{{ form.client.label_tag }}
+{{ form.client }}
+{{ form.client.errors }}
+{% if not form.fields.client.queryset.exists %}<small class="help-text">Nie masz jeszcze klientów. <a href="{% url 'clients:list' %}">Dodaj klienta</a>, a potem zadaj mu pytanie.</small>{% endif %}
+</p>
+<p>
+<label for="{{ form.question.id_for_label }}">Pytanie <span class="text-muted">- to zobaczy klient</span></label>
+{{ form.question }}
+{{ form.question.errors }}
+</p>
+<div class="private-note">
+<label for="{{ form.note.id_for_label }}">{{ form.note.label }} <span class="private-note__who">klient jej nie widzi - widzi ją Twój zespół</span></label>
+{{ form.note }}
+{{ form.note.errors }}
+<small class="help-text">Gdy przyjdzie odpowiedź, zobaczysz ją obok pytania i tej notatki - także w e-mailu.</small>
+</div>
+<fieldset class="choice-group">
+<legend>{{ form.deadline_choice.label }}</legend>
+<div class="option-row">
+{% for radio in form.deadline_choice %}<label class="option-chip option-chip--choice">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}
+</div>
+<p class="question-form__date">
+{{ form.deadline.label_tag }}
+{{ form.deadline }}
+{{ form.deadline.errors }}
+</p>
+</fieldset>
+<fieldset class="choice-group">
+<legend>{{ form.reminder_preset.label }}</legend>
+<div class="option-row">
+{% for radio in form.reminder_preset %}<label class="option-chip option-chip--choice">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}
+</div>
+<small class="help-text">Standardowe: pierwsze po 2 dniach, potem co 3 dni, najwyżej 3 razy. Przypomnienia kończą się same, gdy klient odpowie.</small>
+</fieldset>
+<div class="form-actions">
+<button type="submit" class="btn btn-primary btn-lg">Wyślij pytanie</button>
+<a class="btn btn-secondary btn-lg" href="{% url 'requests:questions' %}">Anuluj</a>
+</div>
+</form>
+</div>
+
+{% if previous %}
+<section class="card mt-5">
+<h2 class="card-title">Wcześniej pytałeś tego klienta</h2>
+<ul class="question-list question-list--compact">
+{% for row in previous %}
+<li class="question-row">
+<a class="question-row__main" href="{% url 'requests:detail' row.request.pk %}">
+<span class="question-row__text">{{ row.item.description|truncatechars:160 }}</span>
+{% if row.item.answer %}<span class="question-row__answer">„{{ row.item.answer|truncatechars:120 }}”</span>{% endif %}
+</a>
+<div class="question-row__side"><span class="question-row__meta">{{ row.request.created_at|d }} · {{ row.item.status_label }}</span></div>
+</li>
+{% endfor %}
+</ul>
+</section>
+{% endif %}
+{% endblock %}

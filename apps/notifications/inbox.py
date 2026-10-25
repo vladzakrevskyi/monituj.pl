@@ -78,6 +78,22 @@ def notify_confirmed(request_item):
     return notice
 
 
+def notify_answered(request_item):
+    """An answer to a question - one notice, also when the client corrects it
+    before the email went out."""
+    owner = request_item.request.created_by
+    if not owner.is_active:
+        return None
+    notice, _ = Notification.objects.get_or_create(
+        user=owner,
+        kind=NotificationKind.ANSWERED,
+        request_item=request_item,
+        emailed_at__isnull=True,
+        read_at__isnull=True,
+    )
+    return notice
+
+
 def forget_confirmed(request_item):
     Notification.objects.filter(
         kind=NotificationKind.CONFIRMED,
@@ -135,6 +151,15 @@ def _entry(notice):
         return {"item": notice.item.name, "file": notice.document.original_filename}
     if notice.kind == NotificationKind.CONFIRMED:
         return {"item": notice.item.name, "confirmed": True}
+    if notice.kind == NotificationKind.ANSWERED:
+        # The sender's own note goes along: the email is for them only.
+        return {
+            "item": notice.item.name,
+            "answered": True,
+            "question": notice.item.description,
+            "answer": notice.item.answer,
+            "note": notice.item.request.private_note,
+        }
     return {
         "item": notice.item.name,
         "not_applicable": True,
@@ -178,6 +203,9 @@ def send_pending_upload_emails(now=None):
                 ),
                 "only_confirmed": all(
                     n.kind == NotificationKind.CONFIRMED for n in unseen
+                ),
+                "only_answers": all(
+                    n.kind == NotificationKind.ANSWERED for n in unseen
                 ),
                 "progress": _progress(request_obj),
             },

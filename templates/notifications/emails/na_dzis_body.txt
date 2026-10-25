@@ -1,0 +1,25 @@
+{% load formatting %}{% autoescape off %}Na dziś, {{ day|date:"l, j E" }}.
+{% for section in sections %}{% if many_accounts %}
+=== {{ section.name }} ===
+{% endif %}{% if section.reminders %}
+Twoje przypomnienia:
+{% for reminder in section.reminders %}- {{ reminder.text }}{% if reminder.client %} ({{ reminder.client.name }}){% endif %}{% if reminder.due_on < day.date %} - zaległe od {{ reminder.due_on|d }}{% endif %}
+{% endfor %}{% endif %}{% if section.deadlines %}
+Terminy dziś i jutro:
+{% for event in section.deadlines %}- {{ event.day|date:"j.m" }}: {{ event.label }} ({{ event.client }})
+{% endfor %}{% endif %}{% if section.overdue %}
+Po terminie: {{ section.overdue }} {% if section.overdue == 1 %}prośba{% else %}prośby{% endif %} wciąż czeka na dokumenty.
+{% endif %}{% if section.waiting %}
+Pytania bez odpowiedzi dłużej niż tydzień ({{ section.waiting_count }}):
+{% for entry in section.waiting %}- {{ entry.client }}, {{ entry.days }} dni: {{ entry.question }}{% if entry.note %}
+  Po co: {{ entry.note }}{% endif %}
+{% endfor %}{% endif %}{% if section.to_review %}
+Odpowiedzi do sprawdzenia: {{ section.to_review }}
+{% endif %}{% if section.arrived_from %}
+Dotarło od wczoraj ({{ section.arrived_count }}): {{ section.arrived_from|join:", " }}
+{% endif %}{% endfor %}
+Kalendarz: {{ calendar_link }}
+Pytania: {{ questions_link }}
+--
+Poranne podsumowanie wyłączysz w Kalendarzu Monituj.
+{% endautoescape %}

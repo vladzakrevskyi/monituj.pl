@@ -1,4 +1,17 @@
-{% load formatting %}{% autoescape off %}{% if confirm and needed %}Nadawca prosi jednak o to, co oznaczono jako „nie dotyczy”.{% elif confirm %}Nadawca sprawdził Twoje potwierdzenie i prosi o poprawienie.{% elif needed %}Nadawca prosi jednak o dokument oznaczony przez Ciebie jako „nie dotyczy”.{% else %}Jeden dokument wymaga ponownego przesłania.{% endif %}
+{% load formatting %}{% autoescape off %}{% if question %}{% if sender_name %}{{ sender_name }}{% else %}Nadawca{% endif %} dziękuje za odpowiedź i dopytuje:
+
+{{ reason }}
+
+Pierwsze pytanie: {{ question }}
+
+Odpowiedz tutaj:
+{{ link }}{% if portal_link %}
+Wszystkie Twoje prośby o dokumenty, także od innych nadawców, w jednym miejscu:
+{{ portal_link }}
+{% endif %}
+--
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej wiadomości, możesz ją zignorować.
+{% else %}{% if confirm and needed %}Nadawca prosi jednak o to, co oznaczono jako „nie dotyczy”.{% elif confirm %}Nadawca sprawdził Twoje potwierdzenie i prosi o poprawienie.{% elif needed %}Nadawca prosi jednak o dokument oznaczony przez Ciebie jako „nie dotyczy”.{% else %}Jeden dokument wymaga ponownego przesłania.{% endif %}
 
 {% if confirm %}Do zrobienia{% else %}Dokument{% endif %}: {{ item_name }}
 Prośba: {{ request_name }}
@@ -11,4 +24,4 @@ Wszystkie Twoje prośby o dokumenty, także od innych nadawców, w jednym miejsc
 {% endif %}
 --
 Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
-{% endautoescape %}
+{% endif %}{% endautoescape %}

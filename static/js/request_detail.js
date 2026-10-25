@@ -236,3 +236,44 @@ document.querySelectorAll("form[data-confirm-close]").forEach((form) => {
     form.requestSubmit();
   });
 });
+
+// A question (apps/requests/questions.py): "Wyjaśnione" accepts the answer,
+// "Dopytaj" sends a follow-up - the client gets it by email and answers again.
+(function () {
+  const card = document.querySelector("[data-question-card]");
+  if (!card) return;
+  const url = (action) =>
+    `/api/requests/${card.dataset.requestId}/items/${card.dataset.itemId}/${action}/`;
+  const fail = (data) =>
+    showToast(data && data.error ? data.error.message : "Wystąpił błąd.", "error");
+
+  card.addEventListener("click", async (event) => {
+    const accept = event.target.closest("[data-question-accept]");
+    const ask = event.target.closest("[data-question-ask]");
+    if (accept) {
+      const { ok, data } = await ButtonLoader.run(accept, () =>
+        apiFetch(url("accept"), { method: "POST" })
+      );
+      if (ok) window.location.reload();
+      else fail(data);
+      return;
+    }
+    if (!ask) return;
+    const followUp = await Modal.prompt({
+      title: "Dopytać klienta?",
+      message: "Klient dostanie maila z Twoim pytaniem uzupełniającym i odpowie w tym samym miejscu. Przypomnienia wrócą.",
+      confirmLabel: "Wyślij pytanie",
+      field: {
+        label: "Pytanie uzupełniające",
+        placeholder: "Np. Czy faktura jest wystawiona na firmę? Nie widzę NIP-u.",
+        requiredMessage: "Napisz, o co jeszcze pytasz.",
+      },
+    });
+    if (!followUp) return;
+    const { ok, data } = await ButtonLoader.run(ask, () =>
+      apiFetch(url("reject"), { method: "POST", body: JSON.stringify({ reason: followUp }) })
+    );
+    if (ok) window.location.reload();
+    else fail(data);
+  });
+})();

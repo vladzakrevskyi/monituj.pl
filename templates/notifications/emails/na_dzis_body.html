@@ -1,0 +1,41 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Przypomnienia, terminy i pytania na dziś.{% endblock %}
+{% block eyebrow %}Na dziś{% endblock %}
+{% block title %}{{ day|date:"l, j E"|capfirst }}{% endblock %}
+{% block content %}
+{% for section in sections %}
+{% if many_accounts %}<p style="margin:0 0 12px;font-size:13px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:#62636d;">{{ section.name }}</p>{% endif %}
+{% if section.reminders %}
+<p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#0b0b0c;">Twoje przypomnienia</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+{% for reminder in section.reminders %}<tr><td style="padding:10px 14px;border-left:3px solid #1d4ed8;background-color:#eef3fd;border-radius:6px;font-size:15px;color:#0b0b0c;">{{ reminder.text }}{% if reminder.client %} <span style="color:#62636d;">· {{ reminder.client.name }}</span>{% endif %}{% if reminder.due_on < day.date %} <span style="color:#c81e1e;">· zaległe od {{ reminder.due_on|d }}</span>{% endif %}</td></tr>
+{% if not forloop.last %}<tr><td style="height:6px;font-size:0;line-height:0;">&nbsp;</td></tr>{% endif %}{% endfor %}
+</table>
+{% endif %}
+{% if section.deadlines %}
+<p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#0b0b0c;">Terminy dziś i jutro</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+{% for event in section.deadlines %}<tr><td style="padding:6px 0;font-size:15px;color:#0b0b0c;"><strong>{{ event.day|date:"j.m" }}</strong> · {{ event.label }} <span style="color:#62636d;">({{ event.client }})</span></td></tr>{% endfor %}
+</table>
+{% endif %}
+{% if section.overdue %}
+<p style="margin:0 0 20px;font-size:15px;color:#c81e1e;"><strong>Po terminie:</strong> {{ section.overdue }} {% if section.overdue == 1 %}prośba{% else %}prośby{% endif %} wciąż czeka na dokumenty.</p>
+{% endif %}
+{% if section.waiting %}
+<p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#0b0b0c;">Pytania bez odpowiedzi dłużej niż tydzień ({{ section.waiting_count }})</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+{% for entry in section.waiting %}<tr><td style="padding:10px 14px;border:1px solid #e4e4e8;border-radius:8px;"><span style="display:block;font-size:13px;font-weight:700;color:#62636d;">{{ entry.client }} · {{ entry.days }} dni</span><span style="display:block;margin-top:2px;font-size:15px;font-weight:600;color:#0b0b0c;">{{ entry.question }}</span>{% if entry.note %}<span style="display:block;margin-top:4px;font-size:13px;color:#6b4a0a;">Po co: {{ entry.note }}</span>{% endif %}</td></tr>
+{% if not forloop.last %}<tr><td style="height:6px;font-size:0;line-height:0;">&nbsp;</td></tr>{% endif %}{% endfor %}
+</table>
+{% endif %}
+{% if section.to_review %}
+<p style="margin:0 0 20px;font-size:15px;color:#15803d;"><strong>Odpowiedzi do sprawdzenia:</strong> {{ section.to_review }}</p>
+{% endif %}
+{% if section.arrived_from %}
+<p style="margin:0 0 20px;font-size:15px;color:#0b0b0c;"><strong>Dotarło od wczoraj ({{ section.arrived_count }}):</strong> {{ section.arrived_from|join:", " }}</p>
+{% endif %}
+{% endfor %}
+{% include "notifications/emails/_button.html" with url=calendar_link label="Otwórz kalendarz" %}
+{% endblock %}
+{% block footer_note %}Poranne podsumowanie przychodzi w dni robocze o 7:30. Wyłączysz je w Kalendarzu Monituj.{% endblock %}

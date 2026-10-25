@@ -19,6 +19,7 @@ PANEL_NAMESPACES = {
     "requests",
     "notifications",
     "billing",
+    "agenda",
     "clients_api",
     "requests_api",
     "reminders_api",
@@ -30,6 +31,7 @@ PUBLIC_VIEWS = {
     "public-delete",
     "public-not-applicable",
     "public-confirm",
+    "public-answer",
     "download",
 }
 PAUSED_MESSAGE = (

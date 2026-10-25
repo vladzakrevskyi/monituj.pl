@@ -1,6 +1,7 @@
 """Marketing copy shared between the landing page and the dedicated pages
 (FAQ teaser vs full FAQ, "Dla kogo" teaser vs full page)."""
 
+from apps.billing.plans import BIURO, FREE, PRO, START
 from apps.documents.validation import ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE
 
 _EXTENSIONS = ", ".join(sorted(ext.upper() for ext in ALLOWED_EXTENSIONS))
@@ -99,6 +100,50 @@ FAQ = [
             "Monituj przypomina o takiej pozycji tak samo jak o brakujących "
             "dokumentach, a Ty akceptujesz potwierdzenie albo odsyłasz je z "
             "informacją, co się nie zgadza."
+        ),
+    },
+    {
+        "category": "firma",
+        "home": True,
+        "q": "Czy mogę zadać klientowi pytanie, a nie prosić o dokument?",
+        "a": (
+            "Tak. Wybierz „Zadaj pytanie”, np. „Co to za przelew 1 250 zł z "
+            "12.09?”. Klient dostaje maila z linkiem i odpowiada słowami - bez "
+            "konta, a jeśli chce, dołącza plik. Monituj przypomina mu, dopóki nie "
+            "odpowie. Obok pytania możesz zapisać, po co pytasz - widzi to tylko "
+            "Twój zespół, nigdy klient - więc gdy odpowiedź przyjdzie po "
+            "tygodniu, pytanie, powód i odpowiedź masz w jednym miejscu. "
+            "Odpowiedź przyjmujesz przyciskiem „Wyjaśnione” albo odsyłasz z "
+            "pytaniem uzupełniającym („Dopytaj”)."
+        ),
+    },
+    {
+        "category": "firma",
+        "home": False,
+        "q": "Gdzie zobaczę wszystko o jednym kliencie?",
+        "a": (
+            "Na karcie klienta - wystarczy kliknąć jego nazwę na liście "
+            "klientów. Na górze są otwarte sprawy: pytania bez odpowiedzi i od "
+            "jak dawna czekają, odpowiedzi do sprawdzenia i brakujące dokumenty. "
+            "Obok notatki zespołu o kliencie (klient ich nie widzi) i Twoje "
+            "przypomnienia, a niżej cała historia: prośby, pytania, przesłane "
+            "dokumenty i przypomnienia, od najnowszych."
+        ),
+    },
+    {
+        "category": "firma",
+        "home": False,
+        "q": "Czy Monituj ma kalendarz?",
+        "a": (
+            "Tak. W zakładce Kalendarz widzisz terminy klientów, terminy "
+            "odpowiedzi na pytania, dni wysyłki próśb cyklicznych i własne "
+            "przypomnienia („Przypomnij mi” - np. „zadzwonić do Kowalskiego w "
+            "sprawie leasingu”). Kalendarz możesz subskrybować w Google, "
+            "Outlooku albo na iPhonie przez tajny link. W dni robocze o 7:30 "
+            "dostajesz mail „Na dziś” z przypomnieniami, terminami na dziś i "
+            "jutro, pytaniami bez odpowiedzi i tym, co dotarło od wczoraj - "
+            "można go wyłączyć jednym kliknięciem. Ustawowych terminów (ZUS, "
+            "VAT) kalendarz nie pokazuje - tylko Twoje sprawy z klientami."
         ),
     },
     {
@@ -275,6 +320,19 @@ FAQ = [
     {
         "category": "konto",
         "home": False,
+        "q": "Czy pytania do klientów liczą się do limitu próśb?",
+        "a": (
+            "Nie. Pytania mają osobny, dużo wyższy limit - liczą się tylko te, "
+            "które czekają na odpowiedź: "
+            f"{FREE.name} {FREE.open_questions}, {START.name} "
+            f"{START.open_questions}, {BIURO.name} {BIURO.open_questions}, "
+            f"{PRO.name} {PRO.open_questions}. Gdy klient odpowie albo zamkniesz "
+            "pytanie, miejsce się zwalnia."
+        ),
+    },
+    {
+        "category": "konto",
+        "home": False,
         "q": "Jak zapłacić i jak zrezygnować?",
         "a": (
             "Płacisz kartą przez Stripe, z góry za miesiąc albo rok; subskrypcja "
@@ -371,7 +429,9 @@ SEGMENTS = [
         "solution": (
             "Tworzysz prośbę na dany miesiąc z listą dokumentów i terminem. Monituj "
             "sam przypomina klientom, a Ty w panelu widzisz, kto jest gotowy do "
-            "księgowania, a kogo trzeba jeszcze dopilnować."
+            "księgowania, a kogo trzeba jeszcze dopilnować. Niejasny przelew "
+            "wyjaśnisz pytaniem do klienta - z notatką, po co pytasz - a "
+            "kalendarz i poranny mail „Na dziś” przypomną, czym zająć się dziś."
         ),
         "examples": [
             "Faktury sprzedaży",

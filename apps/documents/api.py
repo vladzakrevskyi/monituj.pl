@@ -260,6 +260,34 @@ def public_confirm(request, token, item_id):
     return success_response(_item_payload(item))
 
 
+@require_http_methods(["POST"])
+def public_answer(request, token, item_id):
+    """The client's answer to a question (apps/requests/questions.py)."""
+    from apps.requests import questions
+
+    request_obj = PublicAccessService.get_by_token(token)
+    if not PublicAccessService.has_access(request_obj, request):
+        return error_response(
+            "LOCKED", "Brak dostępu. Otwórz najpierw link do dokumentów.", status=403
+        )
+    item = RequestItem.objects.filter(pk=item_id, request=request_obj).first()
+    if item is None:
+        return error_response("NOT_FOUND", "Nie znaleziono pytania.", status=404)
+    # Shares the "Nie mam tego dokumentu" allowance: each answer tells the sender.
+    throttle.consume(
+        throttle.ip_key("not-applicable", request),
+        NOT_APPLICABLE_PER_IP_HOUR,
+        throttle.HOUR,
+        "Zbyt wiele zmian w krótkim czasie. Spróbuj ponownie za godzinę.",
+        code="NOT_APPLICABLE_LIMIT_REACHED",
+    )
+    questions.answer(
+        item, _json_body(request).get("answer", ""), django_request=request
+    )
+    item.refresh_from_db()
+    return success_response(_item_payload(item))
+
+
 @api_login_required
 @require_http_methods(["POST"])
 def owner_not_applicable(request, request_id, item_id):

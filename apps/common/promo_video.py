@@ -10,23 +10,28 @@ WIDE = "video/monituj-promo-16x9.mp4"
 TALL = "video/monituj-promo-9x16.mp4"
 WIDE_POSTER = "video/monituj-promo-16x9.jpg"
 TALL_POSTER = "video/monituj-promo-9x16.jpg"
-THUMB = "video/monituj-promo-thumb.jpg"  # the hero card: a still from the panel
-TITLE = "Monituj w dwie minuty"
+THUMB = "video/monituj-promo-thumb.jpg"  # the hero card: a still from the calendar
+TITLE = "Monituj w trzy minuty"
 DESCRIPTION = (
     "Jak zacząć z Monituj: zakładasz konto, dodajesz klientów, wysyłasz prośbę "
     "o dokumenty z gotowego szablonu, klient przesyła pliki bez zakładania "
-    "konta, a Ty akceptujesz je w panelu - razem z zespołem."
+    "konta, a Ty akceptujesz je w panelu. Zadajesz klientowi pytanie z "
+    "notatką, po co pytasz, masz wszystko o kliencie na jego karcie, a "
+    "terminy i przypomnienia w kalendarzu - razem z zespołem."
 )
-PUBLISHED = "2026-10-06"
-SECONDS = 130
+PUBLISHED = "2026-10-25"
+SECONDS = 194
 # (label, start in the wide cut, start in the tall cut), seconds.
 CHAPTERS = [
     ("Konto", 0, 0),
-    ("Klienci", 21.8, 22.4),
-    ("Prośba", 39.6, 40.8),
-    ("Klient", 81.0, 83.2),
-    ("Panel", 96.0, 98.3),
-    ("Zespół", 105.3, 107.7),
+    ("Klienci", 21.8, 22.5),
+    ("Prośba", 39.4, 40.6),
+    ("Klient", 79.8, 82.4),
+    ("Panel", 94.6, 97.3),
+    ("Pytanie", 103.0, 105.7),
+    ("Karta klienta", 127.5, 130.7),
+    ("Kalendarz", 144.0, 145.4),
+    ("Zespół", 168.5, 170.4),
 ]
 
 

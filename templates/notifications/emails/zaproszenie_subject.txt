@@ -1,1 +1,1 @@
-{% autoescape off %}Prośba o przesłanie dokumentów{% if sender_name %} od {{ sender_name }}{% endif %} - Monituj{% endautoescape %}
+{% autoescape off %}{% if question %}Pytanie{% if sender_name %} od {{ sender_name }}{% endif %} - Monituj{% else %}Prośba o przesłanie dokumentów{% if sender_name %} od {{ sender_name }}{% endif %} - Monituj{% endif %}{% endautoescape %}

@@ -179,6 +179,22 @@ def check_request_allowed(owner, count=1):
             )
 
 
+def check_question_allowed(owner):
+    """Questions to clients don't use the requests' places; they have their
+    own, generous limit of ones waiting for an answer (Plan.open_questions)."""
+    from apps.requests.services import open_questions
+
+    if is_demo_user(owner):
+        return
+    plan, _source = plan_for(owner, account_for(owner))
+    waiting = open_questions(owner).count()
+    if waiting >= plan.open_questions:
+        raise PlanLimitError(
+            f"Masz już {waiting} pytań bez odpowiedzi - tyle obejmuje plan "
+            f"{plan.name}. Zamknij te, na które już nie czekasz, albo zmień plan."
+        )
+
+
 def start_trial(sender, instance, created, raw=False, **kwargs):
     """Every new account starts with the trial - no card, no action needed."""
     if created and not raw:

@@ -7,31 +7,31 @@
 
 {% block content %}
 <div class="card public-head">
-<p class="eyebrow">Prośba o dokumenty</p>
-<h1>{{ request_obj.name }}</h1>
+<p class="eyebrow">{% if is_question %}Pytanie{% else %}Prośba o dokumenty{% endif %}</p>
+<h1>{% if is_question %}Masz pytanie od {{ sender_name }}{% else %}{{ request_obj.name }}{% endif %}</h1>
 <p class="public-head__sender">Od: <strong>{{ sender_name }}</strong>{% if sender_name != sender_email %} <span class="text-muted">({{ sender_email }})</span>{% endif %}</p>
 {% if sender_firm %}<div class="public-head__firm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg><div><p>Firma: <strong>{{ sender_firm }}</strong></p><p class="public-head__firm-note">Nazwę firmy pobraliśmy z publicznego rejestru na podstawie NIP.</p></div></div>{% endif %}
 {% if request_obj.description %}<p class="public-head__desc">{{ request_obj.description }}</p>{% endif %}
 <div class="public-head__meta" id="request-status">
-<span class="badge {{ status_code|badge_class }}" id="request-status-label">{{ status_label }}</span>
-<span>Dostarczono: <span id="request-progress">{{ request_obj.delivered_items }} z {{ request_obj.total_items }}</span></span>
-{% if request_obj.deadline %}<span class="text-muted">Termin: {{ request_obj.deadline|dt }}</span>{% endif %}
+<span class="badge {{ status_code|badge_class }}" id="request-status-label"{% if is_question %} hidden{% endif %}>{{ status_label }}</span>
+<span{% if is_question %} hidden{% endif %}>Dostarczono: <span id="request-progress">{{ request_obj.delivered_items }} z {{ request_obj.total_items }}</span></span>
+{% if request_obj.deadline %}<span class="text-muted">{% if is_question %}Odpowiedz do{% else %}Termin{% endif %}: {{ request_obj.deadline|dt }}</span>{% endif %}
 </div>
 </div>
 
 {% if request_obj.is_closed %}
 <p class="public-closed" role="status">Nadawca zamknął tę prośbę {{ request_obj.closed_at|dt }}. Przesyłanie plików jest wyłączone - jeśli masz jeszcze dokumenty, skontaktuj się bezpośrednio z nadawcą.</p>
 {% endif %}
-<h2 class="card-title mt-5">{% if has_confirm_items %}Lista{% else %}Dokumenty{% endif %} {% if request_obj.is_closed %}w prośbie{% elif has_confirm_items %}do załatwienia{% else %}do przesłania{% endif %}</h2>
+<h2 class="card-title mt-5">{% if is_question %}Odpowiedz{% else %}{% if has_confirm_items %}Lista{% else %}Dokumenty{% endif %} {% if request_obj.is_closed %}w prośbie{% elif has_confirm_items %}do załatwienia{% else %}do przesłania{% endif %}{% endif %}</h2>
 <div id="items-list" data-token="{{ public_token }}">
 {% for item in items %}
 <div class="request-item" data-item-id="{{ item.id }}" data-status="{{ item.status }}">
 <div class="request-item__head">
-<h3>{{ item.name }}</h3>
+<h3>{% if item.is_question %}Pytanie{% else %}{{ item.name }}{% endif %}</h3>
 <span class="badge item-status-label {{ item.status|badge_class }}">{{ item.status_label }}</span>
 </div>
 {% if item.status == "odrzucony" and item.rejection_reason %}
-<p class="item-rejection-reason">{{ item.rejection_reason }}</p>
+<p class="item-rejection-reason">{% if item.is_question %}<strong>Pytanie uzupełniające:</strong> {% endif %}{{ item.rejection_reason }}</p>
 {% endif %}
 
 {% if item.status == "nie_dotyczy" %}
@@ -42,7 +42,7 @@
 {% endif %}
 
 {% if item.status == "zaakceptowany" %}
-<p class="item-accepted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>{% if item.is_confirm %}Zaakceptowane przez nadawcę.{% else %}Dokument zaakceptowany.{% endif %}</p>
+<p class="item-accepted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>{% if item.is_confirm %}Zaakceptowane przez nadawcę.{% elif item.is_question %}Nadawca uznał sprawę za wyjaśnioną. Dziękujemy!{% else %}Dokument zaakceptowany.{% endif %}</p>
 {% endif %}
 {% if item.is_confirm %}
 {# An item without a file: something to do, then "Zrobione" (ConfirmationService). #}
@@ -72,6 +72,27 @@
 </div>
 {% endif %}
 {% else %}
+{% if item.is_question %}
+{# A question: answered in words, a file optional (apps/requests/questions.py). #}
+<div class="question">
+<p class="question__text">{{ item.description|linebreaksbr }}</p>
+{% if item.answer %}
+<div class="question__answer">
+<p class="question__label">Twoja odpowiedź{% if item.answered_at %} · {{ item.answered_at|dt }}{% endif %}</p>
+<p class="question__answer-text">{{ item.answer|linebreaksbr }}</p>
+</div>
+{% endif %}
+{% if not request_obj.is_closed and item.status != "zaakceptowany" %}
+<form class="question__form" data-answer-form{% if item.answer and item.status != "odrzucony" %} hidden{% endif %}>
+<label for="answer-{{ item.id }}">{% if item.status == "odrzucony" %}Odpowiedz na pytanie uzupełniające{% elif item.answer %}Popraw albo uzupełnij odpowiedź{% else %}Twoja odpowiedź{% endif %}</label>
+<textarea id="answer-{{ item.id }}" rows="4" maxlength="5000">{% if item.status != "odrzucony" %}{{ item.answer }}{% endif %}</textarea>
+<button type="submit" class="btn btn-primary">Wyślij odpowiedź</button>
+<p class="upload-error" role="alert" data-answer-error></p>
+</form>
+{% if item.answer and item.status != "odrzucony" %}<button type="button" class="link-button" data-answer-edit>Zmień odpowiedź</button>{% endif %}
+{% endif %}
+</div>
+{% endif %}
 <div class="uploaded-files">
 {% for document in item.own_documents %}
 {% if document.is_anonymized %}
@@ -91,12 +112,12 @@
 <div class="upload-zone" data-item-id="{{ item.id }}">
 <input type="file" class="upload-input" data-item-id="{{ item.id }}">
 <svg class="upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
-<p class="upload-zone__hint">Przeciągnij plik tutaj lub</p>
-<button type="button" class="btn btn-primary upload-trigger" data-item-id="{{ item.id }}">Wybierz plik</button>
+<p class="upload-zone__hint">{% if item.is_question %}Możesz też dołączyć plik - przeciągnij go tutaj lub{% else %}Przeciągnij plik tutaj lub{% endif %}</p>
+<button type="button" class="btn {% if item.is_question %}btn-secondary{% else %}btn-primary{% endif %} upload-trigger" data-item-id="{{ item.id }}">Wybierz plik</button>
 <progress class="upload-progress progress-bar" value="0" max="100" hidden></progress>
 <p class="upload-error" role="alert"></p>
 </div>
-<div class="na" data-na{% if item.status != "brak" and item.status != "odrzucony" %} hidden{% endif %}>
+{% if not item.is_question %}<div class="na" data-na{% if item.status != "brak" and item.status != "odrzucony" %} hidden{% endif %}>
 <button type="button" class="link-button na__open" data-na-open aria-expanded="false">Nie mam tego dokumentu</button>
 <div class="na__picker" data-na-picker hidden>
 <p class="na__title">Dlaczego nie masz tego dokumentu?</p>
@@ -110,7 +131,7 @@
 </form>
 <p class="upload-error" role="alert" data-na-error></p>
 </div>
-</div>
+</div>{% endif %}
 {% endif %}
 {% endif %}
 </div>
@@ -119,7 +140,7 @@
 
 {# A plain link, nothing about the recipient in it and no tracking on this page - see the Regulamin, "strony próśb". Never in emails. #}
 <div class="public-done" data-done{% if status_code != "kompletny" %} hidden{% endif %}>
-<p class="public-done__title">Gotowe - w tej prośbie nie trzeba już niczego przesyłać.</p>
+<p class="public-done__title">{% if is_question %}Dziękujemy - odpowiedź trafiła do nadawcy.{% else %}Gotowe - w tej prośbie nie trzeba już niczego przesyłać.{% endif %}</p>
 <p class="made-with">Ta prośba działa dzięki Monituj. Też zbierasz dokumenty od klientów? <a href="{% url 'landing' %}?utm_source=prosba&amp;utm_medium=strona_odbiorcy" target="_blank" rel="noopener">Zobacz, jak to działa</a></p>
 </div>
 

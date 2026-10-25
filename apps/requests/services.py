@@ -9,7 +9,7 @@ from django.utils import timezone
 from apps.accounts.models import is_guest_account
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
-from apps.billing.services import check_request_allowed
+from apps.billing.services import check_question_allowed, check_request_allowed
 from apps.clients.models import Client
 from apps.common import throttle
 from apps.common.exceptions import (
@@ -94,10 +94,22 @@ def in_progress(owner):
         with_stats(
             Request.objects.filter(
                 created_by=owner, awaiting_confirmation=False, closed_at__isnull=True
-            )
+            ).exclude(items__kind=RequestItemKind.QUESTION)
         )
         .exclude(total_items__gt=0, delivered_items=models.F("total_items"))
         .order_by()
+    )
+
+
+def open_questions(owner):
+    """Questions still waiting for the client's answer - they have their own
+    limit (Plan.open_questions), not the requests' one."""
+    return RequestItem.objects.filter(
+        request__created_by=owner,
+        request__awaiting_confirmation=False,
+        request__closed_at__isnull=True,
+        kind=RequestItemKind.QUESTION,
+        status__in=[RequestItemStatus.BRAK, RequestItemStatus.ODRZUCONY],
     )
 
 
@@ -234,13 +246,20 @@ class RequestService:
         awaiting_confirmation=False,
         queue_invitation=False,
         recurring=None,
+        question="",
+        private_note="",
     ):
         """awaiting_confirmation=True stores the request without contacting
         the recipient; GuestRequestService.confirm() sends it later.
-        queue_invitation=True leaves the invitation to the queue (create_many)."""
+        queue_invitation=True leaves the invitation to the queue (create_many).
+        question: the request is one question - its one item is a question
+        with this text (apps/requests/questions.py)."""
         if is_guest_account(owner):
             check_guest_daily_limit(owner)
-        check_request_allowed(owner)
+        if question:
+            check_question_allowed(owner)
+        else:
+            check_request_allowed(owner)
         throttle.consume(
             f"requests-created:{owner.pk}",
             REQUESTS_PER_DAY,
@@ -272,18 +291,29 @@ class RequestService:
             pending_access_password=(password or "") if awaiting_confirmation else "",
             invitation_queued=queue_invitation,
             recurring=recurring,
+            private_note=private_note,
             **reminder_settings,
         )
-        RequestItem.objects.bulk_create(
-            [
-                RequestItem(
-                    request=request_obj,
-                    name=item_name[:255],
-                    kind=RequestItemKind.CONFIRM if confirm else RequestItemKind.FILE,
-                )
-                for item_name, confirm in map(item_kinds.split, clean_item_names)
-            ]
-        )
+        if question:
+            RequestItem.objects.create(
+                request=request_obj,
+                name=clean_item_names[0][:255],
+                kind=RequestItemKind.QUESTION,
+                description=question,
+            )
+        else:
+            RequestItem.objects.bulk_create(
+                [
+                    RequestItem(
+                        request=request_obj,
+                        name=item_name[:255],
+                        kind=(
+                            RequestItemKind.CONFIRM if confirm else RequestItemKind.FILE
+                        ),
+                    )
+                    for item_name, confirm in map(item_kinds.split, clean_item_names)
+                ]
+            )
         if password:
             PasswordProtectedAccess.objects.create(
                 request=request_obj, password_hash=make_password(password)

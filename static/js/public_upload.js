@@ -189,6 +189,40 @@
     else showToast(message, "error");
   }
 
+  // A question: the answer in words (apps/requests/questions.py).
+  itemsList.addEventListener("submit", async (event) => {
+    const form = event.target.closest("[data-answer-form]");
+    if (!form) return;
+    event.preventDefault();
+    const itemEl = form.closest(".request-item");
+    const errorBox = form.querySelector("[data-answer-error]");
+    const answer = form.querySelector("textarea").value.trim();
+    if (!answer) {
+      errorBox.textContent = "Napisz odpowiedź.";
+      return;
+    }
+    const button = form.querySelector('button[type="submit"]');
+    const { ok, data } = await ButtonLoader.run(button, () =>
+      apiFetch(`/api/public/${token}/items/${itemEl.dataset.itemId}/answer/`, {
+        method: "POST",
+        body: JSON.stringify({ answer }),
+      })
+    );
+    if (ok) {
+      window.location.reload();
+      return;
+    }
+    errorBox.textContent = data && data.error ? data.error.message : "Wystąpił błąd.";
+  });
+  itemsList.addEventListener("click", (event) => {
+    const edit = event.target.closest("[data-answer-edit]");
+    if (!edit) return;
+    const form = edit.closest(".request-item").querySelector("[data-answer-form]");
+    form.hidden = false;
+    edit.hidden = true;
+    form.querySelector("textarea").focus();
+  });
+
   // An item without a file: "Zrobione" and its undo.
   async function sendConfirm(itemEl, method, button) {
     const errorBox = itemEl.querySelector("[data-confirm-error]");
