@@ -1,9 +1,45 @@
-{% load badges formatting %}
+{% load badges formatting %}{% comment %}
+What was sent to one person - the recipient's page and the panel's
+Otrzymane. Questions first, apart from requests for documents
+(apps/requests/received.py: split).
+{% endcomment %}
 <nav class="tabs" aria-label="Widok">
 {% for tab in tabs %}
 <a class="tabs__item{% if tab.active %} is-active{% endif %}" href="?widok={{ tab.key }}"{% if tab.active %} aria-current="page"{% endif %}>{{ tab.label }}<span class="tabs__count">{{ tab.count }}</span></a>
 {% endfor %}
 </nav>
+{% with questions=split.0 documents=split.1 %}
+{% if not rows %}
+<div class="empty-state card">
+<p class="mb-0">{% if active_view == "zakonczone" %}Nie masz jeszcze nic zakończonego.{% elif active_view == "otwarte" %}Nikt nie czeka teraz na Twoje dokumenty ani odpowiedzi.{% else %}Nikt jeszcze nie wysłał Ci prośby ani pytania.{% endif %}</p>
+</div>
+{% endif %}
+
+{% if questions %}
+<section class="received-section" aria-labelledby="received-questions">
+<h2 class="received-section__title" id="received-questions">Pytania do Ciebie <span class="tabs__count">{{ questions|length }}</span></h2>
+<ul class="question-list">
+{% for request_obj in questions %}
+<li class="question-row">
+<a class="question-row__main" href="{% url 'public:request-detail' request_obj.public_token %}">
+<span class="question-row__client">Od: {{ request_obj.created_by.display_name|default:request_obj.created_by.email }}</span>
+<span class="question-row__text">{{ request_obj.question.description|truncatechars:220 }}</span>
+{% if request_obj.question.answer %}<span class="question-row__answer"><span class="visually-hidden">Twoja odpowiedź: </span>„{{ request_obj.question.answer|truncatechars:160 }}”</span>{% endif %}
+</a>
+<div class="question-row__side">
+<span class="badge {{ request_obj.status_code|badge_class }}">{{ request_obj.status_label }}</span>
+<span class="question-row__meta">{{ request_obj.created_at|d }}{% if request_obj.deadline and not request_obj.is_finished %} · odpowiedz do {{ request_obj.deadline|d }}{% endif %}</span>
+<a class="btn {% if request_obj.is_finished %}btn-secondary{% else %}btn-primary{% endif %} btn-sm" href="{% url 'public:request-detail' request_obj.public_token %}">{% if request_obj.is_finished %}Zobacz{% else %}Odpowiedz{% endif %}</a>
+</div>
+</li>
+{% endfor %}
+</ul>
+</section>
+{% endif %}
+
+{% if documents %}
+<section class="received-section" aria-labelledby="received-documents">
+{% if questions %}<h2 class="received-section__title" id="received-documents">Prośby o dokumenty <span class="tabs__count">{{ documents|length }}</span></h2>{% else %}<h2 class="visually-hidden" id="received-documents">Prośby o dokumenty</h2>{% endif %}
 <div class="table-scroll">
 <table>
 <thead>
@@ -17,7 +53,7 @@
 </tr>
 </thead>
 <tbody>
-{% for request_obj in rows %}
+{% for request_obj in documents %}
 <tr>
 <td class="cell-strong" data-label="Prośba"><a class="link-plain" href="{% url 'public:request-detail' request_obj.public_token %}">{{ request_obj.name }}</a></td>
 <td data-label="Od">{% if request_obj.created_by.display_name %}{{ request_obj.created_by.display_name }}<br><span class="text-muted">{{ request_obj.created_by.email }}</span>{% else %}{{ request_obj.created_by.email }}{% endif %}</td>
@@ -35,9 +71,10 @@
 </div>
 </td>
 </tr>
-{% empty %}
-<tr class="table-empty"><td colspan="6">{% if active_view == "zakonczone" %}Nie masz jeszcze zakończonych próśb.{% elif active_view == "otwarte" %}Nikt nie czeka teraz na Twoje dokumenty.{% else %}Nie masz jeszcze żadnych próśb o dokumenty.{% endif %}</td></tr>
 {% endfor %}
 </tbody>
 </table>
 </div>
+</section>
+{% endif %}
+{% endwith %}

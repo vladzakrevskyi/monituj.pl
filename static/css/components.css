@@ -2350,6 +2350,20 @@ a.pagination__page:hover {
   text-align: right;
 }
 
+/* The recipient's page and Otrzymane: questions apart from requests for
+   documents (templates/requests/_received_table.html). */
+.received-section + .received-section {
+  margin-top: var(--space-7);
+}
+
+.received-section__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  font-size: 20px;
+}
+
 .question-row__meta {
   font-size: 13px;
   color: var(--color-text-muted);
@@ -2431,6 +2445,74 @@ a.pagination__page:hover {
 .question-card__answer-text {
   margin: 0;
   line-height: 1.55;
+}
+
+/* A question's conversation (templates/requests/_thread.html): the page
+   owner's messages on the right, the other side's on the left. */
+.thread {
+  list-style: none;
+  margin: var(--space-4) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.thread__msg {
+  max-width: min(88%, 640px);
+  padding: var(--space-3) var(--space-4);
+  border-radius: 14px 14px 14px 4px;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+}
+
+.thread__msg--mine {
+  align-self: flex-end;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--color-primary-bg);
+  border-color: #ffd4b3;
+}
+
+.thread__msg--asked .thread__text {
+  font-weight: 600;
+}
+
+.thread__meta {
+  margin: 0 0 var(--space-1);
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.thread__meta strong {
+  color: var(--color-text);
+}
+
+.thread__text {
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.thread__waiting {
+  margin: 0 0 var(--space-3);
+  font-size: 14px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.thread-reply {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.thread-reply label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+}
+
+.thread-reply .form-hint {
+  margin-top: var(--space-2);
 }
 
 .question-card__actions {

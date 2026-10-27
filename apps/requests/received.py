@@ -1,9 +1,18 @@
 """Requests someone sent *to* a person: shown in their panel (Otrzymane)
 when they have an account with that verified address, and on the
-recipient's page (/moje-prosby/<token>/) when they don't."""
+recipient's page (/moje-prosby/<token>/) when they don't. Questions and
+requests for documents are listed apart (split)."""
 
-from apps.requests.models import Request
+from apps.requests.models import Request, RequestItem, RequestItemKind
 from apps.requests.services import RequestStatus, compute_status, with_stats
+
+# A question's state as the person asked sees it.
+QUESTION_LABELS = {
+    "brak": ("Czeka na Twoją odpowiedź", "brak"),
+    "odrzucony": ("Pytanie uzupełniające", "brak"),
+    "dostarczony": ("Odpowiedziano", "dostarczony"),
+    "zaakceptowany": ("Wyjaśnione", "zaakceptowany"),
+}
 
 FINISHED = {RequestStatus.COMPLETE, RequestStatus.CLOSED}
 VIEWS = {
@@ -21,12 +30,32 @@ def received_requests(email):
             ).select_related("created_by", "client")
         ).order_by("-created_at")
     )
+    questions = {
+        item.request_id: item
+        for item in RequestItem.objects.filter(
+            request__in=requests, kind=RequestItemKind.QUESTION
+        )
+    }
     for request_obj in requests:
         status = compute_status(request_obj)
         request_obj.status_label = status.label
         request_obj.status_code = status.value
         request_obj.is_finished = status in FINISHED
+        request_obj.question = questions.get(request_obj.pk)
+        if request_obj.question is not None and status != RequestStatus.CLOSED:
+            label, code = QUESTION_LABELS.get(
+                request_obj.question.status, (status.label, status.value)
+            )
+            request_obj.status_label, request_obj.status_code = label, code
     return requests
+
+
+def split(rows):
+    """-> (questions, requests for documents)."""
+    return (
+        [r for r in rows if r.question is not None],
+        [r for r in rows if r.question is None],
+    )
 
 
 def open_count(email):

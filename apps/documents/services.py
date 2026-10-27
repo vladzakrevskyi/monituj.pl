@@ -188,6 +188,10 @@ class UploadDocumentService:
 class DocumentReviewService:
     @staticmethod
     def accept(request_item, request=None):
+        if request_item.is_question:  # "Wyjaśnione"
+            from apps.requests import questions
+
+            return questions.resolve(request_item, django_request=request)
         if request_item.status == RequestItemStatus.NIE_DOTYCZY:
             return NotApplicableService.accept(request_item, request=request)
         if request_item.status != RequestItemStatus.DOSTARCZONY:
@@ -235,6 +239,10 @@ class DocumentReviewService:
 
     @staticmethod
     def reject(request_item, reason, request=None):
+        if request_item.is_question:  # "Dopytaj" - added to the conversation
+            from apps.requests import questions
+
+            return questions.follow_up(request_item, reason, django_request=request)
         if request_item.status == RequestItemStatus.NIE_DOTYCZY:
             return NotApplicableService.refuse(request_item, reason, request=request)
         if request_item.status != RequestItemStatus.DOSTARCZONY:

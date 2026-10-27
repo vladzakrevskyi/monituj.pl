@@ -38,6 +38,7 @@ from apps.accounts.services import (
 )
 from apps.billing.services import remember_signup_plan, welcome_url
 from apps.billing.services import state_for as billing_state_for
+from apps.common.analytics import signup_event
 from apps.common.exceptions import ApplicationError
 from apps.common.forms import add_service_error
 from apps.common.responses import (
@@ -70,7 +71,12 @@ def register(request):
                 )
                 redirect_url = reverse("accounts:verification-sent")
                 if is_ajax_request(request):
-                    return success_response({"redirect_url": redirect_url})
+                    return success_response(
+                        {
+                            "redirect_url": redirect_url,
+                            "analytics": signup_event("email"),
+                        }
+                    )
                 return redirect(redirect_url)
             except ApplicationError as exc:
                 add_service_error(

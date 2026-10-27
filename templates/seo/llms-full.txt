@@ -29,13 +29,13 @@ Monituj nie jest dyskiem na pliki. Dysk i mail tylko przechowują to, co już do
 - Panel z liczbą aktywnych próśb, brakujących dokumentów i ostatnią aktywnością; lista klientów z brakami.
 - Zamykanie i ponowne otwieranie prośby.
 - Zakładka „Otrzymane”: prośby, które inni wysłali na adres użytkownika.
-- Strona odbiorcy: jeden stały link ze wszystkimi prośbami wysłanymi na jego adres, od wszystkich nadawców.
+- Strona odbiorcy: jeden stały link ze wszystkimi prośbami i pytaniami wysłanymi na jego adres, od wszystkich nadawców - pytania w osobnej sekcji, prośby o dokumenty w osobnej.
 - Prośba bez konta: jedna dziennie, potwierdzana mailem; nadawca dostaje panel pod stałym linkiem.
 - Demo: osobne konto demonstracyjne z przykładowymi danymi, usuwane po 24 godzinach.
 - Obsługiwane pliki: PDF, JPG, PNG, HEIC/HEIF (zdjęcia z iPhone'a - zapisywane jako JPG), DOC, DOCX, XLS, XLSX, CSV, do 20 MB na plik.
 - Przypomnienia przed terminem: 2 dni przed terminem i w dniu terminu, jeśli wciąż brakuje dokumentów.
 - „Zaakceptuj wszystkie”: jednym kliknięciem wszystkie dokumenty czekające na decyzję.
-- Pytania do klientów (np. „Co to za przelew 1 250 zł z 12.09?”): klient odpowiada słowami z linku w mailu, bez konta, i może dołączyć plik; Monituj przypomina mu, dopóki nie odpowie. Obok pytania firma zapisuje prywatną notatkę „po co pytam” - widzi ją tylko zespół, nigdy klient. Odpowiedź przyjmuje się przyciskiem „Wyjaśnione” albo odsyła z pytaniem uzupełniającym („Dopytaj”). Pytania czekające na odpowiedź mają osobny limit (Free 20, Start 100, Biuro 400, Pro 1500) i nie zajmują miejsc próśb.
+- Pytania do klientów (np. „Co to za przelew 1 250 zł z 12.09?”): klient odpowiada słowami z linku w mailu, bez konta, i może dołączyć plik; Monituj przypomina mu, dopóki nie odpowie. Obok pytania firma zapisuje prywatną notatkę „po co pytam” - widzi ją tylko zespół, nigdy klient. Pytanie to rozmowa: firma może dopytać w tym samym miejscu, klient odpowiada znowu, a wszystkie pytania i odpowiedzi zostają po kolei, jak w czacie; sprawę zamyka przycisk „Wyjaśnione”. Pytania czekające na odpowiedź mają osobny limit (Free 20, Start 100, Biuro 400, Pro 1500) i nie zajmują miejsc próśb.
 - Karta klienta: otwarte sprawy (pytania bez odpowiedzi i od jak dawna czekają, odpowiedzi do sprawdzenia, brakujące dokumenty), notatki zespołu o kliencie i pełna historia - prośby, pytania, dokumenty, przypomnienia i notatki.
 - Kalendarz: terminy klientów, terminy odpowiedzi na pytania, dni wysyłki próśb cyklicznych i własne przypomnienia („Przypomnij mi”, także z karty klienta). Kalendarz można subskrybować w Google, Outlooku albo na iPhonie przez tajny link. Terminów ustawowych (ZUS, VAT, JPK) nie pokazuje.
 - E-mail „Na dziś”: w dni robocze o 7:30 - przypomnienia, terminy na dziś i jutro, prośby po terminie, pytania czekające dłużej niż tydzień (z notatką, po co pytano) i to, co dotarło od wczoraj; bez wiadomości, gdy nic nie czeka; można go wyłączyć.

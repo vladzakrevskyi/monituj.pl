@@ -187,9 +187,12 @@ class RequestService:
         sort="newest",
     ):
         """Every filter except status, which is computed per request in Python
-        (see compute_status) and therefore applied by the caller."""
+        (see compute_status) and therefore applied by the caller. Requests for
+        documents only - questions have their own list (Pytania)."""
         queryset = with_stats(
-            Request.objects.filter(created_by=owner).select_related("client")
+            Request.objects.filter(created_by=owner)
+            .exclude(items__kind=RequestItemKind.QUESTION)
+            .select_related("client")
         ).order_by(*REQUEST_SORTS.get(sort, REQUEST_SORTS["newest"]))
         if search:
             queryset = queryset.filter(
@@ -575,9 +578,13 @@ class DashboardService:
         requests_qs = Request.objects.filter(created_by=owner)
         request_ids = list(requests_qs.values_list("pk", flat=True))
 
-        item_stats = RequestItem.objects.filter(request_id__in=request_ids).aggregate(
-            missing=Count("id", filter=Q(status__in=MISSING_STATUSES)),
-            delivered=Count("id", filter=Q(status__in=DELIVERED_STATUSES)),
+        item_stats = (
+            RequestItem.objects.filter(request_id__in=request_ids)
+            .exclude(kind=RequestItemKind.QUESTION)
+            .aggregate(
+                missing=Count("id", filter=Q(status__in=MISSING_STATUSES)),
+                delivered=Count("id", filter=Q(status__in=DELIVERED_STATUSES)),
+            )
         )
 
         active_requests = in_progress(owner).count()

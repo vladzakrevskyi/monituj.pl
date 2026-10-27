@@ -40,6 +40,8 @@ EVENT_LABELS_PL = {
     AuditEvent.ITEM_CONFIRMED: "Klient potwierdził wykonanie",
     AuditEvent.CONFIRMATION_UNDONE: "Klient cofnął potwierdzenie",
     AuditEvent.QUESTION_ANSWERED: "Klient odpowiedział na pytanie",
+    AuditEvent.QUESTION_FOLLOWED_UP: "Dopytano klienta",
+    AuditEvent.QUESTION_RESOLVED: "Uznano za wyjaśnione",
     AuditEvent.CLIENT_NOTE_ADDED: "Dodano notatkę o kliencie",
     AuditEvent.REMINDER_SENT: "Wysłano przypomnienie",
     AuditEvent.PUBLIC_LINK_ACCESSED: "Klient otworzył link",
@@ -59,7 +61,25 @@ EVENT_LABELS_PL = {
 }
 
 
-def translate_event(event_code):
+# A question is a request under the hood (apps/requests/questions.py) - its
+# history says what happened to the question, also for entries logged
+# before questions had events of their own.
+QUESTION_LABELS_PL = {
+    AuditEvent.REQUEST_CREATED: "Zadano pytanie",
+    AuditEvent.REQUEST_UPDATED: "Zmieniono pytanie",
+    AuditEvent.REQUEST_CLOSED: "Zamknięto pytanie",
+    AuditEvent.REQUEST_REOPENED: "Otwarto ponownie pytanie",
+    AuditEvent.REQUEST_DELETED: "Usunięto pytanie",
+    AuditEvent.INVITATION_SENT: "Wysłano pytanie e-mailem",
+    AuditEvent.DOCUMENT_UPLOADED: "Klient dołączył plik",
+    AuditEvent.DOCUMENT_ACCEPTED: "Uznano za wyjaśnione",
+    AuditEvent.DOCUMENT_REJECTED: "Dopytano klienta",
+}
+
+
+def translate_event(event_code, question=False):
+    if question and event_code in QUESTION_LABELS_PL:
+        return QUESTION_LABELS_PL[event_code]
     return EVENT_LABELS_PL.get(event_code, event_code)
 
 

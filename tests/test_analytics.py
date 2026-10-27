@@ -58,6 +58,26 @@ def test_private_pages_and_token_links_never_load_the_tags(gtm, path):
 
 
 @pytest.mark.django_db
+def test_sign_up_hands_its_conversion_to_the_page(client):
+    response = client.post(
+        reverse("accounts:register"),
+        {
+            "email": "konwersja@example.com",
+            "password": "Sup3r-Secret-Pass!23",
+            "password_confirm": "Sup3r-Secret-Pass!23",
+            "accept_terms": "on",
+            "accept_privacy_policy": "on",
+        },
+        headers={"x-requested-with": "XMLHttpRequest"},
+    )
+
+    assert response.json()["data"]["analytics"] == {
+        "event": "sign_up",
+        "method": "email",
+    }
+
+
+@pytest.mark.django_db
 def test_panel_never_loads_it(gtm, user):
     browser = BrowserClient()
     browser.force_login(user)

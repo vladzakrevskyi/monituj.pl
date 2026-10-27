@@ -95,6 +95,24 @@ const FormErrors = (function () {
 })();
 
 (function () {
+  // A conversion (apps/common/analytics.py) goes to Google Tag Manager
+  // before the page is left - only when GTM is running here, i.e. the
+  // visitor agreed to it on a public page; otherwise straight on.
+  function track(event, then) {
+    if (!event || !window.google_tag_manager || !window.dataLayer) {
+      then();
+      return;
+    }
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      then();
+    };
+    window.dataLayer.push({ ...event, eventCallback: finish, eventTimeout: 1500 });
+    window.setTimeout(finish, 2000);
+  }
+
   function replaceWithMessage(form, title, message) {
     const card = form.closest(".card") || form.parentElement;
     card.innerHTML = "";
@@ -149,9 +167,11 @@ const FormErrors = (function () {
             const samePage =
               target.pathname === window.location.pathname &&
               target.search === window.location.search;
-            window.location.href = target.href;
-            // Only the #fragment differs: the browser would just scroll.
-            if (samePage) window.location.reload();
+            track(payload.analytics, () => {
+              window.location.href = target.href;
+              // Only the #fragment differs: the browser would just scroll.
+              if (samePage) window.location.reload();
+            });
             return;
           }
           if (form.dataset.replaceOnSuccess !== undefined) {

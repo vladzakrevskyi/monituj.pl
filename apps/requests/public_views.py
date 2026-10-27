@@ -18,7 +18,7 @@ from apps.common.responses import (
     success_response,
 )
 from apps.documents.services import GuestUploadContext
-from apps.requests import received, recipient_files
+from apps.requests import questions, received, recipient_files
 from apps.requests.forms import PublicPasswordForm, PublicRequestForm
 from apps.requests.guest import GuestRequestService
 from apps.requests.links import remember_recipient_timezone
@@ -93,6 +93,8 @@ def public_request_detail(request, token):
     hidden_files = 0 if verified else _stored_documents(request_obj) - shown
 
     status = compute_status(request_obj)
+    for item in items:
+        item.thread = questions.thread(item) if item.is_question else []
     return render(
         request,
         "public/request_detail.html",
@@ -321,6 +323,7 @@ def recipient_portal(request, token):
         {
             "recipient_email": access.email,
             "rows": rows,
+            "split": received.split(rows),
             "tabs": tabs,
             "active_view": next(t["key"] for t in tabs if t["active"]),
             "account_link": account_link,

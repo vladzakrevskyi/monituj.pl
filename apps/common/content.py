@@ -113,8 +113,9 @@ FAQ = [
             "odpowie. Obok pytania możesz zapisać, po co pytasz - widzi to tylko "
             "Twój zespół, nigdy klient - więc gdy odpowiedź przyjdzie po "
             "tygodniu, pytanie, powód i odpowiedź masz w jednym miejscu. "
-            "Odpowiedź przyjmujesz przyciskiem „Wyjaśnione” albo odsyłasz z "
-            "pytaniem uzupełniającym („Dopytaj”)."
+            "Odpowiedź przyjmujesz przyciskiem „Wyjaśnione” albo dopytujesz w "
+            "tej samej rozmowie - wszystkie pytania i odpowiedzi zostają, po "
+            "kolei, jak w czacie."
         ),
     },
     {

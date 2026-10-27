@@ -38,6 +38,8 @@ class AuditEvent(models.TextChoices):
     ITEM_CONFIRMED = "ITEM_CONFIRMED", "Item confirmed as done"
     CONFIRMATION_UNDONE = "CONFIRMATION_UNDONE", "Confirmation withdrawn"
     QUESTION_ANSWERED = "QUESTION_ANSWERED", "Question answered"
+    QUESTION_FOLLOWED_UP = "QUESTION_FOLLOWED_UP", "Question followed up"
+    QUESTION_RESOLVED = "QUESTION_RESOLVED", "Question resolved"
     CLIENT_NOTE_ADDED = "CLIENT_NOTE_ADDED", "Client note added"
     REMINDER_SENT = "REMINDER_SENT", "Reminder sent"
     PUBLIC_LINK_ACCESSED = "PUBLIC_LINK_ACCESSED", "Public link accessed"

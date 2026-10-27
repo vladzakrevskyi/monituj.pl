@@ -8,6 +8,10 @@ GTM runs only where it can't do harm and only with permission:
   each tag then checks the consent of its own category.
 Which tools run inside GTM, and what the policies say about them, is set in
 apps/common/cookies.py and TRACKING_SERVICES.
+
+Conversions (signup_event) ride on the AJAX answer of the sign-up forms;
+static/js/ajax_form.js hands them to GTM's dataLayer before leaving the page
+- only there, on a public page, so nothing is sent from the panel.
 """
 
 import re
@@ -35,3 +39,8 @@ def content_security_policy():
         base = policy.get(directive, policy.get("default-src", ""))
         policy[directive] = " ".join([base, *sources]).strip()
     return policy
+
+
+def signup_event(method):
+    """GA4's recommended "sign_up" event; method: "email" or "google"."""
+    return {"event": "sign_up", "method": method}

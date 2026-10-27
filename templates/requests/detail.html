@@ -4,7 +4,7 @@
 {% block page_name %}{{ request_obj.name }}{% endblock %}
 
 {% block content %}
-<a class="back-link" href="{% url 'requests:list' %}" title="Wróć: Przypomnienia">&larr; Przypomnienia</a>
+{% if question %}<a class="back-link" href="{% url 'requests:questions' %}" title="Wróć: Pytania">&larr; Pytania</a>{% else %}<a class="back-link" href="{% url 'requests:list' %}" title="Wróć: Przypomnienia">&larr; Przypomnienia</a>{% endif %}
 <div class="page-header">
 <div class="page-header__title">
 <h1>{{ request_obj.name }}</h1>
@@ -12,24 +12,24 @@
 </div>
 <div class="page-header__actions">
 {% if has_files %}<a class="btn btn-secondary" href="{% url 'requests:files-zip' request_obj.id %}" title="Pobierz wszystkie pliki tej prośby w jednym archiwum ZIP">Pobierz wszystko (ZIP)</a>{% endif %}
-<a class="btn btn-secondary" href="{% url 'requests:edit' request_obj.id %}" title="Edytuj prośbę: {{ request_obj.name }}">Edytuj</a>
-<form method="post" action="{% url 'requests:template-from-request' request_obj.id %}" class="inline-form">
+<a class="btn btn-secondary" href="{% url 'requests:edit' request_obj.id %}" title="{% if question %}Edytuj pytanie{% else %}Edytuj prośbę{% endif %}: {{ request_obj.name }}">Edytuj</a>
+{% if not question %}<form method="post" action="{% url 'requests:template-from-request' request_obj.id %}" class="inline-form">
 {% csrf_token %}
 <button type="submit" class="btn btn-secondary" title="Zapisz tę listę dokumentów i ustawienia jako szablon nowych próśb">Zapisz jako szablon</button>
-</form>
-<form method="post" action="{% url 'requests:delete' request_obj.id %}" class="inline-form" data-confirm-title="Usunąć prośbę?" data-confirm-label="Usuń" data-confirm="Prośba „{{ request_obj.name }}” zniknie razem z historią{% if has_files %} i wszystkimi przesłanymi plikami{% endif %}. Link u klienta przestanie działać. Tego nie można cofnąć - jeśli chcesz tylko zakończyć zbieranie, zamknij prośbę."{% if not team_member %} data-confirm-option="Usuń też klienta „{{ request_obj.client.name }}”{% if client_other_requests %} i jego pozostałe prośby ({{ client_other_requests }}){% endif %}." data-confirm-option-input="with_client"{% endif %}>
+</form>{% endif %}
+<form method="post" action="{% url 'requests:delete' request_obj.id %}" class="inline-form" data-confirm-title="{% if question %}Usunąć pytanie?{% else %}Usunąć prośbę?{% endif %}" data-confirm-label="Usuń" data-confirm="{% if question %}Pytanie{% else %}Prośba{% endif %} „{{ request_obj.name }}” zniknie razem z historią{% if has_files %} i wszystkimi przesłanymi plikami{% endif %}. Link u klienta przestanie działać. Tego nie można cofnąć - jeśli chcesz tylko zakończyć zbieranie, zamknij prośbę."{% if not team_member %} data-confirm-option="Usuń też klienta „{{ request_obj.client.name }}”{% if client_other_requests %} i jego pozostałe prośby ({{ client_other_requests }}){% endif %}." data-confirm-option-input="with_client"{% endif %}>
 {% csrf_token %}
 <input type="hidden" name="with_client" value="">
 <button type="submit" class="btn btn-danger">Usuń</button>
 </form>
 {% if not request_obj.awaiting_confirmation %}
-<form method="post" action="{% url 'requests:close' request_obj.id %}" class="inline-form"{% if not request_obj.is_closed %} data-confirm-close{% endif %}>
+<form method="post" action="{% url 'requests:close' request_obj.id %}" class="inline-form"{% if not request_obj.is_closed %} data-confirm-close{% if question %}="question"{% endif %}{% endif %}>
 {% csrf_token %}
 {% if request_obj.is_closed %}
 <input type="hidden" name="action" value="reopen">
 <button type="submit" class="btn btn-secondary">Otwórz ponownie</button>
 {% else %}
-<button type="submit" class="btn btn-danger">Zamknij prośbę</button>
+<button type="submit" class="btn btn-danger">{% if question %}Zamknij pytanie{% else %}Zamknij prośbę{% endif %}</button>
 {% endif %}
 </form>
 {% endif %}
@@ -42,7 +42,7 @@
 {% if request_obj.awaiting_confirmation %}
 <p class="alert alert--info">Ta prośba czeka na potwierdzenie linkiem z maila, który wysłaliśmy na <strong>{{ request_obj.created_by.email }}</strong>. Odbiorca jeszcze nic nie dostał. Niepotwierdzone prośby są usuwane po 48 godzinach.</p>
 {% elif request_obj.is_closed %}
-<p class="alert alert--info">Prośba zamknięta {{ request_obj.closed_at|dt }}. Odbiorca widzi ją jako zamkniętą i nie może przesyłać plików, a przypomnienia nie są wysyłane. Przesłane pliki nadal możesz pobrać.</p>
+{% if question %}<p class="alert alert--info">Pytanie zamknięte {{ request_obj.closed_at|dt }}. Klient widzi je jako zamknięte i nie może już odpowiedzieć, a przypomnienia nie są wysyłane.</p>{% else %}<p class="alert alert--info">Prośba zamknięta {{ request_obj.closed_at|dt }}. Odbiorca widzi ją jako zamkniętą i nie może przesyłać plików, a przypomnienia nie są wysyłane. Przesłane pliki nadal możesz pobrać.</p>{% endif %}
 {% endif %}
 
 <div class="card mb-5">
@@ -85,28 +85,26 @@
 <h2 class="card-title">Pytanie</h2>
 <span class="badge {{ question.status|badge_class }}">{{ question.status_label }}</span>
 </div>
-<p class="question-card__text">{{ question.description|linebreaksbr }}</p>
-{% if question.status == "odrzucony" and question.rejection_reason %}<p class="question-card__follow">Dopytałeś: „{{ question.rejection_reason }}” - czekasz na odpowiedź.</p>{% endif %}
-{% if question.answer %}
-<div class="question-card__answer">
-<p class="question-card__label">Odpowiedź klienta{% if question.answered_at %} · {{ question.answered_at|dt }}{% endif %}</p>
-<p class="question-card__answer-text">{{ question.answer|linebreaksbr }}</p>
-</div>
-{% elif question.status == "brak" %}
-<p class="text-muted mb-0">Klient jeszcze nie odpowiedział.</p>
-{% endif %}
+{% include "requests/_thread.html" with messages=thread mine="nadawca" client_name=request_obj.client.name %}
+{% if question.status == "brak" or question.status == "odrzucony" %}<p class="thread__waiting">Czekasz na odpowiedź klienta - Monituj mu przypomina.</p>{% elif question.status == "zaakceptowany" %}<p class="thread__waiting">Sprawa wyjaśniona.</p>{% endif %}
 {% if question.documents.all %}
+<p class="question-card__label">Pliki od klienta</p>
 <ul class="file-list">
 {% for document in question.documents.all %}
 {% include "documents/_file_link.html" %}
 {% endfor %}
 </ul>
 {% endif %}
-{% if question.status == "dostarczony" and not request_obj.is_closed %}
+{% if question.status != "zaakceptowany" and not request_obj.is_closed %}
+<form class="thread-reply" data-question-follow-up novalidate>
+<label for="follow-up-text">{% if question.status == "dostarczony" %}Coś jeszcze niejasne? Dopytaj klienta{% else %}Dopisz coś do pytania{% endif %}</label>
+<textarea id="follow-up-text" rows="3" maxlength="2000" placeholder="Np. Czy faktura jest wystawiona na firmę? Nie widzę NIP-u."></textarea>
 <div class="question-card__actions">
-<button type="button" class="btn btn-primary" data-question-accept>Wyjaśnione</button>
-<button type="button" class="btn btn-secondary" data-question-ask>Dopytaj</button>
+<button type="submit" class="btn btn-secondary">Wyślij klientowi</button>
+{% if question.status == "dostarczony" %}<button type="button" class="btn btn-primary" data-question-accept>Wyjaśnione</button>{% endif %}
 </div>
+<p class="form-hint text-muted mb-0">Klient dostanie maila i odpowie w tej samej rozmowie. Przypomnienia wrócą, dopóki nie odpowie.</p>
+</form>
 {% endif %}
 </section>
 {% else %}
@@ -205,7 +203,7 @@
 {% endfor %}
 </ol>
 {% elif status_code == "kompletny" %}
-<p class="schedule-empty">Wszystkie dokumenty są dostarczone, kolejne przypomnienia nie będą wysyłane.</p>
+<p class="schedule-empty">{% if question %}Klient odpowiedział - przypomnienia nie będą wysyłane, dopóki go nie dopytasz.{% else %}Wszystkie dokumenty są dostarczone, kolejne przypomnienia nie będą wysyłane.{% endif %}</p>
 {% else %}
 <p class="schedule-empty">Wykorzystano limit automatycznych przypomnień.</p>
 {% endif %}

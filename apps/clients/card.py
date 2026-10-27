@@ -193,8 +193,11 @@ def _describe(entry, types, requests, items, documents, questions, viewer):
     details = []
     if question is not None:
         details.append(f"Pytanie: {question.description[:140]}")
-        if entry.event == AuditEvent.QUESTION_ANSWERED and question.answer:
-            details.append(f"Odpowiedź: {question.answer[:200]}")
+        if entry.event == AuditEvent.QUESTION_ANSWERED:
+            # What was answered then - older entries only know the latest.
+            said = (entry.metadata or {}).get("answer") or question.answer
+            if said:
+                details.append(f"Odpowiedź: {said[:200]}")
     elif item is not None:
         details.append(item.name)
     if document is not None:
@@ -206,7 +209,7 @@ def _describe(entry, types, requests, items, documents, questions, viewer):
         details.append(f"„{reason}”")
     return {
         "at": entry.created_at,
-        "label": translate_event(entry.event),
+        "label": translate_event(entry.event, question=question is not None),
         "who": who,
         "details": details,
         "request": request_obj,

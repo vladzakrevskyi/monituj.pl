@@ -306,11 +306,23 @@ def build(
     }
 
 
+# Not for search, but ordinary pages of the site all the same (no token in
+# the address, not the panel): analytics may run there. The last step of
+# signing up with Google sends its conversion from here.
+UNLISTED_PUBLIC = {"accounts:google-signup"}
+
+
 def for_request(request):
     match = getattr(request, "resolver_match", None)
     page = PAGES.get(match.view_name) if match else None
     if page is None:
-        return build(request, DEFAULT_PAGE_NAME, DEFAULT_DESCRIPTION, indexable=False)
+        return build(
+            request,
+            DEFAULT_PAGE_NAME,
+            DEFAULT_DESCRIPTION,
+            indexable=False,
+            public=bool(match) and match.view_name in UNLISTED_PUBLIC,
+        )
     indexable = page.get("index", True)
     return build(
         request,

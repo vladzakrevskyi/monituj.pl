@@ -168,6 +168,41 @@ class RequestItem(TimeStampedModel):
         return self.get_status_display()
 
 
+class QuestionMessageAuthor(models.TextChoices):
+    SENDER = "nadawca", "Nadawca"
+    CLIENT = "klient", "Klient"
+
+
+class QuestionMessage(TimeStampedModel):
+    """One message of a question's conversation (apps/requests/questions.py):
+    the question, the client's answers, the sender's follow-ups - each kept,
+    in order, so a follow-up never overwrites what was said before."""
+
+    item = models.ForeignKey(
+        RequestItem, on_delete=models.CASCADE, related_name="messages"
+    )
+    author = models.CharField(max_length=10, choices=QuestionMessageAuthor.choices)
+    # Who on the sender's side wrote it (a team member); empty for the client.
+    written_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    text = models.TextField()
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self):
+        return f"{self.get_author_display()}: {self.text[:60]}"
+
+    @property
+    def from_client(self):
+        return self.author == QuestionMessageAuthor.CLIENT
+
+
 class PasswordProtectedAccess(TimeStampedModel):
     request = models.OneToOneField(
         Request, on_delete=models.CASCADE, related_name="password_protected_access"

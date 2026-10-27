@@ -1,0 +1,13 @@
+{% load formatting %}{% comment %}
+A question's conversation (QuestionMessage, apps/requests/questions.py),
+oldest first. mine: whose page it is - "nadawca" (the panel) or "klient"
+(the client's link); their messages sit on the right.
+{% endcomment %}
+<ol class="thread">
+{% for message in messages %}
+<li class="thread__msg{% if message.author == mine %} thread__msg--mine{% endif %}{% if not message.from_client %} thread__msg--asked{% endif %}">
+<p class="thread__meta"><strong>{% if message.from_client %}{% if mine == "klient" %}Twoja odpowiedź{% else %}{{ client_name }}{% endif %}{% elif forloop.first %}{% if mine == "klient" %}Pytanie{% if sender_name %} od {{ sender_name }}{% endif %}{% else %}Pytanie{% endif %}{% else %}{% if mine == "klient" %}Pytanie uzupełniające{% else %}Dopytano{% endif %}{% endif %}</strong>{% if mine == "nadawca" and message.written_by and message.written_by != request.user %} · {{ message.written_by.display_name|default:message.written_by.email }}{% endif %} · {{ message.created_at|dt }}</p>
+<div class="thread__text">{{ message.text|linebreaksbr }}</div>
+</li>
+{% endfor %}
+</ol>

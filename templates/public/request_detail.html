@@ -30,8 +30,8 @@
 <h3>{% if item.is_question %}Pytanie{% else %}{{ item.name }}{% endif %}</h3>
 <span class="badge item-status-label {{ item.status|badge_class }}">{{ item.status_label }}</span>
 </div>
-{% if item.status == "odrzucony" and item.rejection_reason %}
-<p class="item-rejection-reason">{% if item.is_question %}<strong>Pytanie uzupełniające:</strong> {% endif %}{{ item.rejection_reason }}</p>
+{% if item.status == "odrzucony" and item.rejection_reason and not item.is_question %}
+<p class="item-rejection-reason">{{ item.rejection_reason }}</p>
 {% endif %}
 
 {% if item.status == "nie_dotyczy" %}
@@ -75,21 +75,15 @@
 {% if item.is_question %}
 {# A question: answered in words, a file optional (apps/requests/questions.py). #}
 <div class="question">
-<p class="question__text">{{ item.description|linebreaksbr }}</p>
-{% if item.answer %}
-<div class="question__answer">
-<p class="question__label">Twoja odpowiedź{% if item.answered_at %} · {{ item.answered_at|dt }}{% endif %}</p>
-<p class="question__answer-text">{{ item.answer|linebreaksbr }}</p>
-</div>
-{% endif %}
+{% include "requests/_thread.html" with messages=item.thread mine="klient" %}
 {% if not request_obj.is_closed and item.status != "zaakceptowany" %}
-<form class="question__form" data-answer-form{% if item.answer and item.status != "odrzucony" %} hidden{% endif %}>
-<label for="answer-{{ item.id }}">{% if item.status == "odrzucony" %}Odpowiedz na pytanie uzupełniające{% elif item.answer %}Popraw albo uzupełnij odpowiedź{% else %}Twoja odpowiedź{% endif %}</label>
-<textarea id="answer-{{ item.id }}" rows="4" maxlength="5000">{% if item.status != "odrzucony" %}{{ item.answer }}{% endif %}</textarea>
+<form class="question__form" data-answer-form{% if item.status == "dostarczony" %} hidden{% endif %}>
+<label for="answer-{{ item.id }}">{% if item.status == "odrzucony" %}Odpowiedz na pytanie uzupełniające{% elif item.status == "dostarczony" %}Dopisz coś do odpowiedzi{% else %}Twoja odpowiedź{% endif %}</label>
+<textarea id="answer-{{ item.id }}" rows="4" maxlength="5000"></textarea>
 <button type="submit" class="btn btn-primary">Wyślij odpowiedź</button>
 <p class="upload-error" role="alert" data-answer-error></p>
 </form>
-{% if item.answer and item.status != "odrzucony" %}<button type="button" class="link-button" data-answer-edit>Zmień odpowiedź</button>{% endif %}
+{% if item.status == "dostarczony" %}<button type="button" class="link-button" data-answer-edit>Dopisz coś jeszcze</button>{% endif %}
 {% endif %}
 </div>
 {% endif %}
@@ -140,8 +134,8 @@
 
 {# A plain link, nothing about the recipient in it and no tracking on this page - see the Regulamin, "strony próśb". Never in emails. #}
 <div class="public-done" data-done{% if status_code != "kompletny" %} hidden{% endif %}>
-<p class="public-done__title">{% if is_question %}Dziękujemy - odpowiedź trafiła do nadawcy.{% else %}Gotowe - w tej prośbie nie trzeba już niczego przesyłać.{% endif %}</p>
-<p class="made-with">Ta prośba działa dzięki Monituj. Też zbierasz dokumenty od klientów? <a href="{% url 'landing' %}?utm_source=prosba&amp;utm_medium=strona_odbiorcy" target="_blank" rel="noopener">Zobacz, jak to działa</a></p>
+<p class="public-done__title">{% if is_question %}{% if items.0.status == "zaakceptowany" %}Dziękujemy - sprawa wyjaśniona.{% else %}Dziękujemy - odpowiedź trafiła do nadawcy. Jeśli coś będzie niejasne, dopyta tutaj, a my damy Ci znać mailem.{% endif %}{% else %}Gotowe - w tej prośbie nie trzeba już niczego przesyłać.{% endif %}</p>
+<p class="made-with">{% if is_question %}To pytanie działa{% else %}Ta prośba działa{% endif %} dzięki Monituj. Też zbierasz dokumenty od klientów? <a href="{% url 'landing' %}?utm_source=prosba&amp;utm_medium=strona_odbiorcy" target="_blank" rel="noopener">Zobacz, jak to działa</a></p>
 </div>
 
 {% if hidden_files %}

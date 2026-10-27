@@ -27,7 +27,13 @@ from apps.documents.services import DocumentReviewService
 from apps.notifications import inbox
 from apps.reminders.schedule import recipient_zone, send_clock
 from apps.reminders.services import ReminderScheduleService
-from apps.requests import item_kinds, received, recurring, request_templates
+from apps.requests import (
+    item_kinds,
+    questions,
+    received,
+    recurring,
+    request_templates,
+)
 from apps.requests.forms import (
     RecurringRequestForm,
     RequestEditForm,
@@ -395,8 +401,9 @@ def request_detail(request, request_id):
     history = AuditService.history_for_request(request_obj)
     # With a team, who did it (apps/accounts/team.py).
     has_team = request.account.team_memberships.exists()
+    is_question = request_obj.question_item is not None
     for entry in history:
-        entry.label_pl = translate_event(entry.event)
+        entry.label_pl = translate_event(entry.event, question=is_question)
         by = (entry.metadata or {}).get("by")
         if has_team and entry.actor is not None:
             entry.label_pl += f" - {entry.actor.display_name or entry.actor.email}"
@@ -412,14 +419,30 @@ def request_detail(request, request_id):
             "request_obj": request_obj,
             "items": items,
             "question": request_obj.question_item,
+            "thread": (
+                questions.thread(request_obj.question_item)
+                if request_obj.question_item is not None
+                else []
+            ),
+            # The menu shows a question under Pytania, not Przypomnienia.
+            "question_page": request_obj.question_item is not None,
             "not_applicable_count": sum(
                 1 for item in items if item.status == RequestItemStatus.NIE_DOTYCZY
             ),
             "to_review": DocumentReviewService.to_review(request_obj).count(),
             "reminders": reminders,
             "history": history,
-            "status_label": status.label,
-            "status_code": status.value,
+            # A question shows where the conversation stands, not "Kompletny".
+            "status_label": (
+                request_obj.question_item.status_label
+                if request_obj.question_item is not None and not request_obj.is_closed
+                else status.label
+            ),
+            "status_code": (
+                request_obj.question_item.status
+                if request_obj.question_item is not None and not request_obj.is_closed
+                else status.value
+            ),
             "public_url": request.build_absolute_uri(f"/d/{request_obj.public_token}/"),
             "planned_reminders": ReminderScheduleService.planned(request_obj),
             "reminder_clock": send_clock(request_obj),
@@ -507,7 +530,11 @@ def request_edit(request, request_id):
     return render(
         request,
         "requests/edit_form.html",
-        {"form": form, "request_obj": request_obj},
+        {
+            "form": form,
+            "request_obj": request_obj,
+            "question_page": request_obj.question_item is not None,
+        },
     )
 
 
@@ -518,6 +545,7 @@ def request_close(request, request_id):
         request_obj = RequestService.get_owned_request(request.account, request_id)
     except ApplicationError:
         raise Http404 from None
+    question = request_obj.question_item is not None
     if request.POST.get("action") == "reopen":
         try:
             RequestService.reopen(request_obj, actor=request.user, request=request)
@@ -525,14 +553,20 @@ def request_close(request, request_id):
             messages.error(request, exc.message)
         else:
             messages.success(
-                request, "Prośba jest znowu otwarta - odbiorca może przesyłać pliki."
+                request,
+                "Pytanie jest znowu otwarte - klient może odpowiedzieć."
+                if question
+                else "Prośba jest znowu otwarta - odbiorca może przesyłać pliki.",
             )
     else:
         RequestService.close(request_obj, actor=request.user, request=request)
         messages.success(
             request,
-            "Prośba została zamknięta. Przypomnienia nie będą wysyłane, a odbiorca "
-            "nie może już przesyłać plików.",
+            "Pytanie zostało zamknięte. Przypomnienia nie będą wysyłane, a klient "
+            "nie może już odpowiedzieć."
+            if question
+            else "Prośba została zamknięta. Przypomnienia nie będą wysyłane, a "
+            "odbiorca nie może już przesyłać plików.",
         )
     return redirect("requests:detail", request_id=request_obj.pk)
 
@@ -564,13 +598,17 @@ def request_delete(request, request_id):
         messages.error(request, team.OWNER_ONLY_MESSAGE)
         return redirect("requests:detail", request_id=request_obj.pk)
     name = request_obj.name
+    question = request_obj.question_item is not None
     removed = deletion.delete_request(
         request_obj,
         with_client=request.POST.get("with_client") == "1",
         django_request=request,
     )
-    messages.success(request, _deleted_message(removed, name))
-    return redirect("requests:list")
+    message = _deleted_message(removed, name)
+    if question:
+        message = message.replace(f"prośbę „{name}”", f"pytanie „{name}”")
+    messages.success(request, message)
+    return redirect("requests:questions" if question else "requests:list")
 
 
 @login_required
@@ -621,6 +659,7 @@ def received_list(request):
         "requests/received.html",
         {
             "rows": rows,
+            "split": received.split(rows),
             "tabs": tabs,
             "active_view": next(t["key"] for t in tabs if t["active"]),
             "email_verified": bool(email),

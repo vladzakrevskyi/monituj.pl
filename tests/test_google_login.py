@@ -231,6 +231,26 @@ def test_person_who_cancels_at_google_goes_back_to_login(client, google_on):
 
 
 @pytest.mark.django_db
+def test_google_sign_up_step_may_measure_the_conversion(client, google_on, settings):
+    settings.GTM_ID = "GTM-NWZ96857"
+    _google(client, google_on)
+
+    page = client.get(reverse("accounts:google-signup")).content.decode()
+    accepted = client.post(
+        reverse("accounts:google-signup"),
+        {"accept_terms": "on", "accept_privacy_policy": "on"},
+        headers={"x-requested-with": "XMLHttpRequest"},
+    )
+
+    assert 'data-load-tags="1"' in page  # no token in the address
+    assert 'content="noindex' in page
+    assert accepted.json()["data"]["analytics"] == {
+        "event": "sign_up",
+        "method": "google",
+    }
+
+
+@pytest.mark.django_db
 def test_gmail_sign_up_needs_the_terms_then_starts_at_once(client, google_on):
     response = _google(client, google_on)
     assert response["Location"] == reverse("accounts:google-signup")

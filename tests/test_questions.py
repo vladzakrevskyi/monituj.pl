@@ -4,6 +4,7 @@ question, the note and the answer together - and marks it "Wyjaśnione" or
 asks a follow-up."""
 
 import json
+import re
 
 import pytest
 from django.urls import reverse
@@ -233,8 +234,53 @@ def test_follow_up_goes_to_the_client_and_they_answer_again(client, asked, mailo
     assert "Czy faktura jest na firmę?" in body and "Za co była ta płatność?" in body
     assert NOTE not in body
     page = _plain(client.get(f"/d/{asked.public_token}/").content.decode())
-    assert "Pytanie uzupełniające:" in page and "Czy faktura jest na firmę?" in page
+    assert "Pytanie uzupełniające" in page and "Czy faktura jest na firmę?" in page
     assert _answer(client, asked, "Tak, NIP jest na fakturze.").status_code == 200
+
+
+@pytest.mark.django_db
+def test_the_conversation_keeps_every_message(client, user, asked):
+    from apps.documents.services import DocumentReviewService
+
+    _answer(client, asked, "To zaliczka za remont.")
+    item = asked.question_item
+    item.refresh_from_db()
+    DocumentReviewService.reject(item, "Czy faktura jest na firmę?")
+    _answer(client, asked, "Tak, NIP jest na fakturze.")
+
+    said = [(m.author, m.text) for m in questions.thread(item)]
+    assert said == [
+        ("nadawca", QUESTION),
+        ("klient", "To zaliczka za remont."),
+        ("nadawca", "Czy faktura jest na firmę?"),
+        ("klient", "Tak, NIP jest na fakturze."),
+    ]
+    for page in (
+        client.get(f"/d/{asked.public_token}/"),
+        (
+            client.force_login(user),
+            client.get(reverse("requests:detail", args=[asked.pk])),
+        )[1],
+    ):
+        text = _plain(page.content.decode())
+        order = [text.index(part) for _, part in said[1:]]
+        assert order == sorted(order)  # oldest first, nothing overwritten
+
+
+@pytest.mark.django_db
+def test_question_history_speaks_of_the_question(client, user, asked):
+    from apps.documents.services import DocumentReviewService
+
+    _answer(client, asked)
+    item = asked.question_item
+    item.refresh_from_db()
+    DocumentReviewService.reject(item, "Czy faktura jest na firmę?")
+    client.force_login(user)
+
+    page = _plain(page_text(client.get(reverse("requests:detail", args=[asked.pk]))))
+
+    assert "Zadano pytanie" in page and "Dopytano klienta" in page
+    assert "Utworzono prośbę" not in page and "Dokument odrzucony" not in page
 
 
 @pytest.mark.django_db
@@ -250,7 +296,7 @@ def test_request_page_shows_question_note_and_answer(client, user, asked):
     assert "Za co była ta płatność?" in page
     assert NOTE in page
     assert "To zaliczka za remont" in page
-    assert "data-question-accept" in page and "data-question-ask" in page
+    assert "data-question-accept" in page and "data-question-follow-up" in page
 
 
 @pytest.mark.django_db
@@ -348,3 +394,81 @@ def test_open_questions_have_their_own_limit(user, client_record, monkeypatch):
     # An answered question frees its place.
     questions.answer(first.question_item, "Odpowiedź")
     assert questions.ask(owner=user, client_id=client_record.pk, question="Trzecie?")
+
+
+@pytest.mark.django_db
+def test_answer_with_a_file_is_still_told_as_an_answer(client, asked, mailoutbox):
+    from apps.documents.models import Document
+    from apps.notifications.inbox import notify_upload
+
+    mailoutbox.clear()
+    _answer(client, asked)
+    notify_upload(
+        Document.objects.create(
+            request_item=asked.question_item,
+            storage_key="2026/10/27/answer.pdf",
+            original_filename="faktura.pdf",
+            content_type="application/pdf",
+            size=1024,
+            checksum="a" * 64,
+        )
+    )
+    last = Notification.objects.latest("created_at")
+
+    assert send_pending_upload_emails(now=last.created_at.replace(year=2100)) == 1
+    email = mailoutbox[-1]
+    assert email.subject.startswith("Klient odpowiedział")
+    body = _plain(email.body)
+    assert "odpowiada na Twoje pytanie:" in body
+    assert "faktura.pdf" in body
+
+
+# --- questions apart from requests for documents ------------------------------
+
+
+@pytest.mark.django_db
+def test_questions_stay_out_of_the_requests_list_and_document_counts(
+    client, user, asked, request_record, request_item
+):
+    client.force_login(user)
+
+    listed = page_text(client.get(reverse("requests:list")))
+    documents = page_text(
+        client.get(reverse("clients:documents", args=[asked.client_id]))
+    )
+    stats = client.get(reverse("accounts:panel")).context
+
+    assert request_record.name in listed
+    assert asked.name not in listed
+    assert "Za co była ta płatność?" not in documents
+    assert stats["missing_documents"] == 1  # the document, not the question
+
+
+@pytest.mark.django_db
+def test_a_question_page_belongs_to_pytania(client, user, asked):
+    client.force_login(user)
+
+    html = client.get(reverse("requests:detail", args=[asked.pk])).content.decode()
+
+    assert f'href="{reverse("requests:questions")}" title="Wróć: Pytania"' in html
+    assert "Zapisz jako szablon" not in html
+    active = re.findall(r'class="app-nav__link is-active" href="([^"]+)"', html)
+    assert active == [reverse("requests:questions")]
+
+
+@pytest.mark.django_db
+def test_recipient_page_lists_questions_apart_and_sits_in_a_container(
+    client, asked, request_record, request_item
+):
+    from apps.requests.links import recipient_portal_url
+
+    page = client.get(recipient_portal_url(asked.client.email) + "?widok=wszystkie")
+    html = _plain(page.content.decode())
+    questions_part, documents_part = html.split('id="received-documents"')
+
+    assert "Pytania do Ciebie" in questions_part
+    assert "Za co była ta płatność?" in questions_part
+    assert "Czeka na Twoją odpowiedź" in questions_part
+    assert request_record.name in documents_part
+    assert "Za co była ta płatność?" not in documents_part
+    assert 'class="page "' in html  # the site's container, not edge to edge

@@ -152,12 +152,17 @@ def _entry(notice):
     if notice.kind == NotificationKind.CONFIRMED:
         return {"item": notice.item.name, "confirmed": True}
     if notice.kind == NotificationKind.ANSWERED:
-        # The sender's own note goes along: the email is for them only.
+        from apps.requests.questions import last_exchange
+
+        # What was asked last (the question or a follow-up) and everything
+        # the client wrote since. The sender's own note goes along: the
+        # email is for them only.
+        asked, answers = last_exchange(notice.item)
         return {
             "item": notice.item.name,
             "answered": True,
-            "question": notice.item.description,
-            "answer": notice.item.answer,
+            "question": asked,
+            "answer": "\n\n".join(answers) or notice.item.answer,
             "note": notice.item.request.private_note,
         }
     return {
@@ -204,8 +209,11 @@ def send_pending_upload_emails(now=None):
                 "only_confirmed": all(
                     n.kind == NotificationKind.CONFIRMED for n in unseen
                 ),
-                "only_answers": all(
-                    n.kind == NotificationKind.ANSWERED for n in unseen
+                # An answer to a question - a file the client attached to it
+                # included - is told as an answer, not as a new document.
+                "only_answers": all(n.item.is_question for n in unseen),
+                "question_count": len(
+                    {n.item.pk for n in unseen if n.item.is_question}
                 ),
                 "progress": _progress(request_obj),
             },

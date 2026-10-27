@@ -7,7 +7,7 @@ from apps.audit.services import AuditService
 from apps.clients.models import Client
 from apps.common import nip as nip_rules
 from apps.common.exceptions import NotFoundAppError, ValidationAppError
-from apps.requests.models import RequestItem
+from apps.requests.models import RequestItem, RequestItemKind
 from apps.requests.services import (
     DELIVERED_STATUSES,
     MISSING_STATUSES,
@@ -22,22 +22,31 @@ class ClientStatus(models.TextChoices):
     INACTIVE = "nieaktywny", "Nieaktywny"
 
 
+# Counts and lists are of documents; questions have their own list (Pytania)
+# and their own place on the client's card.
+DOCUMENTS = Q(
+    requests__items__kind__in=[
+        kind for kind in RequestItemKind.values if kind != RequestItemKind.QUESTION
+    ]
+)
+
+
 def with_stats(queryset):
     return queryset.annotate(
-        total_items=Count("requests__items", distinct=True),
+        total_items=Count("requests__items", filter=DOCUMENTS, distinct=True),
         delivered_items=Count(
             "requests__items",
-            filter=Q(requests__items__status__in=DELIVERED_STATUSES),
+            filter=DOCUMENTS & Q(requests__items__status__in=DELIVERED_STATUSES),
             distinct=True,
         ),
         missing_items=Count(
             "requests__items",
-            filter=Q(requests__items__status__in=MISSING_STATUSES),
+            filter=DOCUMENTS & Q(requests__items__status__in=MISSING_STATUSES),
             distinct=True,
         ),
         active_requests=Count(
             "requests",
-            filter=Q(requests__items__status__in=NOT_DELIVERED_STATUSES),
+            filter=DOCUMENTS & Q(requests__items__status__in=NOT_DELIVERED_STATUSES),
             distinct=True,
         ),
         last_activity=Max("requests__updated_at"),
@@ -167,6 +176,7 @@ class ClientService:
     def documents(client, status_filter=""):
         queryset = (
             RequestItem.objects.filter(request__client=client)
+            .exclude(kind=RequestItemKind.QUESTION)
             .select_related("request")
             .prefetch_related("documents")
             .order_by("-request__created_at", "id")
@@ -179,10 +189,14 @@ class ClientService:
 
     @staticmethod
     def document_counts(client):
-        return RequestItem.objects.filter(request__client=client).aggregate(
-            all=Count("id"),
-            brakujace=Count("id", filter=Q(status__in=MISSING_STATUSES)),
-            dostarczone=Count("id", filter=Q(status__in=DELIVERED_STATUSES)),
+        return (
+            RequestItem.objects.filter(request__client=client)
+            .exclude(kind=RequestItemKind.QUESTION)
+            .aggregate(
+                all=Count("id"),
+                brakujace=Count("id", filter=Q(status__in=MISSING_STATUSES)),
+                dostarczone=Count("id", filter=Q(status__in=DELIVERED_STATUSES)),
+            )
         )
 
     @staticmethod

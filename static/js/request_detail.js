@@ -224,11 +224,13 @@ document.querySelectorAll("form[data-confirm-close]").forEach((form) => {
   form.addEventListener("submit", async (event) => {
     if (form.dataset.confirmed) return;
     event.preventDefault();
+    const question = form.dataset.confirmClose === "question";
     const confirmed = await Modal.confirm({
-      title: "Zamknąć prośbę?",
-      message:
-        "Odbiorca nie będzie mógł przesyłać plików, a przypomnienia przestaną być wysyłane. Przesłane pliki zostaną w panelu. Prośbę możesz później otworzyć ponownie.",
-      confirmLabel: "Zamknij prośbę",
+      title: question ? "Zamknąć pytanie?" : "Zamknąć prośbę?",
+      message: question
+        ? "Klient nie będzie mógł już odpowiedzieć, a przypomnienia przestaną być wysyłane. Pytanie możesz później otworzyć ponownie."
+        : "Odbiorca nie będzie mógł przesyłać plików, a przypomnienia przestaną być wysyłane. Przesłane pliki zostaną w panelu. Prośbę możesz później otworzyć ponownie.",
+      confirmLabel: question ? "Zamknij pytanie" : "Zamknij prośbę",
       danger: true,
     });
     if (!confirmed) return;
@@ -237,8 +239,9 @@ document.querySelectorAll("form[data-confirm-close]").forEach((form) => {
   });
 });
 
-// A question (apps/requests/questions.py): "Wyjaśnione" accepts the answer,
-// "Dopytaj" sends a follow-up - the client gets it by email and answers again.
+// A question (apps/requests/questions.py): "Wyjaśnione" accepts the answer;
+// the reply box adds a follow-up to the conversation - the client gets it
+// by email and answers in the same place.
 (function () {
   const card = document.querySelector("[data-question-card]");
   if (!card) return;
@@ -249,29 +252,28 @@ document.querySelectorAll("form[data-confirm-close]").forEach((form) => {
 
   card.addEventListener("click", async (event) => {
     const accept = event.target.closest("[data-question-accept]");
-    const ask = event.target.closest("[data-question-ask]");
-    if (accept) {
-      const { ok, data } = await ButtonLoader.run(accept, () =>
-        apiFetch(url("accept"), { method: "POST" })
-      );
-      if (ok) window.location.reload();
-      else fail(data);
+    if (!accept) return;
+    const { ok, data } = await ButtonLoader.run(accept, () =>
+      apiFetch(url("accept"), { method: "POST" })
+    );
+    if (ok) window.location.reload();
+    else fail(data);
+  });
+
+  const reply = card.querySelector("[data-question-follow-up]");
+  if (!reply) return;
+  reply.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const box = reply.querySelector("textarea");
+    const text = box.value.trim();
+    if (!text) {
+      showToast("Napisz, o co jeszcze pytasz.", "error");
+      box.focus();
       return;
     }
-    if (!ask) return;
-    const followUp = await Modal.prompt({
-      title: "Dopytać klienta?",
-      message: "Klient dostanie maila z Twoim pytaniem uzupełniającym i odpowie w tym samym miejscu. Przypomnienia wrócą.",
-      confirmLabel: "Wyślij pytanie",
-      field: {
-        label: "Pytanie uzupełniające",
-        placeholder: "Np. Czy faktura jest wystawiona na firmę? Nie widzę NIP-u.",
-        requiredMessage: "Napisz, o co jeszcze pytasz.",
-      },
-    });
-    if (!followUp) return;
-    const { ok, data } = await ButtonLoader.run(ask, () =>
-      apiFetch(url("reject"), { method: "POST", body: JSON.stringify({ reason: followUp }) })
+    const button = event.submitter || reply.querySelector('button[type="submit"]');
+    const { ok, data } = await ButtonLoader.run(button, () =>
+      apiFetch(url("reject"), { method: "POST", body: JSON.stringify({ reason: text }) })
     );
     if (ok) window.location.reload();
     else fail(data);
