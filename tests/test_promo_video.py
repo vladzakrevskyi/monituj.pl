@@ -21,7 +21,7 @@ def test_chapters_run_in_order_within_the_film():
         starts = [chapter[cut] for chapter in film.CHAPTERS]
         assert starts == sorted(starts)
         assert 0 <= starts[0] and starts[-1] < film.SECONDS
-    assert film.iso_duration().startswith("PT3M")
+    assert film.iso_duration().startswith("PT4M")
 
 
 @pytest.mark.django_db
