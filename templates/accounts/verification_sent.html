@@ -1,0 +1,19 @@
+{% extends "base/base.html" %}
+
+{% block page_name %}Sprawdź swoją skrzynkę{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+
+{% block content %}
+<div class="card">
+<h1>Sprawdź swoją skrzynkę</h1>
+<p>Wysłaliśmy link potwierdzający na {% if email %}<strong>{{ email }}</strong>{% else %}podany adres{% endif %}. Kliknij go, aby dokończyć zakładanie konta - zalogujesz się od razu.</p>
+<p class="text-muted">Nie ma maila po kilku minutach? Sprawdź foldery Spam, Oferty i Powiadomienia. Link jest ważny 48 godzin.</p>
+{% if can_resend %}
+<form method="post" class="inline-form">
+{% csrf_token %}
+<button type="submit" class="btn btn-secondary">Wyślij link ponownie</button>
+</form>
+{% endif %}
+<p class="text-muted mb-0 mt-5">Literówka w adresie? <a href="{% url 'accounts:register' %}">Zarejestruj się jeszcze raz</a> z poprawnym.</p>
+</div>
+{% endblock %}

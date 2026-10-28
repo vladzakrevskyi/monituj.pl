@@ -77,7 +77,7 @@ def test_single_upload_email(user, request_item, second_item):
 
     [email] = _owner_emails(user)
     assert email.subject.startswith("Nowy dokument: ")
-    assert "/przypomnienia/" in email.body
+    assert "/prosby/" in email.body
 
 
 @pytest.mark.django_db

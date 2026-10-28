@@ -16,8 +16,10 @@ from apps.requests.services import (
 
 
 class ClientStatus(models.TextChoices):
-    ACTIVE = "aktywny", "Aktywny"
-    MISSING_DOCUMENTS = "brak_dokumentow", "Brak dokumentów"
+    # Something sent, something still missing.
+    ACTIVE = "aktywny", "W trakcie"
+    # Asked, but nothing sent yet.
+    MISSING_DOCUMENTS = "brak_dokumentow", "Nic nie przesłał"
     ALL_DELIVERED = "wszystko_dostarczone", "Wszystko dostarczone"
     INACTIVE = "nieaktywny", "Nieaktywny"
 

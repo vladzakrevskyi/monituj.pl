@@ -5,15 +5,26 @@
 {% block page_class %}public-page{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/public.css' %}">{% endblock %}
 
+{% block site_header %}{% include "base/_recipient_header.html" %}{% endblock %}
+{% block site_footer %}{% include "base/_recipient_footer.html" %}{% endblock %}
+
 {% block content %}
+{% if sender_view %}
+<div class="sender-preview" role="note">
+<p><strong>Tak tę stronę widzi Twój klient.</strong> Twoje wejście nie liczy się jako otwarcie linku przez klienta. Pliki, które tu dodasz, trafią do prośby tak, jakby przesłał je klient.</p>
+<a class="btn btn-secondary btn-sm" href="{{ panel_url }}">&larr; Wróć do panelu</a>
+</div>
+{% endif %}
 <div class="card public-head">
+{% if sender_logo %}<img class="public-head__logo" src="{{ sender_logo.path }}" alt="{{ sender_name }}" width="{{ sender_logo.width }}" height="{{ sender_logo.height }}">{% endif %}
 <p class="eyebrow">{% if is_question %}Pytanie{% else %}Prośba o dokumenty{% endif %}</p>
-<h1>{% if is_question %}Masz pytanie od {{ sender_name }}{% else %}{{ request_obj.name }}{% endif %}</h1>
-<p class="public-head__sender">Od: <strong>{{ sender_name }}</strong>{% if sender_name != sender_email %} <span class="text-muted">({{ sender_email }})</span>{% endif %}</p>
+{% if is_question %}<h1>{{ sender_name }} ma do Ciebie pytanie</h1>
+{% if sender_name != sender_email %}<p class="public-head__sender text-muted">{{ sender_email }}</p>{% endif %}{% else %}<h1>{{ request_obj.name }}</h1>
+<p class="public-head__sender">Od: <strong>{{ sender_name }}</strong>{% if sender_name != sender_email %} <span class="text-muted">({{ sender_email }})</span>{% endif %}</p>{% endif %}
 {% if sender_firm %}<div class="public-head__firm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg><div><p>Firma: <strong>{{ sender_firm }}</strong></p><p class="public-head__firm-note">Nazwę firmy pobraliśmy z publicznego rejestru na podstawie NIP.</p></div></div>{% endif %}
 {% if request_obj.description %}<p class="public-head__desc">{{ request_obj.description }}</p>{% endif %}
 <div class="public-head__meta" id="request-status">
-<span class="badge {{ status_code|badge_class }}" id="request-status-label"{% if is_question %} hidden{% endif %}>{{ status_label }}</span>
+<span class="badge {{ status_code|badge_class }}" id="request-status-label" data-code="{{ status_code }}"{% if overdue %} data-overdue{% endif %}{% if is_question %} hidden{% endif %}>{{ status_label }}</span>
 <span{% if is_question %} hidden{% endif %}>Dostarczono: <span id="request-progress">{{ request_obj.delivered_items }} z {{ request_obj.total_items }}</span></span>
 {% if request_obj.deadline %}<span class="text-muted">{% if is_question %}Odpowiedz do{% else %}Termin{% endif %}: {{ request_obj.deadline|dt }}</span>{% endif %}
 </div>
@@ -104,10 +115,24 @@
 
 {% if not request_obj.is_closed and item.status != "zaakceptowany" and item.status != "nie_dotyczy" %}
 <div class="upload-zone" data-item-id="{{ item.id }}">
-<input type="file" class="upload-input" data-item-id="{{ item.id }}">
+<input type="file" class="upload-input" data-item-id="{{ item.id }}" multiple>
 <svg class="upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
 <p class="upload-zone__hint">{% if item.is_question %}Możesz też dołączyć plik - przeciągnij go tutaj lub{% else %}Przeciągnij plik tutaj lub{% endif %}</p>
 <button type="button" class="btn {% if item.is_question %}btn-secondary{% else %}btn-primary{% endif %} upload-trigger" data-item-id="{{ item.id }}">Wybierz plik</button>
+{% if not item.is_question %}
+{# Photos of a document's pages, sent as one PDF (apps/documents/pages.py). #}
+<button type="button" class="link-button pages-open" data-pages-open>Zrób zdjęcia stron - połączymy je w jeden PDF</button>
+<input type="file" class="pages-input" accept="image/*" multiple hidden data-pages-input>
+<div class="pages" data-pages hidden>
+<p class="pages__title">Strony dokumentu <span data-pages-count></span></p>
+<ol class="pages__list" data-pages-list></ol>
+<div class="pages__actions">
+<button type="button" class="btn btn-secondary btn-sm" data-pages-add>+ Dodaj kolejną stronę</button>
+<button type="button" class="btn btn-primary btn-sm" data-pages-send>Wyślij jako PDF</button>
+<button type="button" class="link-button" data-pages-cancel>Anuluj</button>
+</div>
+</div>
+{% endif %}
 <progress class="upload-progress progress-bar" value="0" max="100" hidden></progress>
 <p class="upload-error" role="alert"></p>
 </div>
@@ -131,6 +156,26 @@
 </div>
 {% endfor %}
 </div>
+
+{% if not is_question and not request_obj.is_closed %}
+{# "Dodaj inny dokument": something that isn't on the list (ExtraDocumentService). #}
+<div class="extra-doc" data-extra>
+<button type="button" class="btn btn-secondary" data-extra-open aria-expanded="false">+ Dodaj inny dokument</button>
+<p class="extra-doc__hint">Masz coś, czego nie ma na liście, a co przyda się nadawcy? Prześlij to tutaj.</p>
+<form class="extra-doc__form" data-extra-form hidden>
+<p>
+<label for="extra-name">Co to za dokument?</label>
+<input type="text" id="extra-name" name="name" maxlength="120" placeholder="Np. umowa najmu lokalu">
+</p>
+<p>
+<label for="extra-file">Plik</label>
+<input type="file" id="extra-file" name="file" required>
+</p>
+<button type="submit" class="btn btn-primary">Prześlij</button>
+<p class="upload-error" role="alert" data-extra-error></p>
+</form>
+</div>
+{% endif %}
 
 {# A plain link, nothing about the recipient in it and no tracking on this page - see the Regulamin, "strony próśb". Never in emails. #}
 <div class="public-done" data-done{% if status_code != "kompletny" %} hidden{% endif %}>

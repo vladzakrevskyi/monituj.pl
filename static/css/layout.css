@@ -174,7 +174,9 @@ body.nav-open {
   overflow: hidden;
 }
 
-@media (max-width: 960px) {
+/* The header's links and buttons need about 1100px in one row; below that
+   they fold into the drawer. */
+@media (max-width: 1120px) {
   .nav-toggle,
   .drawer-close {
     display: inline-flex;
@@ -353,6 +355,48 @@ body.nav-open {
 
 .site-footer__bottom {
   border-top: 1px solid var(--color-black-line);
+}
+
+/* On the client's link: no site menu, a one-line footer */
+.site-header--recipient .site-header__inner {
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.site-header__help {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-header__help:hover {
+  border-color: var(--color-primary);
+}
+
+.site-header__help-short {
+  display: none;
+}
+
+@media (max-width: 420px) {
+  .site-header__help-long {
+    display: none;
+  }
+
+  .site-header__help-short {
+    display: inline;
+  }
+}
+
+.site-footer--recipient .site-footer__bottom {
+  border-top: 0;
+}
+
+.site-footer--recipient a {
+  color: inherit;
 }
 
 
@@ -608,13 +652,69 @@ body.nav-open {
   border-bottom: 1px solid var(--color-black-line);
 }
 
+/* The menu scrolls when the window is short - without a scrollbar; an
+   arrow at the bottom says there is more (static/js/nav.js). */
+.app-nav-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .app-nav {
   flex: 1;
+  min-height: 0;
   padding: var(--space-5) var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.app-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.app-nav__more {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 44px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 0 6px;
+  border: 0;
+  background: linear-gradient(to bottom, transparent, var(--color-black) 70%);
+  color: #fff;
+  cursor: pointer;
+}
+
+.app-nav__more[hidden] {
+  display: none;
+}
+
+.app-nav__more svg {
+  width: 22px;
+  height: 22px;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--color-black-line);
+  animation: nav-more-nudge 1.6s ease-in-out infinite;
+}
+
+@keyframes nav-more-nudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-nav__more svg {
+    animation: none;
+  }
 }
 
 .app-nav__label {

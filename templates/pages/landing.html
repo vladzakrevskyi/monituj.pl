@@ -8,9 +8,9 @@
 <section class="hero">
 <div class="container hero__inner">
 <div class="hero__copy">
-<p class="eyebrow">Zbieranie dokumentów od klientów - automatycznie</p>
-<h1 class="display">Monituj <strong>pilnuje</strong> Twoich dokumentów i&nbsp;<strong>terminów</strong></h1>
-<p class="hero__lead">Przestań gonić klientów o dokumenty. Nie musisz już pamiętać, kto, co i do kiedy ma Ci przesłać. Monituj prowadzi listę brakujących dokumentów, sam przypomina klientom i pokazuje, na czym stoisz - zanim termin stanie się problemem.</p>
+<p class="eyebrow">Dla biur rachunkowych - i nie tylko</p>
+<h1 class="display">Dokumenty od klientów <strong>na czas</strong>. Bez <strong>gonienia</strong>.</h1>
+<p class="hero__lead">Wysyłasz klientowi listę brakujących dokumentów - on przesyła je z telefonu, bez zakładania konta. Monituj sam mu przypomina, dopóki wszystkiego nie dośle, pilnuje pytań i terminów i pokazuje, na czym stoisz. Ty tylko akceptujesz pliki.</p>
 <div class="hero__actions hero__actions--film">
 {% if user.is_authenticated and not demo_account %}
 <a class="btn btn-dark btn-lg" href="{% url 'accounts:panel' %}">Przejdź do panelu</a>
@@ -19,9 +19,9 @@
 <a class="btn btn-dark btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
 {% include "demo/_button.html" with cls="btn-secondary btn-lg" label="Wypróbuj demo" %}
 {% endif %}
-<a class="film-card" href="#film" data-video-open aria-controls="film-dialog" aria-haspopup="dialog" title="Zobacz film: Monituj w trzy minuty">
+<a class="film-card" href="#film" data-video-open aria-controls="film-dialog" aria-haspopup="dialog" title="Zobacz film: Monituj w kilka minut">
 <span class="film-card__thumb"><img src="{% promo_video_thumb %}" alt="" width="480" height="270"><span class="film-card__play" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 3 1.8z"/></svg></span><span class="film-card__clock" aria-hidden="true">{% promo_video_clock %}</span></span>
-<span class="film-card__text"><strong>Zobacz, jak to działa</strong><span>Film · {% promo_video_minutes %}</span></span>
+<span class="film-card__text"><strong>Zobacz, jak to działa</strong><span>Od pierwszej prośby po komplet</span></span>
 </a>
 </div>
 <ul class="check-list check-list--inline">
@@ -29,6 +29,7 @@
 {% include "pages/_check.html" with text="Klient nie zakłada konta" %}
 {% include "pages/_check.html" with text="Przypomnienia wysyłają się same" %}
 </ul>
+<p class="hero__price">Plan Free bez limitu czasu, płatne od {{ price_from }} zł netto miesięcznie, a na start {{ trial_days }} dni planu {{ trial_plan.name }} za darmo. <a href="{% url 'pages:pricing' %}">Zobacz cennik</a></p>
 </div>
 
 <div class="hero__visual" aria-hidden="true">
@@ -37,7 +38,7 @@
 <div class="mock-window">
 <div class="mock-window__bar">
 <span class="mock-window__dots"><i></i><i></i><i></i></span>
-<span class="mock-window__url">monituj.pl/przypomnienia</span>
+<span class="mock-window__url">monituj.pl/prosby</span>
 </div>
 <div class="mock-window__body">
 <div class="mock-window__head">
@@ -116,18 +117,20 @@
 </div>
 </section>
 
+{% include "pages/_calculator.html" %}
+
 <section class="section section--flush-top" id="film">
 <div class="container">
 <div class="section-head">
 <p class="eyebrow">Zobacz w akcji</p>
-<h2 class="display-2">Monituj <strong>w trzy minuty</strong></h2>
+<h2 class="display-2">Monituj <strong>w kilka minut</strong></h2>
 <p>Od założenia konta po komplet dokumentów, pytania do klientów i kalendarz - tak wygląda praca z Monituj u Ciebie i u Twojego klienta.</p>
 </div>
 {% promo_video %}
 </div>
 </section>
 
-<dialog class="video-dialog" id="film-dialog" data-modal-custom aria-label="Film: Monituj w trzy minuty">
+<dialog class="video-dialog" id="film-dialog" data-modal-custom aria-label="Film: Monituj w kilka minut">
 <button type="button" class="video-dialog__close" data-video-close aria-label="Zamknij film"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 {% promo_video chapters=False %}
 </dialog>

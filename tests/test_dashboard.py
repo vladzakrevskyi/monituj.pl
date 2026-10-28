@@ -66,7 +66,7 @@ def test_dashboard_excludes_other_owners_data(user, client_record):
 
 @pytest.mark.django_db
 def test_panel_view_renders_dashboard_stats(client, user, client_record):
-    RequestService.create(
+    created = RequestService.create(
         owner=user,
         client_id=client_record.pk,
         name="Widoczne zadanie",
@@ -79,5 +79,8 @@ def test_panel_view_renders_dashboard_stats(client, user, client_record):
     response = client.get(reverse("accounts:panel"))
 
     assert response.status_code == 200
-    assert "Aktywne prośby".encode() in response.content
-    assert b"Widoczne zadanie" not in response.content
+    page = response.content.decode()
+    assert "Aktywne prośby" in page
+    # The activity names the request and links to it.
+    assert "Widoczne zadanie" in page
+    assert reverse("requests:detail", args=[created.pk]) in page

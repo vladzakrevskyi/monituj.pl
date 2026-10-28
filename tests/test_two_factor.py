@@ -412,3 +412,110 @@ def test_no_hint_once_it_is_on(client, owner):
     assert "Chroń konto kodem z telefonu" not in page_text(
         client.get(reverse("accounts:panel"))
     )
+
+
+# --- codes by email ------------------------------------------------------------
+
+
+def _mailed_code():
+    message = mail.outbox[-1]
+    assert message.subject.startswith("Kod")
+    return re.search(r"\b(\d{6})\b", message.body).group(1)
+
+
+def _turn_on_by_email(browser, user):
+    browser.force_login(user)
+    browser.post(
+        SETUP_URL,
+        {"form_action": "start", "method": "email", "current_password": PASSWORD},
+    )
+    browser.post(SETUP_URL, {"form_action": "confirm", "code": _mailed_code()})
+    browser.logout()
+
+
+@pytest.mark.django_db
+def test_turning_on_with_codes_by_email(client, owner):
+    client.force_login(owner)
+    client.post(
+        SETUP_URL,
+        {"form_action": "start", "method": "email", "current_password": PASSWORD},
+    )
+    code = _mailed_code()
+    assert "j***@gmail.com" in page_text(client.get(SETUP_URL))
+
+    wrong = client.post(SETUP_URL, {"form_action": "confirm", "code": "000000"})
+    assert not two_factor.is_enabled(owner)
+    assert "Nieprawidłowy" in page_text(wrong)
+
+    response = client.post(SETUP_URL, {"form_action": "confirm", "code": code})
+
+    assert two_factor.method_of(owner) == "email"
+    assert _shown_codes(client.get(response["Location"])) == []  # no backup codes
+    assert mail.outbox[-1].subject.startswith("Włączono weryfikację")
+    assert "na ten adres e-mail" in mail.outbox[-1].body.replace("\xa0", " ")
+
+
+@pytest.mark.django_db
+def test_signing_in_with_a_code_from_the_mailbox(client, owner):
+    _turn_on_by_email(Browser(), owner)
+    mail.outbox.clear()
+
+    response = _password_login(client)
+
+    assert response["Location"] == CODE_URL and not _logged_in(client)
+    code = _mailed_code()
+    page = page_text(client.get(CODE_URL))
+    assert "j***@gmail.com" in page and "Wyślij nowy kod" in page
+    client.post(CODE_URL, {"code": "123456" if code != "123456" else "654321"})
+    assert not _logged_in(client)
+    client.post(CODE_URL, {"code": code})
+    assert _logged_in(client)
+
+    # The code worked once.
+    other = Browser()
+    _password_login(other)
+    TwoFactor.objects.filter(user=owner).update(email_code_sent_at=None)
+    other.post(CODE_URL, {"code": code})
+    assert not _logged_in(other)
+
+
+@pytest.mark.django_db
+def test_an_email_code_expires_and_a_new_one_waits_a_minute(client, owner):
+    _turn_on_by_email(Browser(), owner)
+    mail.outbox.clear()
+    _password_login(client)
+    first = _mailed_code()
+
+    client.post(CODE_URL, {"form_action": "resend"})
+    assert len(mail.outbox) == 1  # too soon
+
+    TwoFactor.objects.filter(user=owner).update(
+        email_code_sent_at=timezone.now() - timedelta(minutes=2)
+    )
+    client.post(CODE_URL, {"form_action": "resend"})
+    second = _mailed_code()
+    if second != first:
+        client.post(CODE_URL, {"code": first})
+        assert not _logged_in(client)  # the previous code stopped working
+
+    TwoFactor.objects.filter(user=owner).update(
+        email_code_expires_at=timezone.now() - timedelta(seconds=1)
+    )
+    client.post(CODE_URL, {"code": second})
+    assert not _logged_in(client)
+
+
+@pytest.mark.django_db
+def test_turning_off_codes_by_email_needs_a_mailed_code(client, owner):
+    _turn_on_by_email(Browser(), owner)
+    client.force_login(owner)
+    TwoFactor.objects.filter(user=owner).update(email_code_sent_at=None)
+
+    client.post(SETUP_URL, {"form_action": "send_code"})
+    code = _mailed_code()
+    client.post(
+        SETUP_URL,
+        {"form_action": "disable", "current_password": PASSWORD, "code": code},
+    )
+
+    assert not two_factor.is_enabled(owner)

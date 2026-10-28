@@ -304,7 +304,7 @@ def test_request_create_ajax_success_returns_redirect_url(client, user, client_r
 
     assert response.status_code == 200
     payload = response.json()
-    assert "/przypomnienia/" in payload["data"]["redirect_url"]
+    assert "/prosby/" in payload["data"]["redirect_url"]
 
 
 @pytest.mark.django_db

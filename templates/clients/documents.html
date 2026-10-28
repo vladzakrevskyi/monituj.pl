@@ -14,7 +14,7 @@
 <div class="page-header__actions">
 <a class="btn btn-secondary" href="{% url 'clients:edit' client.id %}">Edytuj klienta</a>
 <a class="btn btn-secondary" href="{% url 'requests:question-create' %}?client={{ client.id }}">Zadaj pytanie</a>
-<a class="btn btn-primary" href="{% url 'requests:create' %}?client={{ client.id }}">Nowe przypomnienie</a>
+<a class="btn btn-primary" href="{% url 'requests:create' %}?client={{ client.id }}">Nowa prośba</a>
 </div>
 </div>
 
@@ -29,7 +29,7 @@
 <thead>
 <tr>
 <th>Dokument</th>
-<th>Przypomnienie</th>
+<th>Prośba</th>
 <th>Status</th>
 <th>Pliki</th>
 <th>Termin</th>
@@ -40,7 +40,7 @@
 {% for item in page_obj.object_list %}
 <tr>
 <td class="cell-strong" data-label="Dokument">{{ item.name }}</td>
-<td data-label="Przypomnienie"><a href="{% url 'requests:detail' item.request.id %}">{{ item.request.name }}</a></td>
+<td data-label="Prośba"><a href="{% url 'requests:detail' item.request.id %}">{{ item.request.name }}</a></td>
 <td data-label="Status"><span class="badge {{ item.status|badge_class }}">{{ item.status_label }}</span>{% if item.rejection_reason %}<span class="cell-note">{{ item.rejection_reason }}</span>{% endif %}</td>
 <td data-label="Pliki">
 <ul class="file-list">

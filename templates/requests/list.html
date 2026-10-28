@@ -1,18 +1,18 @@
 {% extends "base/app_base.html" %}
 {% load pagination static badges formatting %}
 
-{% block page_name %}Przypomnienia{% endblock %}
+{% block page_name %}Prośby{% endblock %}
 {% block page_class %}page--wide{% endblock %}
 
 {% block content %}
 <div class="page-header">
 <div>
-<h1>Przypomnienia</h1>
-<p class="page-header__sub">Wszystkie prośby o dokumenty i ich aktualny status.</p>
+<h1>Prośby</h1>
+<p class="page-header__sub">Wszystkie prośby o dokumenty i ich aktualny status. {% include "help/_hint.html" with slug="statusy-prosby" %}</p>
 </div>
 <div class="page-header__actions">
 <a class="btn btn-secondary" href="{% url 'requests:question-create' %}">Zadaj pytanie</a>
-<a class="btn btn-primary" href="{% url 'requests:create' %}">Nowe przypomnienie</a>
+<a class="btn btn-primary" href="{% url 'requests:create' %}">Nowa prośba</a>
 </div>
 </div>
 
@@ -104,7 +104,7 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 </td>
 </tr>
 {% empty %}
-{% if not planned %}<tr class="table-empty"><td colspan="{% if team_member %}7{% else %}8{% endif %}">{% if has_filters or filters.data.status %}Brak przypomnień pasujących do filtrów.{% else %}Brak przypomnień.{% endif %}</td></tr>{% endif %}
+{% if not planned %}<tr class="table-empty"><td colspan="{% if team_member %}7{% else %}8{% endif %}">{% if has_filters or filters.data.status %}Brak próśb pasujących do filtrów.{% else %}Brak próśb. Wyślij pierwszą - z gotowego szablonu zajmie to minutę.{% endif %}</td></tr>{% endif %}
 {% endfor %}
 </tbody>
 </table>

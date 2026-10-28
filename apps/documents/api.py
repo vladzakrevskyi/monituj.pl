@@ -16,12 +16,14 @@ from apps.common.decorators import api_login_required
 from apps.common.exceptions import ValidationAppError
 from apps.common.formatting import format_datetime
 from apps.common.responses import error_response, success_response
+from apps.documents import pages
 from apps.documents.encryption import DecryptionError
 from apps.documents.services import (
     UPLOADS_PER_IP_HOUR,
     ConfirmationService,
     DocumentAccessService,
     DocumentReviewService,
+    ExtraDocumentService,
     GuestDeleteService,
     NotApplicableService,
     UploadDocumentService,
@@ -78,6 +80,78 @@ def public_upload_item(request, token, item_id):
         },
         status=201,
     )
+
+
+def _upload_response(item, document):
+    return success_response(
+        {
+            "item": {
+                "id": item.pk,
+                "status": {"code": item.status, "label": item.status_label},
+            },
+            "document": {
+                "id": document.pk,
+                "original_filename": document.original_filename,
+                "download_url": reverse("documents_api:download", args=[document.pk]),
+                "uploaded_at": document.uploaded_at.isoformat(),
+                "uploaded_at_display": format_datetime(document.uploaded_at),
+            },
+        },
+        status=201,
+    )
+
+
+def _public_request(request, token):
+    """The request behind the link - or why it can't be used."""
+    request_obj = PublicAccessService.get_by_token(token)
+    if not PublicAccessService.has_access(request_obj, request):
+        return None, error_response(
+            "LOCKED", "Brak dostępu. Otwórz najpierw link do dokumentów.", status=403
+        )
+    return request_obj, None
+
+
+def _count_upload(request):
+    throttle.consume(
+        throttle.ip_key("upload", request),
+        UPLOADS_PER_IP_HOUR,
+        throttle.HOUR,
+        "Przesłano bardzo dużo plików w krótkim czasie. Spróbuj ponownie za godzinę.",
+        code="UPLOAD_LIMIT_REACHED",
+    )
+
+
+@require_http_methods(["POST"])
+def public_upload_pages(request, token, item_id):
+    """Photos of a document's pages, sent as one PDF (apps/documents/pages.py)."""
+    request_obj, refused = _public_request(request, token)
+    if refused:
+        return refused
+    item = RequestItem.objects.filter(pk=item_id, request=request_obj).first()
+    if item is None:
+        return error_response("NOT_FOUND", "Nie znaleziono dokumentu.", status=404)
+    photos = request.FILES.getlist("pages")
+    _count_upload(request)
+    pdf = pages.photos_to_pdf(photos, item.name)
+    document = UploadDocumentService.upload_for_item(item, pdf, django_request=request)
+    item.refresh_from_db()
+    return _upload_response(item, document)
+
+
+@require_http_methods(["POST"])
+def public_add_extra(request, token):
+    """ "Dodaj inny dokument" - a file that wasn't on the list."""
+    request_obj, refused = _public_request(request, token)
+    if refused:
+        return refused
+    uploaded_file = request.FILES.get("file")
+    if uploaded_file is None:
+        raise ValidationAppError("Wybierz plik do przesłania.", code="FILE_REQUIRED")
+    _count_upload(request)
+    item = ExtraDocumentService.add(
+        request_obj, request.POST.get("name", ""), uploaded_file, django_request=request
+    )
+    return success_response({"item": {"id": item.pk, "name": item.name}}, status=201)
 
 
 @require_http_methods(["DELETE"])

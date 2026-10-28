@@ -13,6 +13,10 @@ WARSAW = ZoneInfo("Europe/Warsaw")
 NEW_YORK = ZoneInfo("America/New_York")
 
 
+def _times(planned):
+    return [entry["at"] for entry in planned]
+
+
 def _at(tz, *args):
     return datetime(*args, tzinfo=tz)
 
@@ -36,8 +40,10 @@ def test_reminders_go_out_at_the_time_the_request_was_sent(
 ):
     _configure(request_record, _at(WARSAW, 2026, 9, 1, 14, 20))
 
-    planned = ReminderScheduleService.planned(
-        request_record, now=_at(WARSAW, 2026, 9, 1, 15, 0)
+    planned = _times(
+        ReminderScheduleService.planned(
+            request_record, now=_at(WARSAW, 2026, 9, 1, 15, 0)
+        )
     )
 
     assert planned == [
@@ -56,8 +62,10 @@ def test_recipient_in_another_zone_gets_them_at_the_same_local_time(
         email=request_record.client.email, timezone="America/New_York"
     )
 
-    planned = ReminderScheduleService.planned(
-        request_record, now=_at(WARSAW, 2026, 9, 1, 15, 0)
+    planned = _times(
+        ReminderScheduleService.planned(
+            request_record, now=_at(WARSAW, 2026, 9, 1, 15, 0)
+        )
     )
 
     assert recipient_zone(request_record).key == "America/New_York"
@@ -95,8 +103,10 @@ def test_planned_accounts_for_reminders_already_sent(request_record, request_ite
         sent_at=_at(WARSAW, 2026, 9, 3, 10, 2)
     )
 
-    planned = ReminderScheduleService.planned(
-        request_record, now=_at(WARSAW, 2026, 9, 4, 12, 0)
+    planned = _times(
+        ReminderScheduleService.planned(
+            request_record, now=_at(WARSAW, 2026, 9, 4, 12, 0)
+        )
     )
 
     assert planned == [
@@ -110,7 +120,7 @@ def test_overdue_reminder_is_shown_as_going_out_now(request_record, request_item
     _configure(request_record, _at(WARSAW, 2026, 9, 1, 10, 0))
     now = _at(WARSAW, 2026, 9, 5, 12, 0)
 
-    planned = ReminderScheduleService.planned(request_record, now=now)
+    planned = _times(ReminderScheduleService.planned(request_record, now=now))
 
     assert planned[0] == now
 

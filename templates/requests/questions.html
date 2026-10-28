@@ -8,7 +8,7 @@
 <div class="page-header">
 <div>
 <h1>Pytania do klientów</h1>
-<p class="page-header__sub">O co i kogo pytasz, po co - i ile już czekasz na odpowiedź.</p>
+<p class="page-header__sub">O co i kogo pytasz, po co - i ile już czekasz na odpowiedź. {% include "help/_hint.html" with slug="zadaj-pytanie" %}</p>
 </div>
 <a class="btn btn-primary" href="{% url 'requests:question-create' %}">Zadaj pytanie</a>
 </div>
@@ -25,7 +25,7 @@
 {% for row in rows %}
 {% with request_obj=row.request item=row.item %}
 <li class="question-row">
-<a class="question-row__main" href="{% url 'requests:detail' request_obj.pk %}">
+<a class="question-row__main" href="{% url 'requests:question-detail' request_obj.pk %}">
 <span class="question-row__client">{{ request_obj.client.name }}</span>
 <span class="question-row__text">{{ item.description|truncatechars:220 }}</span>
 {% if request_obj.private_note %}<span class="question-row__note"><span class="visually-hidden">Twoja notatka: </span>{{ request_obj.private_note|truncatechars:160 }}</span>{% endif %}

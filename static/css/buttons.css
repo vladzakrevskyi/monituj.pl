@@ -142,6 +142,16 @@ button.is-loading::after,
   font-size: 16px;
 }
 
+/* The smallest phones: a long label wraps instead of pushing the page
+   sideways. */
+@media (max-width: 400px) {
+  .btn-lg {
+    max-width: 100%;
+    padding-block: var(--space-2);
+    white-space: normal;
+  }
+}
+
 .btn-block {
   display: flex;
   width: 100%;

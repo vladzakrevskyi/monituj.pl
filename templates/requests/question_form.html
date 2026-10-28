@@ -8,7 +8,7 @@
 <a class="back-link" href="{% url 'requests:questions' %}" title="Wróć: Pytania">&larr; Pytania</a>
 <div class="card request-form">
 <h1>Zadaj pytanie klientowi</h1>
-<p class="card-lead">Klient odpowie tekstem albo plikiem, bez logowania. Monituj będzie mu przypominał, a Tobie zapamięta, o co pytasz i po co.</p>
+<p class="card-lead">Klient odpowie tekstem albo plikiem, bez logowania. Monituj będzie mu przypominał, a Tobie zapamięta, o co pytasz i po co. {% include "help/_hint.html" with slug="zadaj-pytanie" %}</p>
 <form method="post" novalidate class="question-form">
 {% csrf_token %}
 {% include "base/_form_flash.html" %}
@@ -60,7 +60,7 @@
 <ul class="question-list question-list--compact">
 {% for row in previous %}
 <li class="question-row">
-<a class="question-row__main" href="{% url 'requests:detail' row.request.pk %}">
+<a class="question-row__main" href="{% url 'requests:question-detail' row.request.pk %}">
 <span class="question-row__text">{{ row.item.description|truncatechars:160 }}</span>
 {% if row.item.answer %}<span class="question-row__answer">„{{ row.item.answer|truncatechars:120 }}”</span>{% endif %}
 </a>

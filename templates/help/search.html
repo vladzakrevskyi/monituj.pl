@@ -1,0 +1,35 @@
+{% extends "base/base.html" %}
+{% load static help_text %}
+
+{% block page_class %}page--flush{% endblock %}
+{% block extra_css %}{% include "help/_layout_css.html" %}{% endblock %}
+
+{% block content %}
+<section class="help-hero help-hero--small">
+<div class="container container--narrow">
+<nav class="breadcrumbs" aria-label="Ścieżka"><a href="{% url 'help:index' %}">Centrum pomocy</a><span aria-hidden="true">/</span><span aria-current="page">Szukaj</span></nav>
+<h1 class="help-hero__title help-hero__title--small">{% if query %}Wyniki dla „{{ query }}”{% else %}Szukaj w pomocy{% endif %}</h1>
+{% include "help/_search.html" %}
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container container--narrow">
+{% if results %}
+<ul class="help-list">
+{% for result in results %}
+<li><a class="help-list__item" href="{% url 'help:article' result.article.slug %}"><span class="help-list__category">{{ result.category.title }}</span><strong>{{ result.article.title }}</strong><span>{{ result.article.summary|help_plain }}</span></a></li>
+{% endfor %}
+</ul>
+{% elif query %}
+<div class="help-empty">
+<p><strong>Nic nie znaleźliśmy.</strong> Spróbuj innymi słowami - np. „przypomnienie”, „klient nie dostał maila”, „faktura”.</p>
+<p class="help-empty__label">Może chodzi o:</p>
+<ul class="help-popular help-popular--block">{% for article in popular %}<li><a class="help-chip" href="{% url 'help:article' article.slug %}">{{ article.title }}</a></li>{% endfor %}</ul>
+</div>
+{% endif %}
+{% include "help/_contact.html" %}
+</div>
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/help_search.js' %}" defer></script>{% endblock %}

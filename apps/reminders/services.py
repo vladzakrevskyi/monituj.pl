@@ -197,8 +197,12 @@ class DeadlineReminderService:
 class ReminderScheduleService:
     @staticmethod
     def planned(request_obj, now=None):
-        """Upcoming automatic reminders, as local datetimes. Empty when
-        reminders are off, the request is complete or the limit is used up."""
+        """Upcoming reminders as the senders above will send them -
+        [{"at": local datetime, "kind": "automatic" | "before_deadline" |
+        "deadline_day" | "after_deadline"}]. A deadline reminder goes first
+        and the next interval one counts from it; one too soon after another
+        reminder is not sent at all. Empty when reminders are off, the
+        request is complete or the limit is used up."""
         now = now or timezone.now()
         if not request_obj.reminders_enabled:
             return []
@@ -210,25 +214,49 @@ class ReminderScheduleService:
         ):
             return []
 
-        automatic = Reminder.objects.filter(
-            request=request_obj, kind=ReminderKind.AUTOMATIC
-        ).count()
-        remaining = request_obj.max_reminders - automatic
-        # One that is already due goes out within minutes.
-        planned = [
-            max(due, now)
-            for due in due_dates(
-                request_obj, _interval_anchor(request_obj), max(remaining, 0)
-            )
-        ]
-        sent = set(
-            Reminder.objects.filter(
-                request=request_obj, kind=ReminderKind.DEADLINE
-            ).values_list("sequence_number", flat=True)
+        sent = Reminder.objects.filter(request=request_obj)
+        anchors = _interval_anchor(request_obj)
+        automatic_left = (
+            request_obj.max_reminders - sent.filter(kind=ReminderKind.AUTOMATIC).count()
         )
-        planned += [
-            due
+        sent_deadline = set(
+            sent.filter(kind=ReminderKind.DEADLINE).values_list(
+                "sequence_number", flat=True
+            )
+        )
+        pending = [
+            (sequence, due)
             for sequence, due in deadline_dates(request_obj)
-            if sequence not in sent and due > now
+            if sequence not in sent_deadline
         ]
-        return [timezone.localtime(when) for when in sorted(planned)]
+        last = sent.order_by("-sent_at").values_list("sent_at", flat=True).first()
+        last = max(filter(None, [last, request_obj.created_at]))
+
+        planned = []
+        while True:
+            pending = [
+                (sequence, due)
+                for sequence, due in pending
+                if max(due, now) < min(due + DEADLINE_WINDOW, request_obj.deadline)
+            ]
+            automatic = (
+                max(due_dates(request_obj, anchors, 1)[0], now)
+                if automatic_left > 0
+                else None
+            )
+            if pending and (automatic is None or max(pending[0][1], now) <= automatic):
+                sequence, due = pending.pop(0)
+                if last >= due - RECENT:
+                    continue  # right after another one: skipped
+                when = max(due, now)
+                kind = "before_deadline" if sequence == 1 else "deadline_day"
+            elif automatic is not None:
+                when, automatic_left = automatic, automatic_left - 1
+                past = request_obj.deadline and when > request_obj.deadline
+                kind = "after_deadline" if past else "automatic"
+            else:
+                break
+            planned.append({"at": timezone.localtime(when), "kind": kind})
+            anchors.append(when)
+            last = when
+        return planned

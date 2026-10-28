@@ -225,7 +225,8 @@ def describe(schedule):
 
 
 def month_label(day):
-    """The month the documents are for: the one before the sending day."""
+    """The month the documents are for: the one before `day` - the sending
+    day, or a one-off request's deadline (due 10 November: October's)."""
     previous = day.replace(day=1) - timedelta(days=1)
     # "za wrzesień 2026" - Polish month names are lower case mid-sentence.
     return f"{date_format(previous, 'F').lower()} {previous.year}"

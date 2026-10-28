@@ -52,8 +52,12 @@ def _fold(line):
 
 
 def _slug(path):
-    """'/przypomnienia/423/' -> 'przypomnienia-423'."""
-    return "-".join(part for part in path.split("/") if part)
+    """'/prosby/423/' -> 'przypomnienia-423'. The panel's old prefix is kept,
+    so calendars that already subscribed see the same events, not new ones."""
+    parts = [part for part in path.split("/") if part]
+    if parts and parts[0] in ("prosby", "pytania"):
+        parts[0] = "przypomnienia"
+    return "-".join(parts)
 
 
 def feed_for(user, site_url):

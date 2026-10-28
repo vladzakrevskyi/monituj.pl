@@ -1,0 +1,10 @@
+{% autoescape off %}{% if purpose == "setup" %}Kod do włączenia weryfikacji dwuetapowej w Monituj:{% elif purpose == "manage" %}Kod do zmiany ustawień weryfikacji dwuetapowej w Monituj:{% else %}Kod do logowania w Monituj:{% endif %}
+
+{{ code }}
+
+Kod działa {{ minutes }} minut i tylko raz. Nikomu go nie podawaj - zespół Monituj nigdy o niego nie prosi.
+
+Jeśli to nie Ty {% if purpose == "login" %}się logujesz{% else %}zmieniasz ustawienia{% endif %}, ktoś zna Twoje hasło: zmień je od razu przez „Nie pamiętasz hasła?”.
+--
+Monituj - {{ site_url }}
+{% endautoescape %}

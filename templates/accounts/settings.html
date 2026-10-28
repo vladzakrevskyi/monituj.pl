@@ -1,5 +1,5 @@
 {% extends "base/app_base.html" %}
-{% load formatting %}
+{% load formatting static %}
 
 {% block page_name %}Ustawienia{% endblock %}
 {% block page_class %}page--narrow{% endblock %}
@@ -111,6 +111,37 @@
 </form>
 </div>
 
+{% if not guest_account %}
+<div class="card" id="logo">
+<h2 class="mt-0">Logo dla klientów</h2>
+<p class="text-muted">Twoje logo zobaczą klienci na stronie prośby i w mailach od Monituj - od razu wiedzą, od kogo jest prośba. {% if logo_shown %}Pokazujemy je w Twoim planie.{% else %}Pokazujemy je w płatnych planach i w okresie próbnym - w planie Free logo czeka zapisane.{% endif %}</p>
+<form method="post" enctype="multipart/form-data" data-logo-form>
+{% csrf_token %}
+<input type="hidden" name="form_action" value="logo">
+<div class="logo-drop{% if logo %} logo-drop--has-logo{% endif %}" data-logo-drop>
+<input type="file" name="logo" id="id_logo" accept="image/png,image/jpeg,image/webp" class="logo-drop__input" data-logo-input>
+{% if logo %}
+<div class="logo-drop__preview"><img src="{% url 'accounts:logo' logo.key %}" alt="Twoje logo" width="{{ logo.width }}" height="{{ logo.height }}" data-logo-preview></div>
+{% else %}
+<span class="logo-drop__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>
+<img class="logo-drop__new" alt="" hidden data-logo-preview>
+{% endif %}
+<p class="logo-drop__hint" data-logo-hint>{% if logo %}Tak klienci widzą Twoje logo. Przeciągnij tu nowe albo{% else %}Przeciągnij logo tutaj albo{% endif %}</p>
+<label for="id_logo" class="btn {% if logo %}btn-secondary{% else %}btn-primary{% endif %}" data-logo-pick>{% if logo %}Zmień logo{% else %}Wybierz plik{% endif %}</label>
+<p class="logo-drop__note">PNG, JPG albo WebP, do 3 MB. Najlepiej poziome, na przezroczystym tle - puste brzegi przytniemy sami.</p>
+</div>
+<noscript><button type="submit" class="btn btn-primary mt-5">Zapisz logo</button></noscript>
+</form>
+{% if logo %}
+<form method="post" class="inline-form logo-remove" data-confirm="Klienci przestaną widzieć Twoje logo." data-confirm-title="Usunąć logo?" data-confirm-label="Usuń">
+{% csrf_token %}
+<input type="hidden" name="form_action" value="logo_remove">
+<button type="submit" class="btn-link">Usuń logo</button>
+</form>
+{% endif %}
+</div>
+{% endif %}
+
 {% if google_account or google_login and not demo_account %}
 <div class="card" id="google">
 <h2 class="mt-0">Logowanie przez Google</h2>
@@ -151,10 +182,10 @@
 <div class="card" id="weryfikacja-dwuetapowa">
 <h2 class="mt-0">Weryfikacja dwuetapowa</h2>
 {% if two_factor_enabled %}
-<p class="text-muted"><span class="badge badge--complete">Włączona</span> Przy logowaniu prosimy o kod z aplikacji w telefonie.</p>
+<p class="text-muted"><span class="badge badge--complete">Włączona</span> Przy logowaniu prosimy o {% if two_factor_method == "email" %}kod wysłany na Twój e-mail{% else %}kod z aplikacji w telefonie{% endif %}.</p>
 <a class="btn btn-secondary" href="{% url 'accounts:two-factor' %}">Zarządzaj</a>
 {% else %}
-<p class="text-muted"><span class="badge badge--neutral">Wyłączona</span> Oprócz {% if has_password %}hasła{% else %}konta Google{% endif %} do logowania potrzebny będzie kod z aplikacji w telefonie.</p>
+<p class="text-muted"><span class="badge badge--neutral">Wyłączona</span> Oprócz {% if has_password %}hasła{% else %}konta Google{% endif %} do logowania potrzebny będzie kod - z aplikacji w telefonie albo z e-maila, jak wolisz.</p>
 <a class="btn btn-secondary" href="{% url 'accounts:two-factor' %}">Włącz</a>
 {% endif %}
 </div>
@@ -234,3 +265,4 @@
 </form>
 </div>
 {% endblock %}
+{% block extra_js %}<script src="{% static 'js/logo_upload.js' %}" defer></script>{% endblock %}

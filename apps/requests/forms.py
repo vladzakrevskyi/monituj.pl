@@ -491,19 +491,25 @@ class RequestForm(
 
     def _name_tokens(self, cleaned_data):
         """{miesiąc} and {data} in a one-off request's name are filled in now
-        (a recurring one fills them at every sending). The name as typed is
-        kept for "Zapisz jako szablon"."""
-        name = cleaned_data.get("name")
-        cleaned_data["template_name"] = name
+        (a recurring one fills them at every sending) - the month is the one
+        before the deadline's, or before today's without a deadline. The name
+        as typed is kept for "Zapisz jako szablon"."""
+        name = cleaned_data.get("template_name")
         if not name or self.is_recurring:
             return
-        from apps.requests.recurring import owner_now, render_name
+        from apps.requests.recurring import MONTH_TOKENS, owner_now, render_name
 
         if self.owner is not None:
             today = owner_now(self.owner).date()
         else:
             today = django_timezone.localdate()
+        deadline = cleaned_data.get("deadline")
         cleaned_data["name"] = render_name(name, today)
+        if deadline and any(token in name for token in MONTH_TOKENS):
+            month_day = django_timezone.localtime(deadline).date()
+            for token in MONTH_TOKENS:
+                name = name.replace(token, render_name(token, month_day))
+            cleaned_data["name"] = render_name(name, today)
 
     def _template_to_save(self, cleaned_data):
         if not cleaned_data.get("save_as_template") or self.owner is None:
@@ -551,10 +557,11 @@ class RequestForm(
 
     def clean(self):
         cleaned_data = super().clean()
-        self._name_tokens(cleaned_data)
+        cleaned_data["template_name"] = cleaned_data.get("name")
         self._template_to_save(cleaned_data)
         self._recipients(cleaned_data)
         self._deadline_choice(cleaned_data)
+        self._name_tokens(cleaned_data)
         if self.is_recurring:
             self.clean_timing(cleaned_data)
             if cleaned_data.get("password"):
@@ -746,7 +753,7 @@ class RequestFilterForm(forms.Form):
 
     STATUS_CHOICES = [
         ("", "Wszystkie"),
-        ("brak_dokumentow", "Brakujące"),
+        ("brak_dokumentow", "Nic nie przesłano"),
         ("w_trakcie", "W trakcie"),
         ("kompletny", "Kompletne"),
         ("po_terminie", "Po terminie"),

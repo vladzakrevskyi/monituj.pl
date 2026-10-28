@@ -1,0 +1,28 @@
+{% extends "base/base.html" %}
+{% load static help_text %}
+
+{% block page_class %}page--flush{% endblock %}
+{% block extra_css %}{% include "help/_layout_css.html" %}{% endblock %}
+
+{% block content %}
+<section class="help-hero help-hero--small">
+<div class="container container--narrow">
+<nav class="breadcrumbs" aria-label="Ścieżka"><a href="{% url 'help:index' %}">Centrum pomocy</a><span aria-hidden="true">/</span><span aria-current="page">{{ category.title }}</span></nav>
+<h1 class="help-hero__title help-hero__title--small"><span class="help-card__icon">{% include "pages/_icon.html" with icon=category.icon %}</span>{{ category.title }}</h1>
+<p class="help-hero__lead">{{ category.description }}</p>
+{% include "help/_search.html" %}
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<ul class="help-list">
+{% for article in articles %}
+<li><a class="help-list__item" href="{% url 'help:article' article.slug %}"><strong>{{ article.title }}</strong><span>{{ article.summary|help_plain }}</span></a></li>
+{% endfor %}
+</ul>
+{% include "help/_contact.html" %}
+</div>
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/help_search.js' %}" defer></script>{% endblock %}

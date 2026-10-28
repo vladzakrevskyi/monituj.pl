@@ -33,6 +33,7 @@ from apps.notifications.services import NOT_DELIVERED, EmailService
 from apps.requests.models import Request
 
 EMAIL_VERIFICATION_TTL = timedelta(hours=48)
+VERIFICATION_RESEND_EVERY = timedelta(minutes=5)
 PASSWORD_RESET_TTL = timedelta(hours=2)
 PASSWORD_CHANGE_TTL = timedelta(hours=1)
 EMAIL_CHANGE_TTL = timedelta(hours=1)
@@ -155,6 +156,19 @@ class VerificationService:
         )
 
     @staticmethod
+    def resend(user):
+        """The confirmation link again - not more often than every few
+        minutes. -> sent or not."""
+        if user.email_verified_at is not None:
+            return False
+        resend_key = f"verify-resend:{user.pk}"
+        if throttle.is_limited(resend_key, 1, VERIFICATION_RESEND_EVERY):
+            return False
+        throttle.record(resend_key)
+        VerificationService.send_verification_email(user)
+        return True
+
+    @staticmethod
     def pending_user(raw_token):
         token = (
             AccountToken.objects.select_related("user")
@@ -231,10 +245,7 @@ class AuthenticationService:
         if user.email_verified_at is None:
             # The password is right, so help rather than just refuse: send the
             # confirmation link again (not more often than every few minutes).
-            resend_key = f"verify-resend:{user.pk}"
-            if not throttle.is_limited(resend_key, 1, timedelta(minutes=5)):
-                throttle.record(resend_key)
-                VerificationService.send_verification_email(user)
+            VerificationService.resend(user)
             raise ValidationAppError(
                 f"Najpierw potwierdź adres email - link wysłaliśmy na {user.email}. "
                 "Po kliknięciu zalogujesz się automatycznie.",

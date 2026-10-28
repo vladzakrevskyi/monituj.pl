@@ -69,14 +69,14 @@ def test_received_requests_show_up_in_the_account(client, firm, member):
 def test_finished_requests_stay_in_the_history_tab(client, firm, member):
     done = _send(firm, "anna@example.com", "Stara prośba")
     RequestService.close(done, actor=firm)
-    _send(firm, "anna@example.com", "Nowa prośba")
+    _send(firm, "anna@example.com", "Świeża prośba")
     client.force_login(member)
 
     open_tab = page_text(client.get(reverse("requests:received")))
     history = page_text(client.get(reverse("requests:received") + "?widok=zakonczone"))
 
-    assert "Nowa prośba" in open_tab and "Stara prośba" not in open_tab
-    assert "Stara prośba" in history and "Nowa prośba" not in history
+    assert "Świeża prośba" in open_tab and "Stara prośba" not in open_tab
+    assert "Stara prośba" in history and "Świeża prośba" not in history
 
 
 @pytest.mark.django_db

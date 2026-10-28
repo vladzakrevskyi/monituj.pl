@@ -24,7 +24,7 @@
       }
     });
 
-    target.querySelectorAll("a, button:not([data-nav-toggle])").forEach(function (el) {
+    target.querySelectorAll("a, button:not([data-nav-toggle]):not([data-nav-more])").forEach(function (el) {
       el.addEventListener("click", closeAll);
     });
   });
@@ -56,4 +56,24 @@
       }
     });
   });
+})();
+
+// The panel's menu: an arrow at the bottom only while there is more to
+// scroll to; it scrolls the menu down.
+(function () {
+  var nav = document.querySelector("[data-nav-scroll]");
+  var more = document.querySelector("[data-nav-more]");
+  if (!nav || !more) return;
+
+  function update() {
+    more.hidden = nav.scrollHeight - nav.scrollTop - nav.clientHeight <= 4;
+  }
+
+  more.addEventListener("click", function () {
+    nav.scrollBy({ top: nav.clientHeight * 0.7, behavior: "smooth" });
+  });
+  nav.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", update);
+  if (window.ResizeObserver) new ResizeObserver(update).observe(nav);
+  update();
 })();

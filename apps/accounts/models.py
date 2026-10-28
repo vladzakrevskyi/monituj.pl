@@ -118,17 +118,27 @@ class GoogleAccount(TimeStampedModel):
         return f"Google account of {self.user_id}"
 
 
+class TwoFactorMethod(models.TextChoices):
+    APP = "app", "Aplikacja w telefonie"
+    EMAIL = "email", "Kod na e-mail"
+
+
 class TwoFactor(TimeStampedModel):
-    """Two-step verification with an authenticator app (TOTP, RFC 6238).
+    """Two-step verification: a code from an authenticator app (TOTP,
+    RFC 6238) or a one-time code sent by email (apps/accounts/two_factor.py).
     A row exists only once the first code was confirmed - until then the
-    secret lives in the session of the person setting it up."""
+    setup lives in the session of the person setting it up."""
 
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="two_factor"
     )
-    # The base32 secret, encrypted with the master key (documents'
-    # encryption); plain only where no key is set (development).
-    secret = models.TextField()
+    method = models.CharField(
+        max_length=8, choices=TwoFactorMethod.choices, default=TwoFactorMethod.APP
+    )
+    # The app's base32 secret, encrypted with the master key (documents'
+    # encryption); plain only where no key is set (development). Empty for
+    # codes by email.
+    secret = models.TextField(blank=True)
     secret_key_id = models.CharField(max_length=16, blank=True)
     # The last accepted 30-second step: a code works once, never replayed.
     last_step = models.BigIntegerField(default=0)
@@ -136,6 +146,11 @@ class TwoFactor(TimeStampedModel):
     backup_codes = models.JSONField(default=list)
     # Part of every "remember this device" cookie; a new one forgets them all.
     device_nonce = models.CharField(max_length=64, default=generate_public_token)
+    # Codes by email: SHA-256 of the one code sent last, until it is used or
+    # expires; when it went out (a new one waits a minute).
+    email_code = models.CharField(max_length=64, blank=True)
+    email_code_expires_at = models.DateTimeField(null=True, blank=True)
+    email_code_sent_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Two-step verification of {self.user_id}"
@@ -188,3 +203,21 @@ class TeamInvitation(TimeStampedModel):
 
     def __str__(self):
         return f"{self.email} -> {self.owner_id}"
+
+
+class AccountLogo(models.Model):
+    """The office's logo, shown to its clients on their request page and in
+    emails while the plan is a paid one (apps/accounts/branding.py). Stored
+    re-encoded as PNG - never the file as uploaded."""
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="logo")
+    # In the logo's address; a new one with every new logo, so it can be
+    # cached forever.
+    key = models.CharField(max_length=32, unique=True)
+    image = models.BinaryField()
+    width = models.PositiveSmallIntegerField()
+    height = models.PositiveSmallIntegerField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Logo {self.user_id}"

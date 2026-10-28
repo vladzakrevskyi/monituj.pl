@@ -15,6 +15,8 @@ import unicodedata
 
 from django.core.exceptions import ValidationError
 
+from apps.accounts.branding import logo_for_clients
+
 DECEPTIVE_MESSAGE = (
     "Ta nazwa może wprowadzać odbiorców w błąd - przypomina instytucję "
     "publiczną, bank albo Monituj. Użyj nazwy swojej firmy albo imienia i "
@@ -114,6 +116,8 @@ def sender_context(user):
         "sender_from": f"{name} ({user.email})" if name else user.email,
         # The firm's name and NIP - only with the sender's consent.
         "sender_firm": firm if user.show_paying_firm else "",
+        # The office's logo on a paid plan (apps/accounts/branding.py).
+        "sender_logo": logo_for_clients(user),
     }
 
 

@@ -62,6 +62,7 @@ class EmailTemplate(models.TextChoices):
     TWO_FACTOR_DISABLED = "2fa_wylaczona", "Weryfikacja dwuetapowa wyłączona"
     DAILY_AGENDA = "na_dzis", "Na dziś (poranne podsumowanie)"
     BACKUP_CODE_USED = "2fa_kod_zapasowy", "Użyto kodu zapasowego"
+    TWO_FACTOR_CODE = "2fa_kod", "Kod weryfikacyjny (e-mail)"
 
 
 class EmailStatus(models.TextChoices):

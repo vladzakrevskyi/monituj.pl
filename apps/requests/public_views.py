@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
@@ -66,10 +67,24 @@ def public_request_detail(request, token):
                 return ajax_form_error_response(form)
         else:
             form = PublicPasswordForm()
-        return render(request, "public/password_gate.html", {"form": form})
+        return render(
+            request,
+            "public/password_gate.html",
+            {
+                "form": form,
+                "sender_logo": sender_context(request_obj.created_by)["sender_logo"],
+            },
+        )
 
     PublicAccessService.grant_access(request_obj, request)
-    PublicAccessService.mark_accessed(request_obj, request)
+    # The sender (or their team) checking what the client sees is not the
+    # client opening the link.
+    sender_view = request.user.is_authenticated and request_obj.created_by_id in (
+        request.user.pk,
+        getattr(request.account, "pk", None),
+    )
+    if not sender_view:
+        PublicAccessService.mark_accessed(request_obj, request)
     items = request_obj.items.all().order_by("id")
     session_key = request.session.session_key or ""
     # A plain link may have been forwarded, so it shows only files sent from
@@ -106,8 +121,13 @@ def public_request_detail(request, token):
             "is_question": any(item.is_question for item in items),
             "status_label": status.label,
             "status_code": status.value,
+            "overdue": bool(
+                request_obj.deadline and request_obj.deadline < timezone.now()
+            ),
             "public_token": request_obj.public_token,
             "hidden_files": hidden_files,
+            "sender_view": sender_view,
+            "panel_url": request_obj.panel_url() if sender_view else "",
         },
     )
 

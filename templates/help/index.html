@@ -1,0 +1,55 @@
+{% extends "base/base.html" %}
+{% load static help_text %}
+
+{% block page_class %}page--flush{% endblock %}
+{% block extra_css %}{% include "help/_layout_css.html" %}{% endblock %}
+
+{% block content %}
+<section class="help-hero">
+<div class="container container--narrow">
+<p class="eyebrow">Centrum pomocy</p>
+<h1 class="display help-hero__title">Jak możemy <strong>pomóc</strong>?</h1>
+<p class="help-hero__lead">Proste odpowiedzi, krok po kroku. Wpisz pytanie albo wybierz temat poniżej.</p>
+{% include "help/_search.html" %}
+<div class="help-popular">
+<span class="help-popular__label">Często szukane:</span>
+{% for article in popular %}<a class="help-chip" href="{% url 'help:article' article.slug %}">{{ article.title }}</a>{% endfor %}
+</div>
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container">
+<div class="help-grid">
+{% for group in groups %}
+<article class="help-card">
+<a class="help-card__head" href="{% url 'help:category' group.category.slug %}">
+<span class="help-card__icon">{% include "pages/_icon.html" with icon=group.category.icon %}</span>
+<span><h2 class="help-card__title">{{ group.category.title }}</h2><span class="help-card__desc">{{ group.category.description }}</span></span>
+</a>
+<ul class="help-card__list">
+{% for article in group.articles|slice:":4" %}<li><a href="{% url 'help:article' article.slug %}">{{ article.title }}</a></li>{% endfor %}
+</ul>
+{% if group.articles|length > 4 %}<a class="help-card__more" href="{% url 'help:category' group.category.slug %}">Wszystkie ({{ group.articles|length }}) &rarr;</a>{% endif %}
+</article>
+{% endfor %}
+</div>
+
+<div class="help-recipient" id="dla-klientow">
+<div class="help-recipient__intro">
+<span class="help-card__icon">{% include "pages/_icon.html" with icon=recipient.category.icon %}</span>
+<div>
+<h2>Dostałeś prośbę o dokumenty?</h2>
+<p>Ta część jest dla klientów, którzy dostali od kogoś link do przesłania dokumentów. Nie musisz zakładać konta.</p>
+</div>
+</div>
+<ul class="help-recipient__list">
+{% for article in recipient.articles %}<li><a href="{% url 'help:article' article.slug %}">{{ article.title }}</a></li>{% endfor %}
+</ul>
+</div>
+
+{% include "help/_contact.html" %}
+</div>
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/help_search.js' %}" defer></script>{% endblock %}

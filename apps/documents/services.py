@@ -1,5 +1,6 @@
 import secrets
 
+from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 
@@ -23,13 +24,17 @@ from apps.notifications.inbox import (
 )
 from apps.notifications.models import EmailStatus, EmailTemplate
 from apps.notifications.services import EmailService
-from apps.requests.models import RequestItemStatus
+from apps.requests.models import RequestItem, RequestItemStatus
 from apps.requests.received import is_verified_recipient
 from apps.requests.services import CLOSED_MESSAGE, PublicAccessService, with_stats
 
 # Generous for real documents, but a leaked link can't fill the disk.
 MAX_FILES_PER_ITEM = 20
 MAX_BYTES_PER_REQUEST = 500 * 1024 * 1024
+# "Dodaj inny dokument" (ExtraDocumentService).
+MAX_EXTRA_ITEMS = 10
+EXTRA_NAME = "Inny dokument"
+EXTRA_NAME_LENGTH = 120
 UPLOADS_PER_IP_HOUR = 120
 
 
@@ -183,6 +188,39 @@ class UploadDocumentService:
                 context={"request_name": annotated.name},
                 request=annotated,
             )
+
+
+class ExtraDocumentService:
+    """ "Dodaj inny dokument": the client sends something that wasn't on the
+    list. It becomes an item of its own, marked as theirs, so the sender sees
+    what it is and decides on it like on any other."""
+
+    @staticmethod
+    @transaction.atomic
+    def add(request_obj, name, uploaded_file, django_request=None):
+        if request_obj.closed_at is not None:
+            raise ValidationAppError(CLOSED_MESSAGE, code="REQUEST_CLOSED")
+        if request_obj.question_item is not None:
+            raise ValidationAppError(
+                "Tu wystarczy odpowiedzieć na pytanie - plik możesz dołączyć do "
+                "odpowiedzi.",
+                code="NOT_FOR_QUESTIONS",
+            )
+        if request_obj.items.filter(added_by_client=True).count() >= MAX_EXTRA_ITEMS:
+            raise ValidationAppError(
+                f"Do jednej prośby możesz dodać najwyżej {MAX_EXTRA_ITEMS} "
+                "dokumentów spoza listy. Napisz do nadawcy, jeśli masz ich więcej.",
+                code="TOO_MANY_EXTRA",
+            )
+        name = " ".join((name or "").split())[:EXTRA_NAME_LENGTH] or EXTRA_NAME
+        item = RequestItem.objects.create(
+            request=request_obj, name=name, added_by_client=True
+        )
+        # A file that isn't accepted takes its item with it (atomic).
+        UploadDocumentService.upload_for_item(
+            item, uploaded_file, django_request=django_request
+        )
+        return item
 
 
 class DocumentReviewService:

@@ -161,6 +161,17 @@ PAGES = {
         "label": "Cennik",
         "template": "pages/pricing.html",
     },
+    "help:index": {
+        "name": "Centrum pomocy Monituj",
+        "description": (
+            "Proste instrukcje krok po kroku: prośby o dokumenty, przypomnienia, "
+            "pytania do klientów, kalendarz i płatności. Także dla klientów."
+        ),
+        "og_image": "images/og/faq.png",
+        "priority": "0.7",
+        "label": "Centrum pomocy",
+        "template": "help/index.html",
+    },
     "pages:faq": {
         "name": "Pytania o zbieranie dokumentów od klientów",
         "description": (

@@ -1,8 +1,13 @@
-"""Two-step verification: a code from an authenticator app (TOTP, RFC 6238).
+"""Two-step verification: a code from an authenticator app (TOTP, RFC 6238)
+or a one-time code sent by email - the person chooses (TwoFactor.method).
 
-- Turned on in Settings: the secret is shown as a QR code and kept in the
-  session until the first code confirms it; then it is stored encrypted
-  with the master key. Ten one-time backup codes are shown once.
+- Turned on in Settings. The app: the secret is shown as a QR code and kept
+  in the session until the first code confirms it; then it is stored
+  encrypted with the master key, and ten one-time backup codes are shown
+  once. Email: a code goes to the account's address and confirming it
+  turns it on; no backup codes - the mailbox is the way in anyway.
+- An email code is six digits, works once and for 10 minutes; only its
+  hash is kept. A new one waits a minute, and a few per 15 minutes at most.
 - Every way into an account that has it on - password, Google, the admin -
   stops after the first step: the person is held in the session as
   "pending" and gets in only with a code (challenge / complete).
@@ -29,7 +34,13 @@ from django.utils import timezone
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.safestring import mark_safe
 
-from apps.accounts.models import GoogleAccount, TwoFactor, User, is_guest_account
+from apps.accounts.models import (
+    GoogleAccount,
+    TwoFactor,
+    TwoFactorMethod,
+    User,
+    is_guest_account,
+)
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.common import throttle
@@ -67,6 +78,15 @@ INVALID_CODE_MESSAGE = (
     "sekund) albo jeden z kodów zapasowych."
 )
 TOO_MANY_MESSAGE = "Zbyt wiele błędnych kodów. Spróbuj ponownie za 15 minut."
+INVALID_EMAIL_CODE_MESSAGE = (
+    "Nieprawidłowy albo nieaktualny kod. Wpisz kod z ostatniego e-maila od "
+    "Monituj - działa 10 minut."
+)
+EMAIL_CODE_TTL = timedelta(minutes=10)
+EMAIL_RESEND_AFTER = timedelta(seconds=60)
+EMAIL_SENDS = 5
+RESEND_WAIT_MESSAGE = "Nowy kod możesz wysłać za minutę - sprawdź też folder spam."
+MAIL_LIMIT_MESSAGE = "Wysłaliśmy już kilka kodów. Spróbuj ponownie za 15 minut."
 
 
 # --- who can use it ----------------------------------------------------------
@@ -89,6 +109,17 @@ def is_enabled(user):
 
 def settings_for(user):
     return TwoFactor.objects.filter(user_id=user.pk).first()
+
+
+def method_of(user):
+    two_factor = settings_for(user)
+    return two_factor.method if two_factor else None
+
+
+def masked_email(email):
+    """a***@example.com - which mailbox to look in, without the address."""
+    local, _, domain = (email or "").partition("@")
+    return f"{local[:1]}***@{domain}" if domain else email
 
 
 # --- codes -------------------------------------------------------------------
@@ -117,10 +148,21 @@ def _matching_step(secret, code, now=None):
     return None
 
 
+def _email_code_matches(two_factor, code):
+    return bool(
+        two_factor.email_code
+        and two_factor.email_code_expires_at
+        and two_factor.email_code_expires_at > timezone.now()
+        and len(code) == 6
+        and code.isdigit()
+        and constant_time_compare(hash_token(code), two_factor.email_code)
+    )
+
+
 def _use_code(user, code):
-    """ "app" or "backup" - what the code was - or None. A matching code is
-    used up: an app code's step can't be used again, a backup code is
-    removed."""
+    """ "app", "email" or "backup" - what the code was - or None. A matching
+    code is used up: an app code's step can't be used again, an email or a
+    backup code is removed."""
     code = _normalize(code)
     if not code:
         return None
@@ -128,7 +170,17 @@ def _use_code(user, code):
         two_factor = TwoFactor.objects.select_for_update().filter(user=user).first()
         if two_factor is None:
             return None
-        step = _matching_step(_secret(two_factor), code)
+        if two_factor.method == TwoFactorMethod.EMAIL:
+            if _email_code_matches(two_factor, code):
+                two_factor.email_code = ""
+                two_factor.email_code_expires_at = None
+                two_factor.save(
+                    update_fields=["email_code", "email_code_expires_at", "updated_at"]
+                )
+                return "email"
+            step = None
+        else:
+            step = _matching_step(_secret(two_factor), code)
         if step is not None:
             if step <= two_factor.last_step:
                 return None
@@ -162,15 +214,77 @@ def _record_failure(request, user):
     )
 
 
+def _invalid_message(user):
+    if method_of(user) == TwoFactorMethod.EMAIL:
+        return INVALID_EMAIL_CODE_MESSAGE
+    return INVALID_CODE_MESSAGE
+
+
 def verify(request, user, code):
-    """Checks a code (app or backup) within the limits. -> "app"/"backup"."""
+    """Checks a code (app, email or backup) within the limits.
+    -> "app"/"email"/"backup"."""
     _check_limits(request, user)
     kind = _use_code(user, code)
     if kind is None:
         _record_failure(request, user)
-        raise ValidationAppError(INVALID_CODE_MESSAGE, code="INVALID_CODE")
+        raise ValidationAppError(_invalid_message(user), code="INVALID_CODE")
     throttle.clear(f"2fa:{user.pk}")
     return kind
+
+
+def _new_email_code():
+    return f"{secrets.randbelow(10**6):06d}"
+
+
+def _mail_code(user, code, purpose):
+    """purpose: "login", "setup" or "manage" - the email says what for."""
+    throttle.consume(
+        f"2fa-mail:{user.pk}",
+        EMAIL_SENDS,
+        FAILURE_WINDOW,
+        MAIL_LIMIT_MESSAGE,
+        code="TWO_FACTOR_MAIL_LIMIT",
+    )
+    EmailService.send(
+        EmailTemplate.TWO_FACTOR_CODE,
+        to_email=user.email,
+        context={
+            "code": code,
+            "minutes": int(EMAIL_CODE_TTL.total_seconds() // 60),
+            "purpose": purpose,
+        },
+    )
+
+
+def send_email_code(user, purpose="login"):
+    """A new code by email for an account that uses them; the previous one
+    stops working. Refused within a minute of the last one."""
+    now = timezone.now()
+    with transaction.atomic():
+        two_factor = (
+            TwoFactor.objects.select_for_update()
+            .filter(user=user, method=TwoFactorMethod.EMAIL)
+            .first()
+        )
+        if two_factor is None:
+            return False
+        sent = two_factor.email_code_sent_at
+        if sent and now - sent < EMAIL_RESEND_AFTER:
+            raise ValidationAppError(RESEND_WAIT_MESSAGE, code="TWO_FACTOR_RESEND_WAIT")
+        code = _new_email_code()
+        _mail_code(user, code, purpose)
+        two_factor.email_code = hash_token(code)
+        two_factor.email_code_expires_at = now + EMAIL_CODE_TTL
+        two_factor.email_code_sent_at = now
+        two_factor.save(
+            update_fields=[
+                "email_code",
+                "email_code_expires_at",
+                "email_code_sent_at",
+                "updated_at",
+            ]
+        )
+    return True
 
 
 def _new_backup_codes():
@@ -236,7 +350,8 @@ def needs_code(request, user):
 
 
 def hold(request, user, backend, method, next_url=""):
-    """The first step is done: remembers who is signing in until the code."""
+    """The first step is done: remembers who is signing in until the code -
+    and sends it, for an account that gets its codes by email."""
     request.session.cycle_key()
     request.session[PENDING_KEY] = {
         "u": user.pk,
@@ -246,6 +361,13 @@ def hold(request, user, backend, method, next_url=""):
         "p": _password_marker(user),
         "t": int(time.time()),
     }
+    if method_of(user) == TwoFactorMethod.EMAIL:
+        try:
+            send_email_code(user, "login")
+        except ValidationAppError, RateLimitedAppError:
+            # Just sent, or too many: the last code still works, and the
+            # code page can send another later.
+            pass
 
 
 def challenge(request, user, backend, method, next_url=""):
@@ -337,20 +459,47 @@ def remaining_backup_codes(user):
 # --- turning it on and off ---------------------------------------------------
 
 
-def start_setup(request, user):
+def start_setup(request, user, method=TwoFactorMethod.APP):
+    """The app: a new secret for the QR code. Email: a code goes out."""
+    if method == TwoFactorMethod.EMAIL:
+        code = _new_email_code()
+        _mail_code(user, code, "setup")
+        request.session[SETUP_KEY] = {
+            "u": user.pk,
+            "m": TwoFactorMethod.EMAIL,
+            "c": hash_token(code),
+            "t": int(time.time()),
+            "sent": int(time.time()),
+        }
+        return
     request.session[SETUP_KEY] = {
         "u": user.pk,
+        "m": TwoFactorMethod.APP,
         "s": pyotp.random_base32(),
         "t": int(time.time()),
     }
 
 
 def pending_setup(request, user):
+    """The setup in progress - {"m": method, ...} - or None."""
     data = request.session.get(SETUP_KEY)
     if not data or data["u"] != user.pk or time.time() - data["t"] > SETUP_MAX_AGE:
         request.session.pop(SETUP_KEY, None)
         return None
-    return data["s"]
+    data.setdefault("m", TwoFactorMethod.APP)
+    return data
+
+
+def resend_setup_code(request, user):
+    data = pending_setup(request, user)
+    if data is None or data["m"] != TwoFactorMethod.EMAIL:
+        raise ValidationAppError(SETUP_EXPIRED_MESSAGE, code="TWO_FACTOR_EXPIRED")
+    if time.time() - data["sent"] < EMAIL_RESEND_AFTER.total_seconds():
+        raise ValidationAppError(RESEND_WAIT_MESSAGE, code="TWO_FACTOR_RESEND_WAIT")
+    code = _new_email_code()
+    _mail_code(user, code, "setup")
+    data["c"], data["sent"] = hash_token(code), int(time.time())
+    request.session[SETUP_KEY] = data
 
 
 def cancel_setup(request):
@@ -370,12 +519,52 @@ def setup_details(user, secret):
     }
 
 
+def _confirm_email_setup(request, user, data, code):
+    code = _normalize(code)
+    fresh = time.time() - data["sent"] <= EMAIL_CODE_TTL.total_seconds()
+    if not (
+        fresh
+        and len(code) == 6
+        and code.isdigit()
+        and constant_time_compare(hash_token(code), data["c"])
+    ):
+        throttle.record(f"2fa:{user.pk}")
+        throttle.record(throttle.ip_key("2fa-ip", request))
+        raise ValidationAppError(INVALID_EMAIL_CODE_MESSAGE, code="INVALID_CODE")
+    with transaction.atomic():
+        TwoFactor.objects.filter(user=user).delete()
+        TwoFactor.objects.create(user=user, method=TwoFactorMethod.EMAIL)
+    _enabled(request, user, TwoFactorMethod.EMAIL)
+    return []
+
+
+def _enabled(request, user, method):
+    cancel_setup(request)
+    throttle.clear(f"2fa:{user.pk}")
+    AuditService.log(
+        AuditEvent.TWO_FACTOR_ENABLED,
+        actor=user,
+        target=user,
+        request=request,
+        metadata={"method": method},
+    )
+    EmailService.send(
+        EmailTemplate.TWO_FACTOR_ENABLED,
+        to_email=user.email,
+        context={"by_email": method == TwoFactorMethod.EMAIL},
+    )
+
+
 def confirm_setup(request, user, code):
-    """The first code from the app turns it on. -> backup codes to show."""
-    secret = pending_setup(request, user)
-    if secret is None:
+    """The first code turns it on. -> backup codes to show (none for codes
+    by email)."""
+    data = pending_setup(request, user)
+    if data is None:
         raise ValidationAppError(SETUP_EXPIRED_MESSAGE, code="TWO_FACTOR_EXPIRED")
     _check_limits(request, user)
+    if data["m"] == TwoFactorMethod.EMAIL:
+        return _confirm_email_setup(request, user, data, code)
+    secret = data["s"]
     step = _matching_step(secret, _normalize(code))
     if step is None:
         throttle.record(f"2fa:{user.pk}")
@@ -392,16 +581,15 @@ def confirm_setup(request, user, code):
             last_step=step,
             backup_codes=hashed,
         )
-    cancel_setup(request)
-    throttle.clear(f"2fa:{user.pk}")
-    AuditService.log(
-        AuditEvent.TWO_FACTOR_ENABLED, actor=user, target=user, request=request
-    )
-    EmailService.send(EmailTemplate.TWO_FACTOR_ENABLED, to_email=user.email)
+    _enabled(request, user, TwoFactorMethod.APP)
     return shown
 
 
 def regenerate_codes(request, user, password, code):
+    if method_of(user) != TwoFactorMethod.APP:
+        raise ValidationAppError(
+            "Kody zapasowe są tylko przy kodach z aplikacji.", code="NO_BACKUP_CODES"
+        )
     check_password(request, user, password)
     verify(request, user, code)
     shown, hashed = _new_backup_codes()

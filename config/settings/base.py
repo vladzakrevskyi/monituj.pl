@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "apps.contact",
     "apps.billing",
     "apps.agenda",
+    "apps.help",
 ]
 
 MIDDLEWARE = [
@@ -145,7 +146,8 @@ CONTENT_SECURITY_POLICY = {
     "default-src": "'self'",
     "script-src": "'self'",
     "style-src": "'self'",
-    "img-src": "'self' data:",
+    # blob: - previews of photos picked on the page, before they are sent.
+    "img-src": "'self' data: blob:",
     "font-src": "'self'",
     "connect-src": "'self'",
     "frame-ancestors": "'none'",

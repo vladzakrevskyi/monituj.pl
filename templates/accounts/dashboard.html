@@ -12,6 +12,40 @@
 </div>
 </div>
 
+{% if first_steps %}
+<section class="card first-steps" aria-labelledby="first-steps-title">
+<div class="first-steps__head">
+<div>
+<h2 class="card-title" id="first-steps-title">Pierwsze kroki</h2>
+<p class="first-steps__sub">Trzy kroki do pierwszych dokumentów od klienta. Potem ta lista zniknie.</p>
+</div>
+<span class="first-steps__count">{{ first_steps.done }} z 3</span>
+</div>
+<ol class="first-steps__list">
+{% for step in first_steps.steps %}
+<li class="first-step{% if step.done %} is-done{% endif %}">
+<span class="first-step__mark" aria-hidden="true">{% if step.done %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>{% else %}{{ forloop.counter }}{% endif %}</span>
+<div class="first-step__body">
+{% if step.key == "client" %}
+<p class="first-step__title">Dodaj klienta{% if step.done %} <span class="visually-hidden">- zrobione</span>{% endif %}</p>
+<p class="first-step__text">Nazwa i adres e-mail - albo cała lista z Excela lub CSV. Możesz też wpisać e-mail nowego klienta od razu w prośbie.</p>
+{% if not step.done %}<div class="first-step__actions"><a class="btn btn-primary btn-sm" href="{% url 'clients:create' %}">Dodaj klienta</a><a class="btn btn-secondary btn-sm" href="{% url 'clients:import' %}">Importuj z pliku</a></div>{% endif %}
+{% elif step.key == "request" %}
+<p class="first-step__title">Wyślij pierwszą prośbę{% if step.done %} <span class="visually-hidden">- zrobione</span>{% endif %}</p>
+<p class="first-step__text">Wybierz gotowy szablon, np. „Dokumenty księgowe za miesiąc”, ustaw termin i wyślij. Klient dostanie e-mail z linkiem, a Monituj sam przypomni o brakach.</p>
+{% if not step.done %}<div class="first-step__actions"><a class="btn btn-primary btn-sm" href="{% url 'requests:create' %}">Nowa prośba</a><a class="btn btn-secondary btn-sm" href="{% url 'requests:templates' %}">Zobacz szablony</a></div>{% endif %}
+{% else %}
+<p class="first-step__title">Odbierz pierwszy dokument{% if step.done %} <span class="visually-hidden">- zrobione</span>{% endif %}</p>
+<p class="first-step__text">Gdy klient coś prześle, dostaniesz e-mail, a dokument pojawi się w „Do zrobienia” - zaakceptujesz go jednym kliknięciem. Zobacz, co widzi klient: link działa bez logowania.</p>
+{% if first_steps.public_url %}<div class="first-step__actions"><a class="btn btn-secondary btn-sm" href="{{ first_steps.public_url }}" target="_blank" rel="noopener">Zobacz, co widzi klient</a></div>{% endif %}
+{% endif %}
+</div>
+</li>
+{% endfor %}
+</ol>
+</section>
+{% endif %}
+
 {% if security_hint %}
 <div class="security-hint">
 <p class="security-hint__text"><strong>Chroń konto kodem z telefonu.</strong> Włącz weryfikację dwuetapową - samo hasło nie wystarczy, by ktoś wszedł na Twoje konto.</p>
@@ -53,22 +87,41 @@
 </div>
 
 <div class="dashboard-grid">
-<section class="card">
-<h2 class="card-title">Ostatnia aktywność</h2>
+<div class="dashboard-main">
+<section class="card" aria-labelledby="to-do-title">
+<h2 class="card-title" id="to-do-title">Do zrobienia</h2>
+{% if to_do %}
+<ul class="open-list">
+{% for entry in to_do %}
+<li class="open-item{% if entry.kind == 'overdue' %} open-item--late{% else %} open-item--review{% endif %}">
+<span class="open-item__kind">{{ entry.label }}</span>
+<a class="open-item__title" href="{{ entry.url }}">{{ entry.title|truncatechars:110 }}</a>
+<span class="open-item__meta">{{ entry.meta|truncatechars:140 }}</span>
+</li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="text-muted">{% if first_steps %}Tu pojawią się dokumenty do sprawdzenia, odpowiedzi klientów i prośby po terminie.{% else %}Nic nie czeka na Ciebie. Monituj przypomina klientom o brakach - napiszemy, gdy coś przyjdzie.{% endif %}</p>
+{% endif %}
+</section>
+<section class="card" aria-labelledby="activity-title">
+<h2 class="card-title" id="activity-title">Ostatnia aktywność</h2>
 <ul class="history-list">
 {% for entry in recent_activity %}
-<li><span class="history-time">{{ entry.created_at|dt }}</span><span>{{ entry.label_pl }}{% if entry.actor and entry.actor != user %} - {{ entry.actor.email }}{% endif %}</span></li>
+<li><span class="history-time">{{ entry.created_at|dt }}</span><span>{{ entry.label_pl }}{% if entry.request %} - {% if entry.url %}<a href="{{ entry.url }}">{{ entry.request.name|truncatechars:60 }}</a>{% else %}{{ entry.request.name|truncatechars:60 }}{% endif %} <span class="text-muted">({{ entry.request.client.name }})</span>{% endif %}{% if entry.actor and entry.actor != user and entry.actor != request.account %} · {{ entry.actor.display_name|default:entry.actor.email }}{% endif %}</span></li>
 {% empty %}
-<li>Brak aktywności.</li>
+<li>Tu zobaczysz, co dzieje się u klientów: otwarcia linków, przesłane pliki, przypomnienia.</li>
 {% endfor %}
 </ul>
 </section>
+</div>
 <aside class="card">
 <h2 class="card-title">Szybkie akcje</h2>
 <div class="quick-actions">
-<a class="btn btn-primary btn-block" href="{% url 'requests:create' %}">Nowe przypomnienie</a>
+<a class="btn btn-primary btn-block" href="{% url 'requests:create' %}">Nowa prośba</a>
+<a class="btn btn-secondary btn-block" href="{% url 'requests:question-create' %}">Zadaj pytanie</a>
 <a class="btn btn-secondary btn-block" href="{% url 'clients:create' %}">Dodaj klienta</a>
-<a class="btn btn-secondary btn-block" href="{% url 'requests:list' %}">Wszystkie przypomnienia</a>
+<a class="btn btn-secondary btn-block" href="{% url 'requests:list' %}">Wszystkie prośby</a>
 </div>
 </aside>
 </div>

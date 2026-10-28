@@ -77,6 +77,27 @@ def sitemap_entries():
                 "priority": "0.7",
             }
         )
+    from apps.help import articles as help_articles
+
+    help_modified = _modified(
+        TEMPLATES_DIR / "help/article.html", Path(help_articles.__file__)
+    )
+    for category in help_articles.CATEGORIES:
+        entries.append(
+            {
+                "loc": absolute_url(reverse("help:category", args=[category.slug])),
+                "lastmod": help_modified,
+                "priority": "0.5",
+            }
+        )
+    for article in help_articles.ARTICLES:
+        entries.append(
+            {
+                "loc": absolute_url(reverse("help:article", args=[article.slug])),
+                "lastmod": help_modified,
+                "priority": "0.5",
+            }
+        )
     return entries
 
 

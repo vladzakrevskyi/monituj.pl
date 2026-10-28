@@ -31,3 +31,124 @@
   align-items: center;
   gap: var(--space-4);
 }
+
+.dashboard-main {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.dashboard-main > .card {
+  margin: 0;
+}
+
+/* "Pierwsze kroki": a new account's way to its first documents */
+.first-steps {
+  margin-bottom: var(--space-5);
+}
+
+.first-steps__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.first-steps__head .card-title {
+  margin-bottom: var(--space-1);
+}
+
+.first-steps__sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.first-steps__count {
+  flex-shrink: 0;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--color-primary-bg);
+  color: var(--color-primary-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.first-steps__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.first-step {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.first-step.is-done {
+  background: var(--color-bg-subtle);
+}
+
+.first-step__mark {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-black);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.first-step__mark svg {
+  width: 16px;
+  height: 16px;
+}
+
+.first-step.is-done .first-step__mark {
+  background: var(--color-success);
+}
+
+.first-step__title {
+  margin: 2px 0 var(--space-1);
+  font-weight: 700;
+}
+
+.first-step.is-done .first-step__title {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.first-step__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.first-step.is-done .first-step__text {
+  display: none;
+}
+
+.first-step__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+@media (max-width: 1080px) {
+  .first-steps__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

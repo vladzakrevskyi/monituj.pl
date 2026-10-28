@@ -50,12 +50,12 @@
 <body class="{% block body_class %}{% endblock %}">
 {% if maintenance_bypass %}<div class="maintenance-bar" role="status"><strong>Tryb serwisowy włączony.</strong> Odwiedzający widzą stronę prac technicznych - Ty widzisz serwis, bo Twój adres IP jest na liście wyjątków.</div>{% endif %}
 {% block layout %}
-{% include "base/_public_header.html" %}
+{% block site_header %}{% include "base/_public_header.html" %}{% endblock %}
 <main class="page {% block page_class %}{% endblock %}">
 {% include "base/_messages.html" %}
 {% block content %}{% endblock %}
 </main>
-{% include "base/_public_footer.html" %}
+{% block site_footer %}{% include "base/_public_footer.html" %}{% endblock %}
 {% endblock %}
 {% if cookie_consent.enabled %}{% include "base/_cookie_consent.html" %}{% endif %}
 <script src="{% static 'js/timezone.js' %}"></script>

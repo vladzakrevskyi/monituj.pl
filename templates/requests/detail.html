@@ -4,7 +4,7 @@
 {% block page_name %}{{ request_obj.name }}{% endblock %}
 
 {% block content %}
-{% if question %}<a class="back-link" href="{% url 'requests:questions' %}" title="Wróć: Pytania">&larr; Pytania</a>{% else %}<a class="back-link" href="{% url 'requests:list' %}" title="Wróć: Przypomnienia">&larr; Przypomnienia</a>{% endif %}
+{% if question %}<a class="back-link" href="{% url 'requests:questions' %}" title="Wróć: Pytania">&larr; Pytania</a>{% else %}<a class="back-link" href="{% url 'requests:list' %}" title="Wróć: Prośby">&larr; Prośby</a>{% endif %}
 <div class="page-header">
 <div class="page-header__title">
 <h1>{{ request_obj.name }}</h1>
@@ -41,6 +41,11 @@
 {% endif %}
 {% if request_obj.awaiting_confirmation %}
 <p class="alert alert--info">Ta prośba czeka na potwierdzenie linkiem z maila, który wysłaliśmy na <strong>{{ request_obj.created_by.email }}</strong>. Odbiorca jeszcze nic nie dostał. Niepotwierdzone prośby są usuwane po 48 godzinach.</p>
+{% elif waiting_for_first %}
+<div class="next-step" role="status">
+<p><strong>Wysłane do {{ request_obj.client.email }}.</strong> {% if opened_at %}Klient otworzył link {{ opened_at|dt }}{% if question %}, ale jeszcze nie odpowiedział{% else %}, ale jeszcze nic nie przesłał{% endif %}.{% else %}Klient jeszcze nie otworzył linku.{% endif %} {% if planned_reminders %}Jeśli nic się nie zmieni, Monituj przypomni mu {{ planned_reminders.0.at|dt }}.{% endif %} Gdy {% if question %}odpowie{% else %}coś prześle{% endif %}, dostaniesz e-mail.</p>
+<a class="btn btn-secondary btn-sm" href="{{ public_url }}" target="_blank" rel="noopener">Zobacz, co widzi klient</a>
+</div>
 {% elif request_obj.is_closed %}
 {% if question %}<p class="alert alert--info">Pytanie zamknięte {{ request_obj.closed_at|dt }}. Klient widzi je jako zamknięte i nie może już odpowiedzieć, a przypomnienia nie są wysyłane.</p>{% else %}<p class="alert alert--info">Prośba zamknięta {{ request_obj.closed_at|dt }}. Odbiorca widzi ją jako zamkniętą i nie może przesyłać plików, a przypomnienia nie są wysyłane. Przesłane pliki nadal możesz pobrać.</p>{% endif %}
 {% endif %}
@@ -56,19 +61,19 @@
 <span class="meta__label">Termin</span>
 <span class="meta__value">{% if request_obj.deadline %}{{ request_obj.deadline|dt }}{% else %}Bez terminu{% endif %}</span>
 </div>
-<div>
+{% if not question or request_obj.is_password_protected %}<div>
 <span class="meta__label">Dostęp</span>
 {% if request_obj.is_password_protected %}
 <span class="meta__value">Zabezpieczony hasłem</span>
 {% else %}
 <span class="meta__value">Bez hasła</span>
 {% endif %}
-</div>
-<div>
+</div>{% endif %}
+{% if not question %}<div>
 <span class="meta__label">Przechowywanie plików</span>
 <span class="meta__value">{{ request_obj.retention_days }} dni</span>
 <span class="meta__sub">od przesłania, potem pliki są usuwane</span>
-</div>
+</div>{% endif %}
 </div>
 {% if not question %}<div class="meta-progress">
 <div class="meta-progress__row">
@@ -118,7 +123,7 @@
 <tbody id="items-table-body">
 {% for item in items %}
 <tr data-item-id="{{ item.id }}" data-status="{{ item.status }}">
-<td class="cell-strong" data-label="Dokument">{{ item.name }}{% if item.is_confirm %} <span class="item-kind" title="Klient nie przesyła tu pliku - potwierdza, że to zrobił">bez pliku</span>{% endif %}</td>
+<td class="cell-strong" data-label="Dokument">{{ item.name }}{% if item.is_confirm %} <span class="item-kind" title="Klient nie przesyła tu pliku - potwierdza, że to zrobił">bez pliku</span>{% endif %}{% if item.added_by_client %} <span class="item-kind item-kind--client" title="Tego nie było na liście - klient dodał to sam">dodane przez klienta</span>{% endif %}</td>
 <td data-label="Status"><span class="badge item-status-label {{ item.status|badge_class }}">{{ item.status_label }}</span><span class="cell-note item-rejection"{% if not item.rejection_reason %} hidden{% endif %}>{{ item.rejection_reason }}</span>{% if item.status == "nie_dotyczy" %}<span class="cell-note item-na-note">{% if item.not_applicable_reason %}„{{ item.not_applicable_reason }}”{% else %}Oznaczone przez Ciebie{% endif %}{% if item.not_applicable_accepted %} · zaakceptowane{% endif %}</span>{% endif %}</td>
 <td data-label="Pliki">
 <ul class="file-list">
@@ -177,8 +182,10 @@
 
 <div class="stack">
 <section class="card">
-<h2 class="card-title">Publiczny link</h2>
-<p><a href="{{ public_url }}"><code>{{ public_url }}</code></a></p>
+<h2 class="card-title">Link dla klienta</h2>
+<p class="text-muted">Klient otwiera go bez logowania - z maila albo z wiadomości od Ciebie.</p>
+<p><code class="link-code">{{ public_url }}</code></p>
+<a class="btn btn-secondary btn-block mb-5" href="{{ public_url }}" target="_blank" rel="noopener">Zobacz, co widzi klient</a>
 <form id="send-link-form" data-request-id="{{ request_obj.id }}" novalidate>
 <p class="mb-0">
 <label for="send-link-email">Wyślij link emailem</label>
@@ -191,13 +198,13 @@
 <section class="card">
 <h2 class="card-title">Przypomnienia</h2>
 {% if request_obj.reminders_enabled %}
-<p class="text-muted">Automatyczne: pierwsze po {{ request_obj.first_reminder_after_days }} dniach, potem co {{ request_obj.reminder_frequency_days }} dni, o {{ reminder_clock|time:"H:i" }} czasu odbiorcy ({{ recipient_timezone }}). Wysłano {{ automatic_sent }} z {{ request_obj.max_reminders }}.</p>
+<p class="text-muted">Automatyczne: pierwsze po {{ request_obj.first_reminder_after_days }} dniach, potem co {{ request_obj.reminder_frequency_days }} dni, o {{ reminder_clock|time:"H:i" }} czasu odbiorcy ({{ recipient_timezone }}). Wysłano {{ automatic_sent }} z {{ request_obj.max_reminders }}.{% if request_obj.deadline %} Do tego, jeśli {% if question %}klient nie odpowie{% else %}czegoś brakuje{% endif %}: 2 dni przed terminem i w dniu terminu - chyba że dzień wcześniej wyszło już inne przypomnienie.{% endif %}</p>
 {% if planned_reminders %}
 <p class="list-label">Zaplanowane</p>
 <ol class="schedule-list">
-{% for send_at in planned_reminders %}
+{% for planned in planned_reminders %}
 <li{% if forloop.first %} class="is-next"{% endif %}>
-<span class="schedule-list__date">{{ send_at|dt }}</span>
+<span class="schedule-list__when"><span class="schedule-list__date">{{ planned.at|dt }}</span><span class="schedule-list__kind">{% if planned.kind == "before_deadline" %}2 dni przed terminem{% elif planned.kind == "deadline_day" %}W dniu terminu{% elif planned.kind == "after_deadline" %}Po terminie{% else %}Przypomnienie{% endif %}</span></span>
 {% if forloop.first %}<span class="schedule-list__tag">Następne</span>{% endif %}
 </li>
 {% endfor %}
@@ -208,7 +215,7 @@
 <p class="schedule-empty">Wykorzystano limit automatycznych przypomnień.</p>
 {% endif %}
 {% else %}
-<p class="text-muted">Automatyczne przypomnienia są wyłączone. Możesz je włączyć w edycji przypomnienia.</p>
+<p class="text-muted">Automatyczne przypomnienia są wyłączone. Możesz je włączyć w edycji {% if question %}pytania{% else %}prośby{% endif %}.</p>
 {% endif %}
 {% if not request_obj.is_closed and not request_obj.awaiting_confirmation %}<button type="button" class="btn btn-secondary btn-block mt-5" id="send-reminder" data-request-id="{{ request_obj.id }}">Wyślij przypomnienie teraz</button>{% endif %}
 <p class="list-label mt-5">Wysłane</p>

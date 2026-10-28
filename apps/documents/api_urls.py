@@ -11,6 +11,12 @@ urlpatterns = [
         name="upload",
     ),
     path(
+        "public/<str:token>/items/<int:item_id>/pages/",
+        api.public_upload_pages,
+        name="upload-pages",
+    ),
+    path("public/<str:token>/extra/", api.public_add_extra, name="add-extra"),
+    path(
         "public/<str:token>/items/<int:item_id>/not-applicable/",
         api.public_not_applicable,
         name="public-not-applicable",

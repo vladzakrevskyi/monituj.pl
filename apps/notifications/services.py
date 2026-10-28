@@ -50,9 +50,7 @@ def _request_context(request, to_email):
         "deadline": request.deadline,
         "retention_days": request.retention_days,
         "link": absolute_url(f"/d/{request.public_token}/"),
-        "panel_link": owner_link(
-            request.created_by, reverse("requests:detail", args=[request.pk])
-        ),
+        "panel_link": owner_link(request.created_by, request.panel_url()),
         # Every request to this address, from any sender, on one page.
         "portal_link": recipient_portal_url(to_email) if to_recipient else "",
         "missing_items": list(

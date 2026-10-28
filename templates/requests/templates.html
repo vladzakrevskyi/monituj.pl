@@ -4,11 +4,11 @@
 {% block page_class %}page--narrow{% endblock %}
 
 {% block content %}
-<a class="back-link" href="{% url 'requests:list' %}" title="Wróć: Przypomnienia">&larr; Przypomnienia</a>
+<a class="back-link" href="{% url 'requests:list' %}" title="Wróć: Prośby">&larr; Prośby</a>
 <div class="page-header">
 <div>
 <h1>Szablony próśb</h1>
-<p class="page-header__sub">Lista dokumentów, termin i ustawienia gotowe do użycia jednym kliknięciem.</p>
+<p class="page-header__sub">Lista dokumentów, termin i ustawienia gotowe do użycia jednym kliknięciem. {% include "help/_hint.html" with slug="szablony" %}</p>
 </div>
 <div class="page-header__actions">
 {% if usage.at_limit %}<span class="text-muted">Limit szablonów wykorzystany</span>{% else %}<a class="btn btn-primary" href="{% url 'requests:template-create' %}">Nowy szablon</a>{% endif %}

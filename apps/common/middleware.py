@@ -13,7 +13,12 @@ logger = logging.getLogger("monituj")
 PRIVATE_PREFIXES = (
     "/panel/",
     "/klienci/",
+    "/prosby/",
     "/przypomnienia/",
+    "/pytania/",
+    "/zestawienie/",
+    "/kalendarz/",
+    "/zespol/",
     "/otrzymane/",
     "/logowanie/google/",
     "/rejestracja/google/",

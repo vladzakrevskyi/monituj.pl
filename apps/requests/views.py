@@ -1,3 +1,4 @@
+import re
 from urllib.parse import urlencode
 
 from django.contrib import messages
@@ -26,9 +27,10 @@ from apps.documents import archive
 from apps.documents.services import DocumentReviewService
 from apps.notifications import inbox
 from apps.reminders.schedule import recipient_zone, send_clock
-from apps.reminders.services import ReminderScheduleService
+from apps.reminders.services import ReminderScheduleService, ReminderService
 from apps.requests import (
     item_kinds,
+    overview,
     questions,
     received,
     recurring,
@@ -229,7 +231,7 @@ def request_create(request):
                     reminder_settings=form.request_settings(),
                     request=request,
                 )
-                messages.success(request, "Przypomnienie zostało utworzone.")
+                messages.success(request, "Prośba została wysłana.")
                 _save_template(request, form, item_names)
                 redirect_url = reverse("requests:detail", args=[request_obj.pk])
                 if is_ajax_request(request):
@@ -393,6 +395,10 @@ def request_detail(request, request_id):
         if found is not None and team.follow(request, found.created_by):
             return redirect(request.get_full_path())
         raise Http404 from None
+    # A question lives under /pytania/, a request under /prosby/.
+    if request.path != request_obj.panel_url():
+        query = request.META.get("QUERY_STRING")
+        return redirect(request_obj.panel_url() + (f"?{query}" if query else ""))
 
     # Whoever opens the request has seen what arrived.
     inbox.mark_read(request.account, request_obj)
@@ -412,6 +418,8 @@ def request_detail(request, request_id):
         if (entry.metadata or {}).get("zip"):
             entry.label_pl += " - w archiwum ZIP"
     status = compute_status(request_obj)
+    question_item = request_obj.question_item
+    opened = [e for e in history if e.event == AuditEvent.PUBLIC_LINK_ACCESSED]
     return render(
         request,
         "requests/detail.html",
@@ -454,6 +462,16 @@ def request_detail(request, request_id):
                 pk=request_obj.pk
             ).count(),
             "schedule": _schedule_of(request_obj),
+            # "Wysłane do ... - Zobacz, co widzi klient" until the client
+            # sends or answers something.
+            "waiting_for_first": not request_obj.awaiting_confirmation
+            and not request_obj.is_closed
+            and (
+                question_item.status == RequestItemStatus.BRAK
+                if question_item is not None
+                else request_obj.delivered_items == 0
+            ),
+            "opened_at": opened[0].created_at if opened else None,
         },
     )
 
@@ -506,7 +524,7 @@ def request_edit(request, request_id):
                 request=request,
             )
             messages.success(request, "Zmiany zostały zapisane.")
-            redirect_url = reverse("requests:detail", args=[request_obj.pk])
+            redirect_url = request_obj.panel_url()
             if is_ajax_request(request):
                 return success_response({"redirect_url": redirect_url})
             return redirect(redirect_url)
@@ -568,7 +586,7 @@ def request_close(request, request_id):
             else "Prośba została zamknięta. Przypomnienia nie będą wysyłane, a "
             "odbiorca nie może już przesyłać plików.",
         )
-    return redirect("requests:detail", request_id=request_obj.pk)
+    return redirect(request_obj.panel_url())
 
 
 def _deleted_message(removed, name=None):
@@ -596,7 +614,7 @@ def request_delete(request, request_id):
     request_obj = get_object_or_404(Request, pk=request_id, created_by=request.account)
     if request.POST.get("with_client") == "1" and not team.is_owner(request):
         messages.error(request, team.OWNER_ONLY_MESSAGE)
-        return redirect("requests:detail", request_id=request_obj.pk)
+        return redirect(request_obj.panel_url())
     name = request_obj.name
     question = request_obj.question_item is not None
     removed = deletion.delete_request(
@@ -825,3 +843,64 @@ def _schedule_of(request_obj):
         return None
     schedule.when = recurring.describe(schedule)
     return schedule
+
+
+# "2026-10" - a month of the Zestawienie (apps/requests/overview.py).
+MONTH_PARAM = re.compile(r"\d{4}-(0[1-9]|1[0-2])")
+
+
+@login_required
+@require_http_methods(["GET"])
+def overview_view(request):
+    """Zestawienie miesięczne: who sent everything, who still owes something."""
+    query = request.GET.get("q", "").strip()[:100]
+    only_missing = request.GET.get("braki") == "1"
+    data = overview.build(
+        request.account,
+        selected=request.GET.get("m"),
+        query=query,
+        only_missing=only_missing,
+    )
+    return render(
+        request,
+        "requests/overview.html",
+        {**data, "query": query, "only_missing": only_missing},
+    )
+
+
+@login_required
+@require_http_methods(["POST"])
+def overview_remind(request):
+    """ "Przypomnij wszystkim": one reminder to everyone who still owes
+    something from that month - the usual manual reminder, its hour's pause
+    and daily limit included."""
+    selected = request.POST.get("m", "")
+    if not MONTH_PARAM.fullmatch(selected):
+        return redirect("requests:overview")
+    sent = skipped = 0
+    for request_obj in overview.waiting_in(request.account, selected):
+        try:
+            ReminderService.send_manual(
+                request_obj, request.user, django_request=request
+            )
+        except ApplicationError:
+            skipped += 1
+        else:
+            sent += 1
+    if sent:
+        message = f"Wysłano przypomnienia: {sent}."
+        if skipped:
+            message += (
+                f" Pominięto: {skipped} - tym klientom przypomnienie wyszło w ciągu "
+                "ostatniej godziny albo osiągnięto dzienny limit wiadomości."
+            )
+        messages.success(request, message)
+    elif skipped:
+        messages.info(
+            request,
+            "Nikomu nie wysłano przypomnienia - wszyscy dostali je w ciągu ostatniej "
+            "godziny albo osiągnięto dzienny limit wiadomości.",
+        )
+    else:
+        messages.info(request, "W tym miesiącu nikt nie czeka na przypomnienie.")
+    return redirect(f"{reverse('requests:overview')}?{urlencode({'m': selected})}")

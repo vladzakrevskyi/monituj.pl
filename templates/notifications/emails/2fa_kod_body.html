@@ -1,0 +1,11 @@
+{% extends "notifications/emails/base.html" %}
+{% block preheader %}Kod działa {{ minutes }} minut.{% endblock %}
+{% block eyebrow %}Bezpieczeństwo konta{% endblock %}
+{% block title %}{% if purpose == "setup" %}Kod do włączenia weryfikacji{% elif purpose == "manage" %}Kod do zmiany ustawień{% else %}Kod do logowania{% endif %}{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Wpisz ten kod w Monituj:</p>
+<p style="margin:0 0 20px;font-size:32px;font-weight:700;letter-spacing:6px;color:#0b0b0c;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;">{{ code }}</p>
+<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#3f3f46;">Kod działa {{ minutes }} minut i tylko raz. Nikomu go nie podawaj - zespół Monituj nigdy o niego nie prosi.</p>
+{% if purpose == "login" %}{% include "notifications/emails/_notice.html" with text="Jeśli to nie Ty się logujesz, ktoś zna Twoje hasło - zmień je od razu przez „Nie pamiętasz hasła?”." tone="danger" %}{% else %}{% include "notifications/emails/_notice.html" with text="Jeśli to nie Ty zmieniasz ustawienia, ktoś zna Twoje hasło - zmień je od razu przez „Nie pamiętasz hasła?”." tone="danger" %}{% endif %}
+{% endblock %}
+{% block footer_note %}Otrzymujesz tę wiadomość, ponieważ dotyczy Twojego konta w Monituj.{% endblock %}

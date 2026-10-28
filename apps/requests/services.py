@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.core.paginator import Paginator
 from django.db import IntegrityError, models, transaction
 from django.db.models import Count, Q
+from django.urls import reverse
 from django.utils import timezone
 
 from apps.accounts.models import is_guest_account
@@ -17,6 +18,7 @@ from apps.common.exceptions import (
     RateLimitedAppError,
     ValidationAppError,
 )
+from apps.common.formatting import format_date
 from apps.common.security import generate_public_token, get_client_ip, hash_ip
 from apps.common.site import absolute_url
 from apps.notifications.models import EmailTemplate
@@ -69,7 +71,7 @@ NOT_DELIVERED_STATUSES = [
 
 
 class RequestStatus(models.TextChoices):
-    MISSING = "brak_dokumentow", "Brak dokumentów"
+    MISSING = "brak_dokumentow", "Nic nie przesłano"
     IN_PROGRESS = "w_trakcie", "W trakcie"
     COMPLETE = "kompletny", "Kompletny"
     OVERDUE = "po_terminie", "Po terminie"
@@ -566,13 +568,25 @@ class PublicAccessService:
         )
 
 
+# The panel's activity: what happened with clients and requests - not the
+# owner's own logins and settings.
+CLIENT_EVENTS = [AuditEvent.CLIENT_CREATED, AuditEvent.CLIENTS_IMPORTED]
+ACTIVITY_LENGTH = 10
+TO_DO_LENGTH = 8
+
+
+def _plural(n, one, few, many):
+    """1 dokument, 2 dokumenty, 5 dokumentów."""
+    if n == 1:
+        return one
+    if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14):
+        return few
+    return many
+
+
 class DashboardService:
     @staticmethod
     def for_owner(owner):
-        from django.contrib.contenttypes.models import ContentType
-
-        from apps.audit.models import AuditLog
-        from apps.audit.services import translate_event
         from apps.reminders.models import Reminder
 
         requests_qs = Request.objects.filter(created_by=owner)
@@ -591,24 +605,217 @@ class DashboardService:
 
         reminders_sent = Reminder.objects.filter(request_id__in=request_ids).count()
 
-        recent_activity = list(
-            AuditLog.objects.filter(
-                Q(actor=owner)
-                | Q(
-                    content_type=ContentType.objects.get_for_model(Request),
-                    object_id__in=request_ids,
-                )
-            )
-            .select_related("actor")
-            .order_by("-created_at")[:10]
-        )
-        for entry in recent_activity:
-            entry.label_pl = translate_event(entry.event)
-
         return {
             "active_requests": active_requests,
             "missing_documents": item_stats["missing"] or 0,
             "delivered_documents": item_stats["delivered"] or 0,
             "reminders_sent": reminders_sent,
-            "recent_activity": recent_activity,
+            "recent_activity": DashboardService.activity(owner),
+            "to_do": DashboardService.to_do(owner),
+            "first_steps": DashboardService.first_steps(owner),
         }
+
+    @staticmethod
+    def first_steps(owner):
+        """ "Pierwsze kroki" for a new account - None once all are done."""
+        from apps.documents.models import Document
+
+        has_client = Client.objects.filter(owner=owner).exists()
+        first = (
+            Request.objects.filter(created_by=owner, awaiting_confirmation=False)
+            .exclude(items__kind=RequestItemKind.QUESTION)
+            .order_by("created_at")
+            .first()
+        )
+        received = (
+            Document.objects.filter(request_item__request__created_by=owner).exists()
+            or RequestItem.objects.filter(
+                request__created_by=owner,
+                status__in=DELIVERED_STATUSES,
+            )
+            .exclude(kind=RequestItemKind.QUESTION)
+            .exists()
+        )
+        steps = [
+            {"done": has_client, "key": "client"},
+            {"done": first is not None, "key": "request"},
+            {"done": received, "key": "received"},
+        ]
+        if all(step["done"] for step in steps):
+            return None
+        return {
+            "steps": steps,
+            "done": sum(step["done"] for step in steps),
+            "public_url": (
+                absolute_url(f"/d/{first.public_token}/") if first is not None else ""
+            ),
+        }
+
+    @staticmethod
+    def to_do(owner):
+        """What waits for the owner, most urgent first: answers to read,
+        documents to accept, requests past their deadline."""
+        open_requests = Request.objects.filter(
+            created_by=owner, awaiting_confirmation=False, closed_at__isnull=True
+        )
+        entries = []
+        answers = (
+            RequestItem.objects.filter(
+                request__in=open_requests,
+                kind=RequestItemKind.QUESTION,
+                status=RequestItemStatus.DOSTARCZONY,
+            )
+            .select_related("request__client")
+            .order_by("-answered_at")
+        )
+        for item in answers[:TO_DO_LENGTH]:
+            entries.append(
+                {
+                    "kind": "answer",
+                    "label": "Odpowiedź na pytanie",
+                    "title": item.description or item.name,
+                    "meta": f"{item.request.client.name}: „{item.answer}”",
+                    "url": item.request.panel_url(),
+                }
+            )
+        review = (
+            RequestItem.objects.filter(request__in=open_requests)
+            .exclude(kind=RequestItemKind.QUESTION)
+            # The same rule as DocumentReviewService.to_review.
+            .filter(
+                Q(status=RequestItemStatus.DOSTARCZONY)
+                | Q(
+                    status=RequestItemStatus.NIE_DOTYCZY,
+                    not_applicable_accepted=False,
+                )
+            )
+            .values("request_id")
+            .annotate(count=Count("id"), last=models.Max("updated_at"))
+            .order_by("-last")
+        )
+        waiting = {row["request_id"]: row["count"] for row in review[:TO_DO_LENGTH]}
+        by_id = Request.objects.select_related("client").in_bulk(list(waiting))
+        for request_id, count in waiting.items():
+            request_obj = by_id[request_id]
+            entries.append(
+                {
+                    "kind": "review",
+                    "label": "Do sprawdzenia",
+                    "title": request_obj.name,
+                    "meta": f"{request_obj.client.name} · {count} "
+                    + _plural(
+                        count, "pozycja czeka", "pozycje czekają", "pozycji czeka"
+                    )
+                    + " na akceptację",
+                    "url": reverse("requests:detail", args=[request_id]),
+                }
+            )
+        overdue = (
+            in_progress(owner)
+            .filter(deadline__lt=timezone.now())
+            .select_related("client")
+            .order_by("deadline")
+        )
+        for request_obj in overdue[:TO_DO_LENGTH]:
+            missing = request_obj.total_items - request_obj.delivered_items
+            entries.append(
+                {
+                    "kind": "overdue",
+                    "label": "Po terminie",
+                    "title": request_obj.name,
+                    "meta": f"{request_obj.client.name} · termin minął "
+                    f"{format_date(request_obj.deadline)} · brakuje {missing}",
+                    "url": reverse("requests:detail", args=[request_obj.pk]),
+                }
+            )
+        return entries[:TO_DO_LENGTH]
+
+    @staticmethod
+    def activity(owner):
+        """The latest events on the owner's clients and requests - one line
+        for a burst of the same (the client opening the link three times)."""
+        from django.contrib.contenttypes.models import ContentType
+
+        from apps.audit.models import AuditLog
+        from apps.audit.services import translate_event
+        from apps.documents.models import Document
+
+        types = ContentType.objects.get_for_models(Request, RequestItem, Document)
+        requests_qs = Request.objects.filter(created_by=owner)
+        items_qs = RequestItem.objects.filter(request__created_by=owner)
+        documents_qs = Document.objects.filter(request_item__request__created_by=owner)
+        logs = (
+            AuditLog.objects.filter(
+                Q(
+                    content_type=types[Request],
+                    object_id__in=requests_qs.values("pk"),
+                )
+                | Q(
+                    content_type=types[RequestItem],
+                    object_id__in=items_qs.values("pk"),
+                )
+                | Q(
+                    content_type=types[Document],
+                    object_id__in=documents_qs.values("pk"),
+                )
+                | Q(actor=owner, event__in=CLIENT_EVENTS)
+            )
+            .select_related("actor")
+            .order_by("-created_at")[: ACTIVITY_LENGTH * 3]
+        )
+        logs = list(logs)
+        item_requests = dict(
+            items_qs.filter(
+                pk__in=[
+                    e.object_id
+                    for e in logs
+                    if e.content_type_id == types[RequestItem].pk
+                ]
+            ).values_list("pk", "request_id")
+        )
+        document_requests = dict(
+            documents_qs.filter(
+                pk__in=[
+                    e.object_id for e in logs if e.content_type_id == types[Document].pk
+                ]
+            ).values_list("pk", "request_item__request_id")
+        )
+
+        def request_of(entry):
+            if entry.content_type_id == types[Request].pk:
+                return entry.object_id
+            if entry.content_type_id == types[RequestItem].pk:
+                return item_requests.get(entry.object_id)
+            if entry.content_type_id == types[Document].pk:
+                return document_requests.get(entry.object_id)
+            return None
+
+        requests = requests_qs.select_related("client").in_bulk(
+            [r for r in map(request_of, logs) if r]
+        )
+        question_ids = set(
+            RequestItem.objects.filter(
+                request_id__in=list(requests), kind=RequestItemKind.QUESTION
+            ).values_list("request_id", flat=True)
+        )
+        shown, previous = [], None
+        for entry in logs:
+            request_id = request_of(entry)
+            if (entry.event, request_id) == previous:
+                continue
+            previous = (entry.event, request_id)
+            entry.request = requests.get(request_id)
+            entry.label_pl = translate_event(
+                entry.event, question=request_id in question_ids
+            )
+            if entry.request is not None:
+                entry.url = reverse(
+                    "requests:question-detail"
+                    if request_id in question_ids
+                    else "requests:detail",
+                    args=[request_id],
+                )
+            shown.append(entry)
+            if len(shown) == ACTIVITY_LENGTH:
+                break
+        return shown

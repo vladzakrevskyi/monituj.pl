@@ -35,5 +35,6 @@ urlpatterns = [
     path("", include("apps.consents.urls")),
     path("", include("apps.common.legal_urls")),
     path("", include("apps.common.pages_urls")),
+    path("", include("apps.help.urls")),
     path("", include("apps.demo.urls")),
 ]

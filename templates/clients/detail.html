@@ -13,7 +13,7 @@
 </div>
 <div class="page-header__actions">
 <a class="btn btn-secondary" href="{% url 'clients:edit' client.id %}">Edytuj</a>
-<a class="btn btn-secondary" href="{% url 'requests:create' %}?client={{ client.id }}">Nowe przypomnienie</a>
+<a class="btn btn-secondary" href="{% url 'requests:create' %}?client={{ client.id }}">Nowa prośba</a>
 <a class="btn btn-primary" href="{% url 'requests:question-create' %}?client={{ client.id }}">Zadaj pytanie</a>
 </div>
 </div>
@@ -39,14 +39,14 @@
 {% for entry in open.to_review %}
 <li class="open-item open-item--review">
 <span class="open-item__kind">Odpowiedź do sprawdzenia</span>
-<a class="open-item__title" href="{% url 'requests:detail' entry.request.pk %}">{{ entry.item.description|truncatechars:110 }}</a>
+<a class="open-item__title" href="{% url 'requests:question-detail' entry.request.pk %}">{{ entry.item.description|truncatechars:110 }}</a>
 <span class="open-item__meta">„{{ entry.item.answer|truncatechars:90 }}”</span>
 </li>
 {% endfor %}
 {% for entry in open.waiting %}
 <li class="open-item{% if entry.days >= 14 %} open-item--late{% endif %}">
 <span class="open-item__kind">Pytanie · {% if entry.days == 0 %}wysłane dziś{% else %}czeka {{ entry.days }} {% if entry.days == 1 %}dzień{% else %}dni{% endif %}{% endif %}</span>
-<a class="open-item__title" href="{% url 'requests:detail' entry.request.pk %}">{{ entry.item.description|truncatechars:110 }}</a>
+<a class="open-item__title" href="{% url 'requests:question-detail' entry.request.pk %}">{{ entry.item.description|truncatechars:110 }}</a>
 {% if entry.request.private_note %}<span class="open-item__note">{{ entry.request.private_note|truncatechars:110 }}</span>{% endif %}
 </li>
 {% endfor %}

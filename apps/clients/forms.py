@@ -39,8 +39,8 @@ class ClientFilterForm(forms.Form):
 
     STATUS_CHOICES = [
         ("", "Wszyscy"),
-        ("aktywny", "Aktywni"),
-        ("brak_dokumentow", "Brak dokumentów"),
+        ("aktywny", "W trakcie"),
+        ("brak_dokumentow", "Nic nie przesłali"),
         ("wszystko_dostarczone", "Komplet"),
         ("nieaktywny", "Nieaktywni"),
     ]

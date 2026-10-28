@@ -106,7 +106,8 @@ def test_planned_shows_them_and_interval_reminders_count_from_them(due_in_ten_da
     (_, before), (_, on_the_day) = deadline_dates(due_in_ten_days)
     planned = ReminderScheduleService.planned(due_in_ten_days, now=timezone.now())
 
-    assert before in planned and on_the_day in planned
+    assert {"at": before, "kind": "before_deadline"} in planned
+    assert {"at": on_the_day, "kind": "deadline_day"} in planned
     # After a deadline reminder, the next interval one waits its days.
     _send(due_in_ten_days, before + timedelta(minutes=5))
     deadline_reminder = Reminder.objects.get(kind=ReminderKind.DEADLINE)

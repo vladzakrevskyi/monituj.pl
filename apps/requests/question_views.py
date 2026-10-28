@@ -97,7 +97,7 @@ def question_create(request):
                 messages.success(
                     request, f"Pytanie wysłane do klienta {data['client'].name}."
                 )
-                return redirect("requests:detail", request_obj.pk)
+                return redirect("requests:question-detail", request_obj.pk)
     else:
         client = request.GET.get("client", "")
         form = QuestionForm(
@@ -133,4 +133,4 @@ def request_note(request, request_id):
         messages.success(request, "Notatka zapisana.")
     else:
         messages.error(request, form.errors["note"][0])
-    return redirect("requests:detail", request_obj.pk)
+    return redirect(request_obj.panel_url())

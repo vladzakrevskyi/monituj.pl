@@ -1,0 +1,64 @@
+{% extends "base/base.html" %}
+{% load static help_text %}
+
+{% block page_class %}page--flush{% endblock %}
+{% block extra_css %}{% include "help/_layout_css.html" %}{% endblock %}
+
+{% block content %}
+<section class="help-hero help-hero--small">
+<div class="container">
+{% include "help/_search.html" %}
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container help-article-layout">
+<article class="help-article">
+<nav class="breadcrumbs" aria-label="Ścieżka"><a href="{% url 'help:index' %}">Centrum pomocy</a><span aria-hidden="true">/</span><a href="{% url 'help:category' category.slug %}">{{ category.title }}</a></nav>
+<h1 class="help-article__title">{{ article.title }}</h1>
+<p class="help-article__summary">{{ article.summary|help_text }}</p>
+
+{% if article.steps %}
+<h2 class="help-article__label">Krok po kroku</h2>
+<ol class="help-steps">
+{% for step in article.steps %}<li><span class="help-steps__number" aria-hidden="true">{{ forloop.counter }}</span><p>{{ step|help_text }}</p></li>{% endfor %}
+</ol>
+{% endif %}
+
+{% if article.body %}
+<ul class="help-points">
+{% for point in article.body %}<li>{{ point|help_text }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+{% if article.tips %}
+<aside class="help-tips" aria-label="Dobrze wiedzieć">
+<p class="help-tips__title">Dobrze wiedzieć</p>
+<ul>{% for tip in article.tips %}<li>{{ tip|help_text }}</li>{% endfor %}</ul>
+</aside>
+{% endif %}
+
+{% if panel %}
+<p class="help-article__action"><a class="btn btn-primary" href="{{ panel.url }}">{% if category.audience == "sender" %}Otwórz w panelu: {% endif %}{{ panel.label }} &rarr;</a></p>
+{% endif %}
+
+{% if related %}
+<div class="help-related">
+<h2 class="help-article__label">Zobacz też</h2>
+<ul>{% for item in related %}<li><a href="{% url 'help:article' item.slug %}">{{ item.title }}</a></li>{% endfor %}</ul>
+</div>
+{% endif %}
+</article>
+
+<aside class="help-aside" aria-label="{{ category.title }}">
+<p class="help-aside__title"><a href="{% url 'help:category' category.slug %}">{{ category.title }}</a></p>
+<ul>
+{% for item in siblings %}<li>{% if item.slug == article.slug %}<span aria-current="page">{{ item.title }}</span>{% else %}<a href="{% url 'help:article' item.slug %}">{{ item.title }}</a>{% endif %}</li>{% endfor %}
+</ul>
+<a class="help-aside__back" href="{% url 'help:index' %}">&larr; Wszystkie tematy</a>
+</aside>
+</div>
+<div class="container">{% include "help/_contact.html" %}</div>
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/help_search.js' %}" defer></script>{% endblock %}

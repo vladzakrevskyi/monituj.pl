@@ -1,5 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.urls import reverse
 
 from apps.accounts.models import User
 from apps.clients.models import Client
@@ -80,6 +81,12 @@ class Request(TimeStampedModel):
     def is_closed(self) -> bool:
         return self.closed_at is not None
 
+    def panel_url(self):
+        """Its page in the panel: a question under Pytania, the rest under
+        Prośby."""
+        name = "requests:question-detail" if self.question_item else "requests:detail"
+        return reverse(name, args=[self.pk])
+
     @property
     def question_item(self):
         """The question, when this request is one (apps/requests/questions.py)."""
@@ -144,6 +151,9 @@ class RequestItem(TimeStampedModel):
     # Why it's "Nie dotyczy", and whether the sender agreed.
     not_applicable_reason = models.TextField(blank=True)
     not_applicable_accepted = models.BooleanField(default=False)
+    # "Dodaj inny dokument": something the client sent that wasn't on the list
+    # (apps/documents/services.py: ExtraDocumentService).
+    added_by_client = models.BooleanField(default=False)
 
     class Meta:
         indexes = [models.Index(fields=["request", "status"])]

@@ -16,7 +16,6 @@ def _page(template, extra=None):
     return view
 
 
-landing = _page("pages/landing.html")
 how_it_works = _page(
     "pages/how_it_works.html",
     lambda: {"max_upload_mb": MAX_UPLOAD_SIZE // (1024 * 1024)},
@@ -39,19 +38,31 @@ def _pricing_context():
         "trial_plan": plans.TRIAL_PLAN,
         "free_plan": plans.FREE,
         "vat_rate": plans.vat_rate(),
-        # For the time calculator (static/js/calculator.js): the cheapest
-        # plan that holds a request to every client at once.
-        "calculator_plans": [
-            {
-                "name": plan.name,
-                "limit": plan.active_requests,
-                "net": plan.monthly // 100,
-            }
-            for plan in (plans.FREE, *plans.PAID_PLANS)
-        ],
+        "calculator_plans": _calculator_plans(plans),
     }
 
 
+def _calculator_plans(plans):
+    """For the time calculator (static/js/calculator.js): the cheapest plan
+    that holds a request to every client at once."""
+    return [
+        {"name": plan.name, "limit": plan.active_requests, "net": plan.monthly // 100}
+        for plan in (plans.FREE, *plans.PAID_PLANS)
+    ]
+
+
+def _landing_context():
+    from apps.billing import plans
+
+    return {
+        "price_from": min(plan.monthly for plan in plans.PAID_PLANS) // 100,
+        "trial_days": plans.TRIAL_DAYS,
+        "trial_plan": plans.TRIAL_PLAN,
+        "calculator_plans": _calculator_plans(plans),
+    }
+
+
+landing = _page("pages/landing.html", _landing_context)
 pricing = _page("pages/pricing.html", _pricing_context)
 faq = _page("pages/faq.html")
 demo = _page("pages/demo.html")

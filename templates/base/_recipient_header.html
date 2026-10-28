@@ -1,0 +1,9 @@
+{% comment %}
+For the sender's client - on their link they have nothing to buy or sign up
+for, so no site menu: just whose tool this is.
+{% endcomment %}<header class="site-header site-header--recipient">
+<div class="site-header__inner">
+<span class="brand">{% include "base/_logo.html" %}</span>
+<a class="site-header__help" href="{% url 'help:category' 'dla-klientow' %}" target="_blank" rel="noopener"><span class="site-header__help-long">Potrzebujesz pomocy?</span><span class="site-header__help-short">Pomoc</span></a>
+</div>
+</header>

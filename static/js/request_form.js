@@ -9,6 +9,7 @@
   const $$ = (selector) => Array.from(form.querySelectorAll(selector));
   const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const dayMonth = new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "long" });
+  const monthName = new Intl.DateTimeFormat("pl-PL", { month: "long" });
 
   function readJson(id, fallback) {
     const element = document.getElementById(id);
@@ -330,6 +331,38 @@
     return "bez terminu";
   }
 
+  // A one-off request's deadline as a date (null without one).
+  function deadlineDate() {
+    const choice = deadlineChoice();
+    const today = new Date();
+    if (choice === "7" || choice === "14") {
+      today.setDate(today.getDate() + Number(choice));
+      return today;
+    }
+    if (choice === "day10") {
+      // As next_month_day(): this month's 10th if still ahead.
+      const tenth = new Date(today.getFullYear(), today.getMonth(), 10);
+      return tenth > today ? tenth : new Date(today.getFullYear(), today.getMonth() + 1, 10);
+    }
+    if (choice === "date") {
+      const value = $('input[name="deadline"]').value;
+      return value ? new Date(`${value}T12:00`) : null;
+    }
+    return null;
+  }
+
+  // {miesiąc} and {data} as the server fills them in a one-off request
+  // (RequestForm._name_tokens): the month before the deadline's - or today's.
+  function filledName(name) {
+    const base = deadlineDate() || new Date();
+    const month = new Date(base.getFullYear(), base.getMonth() - 1, 1);
+    const today = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return name
+      .replace(/\{miesi[aą]c\}/g, `${monthName.format(month).toLowerCase()} ${month.getFullYear()}`)
+      .replace(/\{data\}/g, `${pad(today.getDate())}.${pad(today.getMonth() + 1)}.${today.getFullYear()}`);
+  }
+
   // "do klienta: Anna Nowak", "do 3 klientów" - no declension needed.
   function whom() {
     const count = picked.size;
@@ -358,7 +391,7 @@
         `Będziemy wysyłać „${name}” ${whom()}, ${timingText()} (od 8:00)` +
         `${deadline ? ` - ${deadline}` : ""}.${first}`;
     } else {
-      summary.textContent = `Wyślemy „${name}” ${whom()}${deadline ? ` - ${deadline}` : ""}.`;
+      summary.textContent = `Wyślemy „${filledName(name)}” ${whom()}${deadline ? ` - ${deadline}` : ""}.`;
     }
     if (repeat.checked) {
       submit.textContent = `Zapisz i wysyłaj ${timingText().split(",")[0]}`;

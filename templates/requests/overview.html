@@ -1,0 +1,83 @@
+{% extends "base/app_base.html" %}
+{% load static %}
+
+{% block page_name %}Zestawienie miesięczne{% endblock %}
+{% block page_class %}page--wide{% endblock %}
+
+{% block content %}
+<div class="page-header">
+<div>
+<h1>Zestawienie miesięczne</h1>
+<p class="page-header__sub">Kto przysłał komplet, a komu czegoś brakuje - klient po kliencie, miesiąc po miesiącu. {% include "help/_hint.html" with slug="zestawienie" %}</p>
+</div>
+</div>
+
+{% if not has_requests %}
+<div class="card empty-state">
+<h2 class="card-title">Tu zobaczysz, kto jest na bieżąco</h2>
+<p class="text-muted">Gdy wyślesz klientom prośby o dokumenty, w tabeli pojawi się każdy klient i każdy miesiąc: komplet, ile brakuje, kto jest po terminie.</p>
+<a class="btn btn-primary" href="{% url 'requests:create' %}">Nowa prośba</a>
+</div>
+{% else %}
+
+<section class="card overview-summary" aria-labelledby="overview-month">
+<div class="overview-summary__text">
+<p class="overview-summary__eyebrow">Wysłane w miesiącu</p>
+<h2 class="overview-summary__month" id="overview-month">{{ summary.label|capfirst }}</h2>
+<p class="overview-summary__line"><strong>{{ summary.complete }} z {{ summary.clients }}</strong> klientów ma komplet{% if summary.waiting %} · <strong>{{ summary.waiting }}</strong> czeka{% endif %}{% if summary.overdue %} · <strong class="text-danger">{{ summary.overdue }}</strong> po terminie{% endif %}{% if summary.to_review %} · <strong>{{ summary.to_review }}</strong> do sprawdzenia{% endif %}</p>
+<progress class="progress-bar" max="{{ summary.clients|default:1 }}" value="{{ summary.complete }}" aria-hidden="true"></progress>
+</div>
+{% if summary.remindable %}
+<form method="post" action="{% url 'requests:overview-remind' %}" class="inline-form overview-summary__remind" data-confirm="Każdy klient, któremu czegoś brakuje w prośbach z tego miesiąca, dostanie teraz przypomnienie e-mailem ({{ summary.remindable }}). Pominiemy tych, którym przypomnienie wyszło w ciągu ostatniej godziny." data-confirm-title="Przypomnieć wszystkim?" data-confirm-label="Wyślij przypomnienia">
+{% csrf_token %}
+<input type="hidden" name="m" value="{{ selected }}">
+<button type="submit" class="btn btn-primary">Przypomnij wszystkim, którym czegoś brakuje ({{ summary.remindable }})</button>
+</form>
+{% endif %}
+</section>
+
+<form method="get" class="overview-filters" role="search">
+<input type="hidden" name="m" value="{{ selected }}">
+<label class="visually-hidden" for="overview-q">Szukaj klienta</label>
+<input type="search" id="overview-q" name="q" value="{{ query }}" placeholder="Szukaj klienta">
+<label class="overview-filters__check"><input type="checkbox" name="braki" value="1"{% if only_missing %} checked{% endif %}> Tylko klienci, którym czegoś brakuje ({{ summary.label }})</label>
+<button type="submit" class="btn btn-secondary">Pokaż</button>
+</form>
+
+<div class="card card--flush">
+<div class="table-wrap overview-wrap">
+<table class="table overview-table">
+<thead>
+<tr>
+<th scope="col">Klient</th>
+{% for month in months %}
+<th scope="col" class="overview-table__month{% if month.key == selected %} is-selected{% endif %}"><a href="?m={{ month.key }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}{% if only_missing %}&amp;braki=1{% endif %}" title="Wysłane w miesiącu: {{ month.label }}"{% if month.key == selected %} aria-current="true"{% endif %}>{{ month.label }}</a></th>
+{% endfor %}
+</tr>
+</thead>
+<tbody>
+{% for row in rows %}
+<tr>
+<th scope="row"><a class="link-plain" href="{% url 'clients:detail' row.client.id %}">{{ row.client.name }}</a></th>
+{% for cell in row.cells %}
+<td class="overview-table__cell{% if forloop.counter0 == selected_index %} is-selected{% endif %}" data-label="{{ cell.label }}">
+{% if cell.state %}
+<a class="overview-cell overview-cell--{{ cell.state }}" href="{{ cell.url }}" title="{% for r in cell.requests %}{{ r.name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+{% if cell.state == "komplet" %}Komplet{% elif cell.state == "zamknieta" %}Zamknięta{% elif cell.state == "nic" %}Nic nie przysłał{% else %}Brakuje {{ cell.missing }}{% endif %}
+{% if cell.state == "po_terminie" %}<span class="overview-cell__note">po terminie</span>{% endif %}
+{% if cell.to_review %}<span class="overview-cell__note">{{ cell.to_review }} do sprawdzenia</span>{% endif %}
+</a>
+{% else %}<span class="overview-cell overview-cell--none" aria-label="Brak prośby">-</span>{% endif %}
+</td>
+{% endfor %}
+</tr>
+{% empty %}
+<tr class="table-empty"><td colspan="{{ months|length|add:1 }}">{% if query or only_missing %}Brak klientów pasujących do filtrów.{% else %}Brak próśb w tych miesiącach.{% endif %}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+<p class="overview-legend text-muted">Miesiąc to miesiąc wysłania prośby. Kliknij komórkę, żeby otworzyć prośbę, albo nazwę miesiąca, żeby zobaczyć jego podsumowanie.</p>
+{% endif %}
+{% endblock %}

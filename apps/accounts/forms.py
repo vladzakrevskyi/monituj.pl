@@ -273,6 +273,26 @@ class TwoFactorPasswordForm(forms.Form):
             del self.fields["current_password"]
 
 
+class TwoFactorStartForm(TwoFactorPasswordForm):
+    """Turning it on: how the codes come, and the password."""
+
+    method = forms.ChoiceField(
+        label="Skąd brać kody",
+        choices=[
+            ("app", "Aplikacja w telefonie (zalecane)"),
+            ("email", "Kod na e-mail"),
+        ],
+        initial="app",
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
+    field_order = ["method", "current_password"]
+
+    def clean_method(self):
+        return self.cleaned_data.get("method") or "app"
+
+
 class TwoFactorManageForm(TwoFactorPasswordForm):
     """Turning it off and new backup codes: the password and a code."""
 

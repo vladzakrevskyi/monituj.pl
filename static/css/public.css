@@ -6,6 +6,35 @@
   margin-bottom: var(--space-5);
 }
 
+/* The sender's logo (apps/accounts/branding.py) */
+.public-head__logo {
+  display: block;
+  width: auto;
+  max-width: min(280px, 100%);
+  height: auto;
+  max-height: 56px;
+  margin-bottom: var(--space-4);
+}
+
+/* The sender looking at their own link: what the client sees */
+.sender-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-bg);
+  font-size: 14px;
+}
+
+.sender-preview p {
+  flex: 1 1 280px;
+  margin: 0;
+}
+
 .public-head h1 {
   margin-bottom: var(--space-3);
 }
@@ -476,4 +505,108 @@
 
 .public-done .made-with {
   margin-top: var(--space-2);
+}
+
+/* "Zrób zdjęcia stron": photos of pages, sent as one PDF */
+.pages-open {
+  display: block;
+  margin: var(--space-3) auto 0;
+  font-size: 14px;
+}
+
+.pages {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  text-align: left;
+}
+
+.pages__title {
+  margin: 0 0 var(--space-3);
+  font-weight: 700;
+}
+
+.pages__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.pages__page {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 112px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-subtle);
+}
+
+.pages__page img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pages__number {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  min-width: 22px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--color-black);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pages__remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(11, 11, 12, 0.75);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pages__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+/* "Dodaj inny dokument" */
+.extra-doc {
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+
+.extra-doc__hint {
+  margin: var(--space-2) 0 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.extra-doc__form {
+  margin-top: var(--space-4);
 }

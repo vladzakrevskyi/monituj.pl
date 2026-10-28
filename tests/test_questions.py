@@ -94,7 +94,9 @@ def test_form_sends_the_question(client, user, client_record):
 
     request_obj = user.requests.get()
     assert response.status_code == 302
-    assert response["Location"] == reverse("requests:detail", args=[request_obj.pk])
+    assert response["Location"] == reverse(
+        "requests:question-detail", args=[request_obj.pk]
+    )
     assert request_obj.deadline is not None
     assert request_obj.reminders_enabled
 
@@ -259,7 +261,7 @@ def test_the_conversation_keeps_every_message(client, user, asked):
         client.get(f"/d/{asked.public_token}/"),
         (
             client.force_login(user),
-            client.get(reverse("requests:detail", args=[asked.pk])),
+            client.get(reverse("requests:question-detail", args=[asked.pk])),
         )[1],
     ):
         text = _plain(page.content.decode())
@@ -277,7 +279,9 @@ def test_question_history_speaks_of_the_question(client, user, asked):
     DocumentReviewService.reject(item, "Czy faktura jest na firmę?")
     client.force_login(user)
 
-    page = _plain(page_text(client.get(reverse("requests:detail", args=[asked.pk]))))
+    page = _plain(
+        page_text(client.get(reverse("requests:question-detail", args=[asked.pk])))
+    )
 
     assert "Zadano pytanie" in page and "Dopytano klienta" in page
     assert "Utworzono prośbę" not in page and "Dokument odrzucony" not in page
@@ -290,7 +294,9 @@ def test_request_page_shows_question_note_and_answer(client, user, asked):
     client.force_login(user)
 
     page = _plain(
-        client.get(reverse("requests:detail", args=[asked.pk])).content.decode()
+        client.get(
+            reverse("requests:question-detail", args=[asked.pk])
+        ).content.decode()
     )
 
     assert "Za co była ta płatność?" in page
@@ -448,7 +454,9 @@ def test_questions_stay_out_of_the_requests_list_and_document_counts(
 def test_a_question_page_belongs_to_pytania(client, user, asked):
     client.force_login(user)
 
-    html = client.get(reverse("requests:detail", args=[asked.pk])).content.decode()
+    html = client.get(
+        reverse("requests:question-detail", args=[asked.pk])
+    ).content.decode()
 
     assert f'href="{reverse("requests:questions")}" title="Wróć: Pytania"' in html
     assert "Zapisz jako szablon" not in html

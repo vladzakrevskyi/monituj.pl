@@ -93,7 +93,9 @@ def deadlines(account, start, end):
                         "kind": "question",
                         "label": f"Pytanie: {item.name}",
                         "client": item.request.client.name,
-                        "url": reverse("requests:detail", args=[item.request_id]),
+                        "url": reverse(
+                            "requests:question-detail", args=[item.request_id]
+                        ),
                     },
                 )
             )

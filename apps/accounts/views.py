@@ -1,11 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 
-from apps.accounts import two_factor
+from apps.accounts import branding, two_factor
 from apps.accounts.forms import (
     AccountDeletionForm,
     EmailChangeForm,
@@ -20,10 +22,10 @@ from apps.accounts.forms import (
     TwoFactorConfirmForm,
     TwoFactorLoginForm,
     TwoFactorManageForm,
-    TwoFactorPasswordForm,
+    TwoFactorStartForm,
 )
 from apps.accounts.google_auth import GoogleAuthService, GoogleConnectGate
-from apps.accounts.models import is_guest_account
+from apps.accounts.models import AccountLogo, User, is_guest_account
 from apps.accounts.sender import paying_firm
 from apps.accounts.services import (
     AccountDeletionService,
@@ -54,6 +56,9 @@ DEMO_SETTINGS_MESSAGE = (
     "W wersji demo nie można zmieniać ustawień konta. Załóż własne konto, "
     "aby skonfigurować profil."
 )
+# The address a new account's confirmation link went to - for "Sprawdź
+# swoją skrzynkę" and its "Wyślij ponownie".
+VERIFY_SESSION_KEY = "verify_pending"
 
 
 @require_http_methods(["GET", "POST"])
@@ -62,13 +67,23 @@ def register(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             try:
-                RegistrationService.register(
+                started = timezone.now()
+                user = RegistrationService.register(
                     email=form.cleaned_data["email"],
                     password=form.cleaned_data["password"],
                     accept_terms=form.cleaned_data["accept_terms"],
                     accept_privacy_policy=form.cleaned_data["accept_privacy_policy"],
                     request=request,
                 )
+                # "Wyślij ponownie" only for an account made here and now -
+                # never for an unconfirmed one someone else registered.
+                created = bool(
+                    user.terms_accepted_at and user.terms_accepted_at >= started
+                )
+                request.session[VERIFY_SESSION_KEY] = {
+                    "email": user.email,
+                    "user": user.pk if created else None,
+                }
                 redirect_url = reverse("accounts:verification-sent")
                 if is_ajax_request(request):
                     return success_response(
@@ -100,17 +115,22 @@ def register(request):
     )
 
 
+@require_http_methods(["GET", "POST"])
 def verification_sent(request):
+    pending = request.session.get(VERIFY_SESSION_KEY) or {}
+    if request.method == "POST":
+        user = User.objects.filter(pk=pending.get("user")).first()
+        if user is not None and VerificationService.resend(user):
+            messages.success(request, f"Wysłaliśmy nowy link na {user.email}.")
+        elif user is not None and user.email_verified_at is None:
+            messages.error(
+                request, "Link wysłaliśmy przed chwilą - poczekaj kilka minut."
+            )
+        return redirect("accounts:verification-sent")
     return render(
         request,
-        "base/message.html",
-        {
-            "title": "Sprawdź swoją skrzynkę",
-            "message": (
-                "Wysłaliśmy wiadomość z linkiem na podany adres. Kliknij go, "
-                "aby dokończyć zakładanie konta."
-            ),
-        },
+        "accounts/verification_sent.html",
+        {"email": pending.get("email", ""), "can_resend": bool(pending.get("user"))},
     )
 
 
@@ -175,10 +195,22 @@ def two_factor_login(request):
     code). Only for someone the first step has just let through."""
     if request.user.is_authenticated:
         return redirect("accounts:panel")
-    if two_factor.pending_user(request) is None:
+    pending = two_factor.pending_user(request)
+    if pending is None:
         messages.info(request, two_factor.EXPIRED_MESSAGE)
         return redirect("accounts:login")
+    by_email = two_factor.method_of(pending) == "email"
+    if request.method == "POST" and request.POST.get("form_action") == "resend":
+        try:
+            two_factor.send_email_code(pending, "login")
+        except ApplicationError as exc:
+            messages.error(request, exc.message)
+        else:
+            messages.success(request, "Wysłaliśmy nowy kod. Poprzedni już nie działa.")
+        return redirect("accounts:two-factor-login")
     form = TwoFactorLoginForm(request.POST or None)
+    if by_email:
+        form.fields["code"].label = "Kod z e-maila"
     if request.method == "POST":
         if form.is_valid():
             try:
@@ -218,7 +250,15 @@ def two_factor_login(request):
                 return response
         if is_ajax_request(request):
             return ajax_form_error_response(form)
-    return render(request, "accounts/two_factor_login.html", {"form": form})
+    return render(
+        request,
+        "accounts/two_factor_login.html",
+        {
+            "form": form,
+            "by_email": by_email,
+            "masked_email": two_factor.masked_email(pending.email),
+        },
+    )
 
 
 @login_required
@@ -236,28 +276,41 @@ def two_factor_settings(request):
         return redirect("accounts:settings")
     has_password = user.has_usable_password()
     enabled = two_factor.is_enabled(user)
-    start_form = TwoFactorPasswordForm(require_password=has_password)
+    method = two_factor.method_of(user)
+    start_form = TwoFactorStartForm(require_password=has_password)
     confirm_form = TwoFactorConfirmForm()
     manage_form = TwoFactorManageForm(require_password=has_password)
+    if method == "email":
+        manage_form.fields["code"].label = "Kod z e-maila"
     action = request.POST.get("form_action") if request.method == "POST" else None
     try:
         if action == "start" and not enabled:
-            start_form = TwoFactorPasswordForm(
-                request.POST, require_password=has_password
-            )
+            start_form = TwoFactorStartForm(request.POST, require_password=has_password)
             if start_form.is_valid():
                 two_factor.check_password(
                     request, user, start_form.cleaned_data.get("current_password")
                 )
-                two_factor.start_setup(request, user)
+                two_factor.start_setup(request, user, start_form.cleaned_data["method"])
                 return redirect("accounts:two-factor")
+        elif action == "resend_setup" and not enabled:
+            two_factor.resend_setup_code(request, user)
+            messages.success(request, "Wysłaliśmy nowy kod. Poprzedni już nie działa.")
+            return redirect("accounts:two-factor")
+        elif action == "send_code" and enabled and method == "email":
+            two_factor.send_email_code(user, "manage")
+            messages.success(
+                request,
+                f"Wysłaliśmy kod na {two_factor.masked_email(user.email)}.",
+            )
+            return redirect("accounts:two-factor")
         elif action == "confirm" and not enabled:
             confirm_form = TwoFactorConfirmForm(request.POST)
             if confirm_form.is_valid():
                 codes = two_factor.confirm_setup(
                     request, user, confirm_form.cleaned_data["code"]
                 )
-                two_factor.keep_new_codes(request, codes)
+                if codes:
+                    two_factor.keep_new_codes(request, codes)
                 messages.success(request, "Weryfikacja dwuetapowa jest włączona.")
                 return redirect("accounts:two-factor")
         elif action == "cancel":
@@ -284,7 +337,12 @@ def two_factor_settings(request):
                 two_factor.forget_device(response)
                 return response
     except ApplicationError as exc:
-        if exc.code == "TWO_FACTOR_EXPIRED":
+        if exc.code in (
+            "TWO_FACTOR_EXPIRED",
+            "TWO_FACTOR_RESEND_WAIT",
+            "TWO_FACTOR_MAIL_LIMIT",
+            "NO_BACKUP_CODES",
+        ):
             messages.error(request, exc.message)
             return redirect("accounts:two-factor")
         form = {"start": start_form, "confirm": confirm_form}.get(action, manage_form)
@@ -301,6 +359,8 @@ def two_factor_settings(request):
 
     context = {
         "enabled": enabled,
+        "method": method,
+        "masked_email": two_factor.masked_email(user.email),
         "has_password": has_password,
         "start_form": start_form,
         "confirm_form": confirm_form,
@@ -310,9 +370,11 @@ def two_factor_settings(request):
     if enabled:
         context["remaining_codes"] = two_factor.remaining_backup_codes(user)
     else:
-        secret = two_factor.pending_setup(request, user)
-        if secret:
-            context["setup"] = two_factor.setup_details(user, secret)
+        setup = two_factor.pending_setup(request, user)
+        if setup and setup["m"] == "app":
+            context["setup"] = two_factor.setup_details(user, setup["s"])
+        elif setup:
+            context["setup_email"] = True
     return render(request, "accounts/two_factor.html", context)
 
 
@@ -452,6 +514,22 @@ def settings_view(request):
                 return redirect("accounts:settings")
             if ajax:
                 return ajax_form_error_response(profile_form)
+        elif action == "logo":
+            uploaded = request.FILES.get("logo")
+            if uploaded is None:
+                messages.error(request, "Wybierz plik z logo.")
+            else:
+                try:
+                    branding.save_logo(request.user, uploaded)
+                except ApplicationError as exc:
+                    messages.error(request, exc.message)
+                else:
+                    messages.success(request, "Logo zapisane.")
+            return redirect(reverse("accounts:settings") + "#logo")
+        elif action == "logo_remove":
+            branding.remove_logo(request.user)
+            messages.success(request, "Logo usunięte.")
+            return redirect(reverse("accounts:settings") + "#logo")
         elif action == "password":
             password_form = PasswordChangeForm(request.POST, auto_id="id_password_%s")
             if password_form.is_valid():
@@ -635,8 +713,11 @@ def settings_view(request):
             "has_password": has_password,
             "google_account": getattr(request.user, "google_account", None),
             "paying_firm": paying_firm(request.user),
+            "logo": branding.logo_of(request.user),
+            "logo_shown": branding.shown(request.user),
             "google_form": google_form,
             "two_factor_enabled": two_factor.is_enabled(request.user),
+            "two_factor_method": two_factor.method_of(request.user),
             "memberships": request.user.memberships.select_related("owner"),
         },
     )
@@ -815,3 +896,15 @@ def guest_link_request(request):
         "accounts/guest_link_request.html",
         {"sent": sent, "error": error, "email": email},
     )
+
+
+@require_http_methods(["GET"])
+def logo(request, key):
+    """An office's logo for its clients' pages and emails. The address
+    changes with every new logo, so it is cached for good."""
+    found = AccountLogo.objects.filter(key=key).only("image").first()
+    if found is None:
+        raise Http404
+    response = HttpResponse(bytes(found.image), content_type="image/png")
+    response["Cache-Control"] = "public, max-age=31536000, immutable"
+    return response

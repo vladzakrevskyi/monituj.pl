@@ -1,0 +1,10 @@
+{% comment %}
+The help search: answers appear while typing (static/js/help_search.js);
+without JavaScript the form opens the results page.
+{% endcomment %}<form class="help-search" action="{% url 'help:search' %}" method="get" role="search" data-help-search>
+<label class="visually-hidden" for="help-q">Szukaj w pomocy</label>
+<span class="help-search__icon" aria-hidden="true">{% include "pages/_icon.html" with icon="search" %}</span>
+<input class="help-search__input" id="help-q" type="search" name="q" value="{{ query|default:'' }}" placeholder="Wpisz pytanie, np. jak wysłać prośbę" autocomplete="off" maxlength="200" role="combobox" aria-expanded="false" aria-controls="help-suggestions" aria-autocomplete="list" data-help-input>
+<button class="btn btn-primary help-search__button" type="submit">Szukaj</button>
+<ul class="help-search__results" id="help-suggestions" role="listbox" aria-label="Podpowiedzi" hidden data-help-results></ul>
+</form>
