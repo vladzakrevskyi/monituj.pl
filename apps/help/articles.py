@@ -8,9 +8,16 @@ Keywords are the words people search with that the text itself may lack."""
 from dataclasses import dataclass, field
 
 from apps.billing.plans import BIURO, FREE, PRO, START, TRIAL_DAYS
+from apps.documents.images import MAX_PIXELS
 from apps.documents.validation import ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE
+from apps.requests.services import (
+    NEW_ACCOUNT_AGE,
+    NEW_ACCOUNT_RECIPIENTS,
+    OUTBOUND_PER_DAY_NEW_ACCOUNT,
+)
 
 _MAX_MB = MAX_UPLOAD_SIZE // (1024 * 1024)
+_MAX_MPX = MAX_PIXELS // 1_000_000
 _EXTENSIONS = ", ".join(sorted(ext.upper() for ext in ALLOWED_EXTENSIONS))
 
 
@@ -396,6 +403,32 @@ ARTICLES = [
         ],
         related=["haslo-odbiorcy", "bezpieczenstwo-odbiorcy"],
         keywords="hasło zabezpieczyć poufne ochrona dostęp",
+    ),
+    Article(
+        "czego-nie-prosic",
+        "prosby",
+        "Dlaczego nie mogę poprosić o PIN, BLIK albo hasło do banku",
+        "Takich danych biuro nigdy nie potrzebuje od klienta, a oszuści zawsze "
+        "o nie proszą. Dlatego prośby o nie blokujemy, dopóki konto nie ma "
+        "opłaconego planu.",
+        body=[
+            "Zablokowane są prośby o: kod PIN, kod BLIK, kod SMS, kod CVV, "
+            "numer karty płatniczej i hasło albo login do banku - w nazwie "
+            "prośby, opisie, liście dokumentów i pytaniu.",
+            "Zwykłe dokumenty przechodzą bez przeszkód: wyciąg z karty "
+            "kredytowej, token KSeF, hasło do programu księgowego.",
+            "Potrzebujesz dostępu do konta bankowego klienta? Klient może dać "
+            "Ci go w swoim banku jako pełnomocnictwo albo dostęp tylko do "
+            "odczytu - bez przekazywania hasła.",
+            "Z tego samego powodu nie przejdzie nazwa nadawcy przypominająca "
+            "bank, urząd albo Monituj - zobacz [[nazwa-dla-klientow]].",
+        ],
+        tips=[
+            "Uważasz, że to pomyłka? Napisz do nas - sprawdzimy to.",
+        ],
+        related=["nazwa-dla-klientow", "pierwszy-tydzien", "pierwsza-prosba"],
+        keywords="pin blik kod sms cvv numer karty hasło do banku login "
+        "zablokowane wyłudzenie nie mogę wysłać prośby oszustwo phishing",
     ),
     Article(
         "zmien-zamknij-usun",
@@ -955,6 +988,11 @@ ARTICLES = [
             "ich podrobić.",
             "Zapisz.",
         ],
+        tips=[
+            "Nazwy przypominające bank, urząd albo Monituj nie przejdą - także "
+            "zapisane z cyframi czy myślnikami. Tak chronimy Twoich klientów "
+            "przed oszustami. Zobacz [[czego-nie-prosic]].",
+        ],
         panel=("accounts:settings", "Ustawienia"),
         related=["logo", "co-widzi-klient", "klient-nie-dostal-maila"],
         keywords="nazwa firmy nadawca od kogo nip podpis jak się przedstawić",
@@ -1102,10 +1140,37 @@ ARTICLES = [
             f"Jeśli po okresie próbnym nie wybierzesz planu, konto przejdzie na "
             f"bezpłatny {FREE.name}. Nic nie zostanie pobrane, a dane zostają.",
             "Przed końcem okresu próbnego wyślemy Ci przypomnienie.",
+            "W pierwszym tygodniu, zanim wybierzesz płatny plan, obowiązują "
+            "mniejsze limity wysyłki. Zobacz [[pierwszy-tydzien]].",
         ],
         panel=("billing:plan", "Plan i płatności"),
-        related=["plany-i-limity", "zaplac-faktura"],
+        related=["plany-i-limity", "pierwszy-tydzien", "zaplac-faktura"],
         keywords="okres próbny trial za darmo 30 dni test darmowy",
+    ),
+    Article(
+        "pierwszy-tydzien",
+        "plan",
+        "Limity w pierwszym tygodniu",
+        f"Przez pierwsze {NEW_ACCOUNT_AGE.days} dni, dopóki nie opłacisz "
+        f"planu, wyślesz do {OUTBOUND_PER_DAY_NEW_ACCOUNT} wiadomości dziennie "
+        f"i prośby do {NEW_ACCOUNT_RECIPIENTS} różnych osób. Po opłaceniu "
+        "planu te limity od razu znikają.",
+        body=[
+            "Wiadomości to zaproszenia do prośby, linki wysłane ręcznie i "
+            "przypomnienia wysłane przyciskiem. Automatyczne przypomnienia "
+            "do klientów, którym już wysłałeś prośbę, wychodzą normalnie.",
+            f"Do tych samych {NEW_ACCOUNT_RECIPIENTS} osób możesz wysyłać "
+            "kolejne prośby bez ograniczeń - liczą się tylko nowe adresy.",
+            "Dlaczego? Oszuści zakładają darmowe konta, żeby rozsyłać "
+            "fałszywe prośby. Te limity ich zatrzymują, a biuru na start "
+            "zwykle wystarczają.",
+            f"Po {NEW_ACCOUNT_AGE.days} dniach limity same rosną. Jeśli "
+            "potrzebujesz więcej od razu, opłać plan albo napisz do nas.",
+        ],
+        panel=("billing:plan", "Plan i płatności"),
+        related=["okres-probny", "limit-planu", "prosba-do-wielu"],
+        keywords="limit maili wiadomości dziennie odbiorców nowe konto "
+        "pierwszy tydzień nie mogę wysłać zablokowane 20 okres próbny",
     ),
     Article(
         "zaplac-faktura",
@@ -1219,19 +1284,42 @@ ARTICLES = [
         "plik-sie-nie-przesyla",
         "problemy",
         "Plik się nie przesyła",
-        f"Przyjmujemy pliki {_EXTENSIONS} do {_MAX_MB} MB każdy. Inny format "
-        "albo za duży plik się nie prześle.",
+        f"Przyjmujemy pliki {_EXTENSIONS} do {_MAX_MB} MB każdy. Każdy plik "
+        "sprawdza też skaner antywirusowy. Pod polem pojawia się komunikat, "
+        "co poszło nie tak - poniżej wyjaśniamy, co zrobić.",
         steps=[
-            "Sprawdź, czy plik nie jest większy niż " + f"{_MAX_MB} MB.",
+            "Sprawdź, czy plik nie jest większy niż " + f"{_MAX_MB} MB. Zdjęcia "
+            "większe niż to zmniejszamy same jeszcze przed wysłaniem.",
             "Sprawdź format. Plik ZIP albo RAR rozpakuj i prześlij pliki osobno.",
             "Zdjęcia z telefonu są w porządku, także z iPhone'a (HEIC).",
             "Sprawdź połączenie z internetem i spróbuj jeszcze raz.",
+        ],
+        body=[
+            "**Plik został zablokowany przez skaner antywirusowy** - w pliku "
+            "jest wirus albo coś, co go przypomina. Sprawdź komputer programem "
+            "antywirusowym. Jeśli dokument jest w porządku, zapisz go "
+            "ponownie (np. jako PDF) i wyślij jeszcze raz.",
+            "**Plik zawiera makra** - arkusz albo dokument Worda z makrami. "
+            "Makra to najczęstszy sposób, w jaki wirusy trafiają do biur, więc "
+            "takich plików nie przyjmujemy. W Excelu wybierz **Plik → Zapisz "
+            "jako** i typ **Skoroszyt programu Excel (.xlsx)** albo **PDF**; w "
+            "Wordzie - **Dokument programu Word (.docx)** albo **PDF**.",
+            "**Plik jest uszkodzony albo nie jest dokumentem Office** - plik "
+            "ma końcówkę .docx lub .xlsx, ale w środku jest coś innego. Otwórz "
+            "go i zapisz ponownie albo wyślij jako PDF.",
+            "**Nie możemy teraz sprawdzić pliku** - skaner chwilowo nie "
+            "odpowiada. Nic nie musisz robić - spróbuj ponownie za kilka minut.",
+            f"**Zdjęcie ma zbyt dużą rozdzielczość** - zdjęcie PNG albo z "
+            f"iPhone'a ma ponad {_MAX_MPX} megapikseli. Zrób zrzut ekranu albo "
+            "zapisz zdjęcie jako JPG i prześlij ponownie.",
         ],
         tips=[
             "Prośba zamknięta przez nadawcę nie przyjmuje już plików.",
         ],
         related=["z-telefonu", "jak-przeslac-dokumenty"],
-        keywords="nie da się przesłać błąd uploadu za duży plik format zip pdf rozmiar",
+        keywords="nie da się przesłać błąd uploadu za duży plik format zip pdf "
+        "rozmiar wirus antywirus zablokowany makra makro xlsm uszkodzony "
+        "rozdzielczość skaner",
     ),
     Article(
         "limit-planu",
@@ -1244,8 +1332,13 @@ ARTICLES = [
             "Zamknij prośby, na które już nie czekasz - zwalniają miejsce.",
             "Albo wybierz większy plan w **Planie i płatnościach**.",
         ],
+        tips=[
+            "Konto ma mniej niż tydzień i komunikat mówi o liczbie odbiorców "
+            "albo wiadomości? Zobacz [[pierwszy-tydzien]].",
+            "Komunikat mówi o „próbie wyłudzenia”? Zobacz [[czego-nie-prosic]].",
+        ],
         panel=("billing:plan", "Plan i płatności"),
-        related=["plany-i-limity", "zmien-zamknij-usun"],
+        related=["plany-i-limity", "pierwszy-tydzien", "zmien-zamknij-usun"],
         keywords="limit nie mogę wysłać zablokowane brak miejsca przekroczony",
     ),
     # --- Dla klientów --------------------------------------------------------
@@ -1486,6 +1579,8 @@ ARTICLES = [
             "Każda prośba ma unikalny, trudny do odgadnięcia link. Nadawca może "
             "go dodatkowo zabezpieczyć hasłem.",
             "Pliki są szyfrowane na dysku, a połączenie jest szyfrowane.",
+            "Każdy przesłany plik sprawdza skaner antywirusowy, zanim trafi "
+            "do nadawcy.",
             "Administratorem Twoich danych jest nadawca prośby. Monituj "
             "przechowuje je tylko w jego imieniu.",
             "Przed usunięciem plików dostaniesz wiadomość.",
@@ -1493,10 +1588,47 @@ ARTICLES = [
         tips=[
             "Nie przekazuj linku do prośby osobom, które nie powinny widzieć "
             "Twoich dokumentów.",
+            "Prośba wydaje Ci się podejrzana? Zobacz [[podejrzana-prosba]].",
         ],
-        related=["haslo-odbiorcy", "nie-widze-plikow"],
+        related=["podejrzana-prosba", "haslo-odbiorcy", "nie-widze-plikow"],
         keywords="bezpieczeństwo bezpieczne rodo dane osobowe szyfrowanie "
-        "kto widzi oszustwo",
+        "kto widzi oszustwo antywirus",
+    ),
+    Article(
+        "podejrzana-prosba",
+        "dla-klientow",
+        "Prośba wydaje się podejrzana. Jak to sprawdzić i zgłosić?",
+        "Sprawdź, od kogo jest prośba. Jeśli ktoś się pod kogoś podszywa albo "
+        "prosi o hasła czy kody, kliknij **Zgłoś nadużycie** na dole maila "
+        "albo strony prośby.",
+        body=[
+            "W mailu i na stronie prośby zawsze widać nazwę nadawcy i jego "
+            "adres e-mail („Od: …”). Prawdziwe biuro pisze ze swojego adresu - "
+            "nie z przypadkowej skrzynki.",
+            "Uważaj, gdy prośba: przychodzi od kogoś, kogo nie znasz; dotyczy "
+            "„weryfikacji konta” albo „blokady”; pogania i straszy; prosi o "
+            "hasło, kod PIN, BLIK, SMS albo numer karty. Żadne biuro "
+            "rachunkowe nie potrzebuje takich danych.",
+            "Monituj nigdy nie prosi o hasła ani kody. Nie musisz zakładać konta "
+            "ani instalować programów, żeby przesłać dokumenty.",
+        ],
+        steps=[
+            "Kliknij **Zgłoś nadużycie** na dole maila z prośbą albo na dole "
+            "strony prośby.",
+            "Wybierz, co jest nie tak, i jeśli chcesz, dopisz kilka słów.",
+            "Kliknij **Wyślij zgłoszenie**. Sprawdzimy nadawcę i zablokujemy "
+            "konto, jeśli to oszustwo.",
+        ],
+        tips=[
+            "Do czasu wyjaśnienia nie przesyłaj tej osobie dokumentów.",
+            "Podałeś już hasło, kod albo dane karty? Od razu zadzwoń do "
+            "swojego banku i zmień hasło.",
+            "Znasz nadawcę, ale coś się nie zgadza? Zadzwoń do niego na znany "
+            "Ci numer i zapytaj, czy to on wysłał prośbę.",
+        ],
+        related=["bezpieczenstwo-odbiorcy", "jak-przeslac-dokumenty"],
+        keywords="oszustwo podejrzana prośba phishing wyłudzenie fałszywy mail "
+        "zgłoś nadużycie spam bank urząd blik pin hasło nie znam nadawcy",
     ),
 ]
 
