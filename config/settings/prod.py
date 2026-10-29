@@ -5,9 +5,15 @@ from .base import *
 # Documents are never stored unencrypted in production.
 if not DOCUMENTS_ENCRYPTION_KEY:  # noqa: F405
     raise ImproperlyConfigured(
-        "Set DOCUMENTS_ENCRYPTION_KEY - generate one with: python3 -c \"import "
-        "os,base64;print(base64.urlsafe_b64encode(os.urandom(32)).decode())\" "
+        'Set DOCUMENTS_ENCRYPTION_KEY - generate one with: python3 -c "import '
+        'os,base64;print(base64.urlsafe_b64encode(os.urandom(32)).decode())" '
         "(README: 'Szyfrowanie dokumentów')."
+    )
+# Nor taken in without an antivirus check.
+if not CLAMAV_HOST:  # noqa: F405
+    raise ImproperlyConfigured(
+        "Set CLAMAV_HOST - the antivirus scanner (docker-compose.prod.yml sets "
+        "it to the clamav container; README: 'Skaner antywirusowy')."
     )
 
 DEBUG = False

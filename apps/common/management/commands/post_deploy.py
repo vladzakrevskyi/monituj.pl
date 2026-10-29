@@ -8,8 +8,9 @@ in line with the new code, then reports what the server runs on.
 - the legal documents' wording in force, into the archive;
 - paid Stripe invoices without a VAT invoice (a webhook lost while the
   site was restarting), queued for inFakt;
-- a report: modes of Stripe / inFakt / GUS, maintenance mode, missing
-  operator details, stuck invoices and emails.
+- a report: modes of Stripe / inFakt / GUS, whether the antivirus scanner
+  answers, maintenance mode, missing operator details, stuck invoices and
+  emails.
 
 Never fails the deploy: a problem here is printed as a warning - the site
 itself is already up.
@@ -30,6 +31,7 @@ from apps.consents import announcements
 from apps.consents.models import LegalAnnouncement
 from apps.consents.versions import archive_all
 from apps.consents.versions import in_force as wording_in_force
+from apps.documents import antivirus
 
 
 class Command(BaseCommand):
@@ -109,6 +111,18 @@ class Command(BaseCommand):
             + (" · KSeF" if settings.INFAKT_SEND_TO_KSEF else "")
         )
         self.stdout.write(f"  GUS:         {settings.GUS_MODE}")
+        if not antivirus.enabled():
+            self.stdout.write("  Antywirus:   wyłączony (brak CLAMAV_HOST)")
+        elif antivirus.ping():
+            self.stdout.write("  Antywirus:   działa")
+        else:
+            self.stdout.write("  Antywirus:   NIE ODPOWIADA")
+            warn(
+                "Skaner antywirusowy nie odpowiada - klienci nie mogą teraz "
+                "przesyłać plików. Przy pierwszym uruchomieniu pobiera bazy "
+                "(kilka minut): docker compose -f docker-compose.prod.yml "
+                "logs -f clamav."
+            )
         announced = LegalAnnouncement.objects.filter(
             announced=announcements.announced_key()
         ).exists()

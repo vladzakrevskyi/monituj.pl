@@ -16,6 +16,7 @@ urlpatterns = [
         public_views.recipient_files_confirm,
         name="recipient-files-confirm",
     ),
+    path("d/<str:token>/zglos/", public_views.report_abuse, name="report-abuse"),
     path(
         "wyslij-prosbe/", public_views.guest_request_create, name="guest-request-create"
     ),

@@ -513,7 +513,7 @@ def request_edit(request, request_id):
         raise Http404 from None
 
     if request.method == "POST":
-        form = RequestEditForm(request.POST)
+        form = RequestEditForm(request.POST, owner=request.account)
         if form.is_valid():
             RequestService.update(
                 request_obj,

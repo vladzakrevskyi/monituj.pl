@@ -51,6 +51,13 @@ def _documents_encrypted(settings):
 
 
 @pytest.fixture(autouse=True)
+def _no_antivirus(settings):
+    """No scanner unless a test starts one (tests/test_antivirus.py),
+    whatever the local .env says."""
+    settings.CLAMAV_HOST = ""
+
+
+@pytest.fixture(autouse=True)
 def _no_error_emails(settings):
     """Errors logged on purpose in tests don't email anyone (see
     tests/test_error_mail.py for the emails themselves)."""

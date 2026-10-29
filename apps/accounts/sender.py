@@ -61,6 +61,41 @@ DECEPTIVE = [
     r"monituj\w*",
 ]
 _DECEPTIVE_RE = re.compile(r"\b(" + "|".join(DECEPTIVE) + r")\b")
+# Within one word, with digits or signs in between - "mBank24", "m-bank",
+# "PKO.BP": long enough to never be a piece of an ordinary firm name.
+DECEPTIVE_JOINED = [
+    "urzadskarbow",
+    "skarbowka",
+    "administracjaskarbow",
+    "ubezpieczenspolecznych",
+    "ministerstw",
+    "policja",
+    "prokuratur",
+    "komornik",
+    "mbank",
+    "pkobp",
+    "pekao",
+    "santander",
+    "millennium",
+    "aliorbank",
+    "ingbank",
+    "revolut",
+    "monituj",
+]
+
+# Letters that look Latin but aren't (Cyrillic, Greek), and digits or signs
+# standing in for letters: "Urz4d", "РКО" in Cyrillic, "rnBank" for "mBank".
+_LOOKALIKES = str.maketrans(
+    {
+        "а": "a", "в": "b", "е": "e", "к": "k", "м": "m", "н": "h", "о": "o",
+        "р": "p", "с": "c", "т": "t", "у": "y", "х": "x", "і": "i", "ј": "j",
+        "ѕ": "s", "ԁ": "d", "ɡ": "g", "ո": "n",
+        "α": "a", "β": "b", "ε": "e", "ι": "i", "κ": "k", "ν": "v", "ο": "o",
+        "ρ": "p", "τ": "t", "υ": "u", "χ": "x",
+        "0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a",
+        "$": "s", "|": "l",
+    }
+)  # fmt: skip
 
 
 def _plain(value):
@@ -70,8 +105,24 @@ def _plain(value):
     return "".join(ch for ch in decomposed if not unicodedata.combining(ch)).lower()
 
 
+def spellings(text):
+    """The ways a name may be read: as typed, with look-alike letters and
+    digits as the letters they mimic, and the same with "rn" read as "m"."""
+    plain = _plain(text or "")
+    mimicked = plain.translate(_LOOKALIKES)
+    return dict.fromkeys([plain, mimicked, mimicked.replace("rn", "m")])
+
+
 def is_deceptive(name):
-    return bool(_DECEPTIVE_RE.search(_plain(name or "")))
+    for spelling in spellings(name):
+        if _DECEPTIVE_RE.search(spelling):
+            return True
+        # Within a word only: "Adam Bankowski" is not "mbank".
+        for token in spelling.split():
+            joined = re.sub(r"[^a-z]+", "", token)
+            if any(word in joined for word in DECEPTIVE_JOINED):
+                return True
+    return False
 
 
 def validate_sender_name(name):

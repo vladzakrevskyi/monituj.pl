@@ -40,6 +40,7 @@ def _base_context():
 def _request_context(request, to_email):
     """Everything a request-related email may show: who is asking, for what,
     by when, what is still missing and where to upload or review it."""
+    from apps.requests.abuse import report_url
     from apps.requests.links import owner_link, recipient_portal_url
 
     to_recipient = to_email.lower() == request.client.email.lower()
@@ -53,6 +54,8 @@ def _request_context(request, to_email):
         "panel_link": owner_link(request.created_by, request.panel_url()),
         # Every request to this address, from any sender, on one page.
         "portal_link": recipient_portal_url(to_email) if to_recipient else "",
+        # "Zgłoś nadużycie" in the footer (apps/requests/abuse.py).
+        "report_link": report_url(request) if to_recipient else "",
         "missing_items": list(
             request.items.filter(status__in=NOT_DELIVERED)
             .order_by("id")

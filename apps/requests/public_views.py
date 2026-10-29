@@ -20,7 +20,11 @@ from apps.common.responses import (
 )
 from apps.documents.services import GuestUploadContext
 from apps.requests import questions, received, recipient_files
-from apps.requests.forms import PublicPasswordForm, PublicRequestForm
+from apps.requests.forms import (
+    AbuseReportForm,
+    PublicPasswordForm,
+    PublicRequestForm,
+)
 from apps.requests.guest import GuestRequestService
 from apps.requests.links import remember_recipient_timezone
 from apps.requests.models import RecipientAccess
@@ -73,6 +77,8 @@ def public_request_detail(request, token):
             {
                 "form": form,
                 "sender_logo": sender_context(request_obj.created_by)["sender_logo"],
+                # The footer's "Zgłoś nadużycie".
+                "public_token": token,
             },
         )
 
@@ -191,6 +197,33 @@ def recipient_files_confirm(request, token, signed):
         )
     messages.success(request, "Gotowe - widzisz teraz wszystkie swoje pliki.")
     return redirect("public:request-detail", token=token)
+
+
+@require_http_methods(["GET", "POST"])
+def report_abuse(request, token):
+    """ "Zgłoś nadużycie" - by the link alone, past any request password:
+    whoever got the email may report it without opening the request."""
+    from apps.requests import abuse
+
+    request_obj = _open_request(request, token)
+    form = AbuseReportForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            abuse.report(
+                request_obj,
+                form.cleaned_data["reason"],
+                form.cleaned_data["details"],
+                request,
+            )
+        except ApplicationError as exc:
+            form.add_error(None, exc.message)
+        else:
+            return render(request, "public/report_abuse_sent.html")
+    return render(
+        request,
+        "public/report_abuse.html",
+        {"form": form, "sender": sender_context(request_obj.created_by)},
+    )
 
 
 SENDER_SESSION_KEY = "guest_request_sender"

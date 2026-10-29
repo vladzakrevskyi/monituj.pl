@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from apps.requests.models import (
+    AbuseReport,
     AnonymousRequestThrottle,
     PasswordProtectedAccess,
     Request,
@@ -39,3 +40,20 @@ class AnonymousRequestThrottleAdmin(admin.ModelAdmin):
     list_display = ["ip_hash", "throttle_date", "created_at"]
     list_filter = ["throttle_date"]
     readonly_fields = ["ip_hash", "throttle_date"]
+
+
+@admin.register(AbuseReport)
+class AbuseReportAdmin(admin.ModelAdmin):
+    """Recipients' "Zgłoś nadużycie" - each one was mailed as an alarm too."""
+
+    list_display = ["created_at", "sender_email", "reason", "handled"]
+    list_filter = ["handled", "reason"]
+    search_fields = ["sender_email", "recipient_email"]
+    readonly_fields = [
+        "request",
+        "sender_email",
+        "recipient_email",
+        "reason",
+        "details",
+        "created_at",
+    ]

@@ -19,3 +19,10 @@ def send_recurring_requests():
     from apps.requests.recurring import run_due
 
     return run_due()
+
+
+@shared_task
+def delete_old_abuse_reports():
+    from apps.requests import abuse
+
+    return abuse.delete_old()

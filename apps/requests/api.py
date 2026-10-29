@@ -96,7 +96,7 @@ def request_detail(request, request_id):
 
     if request.method == "PATCH":
         data = _parse_json_body(request)
-        form = RequestEditForm(data)
+        form = RequestEditForm(data, owner=request.account)
         if not form.is_valid():
             raise ValidationAppError(_first_form_error(form))
 

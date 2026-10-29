@@ -21,4 +21,4 @@
 {% if confirm %}{% include "notifications/emails/_button.html" with url=link label="Otwórz i potwierdź" %}{% elif needed %}{% include "notifications/emails/_button.html" with url=link label="Prześlij dokument" %}{% else %}{% include "notifications/emails/_button.html" with url=link label="Prześlij poprawiony dokument" %}{% endif %}
 {% include "notifications/emails/_portal.html" %}
 {% endif %}{% endblock %}
-{% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% endblock %}
+{% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% if report_link %} Podejrzana wiadomość? <a href="{{ report_link }}" style="color:#62636d;text-decoration:underline;">Zgłoś nadużycie</a>.{% endif %}{% endblock %}

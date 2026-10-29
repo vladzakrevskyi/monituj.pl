@@ -47,9 +47,17 @@ def _deliver(subject, body):
     ).send(fail_silently=False)
 
 
-def alert(subject, lines, key=None, quiet=QUIET):
+ADVICE = (
+    "Jeśli to nie Ty ani nikt z zespołu - potraktuj to jak włamanie: "
+    "zmień hasła, sprawdź raport bezpieczeństwa i logi serwera "
+    "(README, „Monitoring bezpieczeństwa”)."
+)
+
+
+def alert(subject, lines, key=None, quiet=QUIET, advice=ADVICE):
     """Sends the alarm unless the same one (key) went out within `quiet`.
-    -> whether it was sent."""
+    `advice` closes the message (an alarm that isn't about a sign-in has
+    its own advice in its lines). -> whether it was sent."""
     if not enabled():
         return False
     try:
@@ -62,10 +70,7 @@ def alert(subject, lines, key=None, quiet=QUIET):
                 f"Czas: {timezone.localtime():%Y-%m-%d %H:%M:%S} "
                 f"({settings.TIME_ZONE})",
                 *lines,
-                "",
-                "Jeśli to nie Ty ani nikt z zespołu - potraktuj to jak włamanie: "
-                "zmień hasła, sprawdź raport bezpieczeństwa i logi serwera "
-                "(README, „Monitoring bezpieczeństwa”).",
+                *(["", advice] if advice else []),
             ]
         )
         _deliver(subject, body)

@@ -610,3 +610,23 @@
 .extra-doc__form {
   margin-top: var(--space-4);
 }
+
+/* "Zgłoś nadużycie": whole sentences to choose from, one under another. */
+.option-row--stacked {
+  flex-direction: column;
+  margin-bottom: var(--space-2);
+}
+
+.option-row--stacked .option-chip {
+  justify-content: flex-start;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  line-height: 1.4;
+}
+
+.report-abuse__note {
+  margin: var(--space-5) 0 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}

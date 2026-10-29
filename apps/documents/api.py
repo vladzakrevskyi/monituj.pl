@@ -132,7 +132,7 @@ def public_upload_pages(request, token, item_id):
         return error_response("NOT_FOUND", "Nie znaleziono dokumentu.", status=404)
     photos = request.FILES.getlist("pages")
     _count_upload(request)
-    pdf = pages.photos_to_pdf(photos, item.name)
+    pdf = pages.photos_to_pdf(photos, item.name, request_obj)
     document = UploadDocumentService.upload_for_item(item, pdf, django_request=request)
     item.refresh_from_db()
     return _upload_response(item, document)

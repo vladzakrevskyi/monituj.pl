@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аудит безопасности Monituj</title>
+<style>
+:root {
+  --bg: #f7f7f8; --paper: #ffffff; --text: #18181b; --muted: #5b5b66; --line: #e4e4e8;
+  --code-bg: #f1f1f4; --accent: #ff6b00;
+  --crit: #b42318; --high: #d1460b; --med: #b54708; --low: #2e5aac; --info: #5b5b66; --ok: #217a3c;
+  --crit-bg: #fde8e7; --high-bg: #fdeee6; --med-bg: #fdf3e2; --low-bg: #e9effb; --info-bg: #efeff2; --ok-bg: #e5f4ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0e10; --paper: #17171a; --text: #ececf0; --muted: #a1a1aa; --line: #2b2b31;
+    --code-bg: #222227; --crit: #ff8a80; --high: #ff9a66; --med: #f5b95c; --low: #8fb0ff; --info: #a1a1aa; --ok: #6fd28f;
+    --crit-bg: #3a1513; --high-bg: #3a1d10; --med-bg: #33260f; --low-bg: #16213a; --info-bg: #222227; --ok-bg: #12301c;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0e10; --paper: #17171a; --text: #ececf0; --muted: #a1a1aa; --line: #2b2b31;
+  --code-bg: #222227; --crit: #ff8a80; --high: #ff9a66; --med: #f5b95c; --low: #8fb0ff; --info: #a1a1aa; --ok: #6fd28f;
+  --crit-bg: #3a1513; --high-bg: #3a1d10; --med-bg: #33260f; --low-bg: #16213a; --info-bg: #222227; --ok-bg: #12301c;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; }
+main { max-width: 920px; margin: 0 auto; padding: 48px 16px 96px; }
+header.cover { border-bottom: 2px solid var(--text); padding-bottom: 20px; margin-bottom: 32px; }
+.kicker { display: flex; justify-content: space-between; gap: 16px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.kicker span:last-child { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 400; }
+h1 { font-size: 40px; line-height: 1.1; letter-spacing: -0.03em; margin: 16px 0 8px; }
+h2 { font-size: 26px; letter-spacing: -0.02em; margin: 56px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+h3 { font-size: 19px; margin: 0; letter-spacing: -0.01em; }
+p { margin: 0 0 12px; }
+.lead { font-size: 18px; color: var(--muted); max-width: 60ch; }
+.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px 24px; margin-top: 20px; font-size: 14px; }
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; font-weight: 600; }
+.verdict { background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 20px 24px; margin: 24px 0; }
+.verdict p:last-child { margin: 0; }
+.score { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 20px 0; }
+.score div { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 12px; text-align: center; }
+.score b { display: block; font-size: 28px; line-height: 1.1; }
+.score span { font-size: 13px; color: var(--muted); }
+.s-crit b { color: var(--crit); } .s-high b { color: var(--high); } .s-med b { color: var(--med); } .s-low b { color: var(--low); } .s-info b { color: var(--info); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; background: var(--code-bg); }
+tr:last-child td { border-bottom: 0; }
+.table-wrap { overflow-x: auto; }
+.sev { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.sev.crit { color: var(--crit); background: var(--crit-bg); } .sev.high { color: var(--high); background: var(--high-bg); }
+.sev.med { color: var(--med); background: var(--med-bg); } .sev.low { color: var(--low); background: var(--low-bg); }
+.sev.info { color: var(--info); background: var(--info-bg); } .sev.ok { color: var(--ok); background: var(--ok-bg); }
+.finding { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 20px 24px; margin: 16px 0; }
+.finding header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.finding .id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; color: var(--muted); margin-right: 8px; }
+.finding dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px 16px; margin: 0; font-size: 15px; }
+.finding dt { color: var(--muted); font-weight: 600; font-size: 14px; }
+.finding dd { margin: 0; }
+.finding dd ul { margin: 0; padding-left: 18px; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+ul.plain { padding-left: 18px; }
+ul.plain li { margin-bottom: 6px; }
+.ok-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.ok-list div { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; font-size: 14px; }
+.ok-list b { display: block; margin-bottom: 4px; font-size: 15px; }
+.phase { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 16px 20px; margin: 12px 0; }
+.phase h3 { margin-bottom: 8px; }
+footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+@media (max-width: 640px) {
+  h1 { font-size: 30px; }
+  .score { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .finding { padding: 16px; }
+  .finding dl { grid-template-columns: 1fr; gap: 2px; }
+  .finding dd { margin-bottom: 10px; }
+}
+@media print { body { background: #fff; } .finding, .verdict, .phase { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<main>
+
+<header class="cover">
+  <div class="kicker"><span>Отчёт об аудите безопасности · конфиденциально</span><span>29.10.2026</span></div>
+  <h1>Monituj — аудит безопасности веб-платформы</h1>
+  <p class="lead">Анализ исходного кода (white-box), конфигурации развёртывания и зависимостей. Отчёт без исправлений: все изменения — только после вашего решения.</p>
+  <dl class="meta">
+    <div><dt>Объект</dt><dd>monituj.pl, ветка main, коммит a1dceeb</dd></div>
+    <div><dt>Стек</dt><dd>Django 6.1 · Python 3.14 · Celery · PostgreSQL 16 · nginx</dd></div>
+    <div><dt>Объём кода</dt><dd>≈ 30 000 строк Python, 150 маршрутов</dd></div>
+    <div><dt>Методика</dt><dd>OWASP ASVS 4.0 (уровень 2), OWASP Top 10</dd></div>
+  </dl>
+</header>
+
+<section>
+  <h2>1. Резюме для руководства</h2>
+  <div class="verdict">
+    <p><strong>Общая оценка: хороший уровень безопасности.</strong> Критических и высоких уязвимостей не найдено. Есть 5 проблем среднего уровня. Самые важные: можно положить сервер одной картинкой размером ~190 КБ, и ключ шифрования документов лежит в тех же бэкапах, что и сами документы.</p>
+    <p><strong>Обновление того же дня:</strong> M-01, M-04 и M-05 исправлены (подробности в карточках). Пункты M-02, M-03 и низкие остаются открытыми.</p>
+    <p>Разграничение данных между бюро и командами, обработка ссылок для клиентов, вход (пароль, Google, 2FA), платежи и вебхуки сделаны грамотно, на уровне выше среднего для SaaS этого размера.</p>
+  </div>
+  <div class="score">
+    <div class="s-crit"><b>0</b><span>Критический</span></div>
+    <div class="s-high"><b>0</b><span>Высокий</span></div>
+    <div class="s-med"><b>5</b><span>Средний</span></div>
+    <div class="s-low"><b>10</b><span>Низкий</span></div>
+    <div class="s-info"><b>6</b><span>Информационный</span></div>
+  </div>
+  <p>Шкала: <strong>критический</strong> — эксплуатируется извне без условий и ведёт к утечке данных или захвату системы. <strong>Высокий</strong> — то же, но с условиями. <strong>Средний</strong> — реальный ущерб при выполнении нескольких условий или ущерб доступности и репутации. <strong>Низкий</strong> — усиление защиты, ущерб ограничен. <strong>Информационный</strong> — замечание без прямого риска.</p>
+</section>
+
+<section>
+  <h2>2. Область и ограничения</h2>
+  <p><strong>Проверено:</strong></p>
+  <ul class="plain">
+    <li>все маршруты: доступ, CSRF, методы;</li>
+    <li>аутентификация: пароль, Google OIDC, 2FA, ссылки без пароля, сброс и смена пароля и email;</li>
+    <li>сессии; изоляция данных между аккаунтами и командами (IDOR);</li>
+    <li>публичные ссылки клиентов и пароли к ним;</li>
+    <li>загрузка, хранение, шифрование и скачивание файлов; импорт клиентов (CSV/XLSX);</li>
+    <li>шаблоны и JS (XSS), CSP и заголовки;</li>
+    <li>письма: подмена заголовков, злоупотребления;</li>
+    <li>Stripe и inFakt: подписи вебхуков, подтверждение оплаты;</li>
+    <li>админка; лимиты запросов;</li>
+    <li>журналы; конфигурация Docker и nginx; бэкапы; секреты в истории git.</li>
+  </ul>
+  <p><strong>Автоматические проверки:</strong></p>
+  <ul class="plain">
+    <li><code>manage.py check --deploy</code> с продакшен-настройками — 0 замечаний;</li>
+    <li><code>pip-audit</code> по <code>requirements/prod.txt</code> — известных уязвимостей нет;</li>
+    <li>поиск секретов по всей истории git — утечек нет;</li>
+    <li>полный набор тестов — 1213 пройдено.</li>
+  </ul>
+  <p><strong>Не входило в аудит:</strong></p>
+  <ul class="plain">
+    <li>боевой сервер: SSH, файрвол, обновления ОС, реальный <code>.env</code>, настройки Cloudflare и хостинга;</li>
+    <li>активный пентест боевого окружения и нагрузочное тестирование;</li>
+    <li>социальная инженерия;</li>
+    <li>сторонние сервисы: Stripe, inFakt, Google, SMTP-провайдер.</li>
+  </ul>
+  <p>Выводы о сервере сделаны по README и файлам в <code>deploy/</code>.</p>
+</section>
+
+<section>
+  <h2>3. Сводная таблица</h2>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>ID</th><th>Проблема</th><th>Уровень</th><th>Срок</th></tr></thead>
+    <tbody>
+      <tr><td>M-01</td><td>Отказ в обслуживании через «фото страниц» и фото HEIC (декомпрессионная бомба)</td><td><span class="sev med">Средний</span></td><td><span class="sev ok">Исправлено</span></td></tr>
+      <tr><td>M-02</td><td>Ключ шифрования документов попадает в те же бэкапы, что и документы</td><td><span class="sev med">Средний</span></td><td>Сразу</td></tr>
+      <tr><td>M-03</td><td>Бэкапы только у одного хостинга, без независимой копии и проверки восстановления</td><td><span class="sev med">Средний</span></td><td>1 месяц</td></tr>
+      <tr><td>M-04</td><td>Платформу можно использовать для фишинга от чужого имени</td><td><span class="sev med">Средний</span></td><td><span class="sev ok">Исправлено</span></td></tr>
+      <tr><td>M-05</td><td>Загружаемые файлы не проверяются антивирусом</td><td><span class="sev med">Средний</span></td><td><span class="sev ok">Исправлено</span></td></tr>
+      <tr><td>L-01</td><td>2FA для администраторов не обязательна; список IP админки пуст по умолчанию</td><td><span class="sev low">Низкий</span></td><td>1 месяц</td></tr>
+      <tr><td>L-02</td><td>Медленный подбор 2FA и паролей ссылок через множество IP</td><td><span class="sev low">Низкий</span></td><td>План</td></tr>
+      <tr><td>L-03</td><td>Долгоживущие токены и временные пароли хранятся в БД открытым текстом</td><td><span class="sev low">Низкий</span></td><td>План</td></tr>
+      <tr><td>L-04</td><td>Секретные токены попадают в журналы доступа</td><td><span class="sev low">Низкий</span></td><td>План</td></tr>
+      <tr><td>L-05</td><td>Гостевая форма создаёт клиента в чужом существующем аккаунте</td><td><span class="sev low">Низкий</span></td><td>План</td></tr>
+      <tr><td>L-06</td><td>Нет тайм-аута неактивности сессии (по умолчанию 2 недели)</td><td><span class="sev low">Низкий</span></td><td>План</td></tr>
+      <tr><td>L-07</td><td>CSP разрешает Google Tag Manager и в панели, и на страницах клиентов</td><td><span class="sev low">Низкий</span></td><td>План</td></tr>
+      <tr><td>L-08</td><td>Постоянная ссылка аккаунта без пароля входит без нажатия кнопки</td><td><span class="sev low">Низкий</span></td><td>План</td></tr>
+      <tr><td>L-09</td><td>Лимиты запросов не атомарны — параллельные запросы их превышают</td><td><span class="sev low">Низкий</span></td><td>План</td></tr>
+      <tr><td>L-10</td><td>Можно узнать, зарегистрирован ли email (перечисление аккаунтов)</td><td><span class="sev low">Низкий</span></td><td>По желанию</td></tr>
+      <tr><td>I-01</td><td>Журнал согласий cookie принимает запросы без CSRF-токена</td><td><span class="sev info">Инфо</span></td><td>Принятый риск</td></tr>
+      <tr><td>I-02</td><td>Резервные и email-коды 2FA хэшируются SHA-256 без секрета</td><td><span class="sev info">Инфо</span></td><td>По желанию</td></tr>
+      <tr><td>I-03</td><td>Вебхук inFakt не защищён от повторной отправки</td><td><span class="sev info">Инфо</span></td><td>По желанию</td></tr>
+      <tr><td>I-04</td><td>Ссылка «все мои файлы» многоразовая в течение часа</td><td><span class="sev info">Инфо</span></td><td>По желанию</td></tr>
+      <tr><td>I-05</td><td>Письмо-подтверждение контактной формы повторяет имя отправителя</td><td><span class="sev info">Инфо</span></td><td>По желанию</td></tr>
+      <tr><td>I-06</td><td>Письма отправляются синхронно внутри веб-запроса</td><td><span class="sev info">Инфо</span></td><td>По желанию</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>4. Подробно: средний уровень</h2>
+
+  <article class="finding">
+    <header><h3><span class="id">M-01</span>Отказ в обслуживании через «фото страниц»</h3><span class="sev med">Средний · доступность</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>apps/documents/pages.py:34–35</code> (<code>_page</code>)</dd>
+      <dt>Суть</dt><dd>Каждое фото страницы декодируется целиком (<code>exif_transpose</code> → <code>convert("RGB")</code>), и только потом уменьшается. Лимит пикселей (50 Мп) есть только для HEIC (<code>validation.py:64</code>). Для JPG и PNG его нет. Лимит Pillow по умолчанию — 178 Мп.</dd>
+      <dt>Проверено</dt><dd>PNG 13000×13000 весит <strong>187 КБ</strong>. На его обработку уходит <strong>≈ 880 МБ памяти</strong> и 2 секунды. В одном запросе может быть до 15 таких страниц.</dd>
+      <dt>Также</dt><dd>При исправлении нашлось то же самое для фото с iPhone (HEIC) в <strong>обычной</strong> загрузке: файл на 28 КБ — 770 МБ памяти.</dd>
+      <dt>Сценарий</dt><dd>Атакующий регистрируется или пользуется гостевой формой и отправляет prośbę сам себе. Затем по своей ссылке делает несколько параллельных запросов «Zrób zdjęcia stron». В продакшене 3 воркера gunicorn и нет лимита памяти для контейнера. Итог: OOM, перезапуск контейнера, сайт недоступен для всех. Повторять атаку можно сколько угодно.</dd>
+      <dt>Рекомендация</dt><dd><ul>
+        <li>Проверять <code>width × height</code> сразу после <code>Image.open</code>: открытие ленивое, пиксели ещё не декодированы. Тот же лимит 50 Мп, что для HEIC.</li>
+        <li>Для JPEG вызывать <code>image.draft("RGB", (2200, 2200))</code>: декодирование сразу в уменьшенном размере, в 4–8 раз меньше памяти.</li>
+        <li>Глобально установить <code>Image.MAX_IMAGE_PIXELS = 50_000_000</code>.</li>
+        <li>Ошибки Pillow ловить и возвращать 400, а не 500.</li>
+        <li>В <code>docker-compose.prod.yml</code> задать <code>mem_limit</code> для web и worker и <code>--max-requests</code> для gunicorn.</li>
+      </ul></dd>
+      <dt>Статус</dt><dd><span class="sev ok">Исправлено</span> <code>apps/documents/images.py</code>:<ul>
+        <li>размер проверяется по заголовку файла: JPEG до 300 Мп, PNG и HEIC до 50 Мп;</li>
+        <li>JPEG декодируется сразу уменьшенным: 200 Мп — около 90 МБ вместо 600+;</li>
+        <li>полное декодирование (HEIC, PNG) идёт по одному на весь сервер;</li>
+        <li>лимиты памяти контейнеров, <code>--max-requests</code>;</li>
+        <li>«бомба» из аудита теперь отклоняется за доли секунды, расходуя ~2 МБ памяти.</li>
+      </ul></dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">M-02</span>Ключ шифрования лежит в тех же бэкапах, что и документы</h3><span class="sev med">Средний · конфиденциальность</span></header>
+    <dl>
+      <dt>Где</dt><dd>README «Krok 11» и строка 693; <code>apps/documents/encryption.py:8–10</code>; <code>/srv/monituj/.env</code> на сервере</dd>
+      <dt>Суть</dt><dd>Хостинг каждый день делает снимок <strong>всего сервера</strong>. В снимок попадают:<ul>
+        <li>зашифрованные файлы;</li>
+        <li>база с обёрнутыми ключами файлов;</li>
+        <li><code>.env</code> с <code>DOCUMENTS_ENCRYPTION_KEY</code>.</li>
+      </ul>При этом README и комментарий в коде утверждают, что копия хостинга без ключа бесполезна и что ключа нет в бэкапах. Для бэкапов хостинга это не так.</dd>
+      <dt>Сценарий</dt><dd>Кто-то получает доступ к панели хостинга: украденный пароль, сотрудник провайдера, утечка у провайдера. Он восстанавливает снимок на свою машину и расшифровывает все документы всех клиентов. Шифрование «at rest» от этого сценария не защищает.</dd>
+      <dt>Рекомендация</dt><dd><ul>
+        <li>Держать мастер-ключ вне диска, который попадает в снимок. Варианты: менеджер секретов (Doppler, 1Password Secrets Automation, HashiCorp Vault); подстановка при старте в <code>tmpfs</code>; как минимум — отдельный том, исключённый из снимков.</li>
+        <li>Включить 2FA и ограничение по IP в панели хостинга.</li>
+        <li>Исправить формулировки в README и, если они там есть, в Polityka prywatności и Umowa powierzenia, чтобы они точно описывали, от чего защищает шифрование.</li>
+      </ul></dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">M-03</span>Бэкапы только у одного хостинга, без независимой копии</h3><span class="sev med">Средний · доступность</span></header>
+    <dl>
+      <dt>Где</dt><dd>README «Krok 11», <code>deploy/deploy.sh</code> (собственные дампы БД отключены)</dd>
+      <dt>Суть</dt><dd>Единственная копия данных — снимки у того же провайдера, хранятся 7 дней. Независимой копии у другого провайдера нет, тест восстановления не описан. Перед миграциями README только предлагает «убедиться, что последняя копия удалась».</dd>
+      <dt>Сценарий</dt><dd>Данные пропадают безвозвратно, если:<ul>
+        <li>взломан или заблокирован аккаунт хостинга;</li>
+        <li>произошла ошибка или банкротство провайдера;</li>
+        <li>шифровальщик на сервере прожил больше 7 дней;</li>
+        <li>случайно восстановлен не тот снимок.</li>
+      </ul>Для сервиса, которому бюро доверяют документы клиентов, это серьёзный бизнес-риск.</dd>
+      <dt>Рекомендация</dt><dd><ul>
+        <li>Ежедневно делать <code>pg_dump</code> и архив тома storage. Шифровать отдельным ключом (<code>age</code> или <code>gpg</code>) и отправлять в хранилище другого провайдера с неизменяемостью (S3 Object Lock, Backblaze B2 с lock).</li>
+        <li>Раз в квартал проверять восстановление на чистой машине.</li>
+        <li>Срок хранения синхронизировать с <code>LEGAL_BACKUP_DAYS</code>.</li>
+      </ul></dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">M-04</span>Фишинг от чужого имени через домен monituj.pl</h3><span class="sev med">Средний · злоупотребление и репутация</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>templates/notifications/emails/zaproszenie_body.html</code>, <code>apps/requests/guest.py</code>, <code>apps/accounts/branding.py</code>, лимиты в <code>apps/requests/services.py:49–51</code></dd>
+      <dt>Суть</dt><dd>Отправить письмо с monituj.pl, которое проходит SPF и DKIM, может любой: бесплатная регистрация (до 5 в час с одного IP) или гостевая форма (1 в день с одного IP). В письме можно задать:<ul>
+        <li>имя отправителя. <em>Поправка:</em> фильтр имён банков и учреждений в коде уже был (<code>apps/accounts/sender.py</code>), так что «mBank» не пройдёт. Но его обходили варианты написания: «mBank24», «m-bank», «Urz4d», кириллица. А имя при вступлении в команду не проверялось вовсе;</li>
+        <li>любой логотип (на триале тоже);</li>
+        <li>название и список документов, текст вопроса.</li>
+      </ul>Новый аккаунт может отправить 50 писем в день, через 7 дней — 300.</dd>
+      <dt>Сценарий</dt><dd>Мошенник рассылает «prośby o dokumenty» от имени банка или налоговой. Люди загружают сканы паспорта и выписки, кнопка в письме ведёт на настоящий monituj.pl. Последствия:<ul>
+        <li>прямой вред людям;</li>
+        <li>жалобы; домен попадает в спам-листы, и письма настоящих бюро перестают доходить;</li>
+        <li>риск по RODO как для оператора платформы.</li>
+      </ul></dd>
+      <dt>Рекомендация</dt><dd><ul>
+        <li>Запрещать в имени отправителя для новых и неоплаченных аккаунтов слова вроде urząd, skarbow, bank, ZUS, policja, KAS, PKO, mBank, ING.</li>
+        <li>Показывать логотип только после первой оплаты, не на триале.</li>
+        <li>Снизить лимиты, пока аккаунт не оплачен или не проверен.</li>
+        <li>Добавить в каждое приглашение ссылку «Zgłoś nadużycie» и мгновенно блокировать аккаунт при нескольких жалобах.</li>
+        <li>Следить за bounce и complaint rate у SMTP-провайдера.</li>
+      </ul></dd>
+      <dt>Статус</dt><dd><span class="sev ok">Исправлено</span> (по решениям владельца):<ul>
+        <li>фильтр имён ловит обходы, проверяется и имя при вступлении в команду;</li>
+        <li>неоплаченные аккаунты не могут просить PIN, BLIK, SMS, CVV, номер карты или пароль к банку (<code>content_rules.py</code>);</li>
+        <li>в первую неделю без оплаты: 20 писем в день и не больше 20 получателей;</li>
+        <li>«Zgłoś nadużycie» в каждом письме клиенту и на его странице, с мгновенной тревогой без автоблокировки;</li>
+        <li>логотип на триале оставлен как есть — решение владельца;</li>
+        <li>мониторинг жалоб у SMTP-провайдера настраивается вне кода.</li>
+      </ul></dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">M-05</span>Нет антивирусной проверки загружаемых файлов</h3><span class="sev med">Средний · целостность</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>apps/documents/validation.py</code> — проверка только расширения и MIME</dd>
+      <dt>Суть</dt><dd>Принимаются <code>.doc</code> и <code>.xls</code> (со старыми макросами), PDF (может содержать JavaScript и эксплойты), а также любой ZIP, переименованный в <code>.docx</code> или <code>.xlsx</code>: <code>application/zip</code> разрешён. Бухгалтер открывает эти файлы на рабочем компьютере, где лежат данные всех его клиентов.</dd>
+      <dt>Сценарий</dt><dd>Ссылка клиента пересылается или утекает. Кто-то посторонний загружает «Wyciąg bankowy.xls» с макросом. Файл попадает в панель бюро с пометкой «Dostarczony» и выглядит доверенным.</dd>
+      <dt>Рекомендация</dt><dd><ul>
+        <li>ClamAV (<code>clamd</code>) отдельным контейнером: проверять файл до шифрования и сохранения, заражённые отклонять.</li>
+        <li>Для <code>.doc</code> и <code>.xls</code> показывать в панели предупреждение или вообще их отклонять.</li>
+        <li>Для <code>.docx</code> и <code>.xlsx</code> проверять наличие <code>[Content_Types].xml</code>, а не просто «это zip».</li>
+      </ul></dd>
+      <dt>Статус</dt><dd><span class="sev ok">Исправлено</span> <code>apps/documents/antivirus.py</code>:<ul>
+        <li>ClamAV 1.5 в отдельном контейнере;</li>
+        <li>каждый файл проверяется до сохранения;</li>
+        <li>вирус — отказ и тревога;</li>
+        <li>файлы с макросами отклоняются;</li>
+        <li>подделанные <code>.docx</code> и <code>.xlsx</code> отклоняются;</li>
+        <li>если сканер недоступен, загрузка не принимается;</li>
+        <li><code>manage.py scan_documents</code> проверяет старые файлы.</li>
+      </ul>Серверу нужно 4 ГБ RAM.</dd>
+    </dl>
+  </article>
+</section>
+
+<section>
+  <h2>5. Подробно: низкий уровень</h2>
+
+  <article class="finding">
+    <header><h3><span class="id">L-01</span>2FA для администраторов не обязательна</h3><span class="sev low">Низкий</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>apps/common/admin_security.py</code>, <code>deploy/env.production.example:81–83</code></dd>
+      <dt>Суть</dt><dd>Админка открывает все данные. Код из приложения она требует, только если у сотрудника 2FA уже включена. <code>ADMIN_ALLOWED_IPS</code> по умолчанию пуст, то есть ограничения нет. Блок <code>location /admin/</code> в nginx закрывает только путь <code>/admin/</code>. Если сменить <code>ADMIN_URL</code>, админка становится доступна из интернета по одному паролю.</dd>
+      <dt>Рекомендация</dt><dd>Не пускать в админку <code>is_staff</code> без включённой 2FA. В продакшене не запускаться с пустым <code>ADMIN_ALLOWED_IPS</code> (fail closed).</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">L-02</span>Медленный подбор 2FA и паролей ссылок</h3><span class="sev low">Низкий</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>apps/accounts/two_factor.py</code> (5 ошибок за 15 мин на аккаунт), <code>apps/requests/services.py:52</code> (10 ошибок за 15 мин на IP и ссылку)</dd>
+      <dt>Суть</dt><dd>Лимит на аккаунт не растёт со временем. Если пароль уже известен, непрерывный подбор кода 2FA даёт ≈ 0,14 % успеха в сутки, ≈ 40 % за год. Пользователя о неудачных попытках не уведомляют: они видны только в ежедневном отчёте администратору. Лимит пароля к ссылке считается на каждый IP отдельно, поэтому ботнет его обходит.</dd>
+      <dt>Рекомендация</dt><dd><ul>
+        <li>Прогрессивная блокировка: после 20 ошибок за сутки — блок на 24 ч и письмо владельцу аккаунта.</li>
+        <li>Для паролей ссылок — общий лимит на ссылку независимо от IP и минимальная длина пароля 10 символов.</li>
+      </ul></dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">L-03</span>Токены и временные пароли в БД открытым текстом</h3><span class="sev low">Низкий</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>Request.public_token</code>, <code>Request.confirmation_token</code>, <code>Request.pending_access_password</code> (<code>apps/requests/models.py:27, 42, 47</code>); <code>RecipientAccess.token</code>; <code>GuestAccess.token</code> (<code>apps/accounts/models.py:95</code>); <code>AgendaSettings.feed_token</code></dd>
+      <dt>Суть</dt><dd>Токены сброса пароля, подтверждения email, приглашений в команду и т. п. хранятся хэшами. А самые долгоживущие хранятся как есть:<ul>
+        <li>ссылки клиентов;</li>
+        <li>постоянный вход в аккаунт без пароля (<code>GuestAccess.token</code>);</li>
+        <li>календарь;</li>
+        <li>пароль ссылки гостевой prośby — до 48 часов, пока prośba не подтверждена.</li>
+      </ul>Утечка дампа или бэкапа БД даёт мгновенный доступ ко всем страницам клиентов и всем аккаунтам без пароля.</dd>
+      <dt>Рекомендация</dt><dd>Хранить SHA-256 токена, сам токен показывать только в письме. Ссылку клиента в панели собирать из отдельно зашифрованного значения (<code>encryption.seal</code>). Пароль гостевой prośby шифровать мастер-ключом.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">L-04</span>Секретные токены в журналах доступа</h3><span class="sev low">Низкий</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>docker-compose.prod.yml:72</code> (<code>--access-logfile -</code>), журналы nginx, Cloudflare</dd>
+      <dt>Суть</dt><dd>Полные URL попадают в логи Docker и nginx: <code>/d/&lt;token&gt;/</code>, <code>/dostep/&lt;token&gt;/</code>, <code>/moje-prosby/&lt;token&gt;/</code>, <code>/kalendarz/ics/&lt;token&gt;.ics</code>, <code>/reset-hasla/&lt;token&gt;/</code>. Любой, у кого есть доступ к логам, получает доступ к документам и аккаунтам.</dd>
+      <dt>Рекомендация</dt><dd>Свой формат access-лога gunicorn и nginx с маскированием сегмента токена (<code>/d/***/</code>). Срок хранения логов не больше 14 дней.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">L-05</span>Гостевая форма пишет в чужой существующий аккаунт</h3><span class="sev low">Низкий</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>apps/requests/guest.py:41–65</code> и <code>submit</code></dd>
+      <dt>Суть</dt><dd>Атакующий указывает email зарегистрированного бюро как «свой» адрес отправителя. В аккаунте бюро <strong>сразу</strong>, до всякого подтверждения, появляется клиент с выбранными им именем и email и запись «Nowy klient» в активности. Бюро получает письмо с текстом атакующего. Через 48 ч всё это удаляется. Лимит — 1 раз в сутки с одного IP.</dd>
+      <dt>Рекомендация</dt><dd>Если аккаунт уже существует, до подтверждения ничего в нём не создавать: держать данные формы во временной таблице.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">L-06</span>Нет тайм-аута неактивности сессии</h3><span class="sev low">Низкий</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>config/settings/base.py</code> — <code>SESSION_COOKIE_AGE</code> не задан (по умолчанию 14 дней)</dd>
+      <dt>Суть</dt><dd>Панель с финансовыми документами остаётся открытой 2 недели, даже если ею не пользуются. Это риск для общих и офисных компьютеров. Кнопки «выйти со всех устройств» нет: сейчас это происходит только при смене пароля.</dd>
+      <dt>Рекомендация</dt><dd>Выход после 8–12 ч неактивности, абсолютный срок 7 дней (<code>SESSION_SAVE_EVERY_REQUEST</code> плюс своя проверка). В Ustawienia добавить «Wyloguj ze wszystkich urządzeń».</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">L-07</span>CSP с Google Tag Manager на закрытых страницах</h3><span class="sev low">Низкий · глубина защиты</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>apps/common/middleware.py</code> (<code>SecurityHeadersMiddleware</code>), <code>apps/common/analytics.py</code></dd>
+      <dt>Суть</dt><dd>GTM правильно грузится только на публичных страницах. Но заголовок CSP одинаков для всего сайта и разрешает <code>https://www.googletagmanager.com</code> и в панели, и на <code>/d/&lt;token&gt;/</code>. Такое разрешение — известный способ обойти CSP: атакующий подгружает <em>свой</em> контейнер GTM. Значит, если когда-нибудь появится XSS, CSP её не остановит.</dd>
+      <dt>Рекомендация</dt><dd>Для <code>PRIVATE_PREFIXES</code> отдавать строгую CSP без сторонних источников.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">L-08</span>Постоянная ссылка без пароля входит без нажатия кнопки</h3><span class="sev low">Низкий</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>apps/accounts/views.py:844</code> (<code>guest_access</code> → <code>_enter_guest_account</code>)</dd>
+      <dt>Суть</dt><dd>Все остальные ссылки из писем требуют нажать кнопку: так почтовые сканеры не могут их «использовать». Постоянная ссылка аккаунта без пароля логинит сразу по GET. Корпоративные сканеры (Microsoft Safe Links, Mimecast) получают рабочую сессию в панели. Кроме того, подпись 14-дневной ссылки не скрывает данные: в ней видны id пользователя и первые 16 символов постоянного токена. Оставшейся энтропии достаточно, но так делать не стоит.</dd>
+      <dt>Рекомендация</dt><dd>Кнопка «Wejdź do panelu» (POST), как в остальных ссылках. В подписанной ссылке передавать HMAC от токена, а не его начало.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">L-09</span>Лимиты запросов не атомарны</h3><span class="sev low">Низкий</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>apps/common/throttle.py:26–31</code></dd>
+      <dt>Суть</dt><dd>Сначала <code>is_limited</code> (COUNT), потом <code>record</code> (INSERT), без блокировки. При входе неудача записывается только после Argon2 (≈ 100 мс). Пачка параллельных запросов проходит проверку вся сразу, и лимит «8 попыток за 15 мин» реально становится в несколько раз больше.</dd>
+      <dt>Рекомендация</dt><dd>Атомарный счётчик: Redis <code>INCR</code> + <code>EXPIRE</code>, или <code>select_for_update</code> по ключу, или <code>pg_advisory_xact_lock</code>. Redis уже есть в стеке.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <header><h3><span class="id">L-10</span>Перечисление аккаунтов</h3><span class="sev low">Низкий</span></header>
+    <dl>
+      <dt>Где</dt><dd><code>RegistrationService.register</code> («Konto z tym adresem email już istnieje»), смена email, приглашение в команду</dd>
+      <dt>Суть</dt><dd>Можно проверить, есть ли у бюро аккаунт в Monituj. Это помогает целевому фишингу (см. M-04). Сброс пароля, наоборот, сделан правильно и не выдаёт существование аккаунта.</dd>
+      <dt>Рекомендация</dt><dd>Отвечать на регистрацию одинаково: «sprawdź skrzynkę». Существующему пользователю отправлять письмо «ktoś próbował założyć konto na Twój adres».</dd>
+    </dl>
+  </article>
+</section>
+
+<section>
+  <h2>6. Информационные замечания</h2>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>ID</th><th>Замечание</th><th>Комментарий</th></tr></thead>
+    <tbody>
+      <tr><td>I-01</td><td><code>/api/cookie-consent/</code> принимает POST без CSRF (<code>apps/consents/views.py</code>)</td><td>Риск принят сознательно. Чужой сайт может добавить в журнал согласий бессмысленную анонимную запись (лимит 60 в час с IP). Ни данных, ни настроек пользователя это не меняет.</td></tr>
+      <tr><td>I-02</td><td>Резервные коды 2FA (≈ 49 бит) и email-коды хэшируются SHA-256 без секрета</td><td>После утечки БД резервные коды можно подобрать офлайн. Лучше HMAC с секретным ключом.</td></tr>
+      <tr><td>I-03</td><td>Вебхук inFakt проверяет HMAC тела, но не время</td><td>Перехваченный запрос можно отправить повторно. Обработка идемпотентна (статус PROCESSING), поэтому ущерба нет.</td></tr>
+      <tr><td>I-04</td><td>Ссылка «Pokaż wszystkie moje pliki» работает час и многократно</td><td>Пересланное письмо в течение часа даёт доступ ко всем файлам получателя. Можно сделать одноразовой.</td></tr>
+      <tr><td>I-05</td><td>Подтверждение контактной формы повторяет имя (до 120 знаков) на любой адрес</td><td>Минимальная возможность для спама, лимит 5 в час с IP. Можно убрать имя из письма.</td></tr>
+      <tr><td>I-06</td><td>SMTP вызывается синхронно в веб-запросе (<code>EmailService.send</code>)</td><td>При медленном SMTP тормозят загрузки и вход, воркеры заняты. Лучше отправлять через Celery.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>7. Что сделано хорошо</h2>
+  <div class="ok-list">
+    <div><b>Изоляция данных</b>Все объекты панели выбираются через <code>request.account</code> (<code>get_owned_request</code>, <code>get_owned_client</code>, фильтр по <code>owner</code>). IDOR не найден ни в одном из 150 маршрутов. Чужие id дают 404 без утечки информации.</div>
+    <div><b>Ссылки клиентов</b>256-битные токены. Доступ привязан к сессии. Пересланная ссылка показывает только файлы, загруженные из этого браузера. Пароль хранится хэшем с лимитом попыток.</div>
+    <div><b>Шифрование файлов</b>AES-256-GCM, отдельный ключ на каждый файл, путь файла аутентифицирован, есть ротация мастер-ключа, в продакшене без ключа приложение не стартует.</div>
+    <div><b>Аутентификация</b>Argon2. Лимиты по IP и по email. Сессия пересоздаётся при входе. Смена пароля и email подтверждаются письмом, старый адрес уведомляется. Опасные действия по ссылкам — только кнопкой.</div>
+    <div><b>2FA</b>TOTP с защитой от повторного использования шага, секрет зашифрован, коды одноразовые, «запомнить устройство» сбрасывается при смене пароля. Обязательна для всех способов входа.</div>
+    <div><b>Google OIDC</b>PKCE, state и nonce. Подпись токена проверяется по ключам Google. Привязка по <code>sub</code>, не по email. Для не-Gmail адресов — подтверждение по email.</div>
+    <div><b>Платежи</b>Подписи вебхуков Stripe и inFakt проверяются. Возврат из Checkout проверяет <code>client_reference_id</code> и customer. Живые ключи нельзя по ошибке поставить в режим sandbox.</div>
+    <div><b>XSS и заголовки</b>Автоэкранирование везде. <code>mark_safe</code> только для своих данных. JSON-LD экранирован. В JS нет опасных <code>innerHTML</code>. Строгая CSP без inline, HSTS preload, DENY в iframe, nosniff.</div>
+    <div><b>Загрузки</b>Белый список расширений плюс сверка содержимого через libmagic. Случайные имена на диске. Квоты на файл, пункт и prośbę. Отдача только как attachment. HEIC перекодируется без метаданных.</div>
+    <div><b>Инфраструктура</b>Контейнер не под root. БД и Redis не торчат наружу. gunicorn слушает только 127.0.0.1. nginx перезаписывает X-Forwarded-For. Реальный IP берётся только от Cloudflare.</div>
+    <div><b>Мониторинг</b>Журнал аудита, оповещения о входе в админку и смене прав, honeytoken-аккаунт (canary), ежедневный отчёт безопасности, отдельные серверные скрипты наблюдения.</div>
+    <div><b>Гигиена</b>Секретов в истории git нет. <code>.env</code>, storage и дампы в <code>.gitignore</code>. Зависимости без известных CVE. <code>check --deploy</code> чистый.</div>
+  </div>
+</section>
+
+<section>
+  <h2>8. План устранения</h2>
+  <div class="phase">
+    <h3>Сразу (до активного маркетинга)</h3>
+    <ul class="plain">
+      <li><strong>M-01:</strong> исправлено.</li>
+      <li><strong>M-02:</strong> вынести мастер-ключ из снимков хостинга; включить 2FA в панели хостинга; поправить формулировки в README и юридических документах.</li>
+    </ul>
+  </div>
+  <div class="phase">
+    <h3>В течение месяца</h3>
+    <ul class="plain">
+      <li><strong>M-03:</strong> независимый зашифрованный бэкап и тестовое восстановление.</li>
+      <li><strong>M-04:</strong> исправлено.</li>
+      <li><strong>L-01:</strong> обязательная 2FA для staff, fail-closed для <code>ADMIN_ALLOWED_IPS</code>.</li>
+    </ul>
+  </div>
+  <div class="phase">
+    <h3>В течение квартала</h3>
+    <ul class="plain">
+      <li><strong>M-05:</strong> исправлено.</li>
+      <li>Пункты <strong>L-02…L-09</strong>, по мере развития продукта.</li>
+      <li>Внешний пентест боевого окружения после устранения пунктов M.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>Аудит выполнен по исходному коду репозитория monituj.pl (коммит a1dceeb) 29.10.2026. Изменения в код не вносились. Тестовый скрипт для M-01 запускался только локально, во временной папке. Отчёт описывает состояние на эту дату и не гарантирует отсутствия других уязвимостей, особенно в частях, не входивших в аудит (раздел 2).</p>
+</footer>
+
+</main>
+</body>
+</html>

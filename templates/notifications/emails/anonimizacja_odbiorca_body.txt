@@ -5,5 +5,6 @@ Prośba: {{ request_name }}
 
 Nie musisz nic robić - ta wiadomość ma charakter informacyjny.
 --
-Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.
+Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% if report_link %}
+Podejrzana wiadomość? Zgłoś nadużycie: {{ report_link }}{% endif %}
 {% endautoescape %}

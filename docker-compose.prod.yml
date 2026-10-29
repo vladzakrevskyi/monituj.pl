@@ -17,12 +17,15 @@ x-app: &app
     DJANGO_SETTINGS_MODULE: config.settings.prod
     DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     REDIS_URL: redis://redis:6379/0
+    CLAMAV_HOST: clamav
   volumes:
     - storage:/app/storage
   depends_on:
     db:
       condition: service_healthy
     redis:
+      condition: service_started
+    clamav:
       condition: service_started
   restart: unless-stopped
 
@@ -62,6 +65,23 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
 
+  # Antivirus: every uploaded file is checked here before it is stored
+  # (apps/documents/antivirus.py). Reachable only from the other containers.
+  # Signatures update themselves; the first start downloads them (a few
+  # minutes - uploads wait until then). Needs about 1.5 GB of memory: a
+  # server with 4 GB RAM (README, "Skaner antywirusowy").
+  clamav:
+    image: clamav/clamav:1.5_base
+    volumes:
+      - clamav_db:/var/lib/clamav
+      - ./deploy/clamav/clamd.conf:/etc/clamav/clamd.conf:ro
+    environment:
+      FRESHCLAM_CHECKS: "6"
+    mem_limit: 2g
+    restart: unless-stopped
+
+  # Memory limits: a runaway process stops at its own container instead of
+  # taking the whole server; gunicorn also renews its workers now and then.
   web:
     <<: *app
     command: >
@@ -69,21 +89,26 @@ services:
       && python manage.py collectstatic --noinput -v0
       && gunicorn config.wsgi:application
       --bind 0.0.0.0:8000 --workers 3 --timeout 120
+      --max-requests 1000 --max-requests-jitter 100
       --access-logfile - --error-logfile -"
     ports:
       - "127.0.0.1:8000:8000"
+    mem_limit: 1536m
 
   # Sends emails and runs background jobs.
   worker:
     <<: *app
     command: celery -A config worker -l info --concurrency 2
+    mem_limit: 768m
 
   # Hourly: automatic reminders, deleting files after their retention
   # period, removing expired demo accounts. Exactly one beat must run.
   beat:
     <<: *app
     command: celery -A config beat -l info --schedule /tmp/celerybeat-schedule
+    mem_limit: 256m
 
 volumes:
   postgres_data:
   storage:
+  clamav_db:

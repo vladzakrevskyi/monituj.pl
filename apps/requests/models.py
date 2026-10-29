@@ -378,3 +378,35 @@ class RequestTemplate(TimeStampedModel):
 
     def __str__(self):
         return self.title
+
+
+class AbuseReason(models.TextChoices):
+    IMPERSONATION = "impersonation", "Ktoś podszywa się pod bank, urząd albo firmę"
+    SECRETS = "secrets", "Prośba o hasła, kody PIN/BLIK/SMS albo dane karty"
+    UNKNOWN_SENDER = "unknown_sender", "Nie znam nadawcy - to spam"
+    OTHER = "other", "Coś innego"
+
+
+class AbuseReport(models.Model):
+    """ "Zgłoś nadużycie" from a recipient (public_views.report_abuse): every
+    report raises the alarm at once; the decision is the team's (admin).
+    The sender's address is kept as it was, so a report outlives a deleted
+    request; reports go after a year (requests.tasks)."""
+
+    request = models.ForeignKey(
+        Request, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    sender_email = models.EmailField()
+    recipient_email = models.EmailField()
+    reason = models.CharField(max_length=20, choices=AbuseReason.choices)
+    details = models.TextField(blank=True)
+    handled = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "zgłoszenie nadużycia"
+        verbose_name_plural = "zgłoszenia nadużyć"
+
+    def __str__(self):
+        return f"{self.sender_email}: {self.get_reason_display()}"

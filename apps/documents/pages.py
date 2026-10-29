@@ -12,6 +12,7 @@ import re
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from apps.common.exceptions import ValidationAppError
+from apps.documents import images
 from apps.documents.validation import MAX_UPLOAD_SIZE, validate_upload
 
 MAX_PAGES = 15
@@ -21,20 +22,36 @@ PAGE_RESOLUTION = 200
 PHOTO_EXTENSIONS = {"jpg", "jpeg", "png", "heic", "heif"}
 
 
-def _page(uploaded):
+def _page(uploaded, request_obj=None):
     from PIL import Image, ImageOps
 
-    validated = validate_upload(uploaded)
+    validated = validate_upload(uploaded, request_obj)
     if validated.extension not in PHOTO_EXTENSIONS:
         raise ValidationAppError(
             "Do PDF-a połączymy tylko zdjęcia (JPG, PNG albo z iPhone'a). "
             "Inne pliki prześlij przyciskiem „Wybierz plik”.",
             code="PAGE_NOT_A_PHOTO",
         )
-    with Image.open(io.BytesIO(validated.content)) as image:
-        page = ImageOps.exif_transpose(image).convert("RGB")
-    page.thumbnail((PAGE_LONG_SIDE, PAGE_LONG_SIDE))
-    return page
+    # Shrunk before anything else: a JPEG (phone photos, HEIC converted) is
+    # then decoded already small; a PNG is decoded whole, so one at a time
+    # (apps/documents/images.py).
+    try:
+        with Image.open(io.BytesIO(validated.content)) as image:
+            images.check_size(image)
+            if image.format == "JPEG":
+                # reducing_gap=1: decoded at 1/2-1/8 of each side, as close
+                # to the page size as JPEG allows (200 MP -> ~40 MB).
+                image.thumbnail((PAGE_LONG_SIDE, PAGE_LONG_SIDE), reducing_gap=1.0)
+            else:
+                with images.one_at_a_time():
+                    image.thumbnail((PAGE_LONG_SIDE, PAGE_LONG_SIDE))
+            return ImageOps.exif_transpose(image).convert("RGB")
+    except ValidationAppError:
+        raise
+    except Image.DecompressionBombError as exc:
+        raise images.too_large() from exc
+    except Exception as exc:
+        raise images.unreadable() from exc
 
 
 def file_name(item_name, pages):
@@ -43,7 +60,7 @@ def file_name(item_name, pages):
     return f"{base} ({pages} str.).pdf"
 
 
-def photos_to_pdf(files, item_name):
+def photos_to_pdf(files, item_name, request_obj=None):
     if not files:
         raise ValidationAppError(
             "Zrób zdjęcie co najmniej jednej strony.", code="NO_PAGES"
@@ -53,7 +70,7 @@ def photos_to_pdf(files, item_name):
             f"Połączymy najwyżej {MAX_PAGES} stron. Podziel dokument na części.",
             code="TOO_MANY_PAGES",
         )
-    pages = [_page(uploaded) for uploaded in files]
+    pages = [_page(uploaded, request_obj) for uploaded in files]
     output = io.BytesIO()
     pages[0].save(
         output,

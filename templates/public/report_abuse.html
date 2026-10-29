@@ -1,0 +1,34 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block page_name %}Zgłoś nadużycie{% endblock %}
+{% block page_class %}page--compact{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/public.css' %}">{% endblock %}
+
+{% block site_header %}{% include "base/_recipient_header.html" %}{% endblock %}
+{% block site_footer %}{% include "base/_recipient_footer.html" %}{% endblock %}
+
+{% block content %}
+<div class="card">
+<h1>Zgłoś nadużycie</h1>
+<p class="card-lead">Prośba przyszła od: <strong>{{ sender.sender_from }}</strong>. Jeśli podejrzewasz, że ktoś się pod kogoś podszywa albo próbuje wyłudzić Twoje dane, daj nam znać - sprawdzimy to.</p>
+<form method="post" novalidate>
+{% csrf_token %}
+{{ form.non_field_errors }}
+<fieldset class="choice-group">
+<legend>{{ form.reason.label }}</legend>
+<div class="option-row option-row--stacked">
+{% for radio in form.reason %}<label class="option-chip option-chip--choice">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}
+</div>
+{{ form.reason.errors }}
+</fieldset>
+<p>
+{{ form.details.label_tag }}
+{{ form.details }}
+{{ form.details.errors }}
+</p>
+<button type="submit" class="btn btn-primary btn-lg btn-block">Wyślij zgłoszenie</button>
+</form>
+<p class="report-abuse__note">Do czasu wyjaśnienia nie przesyłaj tej osobie dokumentów i nigdy nie podawaj nikomu haseł, kodów PIN, BLIK ani SMS.</p>
+</div>
+{% endblock %}

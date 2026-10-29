@@ -128,6 +128,11 @@ ADMIN_ALLOWED_IPS = env.list("ADMIN_ALLOWED_IPS", default=[])
 DOCUMENTS_ENCRYPTION_KEY = env("DOCUMENTS_ENCRYPTION_KEY", default="")
 # Previous master keys while rotating (comma separated) - decrypt only.
 DOCUMENTS_ENCRYPTION_OLD_KEYS = env.list("DOCUMENTS_ENCRYPTION_OLD_KEYS", default=[])
+# Antivirus check of uploaded files: ClamAV's clamd (apps/documents/
+# antivirus.py). Empty host = no check (local work); production requires it -
+# docker-compose.prod.yml points it at the clamav container.
+CLAMAV_HOST = env("CLAMAV_HOST", default="")
+CLAMAV_PORT = env.int("CLAMAV_PORT", default=3310)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -232,6 +237,11 @@ CELERY_BEAT_SCHEDULE = {
     },
     "delete-old-cookie-consents": {
         "task": "apps.consents.tasks.delete_old_cookie_consents",
+        "schedule": 86400.0,
+    },
+    # Recipients' "Zgłoś nadużycie", after a year (apps/requests/abuse.py).
+    "delete-old-abuse-reports": {
+        "task": "apps.requests.tasks.delete_old_abuse_reports",
         "schedule": 86400.0,
     },
     # Every legal document's wording in force, into the archive (hourly, so a

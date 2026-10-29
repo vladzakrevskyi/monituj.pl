@@ -75,7 +75,7 @@ class UploadDocumentService:
                 code="REQUEST_STORAGE_FULL",
             )
 
-        validated = validate_upload(uploaded_file)
+        validated = validate_upload(uploaded_file, request_item.request)
 
         if Document.objects.filter(
             request_item=request_item, checksum=validated.checksum

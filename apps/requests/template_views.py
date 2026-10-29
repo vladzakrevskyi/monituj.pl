@@ -98,7 +98,7 @@ def template_create(request):
             messages.error(request, exc.message)
         return redirect("requests:templates")
     if request.method == "POST":
-        form = RequestTemplateForm(request.POST)
+        form = RequestTemplateForm(request.POST, owner=request.account)
         saved = _save(request, form)
         if saved is not None:
             return _saved(request, f"Zapisano szablon „{saved.title}”.")
@@ -113,7 +113,7 @@ def template_create(request):
 def template_edit(request, template_id):
     template = get_object_or_404(RequestTemplate, pk=template_id, owner=request.account)
     if request.method == "POST":
-        form = RequestTemplateForm(request.POST)
+        form = RequestTemplateForm(request.POST, owner=request.account)
         saved = _save(request, form, template)
         if saved is not None:
             return _saved(request, f"Zapisano zmiany w szablonie „{saved.title}”.")

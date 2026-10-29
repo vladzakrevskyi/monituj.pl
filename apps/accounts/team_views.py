@@ -8,6 +8,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.accounts import team
+from apps.accounts.sender import validate_sender_name
 from apps.billing import plans
 from apps.common.exceptions import ApplicationError
 from apps.consents.forms import LegalAcceptanceForm
@@ -45,6 +46,12 @@ class JoinForm(LegalAcceptanceForm):
     )
 
     field_order = ["name", "password", "password_confirm"]
+
+    def clean_name(self):
+        # The new account sends its own requests under this name too.
+        name = " ".join(self.cleaned_data["name"].split())
+        validate_sender_name(name)
+        return name
 
     def clean(self):
         cleaned = super().clean()

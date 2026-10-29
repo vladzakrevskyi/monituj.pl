@@ -44,11 +44,19 @@ GUEST_DAILY_LIMIT_MESSAGE = (
 # Far above what an office sends in a day; stops a script, not a person.
 REQUESTS_PER_DAY = 200
 # Emails an account sends to other people per day (invitations, links sent
-# by hand, manual reminders). New accounts start lower: that's where spam
-# accounts come from, and a new office rarely needs more on day one.
+# by hand, manual reminders). A new account that hasn't paid (the trial
+# included) starts lower, and may write to fewer different people: that's
+# where spam and phishing accounts come from - they sign up for free - and a
+# new office tries Monituj on a few clients first. Paying lifts both at once.
 OUTBOUND_PER_DAY = 300
-OUTBOUND_PER_DAY_NEW_ACCOUNT = 50
+OUTBOUND_PER_DAY_NEW_ACCOUNT = 20
+NEW_ACCOUNT_RECIPIENTS = 20
 NEW_ACCOUNT_AGE = timedelta(days=7)
+NEW_ACCOUNT_RECIPIENTS_MESSAGE = (
+    f"W pierwszym tygodniu, przed wykupieniem planu, prośby można wysłać do "
+    f"{NEW_ACCOUNT_RECIPIENTS} różnych odbiorców. Wykup plan, aby wysyłać bez "
+    "tego limitu, albo napisz do nas."
+)
 PASSWORD_FAILURES = 10
 CLOSED_MESSAGE = "Ta prośba została zamknięta - nie można już przesyłać plików."
 # How long a request sent through the public form waits for its sender to
@@ -145,12 +153,38 @@ def _reserve_daily_anonymous_request_slot(django_request) -> None:
         ) from exc
 
 
+def _new_and_unpaid(owner):
+    from apps.billing.services import account_for, is_subscribed
+
+    return owner.date_joined > timezone.now() - NEW_ACCOUNT_AGE and not (
+        is_subscribed(account_for(owner))
+    )
+
+
+def check_new_recipients(owner, emails):
+    """A new unpaid account may send requests to NEW_ACCOUNT_RECIPIENTS
+    different addresses - those already invited plus `emails`."""
+    if not _new_and_unpaid(owner):
+        return
+    from apps.notifications.models import EmailLog, EmailTemplate
+
+    known = {
+        email.lower()
+        for email in EmailLog.objects.filter(
+            request__created_by=owner, template=EmailTemplate.INVITATION
+        ).values_list("recipient_email", flat=True)
+    }
+    if len(known | {email.lower() for email in emails}) > NEW_ACCOUNT_RECIPIENTS:
+        raise RateLimitedAppError(
+            NEW_ACCOUNT_RECIPIENTS_MESSAGE, code="RECIPIENT_LIMIT_REACHED"
+        )
+
+
 def consume_outbound_email(owner) -> None:
     """Counts one email the account sends to someone else."""
-    is_new = owner.date_joined > timezone.now() - NEW_ACCOUNT_AGE
     throttle.consume(
         f"outbound:{owner.pk}",
-        OUTBOUND_PER_DAY_NEW_ACCOUNT if is_new else OUTBOUND_PER_DAY,
+        OUTBOUND_PER_DAY_NEW_ACCOUNT if _new_and_unpaid(owner) else OUTBOUND_PER_DAY,
         throttle.DAY,
         "Dzisiejszy limit wysyłanych wiadomości został wykorzystany. Spróbuj "
         "ponownie jutro albo napisz do nas, jeśli potrzebujesz większego limitu.",
@@ -368,6 +402,12 @@ class RequestService:
                 )
             client_ids = list(dict.fromkeys(client_ids))
             check_request_allowed(owner, count=len(client_ids))
+            check_new_recipients(
+                owner,
+                Client.objects.filter(owner=owner, pk__in=client_ids).values_list(
+                    "email", flat=True
+                ),
+            )
             requests = [
                 RequestService.create(
                     owner=owner,
@@ -470,6 +510,7 @@ class RequestService:
         request_obj, to_email, actor=None, django_request=None, counted=False
     ):
         if not counted:
+            check_new_recipients(request_obj.created_by, [to_email])
             consume_outbound_email(request_obj.created_by)
         link = absolute_url(f"/d/{request_obj.public_token}/")
         EmailService.send(

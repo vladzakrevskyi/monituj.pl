@@ -1,10 +1,12 @@
 import hashlib
 import io
 import os
+import zipfile
 
 import magic
 
 from apps.common.exceptions import ValidationAppError
+from apps.documents import antivirus, images
 
 MAX_UPLOAD_SIZE = 20 * 1024 * 1024
 
@@ -29,8 +31,6 @@ ALLOWED_TYPES = {
 }
 ALLOWED_EXTENSIONS = set(ALLOWED_TYPES)
 CONVERTED_TO_JPEG = {"heic", "heif"}
-# A photo, not a decompression bomb: ~50 megapixels is far above any phone.
-MAX_IMAGE_PIXELS = 50_000_000
 
 
 class ValidatedUpload:
@@ -54,31 +54,55 @@ class ValidatedUpload:
 def _heic_to_jpeg(content: bytes) -> bytes:
     """iPhone photos (HEIC) as JPG - something every computer opens. The
     photo is turned the way it was taken, and its metadata (place, device)
-    is left out."""
+    is left out. HEIC is decoded whole - with the size checked first and one
+    such decode at a time (apps/documents/images.py)."""
     import pillow_heif
     from PIL import Image, ImageOps
 
     pillow_heif.register_heif_opener()
     try:
         with Image.open(io.BytesIO(content)) as image:
-            if image.width * image.height > MAX_IMAGE_PIXELS:
-                raise ValidationAppError(
-                    "Zdjęcie ma zbyt dużą rozdzielczość.", code="IMAGE_TOO_LARGE"
-                )
-            photo = ImageOps.exif_transpose(image).convert("RGB")
-            output = io.BytesIO()
-            photo.save(output, format="JPEG", quality=90, optimize=True)
+            images.check_size(image)
+            with images.one_at_a_time():
+                image.load()
+                # In place: no extra copies of a half-gigabyte picture.
+                photo = image if image.mode == "RGB" else image.convert("RGB")
+                ImageOps.exif_transpose(photo, in_place=True)
+                output = io.BytesIO()
+                photo.save(output, format="JPEG", quality=90, optimize=True)
     except ValidationAppError:
         raise
+    except Image.DecompressionBombError as exc:
+        raise images.too_large() from exc
     except Exception as exc:
-        raise ValidationAppError(
-            "Nie udało się odczytać zdjęcia. Zapisz je jako JPG i spróbuj ponownie.",
-            code="IMAGE_UNREADABLE",
-        ) from exc
+        raise images.unreadable() from exc
     return output.getvalue()
 
 
-def validate_upload(uploaded_file) -> ValidatedUpload:
+OFFICE_ZIPS = {"docx", "xlsx"}
+DAMAGED_MESSAGE = (
+    "Plik jest uszkodzony albo nie jest dokumentem Office. Otwórz go i zapisz "
+    "ponownie albo wyślij jako PDF."
+)
+
+
+def _check_office_zip(content):
+    """A .docx / .xlsx is a zip with Office's own structure - not just any
+    zip renamed - and without a macro project (Word and Excel refuse those
+    in .docx / .xlsx anyway, so it can only be a trick)."""
+    try:
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            names = archive.namelist()
+    except zipfile.BadZipFile as exc:
+        raise ValidationAppError(DAMAGED_MESSAGE, code="FILE_DAMAGED") from exc
+    if "[Content_Types].xml" not in names:
+        raise ValidationAppError(DAMAGED_MESSAGE, code="FILE_DAMAGED")
+    if any(name.lower().endswith("vbaproject.bin") for name in names):
+        raise ValidationAppError(antivirus.MACROS_MESSAGE, code="FILE_HAS_MACROS")
+
+
+def validate_upload(uploaded_file, request_obj=None) -> ValidatedUpload:
+    """request_obj: where the file is going - named in an antivirus alarm."""
     if uploaded_file.size > MAX_UPLOAD_SIZE:
         raise ValidationAppError("Plik jest za duży.", code="FILE_TOO_LARGE")
     if uploaded_file.size == 0:
@@ -97,6 +121,11 @@ def validate_upload(uploaded_file) -> ValidatedUpload:
         raise ValidationAppError(
             "Ten format pliku nie jest dozwolony.", code="MIME_NOT_ALLOWED"
         )
+
+    if extension in OFFICE_ZIPS:
+        _check_office_zip(content)
+    # Before anything decodes it (HEIC below, photos in pages.py).
+    antivirus.check(content, safe_name, request_obj)
 
     converted = extension in CONVERTED_TO_JPEG
     if converted:

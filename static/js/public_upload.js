@@ -143,7 +143,7 @@
     if (trigger.classList.contains("is-loading")) return;
     for (const file of files) {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", await fitLimit(file));
       const sent = await send(
         zone,
         `/api/public/${token}/items/${zone.dataset.itemId}/upload/`,
@@ -157,19 +157,29 @@
   // A page photo, smaller: a phone's 12-megapixel JPG becomes a few hundred
   // kilobytes. What the browser can't draw (HEIC on a computer) goes as it is.
   const PAGE_LONG_SIDE = 2200;
-  async function shrink(file) {
+  async function shrink(file, longSide = PAGE_LONG_SIDE, quality = 0.85, name = "strona.jpg") {
     try {
       const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
-      const scale = Math.min(1, PAGE_LONG_SIDE / Math.max(bitmap.width, bitmap.height));
+      const scale = Math.min(1, longSide / Math.max(bitmap.width, bitmap.height));
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(bitmap.width * scale);
       canvas.height = Math.round(bitmap.height * scale);
       canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      const blob = await new Promise((done) => canvas.toBlob(done, "image/jpeg", 0.85));
-      return blob ? new File([blob], "strona.jpg", { type: "image/jpeg" }) : file;
+      bitmap.close();
+      const blob = await new Promise((done) => canvas.toBlob(done, "image/jpeg", quality));
+      return blob ? new File([blob], name, { type: "image/jpeg" }) : file;
     } catch {
       return file;
     }
+  }
+
+  // A photo over the upload limit (a 200-megapixel camera) is sent smaller
+  // instead of refused - still sharp, 4000 px. Smaller files go untouched.
+  const UPLOAD_LIMIT = 20 * 1024 * 1024;
+  const PHOTO = /\.(jpe?g|png|heic|heif)$/i;
+  function fitLimit(file) {
+    if (file.size <= UPLOAD_LIMIT || !PHOTO.test(file.name)) return file;
+    return shrink(file, 4000, 0.9, file.name.replace(/\.[^.]+$/, "") + ".jpg");
   }
 
   // "Zrób zdjęcia stron": pages collected one by one, sent as one PDF.

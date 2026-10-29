@@ -1,5 +1,5 @@
 <footer class="site-footer site-footer--recipient">
 <div class="site-footer__bottom">
-<p>Ta strona działa w <a href="{% url 'landing' %}">Monituj</a> - narzędziu, w którym nadawca zbiera dokumenty. <a href="{% url 'help:category' 'dla-klientow' %}">Pomoc</a> · <a href="{% url 'legal:privacy' %}">Polityka prywatności</a> · <a href="{% url 'legal:terms' %}">Regulamin</a>{% if cookie_consent.enabled %} · <button type="button" class="site-footer__cookies" data-cookie-settings>Ustawienia cookies</button>{% endif %}</p>
+<p>Ta strona działa w <a href="{% url 'landing' %}">Monituj</a> - narzędziu, w którym nadawca zbiera dokumenty. <a href="{% url 'help:category' 'dla-klientow' %}">Pomoc</a> · <a href="{% url 'legal:privacy' %}">Polityka prywatności</a> · <a href="{% url 'legal:terms' %}">Regulamin</a>{% if public_token and not sender_view %} · <a href="{% url 'public:report-abuse' public_token %}">Zgłoś nadużycie</a>{% endif %}{% if cookie_consent.enabled %} · <button type="button" class="site-footer__cookies" data-cookie-settings>Ustawienia cookies</button>{% endif %}</p>
 </div>
 </footer>

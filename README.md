@@ -101,6 +101,7 @@ pip-audit -r requirements/prod.txt
 | `anonymize_expired_documents` | Usuwa pliki po okresie przechowywania i powiadamia obie strony |
 | `delete_unconfirmed_requests` | Usuwa prośby bez konta niepotwierdzone w ciągu 48 godzin (i konta bez hasła utworzone tylko dla nich) |
 | `delete_old_cookie_consents` (raz dziennie) | Usuwa wpisy rejestru zgód na cookies starsze niż 3 lata |
+| `delete_old_abuse_reports` (raz dziennie) | Usuwa zgłoszenia nadużyć starsze niż rok |
 | `delete_expired_demo_accounts` | Usuwa konta demo starsze niż 24 godziny |
 | `delete_old_throttle_events` | Czyści stare wpisy limitów (logowanie, e-maile, przesyłanie plików) |
 | `send_notices` (co minutę) | E-maile o zmianach planu i alerty płatności dla zespołu (kolejka `BillingNotice`) |
@@ -195,9 +196,9 @@ Internet ──443──▶ nginx (na serwerze, HTTPS, Let's Encrypt)
           ┌──────── Docker Compose ──────────────────────────┐
           │ web (gunicorn + Django)   worker (Celery)        │
           │ beat (harmonogram)        db (PostgreSQL)        │
-          │ redis                     wolumeny:              │
-          │                           postgres_data (baza),  │
-          │                           storage (pliki)        │
+          │ redis                     clamav (antywirus)     │
+          │ wolumeny: postgres_data (baza), storage (pliki), │
+          │           clamav_db (bazy sygnatur antywirusa)   │
           └──────────────────────────────────────────────────┘
 ```
 
@@ -205,7 +206,7 @@ Na zewnątrz otwarte są tylko porty 22, 80 i 443. Baza danych, Redis i sama apl
 
 ### Krok 0. Czego potrzebujesz
 
-- **Serwer VPS**: Ubuntu 24.04 LTS, co najmniej 2 vCPU, 2 GB RAM, 40 GB SSD. Serwer najlepiej wybrać **w UE** (klienci są z Polski, dane podlegają RODO) – kraj serwerowni trzeba potem wpisać w `LEGAL_HOSTING_LOCATION`.
+- **Serwer VPS**: Ubuntu 24.04 LTS, co najmniej 2 vCPU, **4 GB RAM**, 40 GB SSD. 4 GB to minimum: sam skaner antywirusowy (ClamAV, „Skaner antywirusowy” niżej) zajmuje ok. 1,5 GB – na 2 GB strona się nie zmieści. Serwer najlepiej wybrać **w UE** (klienci są z Polski, dane podlegają RODO) – kraj serwerowni trzeba potem wpisać w `LEGAL_HOSTING_LOCATION`.
 - **Domenę** i dostęp do jej ustawień DNS.
 - **Konto SMTP** do wysyłki e-maili: serwis transakcyjny (np. Brevo, Mailgun, Postmark, Amazon SES) albo poczta u hostingodawcy. Potrzebne są: serwer, port, login i hasło.
 - **Dane firmy** do dokumentów prawnych: nazwa, adres, NIP, REGON, KRS/CEIDG, adres e-mail do kontaktu.
@@ -314,7 +315,7 @@ sudo apt install -y unattended-upgrades && sudo dpkg-reconfigure -plow unattende
 sudo apt install -y fail2ban
 ```
 
-**Plik wymiany (swap)** – na serwerze z 2 GB RAM budowanie obrazu bez niego może się nie udać:
+**Plik wymiany (swap)** – zapas na budowanie obrazu i chwilowe skoki pamięci:
 
 ```bash
 sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
@@ -457,9 +458,9 @@ Wartości ze spacjami (np. adres firmy) wpisuj bez cudzysłowów.
 docker compose up -d --build
 ```
 
-Pierwsze budowanie obrazu trwa kilka minut. Przy każdym starcie kontener `web` sam wykonuje migracje bazy danych i zbiera pliki statyczne.
+Pierwsze budowanie obrazu trwa kilka minut. Przy każdym starcie kontener `web` sam wykonuje migracje bazy danych i zbiera pliki statyczne. Kontener `clamav` przy pierwszym starcie pobiera bazy sygnatur (kilka minut) – do tego czasu klienci zobaczą przy przesyłaniu „spróbuj za kilka minut”.
 
-Sprawdź, czy wszystkie pięć kontenerów działa (`running`, a `db` ma status `healthy`):
+Sprawdź, czy wszystkie sześć kontenerów działa (`running`, `db` ma status `healthy`, a `clamav` – po kilku minutach – też `healthy`):
 
 ```bash
 docker compose ps
@@ -711,6 +712,54 @@ docker compose exec web python manage.py rewrap_document_keys
 
 Każde pobranie dokumentu jest zapisywane w dzienniku zdarzeń (kto: nadawca czy odbiorca, kiedy, adres IP) i widoczne w historii prośby.
 
+### Skaner antywirusowy
+
+Każdy przesłany plik – także każde zdjęcie strony – sprawdza ClamAV (kontener `clamav`, konfiguracja w `deploy/clamav/clamd.conf`), zanim zostanie zaszyfrowany i zapisany (`apps/documents/antivirus.py`):
+
+- **wirus** – plik jest odrzucony, klient widzi „Plik został zablokowany przez skaner antywirusowy”, a na `SECURITY_EMAIL` przychodzi alarm z nazwą prośby i nadawcy;
+- **plik Office z makrami** (`.doc`, `.xls` z makrami, `.docx`/`.xlsx` z projektem VBA) – odrzucony z prośbą o zapisanie jako PDF albo zwykły `.xlsx`/`.docx`; bez alarmu, to zwykle niewinny arkusz;
+- **`.docx`/`.xlsx`, który nie jest dokumentem Office** (np. dowolny zip ze zmienioną nazwą) – odrzucony jako uszkodzony;
+- **skaner nie odpowiada** – przesyłanie jest wstrzymane („spróbuj za kilka minut”), na `SECURITY_EMAIL` przychodzi alarm. Plik nigdy nie trafia do bazy bez sprawdzenia.
+
+Bazy sygnatur aktualizują się same 6 razy na dobę. Na czas wczytania nowych baz skaner na chwilę wstrzymuje sprawdzanie (przesyłanie czeka) – dzięki temu pamięć nie rośnie dwukrotnie. Bez `CLAMAV_HOST` strona produkcyjna się nie uruchomi – `docker-compose.prod.yml` ustawia go sam. Lokalnie skaner jest wyłączony, chyba że w `.env` wpiszesz `CLAMAV_HOST`.
+
+Stan skanera pokazuje `post_deploy` po każdej aktualizacji. Ręcznie:
+
+```bash
+docker compose ps clamav
+```
+
+```bash
+docker compose logs --tail=50 clamav
+```
+
+**Pliki przesłane przed włączeniem skanera** – sprawdź je raz (nic nie usuwa; wynik przychodzi też na `SECURITY_EMAIL`):
+
+```bash
+docker compose exec web python manage.py scan_documents
+```
+
+Po pierwszym uruchomieniu kontenera `clamav` monitoring bezpieczeństwa zgłosi nowy kontener – to oczekiwane; zatwierdź nowy stan: `sudo /usr/local/sbin/monituj-security-watch --accept`.
+
+### Zdjęcia i pamięć serwera
+
+Zdjęcie zajmuje na dysku mało, ale po rozpakowaniu – szerokość × wysokość × 3 bajty. Żeby jeden plik nie zajął pamięci całego serwera (`apps/documents/images.py`):
+
+- rozdzielczość jest sprawdzana z nagłówka pliku, zanim cokolwiek zostanie rozpakowane: JPEG do 300 Mpx (aparaty 200 Mpx), HEIC i PNG do 50 Mpx (iPhone robi najwyżej 48 Mpx);
+- JPEG w „zdjęciach stron” jest rozpakowywany od razu pomniejszony – zdjęcie 200 Mpx zajmuje ok. 90 MB zamiast ponad 600 MB;
+- HEIC i PNG trzeba rozpakować w całości (zdjęcie z iPhone'a 48 Mpx ok. 0,5 GB), więc na całym serwerze rozpakowuje się jedno naraz – pozostałe chwilę czekają;
+- w przeglądarce zdjęcia stron są zmniejszane przed wysłaniem do 2200 px, a zwykłe zdjęcie większe niż 20 MB – do 4000 px, zamiast odrzucenia;
+- kontenery mają limity pamięci (`mem_limit` w `docker-compose.prod.yml`), a gunicorn co jakiś czas odnawia swoje procesy.
+
+### Ochrona przed podszywaniem się
+
+Monituj wysyła e-maile z własnej domeny, więc nie może służyć do wyłudzeń:
+
+- nazwy nadawcy przypominające urząd, bank albo Monituj są odrzucane – także zapisane z cyframi, myślnikami czy literami cyrylicy („mBank24”, „Urz4d”, „РКО”) (`apps/accounts/sender.py`);
+- konto bez opłaconego planu (także w okresie próbnym) nie może prosić o kod PIN, BLIK, SMS, CVV, numer karty ani hasło do banku (`apps/requests/content_rules.py`);
+- w pierwszym tygodniu, przed opłaceniem planu: najwyżej 20 e-maili dziennie i prośby do najwyżej 20 różnych odbiorców (`apps/requests/services.py`);
+- w każdym e-mailu do klienta i na jego stronie jest link „Zgłoś nadużycie”: zgłoszenie od razu przychodzi jako alarm na `SECURITY_EMAIL` (z liczbą wcześniejszych zgłoszeń tego konta) i trafia do panelu administratora (**Zgłoszenia nadużyć**, sekcja Requests). Konto nie jest blokowane automatycznie – decydujesz Ty: zamknij jego prośby i ustaw konto jako nieaktywne. Zgłoszenia są usuwane po roku.
+
 ### Płatności (Stripe)
 
 Dane do faktury (osoba prywatna albo firma z NIP i adres) klient podaje w panelu – „Plan i płatności” → „Dane do faktury” – **zanim zapłaci**; bez nich zakup i zmiana planu są zablokowane. Polska firma podaje **tylko NIP**: nazwę i adres Monituj pobiera z bazy REGON GUS (API BIR 1.1 – każda firma, także spoza VAT) i nie da się ich zmienić; status VAT dochodzi z wykazu podatników VAT Ministerstwa Finansów (`wl-api.mf.gov.pl`). NIP musi mieć poprawną sumę kontrolną, MF nie może go odrzucić, a firma nie może mieć zakończonej działalności. Dane wpisuje się ręcznie tylko dla firmy zagranicznej albo gdy żaden rejestr jej nie zna (lub chwilowo nie odpowiada). Limit: 20 sprawdzeń NIP na godzinę na konto.
@@ -925,6 +974,7 @@ Sprawdzenie: `docker compose exec web python manage.py security_digest --print` 
 - [ ] Wszystkie zmienne `LEGAL_*` są uzupełnione, a Regulamin, Polityka prywatności i Umowa powierzenia zostały sprawdzone przez prawnika.
 - [ ] Kopie zapasowe u hostingu są włączone; przywracanie zostało przetestowane przynajmniej raz.
 - [ ] `DOCUMENTS_ENCRYPTION_KEY` jest ustawiony, a jego kopia leży poza serwerem.
+- [ ] Serwer ma co najmniej 4 GB RAM, kontener `clamav` jest `healthy`, `post_deploy` pokazuje „Antywirus: działa”, a `scan_documents` zostało uruchomione raz dla starszych plików.
 - [ ] `ADMIN_URL` i `ADMIN_ALLOWED_IPS` są ustawione, a w nginx w `location /admin/` jest Twój adres IP.
 - [ ] `LEGAL_BACKUP_DAYS` odpowiada liczbie dni przechowywania kopii u hostingu.
 - [ ] Jeśli włączasz logowanie przez Google: aplikacja OAuth jest opublikowana, a adres przekierowania zgadza się z `SITE_URL`.

@@ -8,10 +8,12 @@ from django.utils import timezone as django_timezone
 
 from apps.accounts.sender import suggested_name, validate_sender_name
 from apps.clients.models import Client
+from apps.requests import content_rules
 from apps.requests.models import (
     DEFAULT_RETENTION_DAYS,
     LAST_DAY_OF_MONTH,
     MAX_RETENTION_DAYS,
+    AbuseReason,
     RecurringInterval,
 )
 
@@ -131,7 +133,30 @@ class _RequestDetailsFieldsMixin(forms.Form):
                 "retention_custom_days" not in self.errors
             ):
                 self.add_error("retention_custom_days", "Podaj liczbę dni.")
+        self._screen_content(cleaned_data)
         return cleaned_data
+
+    def _screen_content(self, cleaned_data):
+        """No asking for PINs, card numbers or bank passwords from an account
+        that hasn't paid (apps/requests/content_rules.py). Forms that know
+        the account set self.owner; without it the rules apply."""
+        if not content_rules.applies_to(getattr(self, "owner", None)):
+            return
+        texts = [(field, cleaned_data.get(field)) for field in ("name", "description")]
+        if "items" in self.fields and self.is_bound:
+            items = (
+                self.data.getlist("items")
+                if hasattr(self.data, "getlist")
+                else self.data.get("items") or []
+            )
+            texts += [("items", item) for item in items if isinstance(item, str)]
+        for field, text in texts:
+            if field in self.fields:
+                try:
+                    content_rules.check(text)
+                except ValidationError as exc:
+                    self.add_error(field, exc)
+                    return
 
     def retention_days(self):
         choice = self.cleaned_data.get("retention_choice") or str(
@@ -596,6 +621,7 @@ class RecurringRequestForm(
 
     def __init__(self, *args, owner=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.owner = owner
         del self.fields["deadline"]
         if owner is not None:
             self.fields["clients"].queryset = Client.objects.filter(
@@ -636,8 +662,9 @@ class RequestTemplateForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Fo
         label="Liczba dni po wysłaniu", required=False, min_value=1, max_value=365
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, owner=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.owner = owner
         del self.fields["deadline"]
         self.fields["name"].label = "Nazwa prośby"
         self.fields["name"].help_text = (
@@ -736,7 +763,9 @@ class PublicRequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form
 
 
 class RequestEditForm(_RequestDetailsFieldsMixin, forms.Form):
-    pass
+    def __init__(self, *args, owner=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.owner = owner
 
 
 class PublicPasswordForm(forms.Form):
@@ -744,6 +773,30 @@ class PublicPasswordForm(forms.Form):
         label="Hasło",
         widget=forms.PasswordInput,
         error_messages={"required": REQUIRED_MESSAGE},
+    )
+
+
+class AbuseReportForm(forms.Form):
+    """ "Zgłoś nadużycie" (apps/requests/abuse.py)."""
+
+    reason = forms.ChoiceField(
+        label="Co jest nie tak?",
+        choices=AbuseReason.choices,
+        widget=forms.RadioSelect,
+        error_messages={"required": "Wybierz, co jest nie tak."},
+    )
+    details = forms.CharField(
+        label="Coś jeszcze? (opcjonalnie)",
+        required=False,
+        max_length=1000,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 4,
+                "placeholder": "Np. Nie znam tej firmy, a prośba dotyczy mojego "
+                "konta w banku.",
+            }
+        ),
+        error_messages={"max_length": "Opis może mieć najwyżej 1000 znaków."},
     )
 
 
@@ -889,9 +942,16 @@ class QuestionForm(forms.Form):
 
     def __init__(self, *args, owner=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.owner = owner
         self.fields["client"].queryset = Client.objects.filter(owner=owner).order_by(
             "name"
         )
+
+    def clean_question(self):
+        question = self.cleaned_data["question"]
+        if content_rules.applies_to(self.owner):
+            content_rules.check(question)
+        return question
 
     def clean(self):
         cleaned = super().clean()
