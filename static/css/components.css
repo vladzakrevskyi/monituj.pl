@@ -45,44 +45,88 @@
   color: var(--color-text-muted);
 }
 
-/* Small uppercase label with an orange bar, used above headings */
+/* The small line above headings, set like a line in a ledger: the label on
+   the left, above a firm rule. Page and section heads also carry their
+   position on the page on the right - "03/09" (static/js/ledger.js counts
+   them; without it just "03"). */
 
 .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  width: 100%;
   margin: 0 0 var(--space-5);
+  padding: 0 0 var(--space-2);
+  border-bottom: 2px solid currentColor;
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
-.eyebrow::before {
-  content: "";
-  width: 24px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--color-primary);
+/* A single block's label (the client's page, forms, error pages): a lighter
+   line, no number. */
+.eyebrow--line {
+  border-bottom-width: 1px;
+  font-size: 14px;
 }
 
 .eyebrow--light {
   color: #fff;
 }
 
+main {
+  counter-reset: poz;
+}
+
+main[data-poz-total] {
+  counter-reset: poz poz-total var(--poz-total);
+}
+
+.hero .eyebrow:not(.eyebrow--line),
+.page-hero .eyebrow,
+.help-hero .eyebrow,
+.section-head .eyebrow {
+  counter-increment: poz;
+}
+
+.hero .eyebrow:not(.eyebrow--line)::after,
+.page-hero .eyebrow::after,
+.help-hero .eyebrow::after,
+.section-head .eyebrow::after {
+  content: counter(poz, decimal-leading-zero);
+  color: var(--color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+main[data-poz-total] .hero .eyebrow:not(.eyebrow--line)::after,
+main[data-poz-total] .page-hero .eyebrow::after,
+main[data-poz-total] .help-hero .eyebrow::after,
+main[data-poz-total] .section-head .eyebrow::after {
+  content: counter(poz, decimal-leading-zero) "/" counter(poz-total, decimal-leading-zero);
+}
+
+main[data-poz-single] .eyebrow::after {
+  content: none;
+}
+
 /* Display headings: light weight with bold emphasis */
 
 .display,
 .display-2 {
-  font-weight: 300;
-  letter-spacing: -0.025em;
+  font-weight: 600;
+  letter-spacing: -0.03em;
   margin-top: 0;
 }
 
+/* One weight throughout - no light text with bold words in it. */
 .display strong,
 .display-2 strong {
-  font-weight: 700;
+  font-weight: inherit;
 }
 
 .display {
@@ -889,37 +933,35 @@ a.pagination__page:hover {
   border-radius: var(--radius-xl);
 }
 
+/* A section's head: the ledger line (.eyebrow) across the full width, the
+   heading below on the left, the explanation beside it on the right. */
+
 .section-head {
-  max-width: 720px;
-  margin: 0 auto var(--space-8);
-  text-align: center;
-}
-
-.section-head .eyebrow {
-  justify-content: center;
-}
-
-.section-head p {
-  font-size: 18px;
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
-.section-head--split {
-  max-width: none;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--space-7);
-  align-items: end;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  column-gap: var(--space-8);
+  align-items: start;
+  margin: 0 0 var(--space-8);
   text-align: left;
 }
 
-.section-head--split .eyebrow {
-  justify-content: flex-start;
+.section-head .eyebrow {
+  grid-column: 1 / -1;
 }
 
-.section-head--split .display-2 {
-  margin-bottom: 0;
+.section-head .display-2 {
+  grid-column: 1;
+  margin: 0;
+}
+
+.section-head p:not(.eyebrow) {
+  grid-column: 2;
+  margin: 0;
+  /* The first line level with the heading's first line, not its top. */
+  padding-top: 8px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
 }
 
 /* Steps */
@@ -977,33 +1019,22 @@ a.pagination__page:hover {
   gap: var(--space-5);
 }
 
+/* An entry under a rule, not a box with an icon tile: the icon is a quiet
+   mark in the margin of the title. */
 .feature-card {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  transition: border-color 0.15s ease;
-}
-
-.feature-card:hover {
-  border-color: var(--color-black);
+  padding: var(--space-4) 0 0;
+  border-top: 2px solid var(--color-text);
 }
 
 .feature-card__icon {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-3);
+  color: var(--color-primary-text);
 }
 
 .feature-card__icon svg {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
 }
 
 .feature-card h3 {
@@ -1116,9 +1147,14 @@ a.pagination__page:hover {
     grid-column: 1 / -1;
   }
 
-  .section-head--split {
+  .section-head {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-4);
+    row-gap: var(--space-4);
+  }
+
+  .section-head p:not(.eyebrow) {
+    grid-column: 1;
+    padding-top: 0;
   }
 
   .guest-cta {
@@ -3248,11 +3284,11 @@ a.pagination__page:hover {
 
 .overview-summary__eyebrow {
   margin: 0;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  padding: 0 0 var(--space-2);
+  border-bottom: 1px solid currentColor;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .overview-summary__month {

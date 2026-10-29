@@ -5,6 +5,7 @@
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages.css' %}">{% endblock %}
 
 {% block content %}
+
 <section class="hero">
 <div class="container hero__inner">
 <div class="hero__copy">
@@ -83,8 +84,6 @@
 </div>
 </section>
 
-{% include "pages/_try_band.html" with heading=True anchor="wyprobuj" %}
-
 <section class="section section--first">
 <div class="container">
 <div class="section-head">
@@ -92,27 +91,24 @@
 <h2 class="display-2">Pogoń za dokumentami to <strong>ukryty koszt</strong> każdej firmy</h2>
 <p>Nikt nie wpisuje jej do budżetu, a zabiera godziny w każdym miesiącu - i wychodzi na jaw dopiero wtedy, gdy termin jest tuż-tuż.</p>
 </div>
-<div class="pain-grid">
-<div class="pain-card">
-<span class="pain-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
-<h3>Szukanie w skrzynce</h3>
-<p>Załączniki rozproszone po wątkach, kilka wersji tego samego pliku i niepewność, która jest aktualna.</p>
+<div class="inbox-story">
+<div class="inbox" aria-hidden="true">
+<div class="inbox__bar"><span class="inbox__folder">Odebrane</span><span class="inbox__count">47 nieprzeczytanych</span></div>
+<ul class="inbox__list">
+<li class="is-unread"><span class="inbox__from">Kowalski Usługi</span><span class="inbox__subject">RE: RE: Fwd: wyciąg za wrzesień??</span><span class="inbox__date">9:42</span></li>
+<li><span class="inbox__from">Ja</span><span class="inbox__subject">Przypominam o dokumentach (3. raz)</span><span class="inbox__date">wczoraj</span></li>
+<li class="is-unread"><span class="inbox__from">Piekarnia Złoty Kłos</span><span class="inbox__subject">faktura_final_v2_POPRAWIONA.pdf</span><span class="inbox__date">wczoraj</span></li>
+<li><span class="inbox__from">Anna z biura</span><span class="inbox__subject">Kto ma aktualny arkusz braków?</span><span class="inbox__date">pon.</span></li>
+<li class="is-unread"><span class="inbox__from">Auto Serwis Nowak</span><span class="inbox__subject">Paragony mogą być w przyszłym tygodniu?</span><span class="inbox__date">pon.</span></li>
+<li class="is-late"><span class="inbox__from">Ja</span><span class="inbox__subject">VAT jutro - wciąż brak umowy leasingu</span><span class="inbox__date">9.10</span></li>
+</ul>
 </div>
-<div class="pain-card">
-<span class="pain-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1L19 8l-3-3L5 16z"/><path d="M14 7l3 3"/></svg></span>
-<h3>Ręczne przypominanie</h3>
-<p>Kolejny mail „przypominam o dokumentach” - pisany ręcznie, do każdego klienta osobno, co kilka dni.</p>
-</div>
-<div class="pain-card">
-<span class="pain-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></span>
-<h3>Arkusz braków</h3>
-<p>Lista w Excelu, którą ktoś musi aktualizować - i o której ktoś musi pamiętać, gdy jest urlop albo nawał pracy.</p>
-</div>
-<div class="pain-card">
-<span class="pain-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span>
-<h3>Termin na ostatnią chwilę</h3>
-<p>Brak dokumentu wychodzi na jaw dopiero przed terminem - kiedy nie ma już czasu, żeby go spokojnie uzupełnić.</p>
-</div>
+<ol class="pain-list">
+<li><h3>Szukanie w skrzynce</h3><p>Załączniki rozproszone po wątkach, kilka wersji tego samego pliku i niepewność, która jest aktualna.</p></li>
+<li><h3>Ręczne przypominanie</h3><p>Kolejny mail „przypominam o dokumentach” - pisany ręcznie, do każdego klienta osobno, co kilka dni.</p></li>
+<li><h3>Arkusz braków</h3><p>Lista w Excelu, którą ktoś musi aktualizować - i o której ktoś musi pamiętać, gdy jest urlop albo nawał pracy.</p></li>
+<li><h3>Termin na ostatnią chwilę</h3><p>Brak dokumentu wychodzi na jaw dopiero przed terminem - kiedy nie ma już czasu, żeby go spokojnie uzupełnić.</p></li>
+</ol>
 </div>
 </div>
 </section>
@@ -134,6 +130,7 @@
 <button type="button" class="video-dialog__close" data-video-close aria-label="Zamknij film"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 {% promo_video chapters=False %}
 </dialog>
+
 
 <section class="section section--flush-top">
 <div class="container">
@@ -224,44 +221,72 @@
 </div>
 </section>
 
-<section class="section">
+<section class="section" id="pamiec-biura">
 <div class="container">
-<div class="section-head section-head--split">
-<div>
-<p class="eyebrow">Co zyskuje Twoja firma</p>
-<h2 class="display-2">Lepszy proces, <strong>nie tylko wygodniejsze pliki</strong></h2>
-</div>
-<p>Monituj porządkuje to, co dzieje się między „potrzebuję dokumentów” a „mam komplet”. Właśnie tam firmy tracą najwięcej czasu.</p>
-</div>
-<div class="feature-grid">
-{% include "pages/_feature.html" with title="Terminy pod kontrolą" text="Każda prośba ma termin widoczny dla Ciebie i klienta. Prośby po terminie od razu wyróżniają się w panelu." icon="clock" %}
-{% include "pages/_feature.html" with title="Mniej pracy administracyjnej" text="Przypomnienia, potwierdzenia i informacje o brakach wysyłają się same. Twój zespół zajmuje się merytoryką." icon="bell" %}
-{% include "pages/_feature.html" with title="Powtarzalny proces" text="Każda prośba wygląda tak samo: lista z szablonu, termin, przypomnienia, akceptacja. Comiesięczne prośby wychodzą same - nic nie zależy od tego, kto akurat pamięta." icon="repeat" %}
-{% include "pages/_feature.html" with title="Pełna widoczność" text="Widzisz, u którego klienta czego brakuje, co zostało przesłane i kiedy wyjdzie następne przypomnienie." icon="eye" %}
-{% include "pages/_feature.html" with title="Profesjonalny kontakt z klientem" text="Zamiast łańcucha maili klient dostaje czytelną listę i potwierdzenie każdego przesłanego pliku." icon="user" %}
-{% include "pages/_feature.html" with title="Porządek w danych" text="Pliki są usuwane automatycznie po ustalonym czasie. Nie gromadzisz dokumentów klientów dłużej, niż to potrzebne." icon="shield" %}
-</div>
-</div>
-</section>
-
-<section class="section section--flush-top" id="pamiec-biura">
-<div class="container">
-<div class="section-head section-head--split">
-<div>
+<div class="section-head">
 <p class="eyebrow">Pamięć biura</p>
 <h2 class="display-2">Nie musisz pamiętać. <strong>Monituj pamięta za Ciebie.</strong></h2>
-</div>
 <p>Pytania do klientów, wszystko o kliencie w jednym miejscu i kalendarz z tym, co masz zrobić dziś - a rano mail, od czego zacząć.</p>
 </div>
-<div class="feature-grid">
-{% include "pages/_feature.html" with title="Pytania do klienta" text="„Co to za przelew 1 250 zł z 12.09?” Klient odpowiada z linku, bez konta, a Monituj przypomina, dopóki nie odpowie. Obok pytania zapisujesz, po co pytasz - widzi to tylko Twój zespół." icon="question" %}
-{% include "pages/_feature.html" with title="Karta klienta" text="Otwarte sprawy, odpowiedzi do sprawdzenia, brakujące dokumenty, notatki zespołu i cała historia klienta na jednej stronie. Siadasz do jego księgowości i wszystko masz przed sobą." icon="user" %}
-{% include "pages/_feature.html" with title="Kalendarz i „Na dziś”" text="Terminy klientów, wysyłki cykliczne i Twoje przypomnienia w jednym kalendarzu - także w telefonie. W dni robocze o 7:30 mail z listą na dziś." icon="calendar" %}
+<div class="vignettes">
+<article class="vignette">
+<div class="vignette__scene vignette__scene--chat" aria-hidden="true">
+<p class="scene-bubble scene-bubble--asked">Co to za przelew 1 250 zł z 12.09?</p>
+<p class="scene-bubble scene-bubble--answer">Zaliczka za mąkę na październik.</p>
+<p class="scene-note">Po co pytasz: VAT za wrzesień</p>
+</div>
+<h3>Pytania do klienta</h3>
+<p>Klient odpowiada z linku, bez konta, a Monituj przypomina, dopóki nie odpowie. Obok pytania zapisujesz, po co pytasz - widzi to tylko Twój zespół.</p>
+</article>
+<article class="vignette">
+<div class="vignette__scene" aria-hidden="true">
+<p class="scene-title">Piekarnia Złoty Kłos</p>
+<ul class="scene-rows">
+<li><span>Pytanie bez odpowiedzi</span><b>3 dni</b></li>
+<li><span>Odpowiedź do sprawdzenia</span><b>1</b></li>
+<li><span>Brakujące dokumenty</span><b>2</b></li>
+<li><span>Notatka: nowe konto w banku</span><b>Anna</b></li>
+</ul>
+</div>
+<h3>Karta klienta</h3>
+<p>Otwarte sprawy, odpowiedzi do sprawdzenia, brakujące dokumenty, notatki zespołu i cała historia klienta na jednej stronie.</p>
+</article>
+<article class="vignette">
+<div class="vignette__scene" aria-hidden="true">
+<p class="scene-title">Na dziś · 7:30</p>
+<ul class="scene-rows">
+<li><span>Zadzwonić do Kowalskiego</span><b>dziś</b></li>
+<li><span>Termin: Hurtownia Mąki</span><b>jutro</b></li>
+<li><span>Dotarło od wczoraj</span><b>3 pliki</b></li>
+<li><span>Pytanie czeka od tygodnia</span><b>1</b></li>
+</ul>
+</div>
+<h3>Kalendarz i „Na dziś”</h3>
+<p>Terminy klientów, wysyłki cykliczne i Twoje przypomnienia w jednym kalendarzu - także w telefonie. W dni robocze o 7:30 mail z listą na dziś.</p>
+</article>
 </div>
 <div class="section-cta">
 <a class="btn btn-secondary btn-lg" href="{% url 'pages:features' %}#pamiec-biura">Zobacz, co jeszcze potrafi</a>
 <a class="btn btn-secondary btn-lg" href="{% url 'pages:client-questions' %}">Poradnik: jak pytać klienta</a>
 </div>
+</div>
+</section>
+
+<section class="section">
+<div class="container">
+<div class="section-head">
+<p class="eyebrow">Co zyskuje Twoja firma</p>
+<h2 class="display-2">Lepszy proces, <strong>nie tylko wygodniejsze pliki</strong></h2>
+<p>Monituj porządkuje to, co dzieje się między „potrzebuję dokumentów” a „mam komplet”. Właśnie tam firmy tracą najwięcej czasu.</p>
+</div>
+<dl class="ledger-list">
+<div class="ledger-list__row"><dt>Terminy pod kontrolą</dt><dd>Każda prośba ma termin widoczny dla Ciebie i klienta. Prośby po terminie od razu wyróżniają się w panelu.</dd></div>
+<div class="ledger-list__row"><dt>Mniej pracy administracyjnej</dt><dd>Przypomnienia, potwierdzenia i informacje o brakach wysyłają się same. Twój zespół zajmuje się merytoryką.</dd></div>
+<div class="ledger-list__row"><dt>Powtarzalny proces</dt><dd>Każda prośba wygląda tak samo: lista z szablonu, termin, przypomnienia, akceptacja. Comiesięczne prośby wychodzą same - nic nie zależy od tego, kto akurat pamięta.</dd></div>
+<div class="ledger-list__row"><dt>Pełna widoczność</dt><dd>Widzisz, u którego klienta czego brakuje, co zostało przesłane i kiedy wyjdzie następne przypomnienie.</dd></div>
+<div class="ledger-list__row"><dt>Profesjonalny kontakt z klientem</dt><dd>Zamiast łańcucha maili klient dostaje czytelną listę i potwierdzenie każdego przesłanego pliku.</dd></div>
+<div class="ledger-list__row"><dt>Porządek w danych</dt><dd>Pliki są usuwane automatycznie po ustalonym czasie. Nie gromadzisz dokumentów klientów dłużej, niż to potrzebne.</dd></div>
+</dl>
 </div>
 </section>
 
@@ -282,28 +307,23 @@
 
 <section class="section section--flush-top">
 <div class="container">
-<div class="section-head section-head--split">
-<div>
+<div class="section-head">
 <p class="eyebrow">Dla kogo</p>
 <h2 class="display-2">Wszędzie tam, gdzie praca <strong>czeka na dokumenty</strong></h2>
-</div>
 <p>Monituj sprawdza się w firmach, które regularnie zbierają dokumenty od klientów, pracowników lub kontrahentów.</p>
 </div>
-<div class="segment-grid">
+<ul class="segment-index">
 {% for segment in segments|slice:":4" %}
-<a class="segment-card" href="{% url 'pages:segment' segment.slug %}">
-<span class="segment-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{{ segment.icon|safe }}</svg></span>
-<h3>{{ segment.title }}</h3>
-<p>{{ segment.teaser }}</p>
-<span class="segment-card__more">Zobacz przykład &rarr;</span>
-</a>
+<li><a href="{% url 'pages:segment' segment.slug %}"><span class="segment-index__name">{{ segment.title }}</span><span class="segment-index__text">{{ segment.teaser }}</span><span class="segment-index__more">Zobacz przykład <span aria-hidden="true">&rarr;</span></span></a></li>
 {% endfor %}
-</div>
+</ul>
 <div class="section-cta">
 <a class="btn btn-secondary btn-lg" href="{% url 'pages:templates' %}">Gotowe listy dokumentów dla branż</a>
 </div>
 </div>
 </section>
+
+{% include "pages/_try_band.html" with heading=True anchor="wyprobuj" %}
 
 <section class="section section--flush-top">
 <div class="container">

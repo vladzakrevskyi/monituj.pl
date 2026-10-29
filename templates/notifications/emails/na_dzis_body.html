@@ -5,7 +5,7 @@
 {% block title %}{{ day|date:"l, j E"|capfirst }}{% endblock %}
 {% block content %}
 {% for section in sections %}
-{% if many_accounts %}<p style="margin:0 0 12px;font-size:13px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:#62636d;">{{ section.name }}</p>{% endif %}
+{% if many_accounts %}<p style="margin:0 0 12px;padding:0 0 6px;border-bottom:2px solid #0b0b0c;font-size:14px;font-weight:600;color:#0b0b0c;">{{ section.name }}</p>{% endif %}
 {% if section.reminders %}
 <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#0b0b0c;">Twoje przypomnienia</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">

@@ -1200,9 +1200,7 @@ body.nav-open {
 }
 
 .maintenance__box .maintenance__eyebrow {
-  display: flex;
-  justify-content: center;
-  margin: var(--space-7) 0 var(--space-2);
+  margin: var(--space-7) auto var(--space-2);
 }
 
 .maintenance__box h1 {

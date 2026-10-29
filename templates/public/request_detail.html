@@ -17,7 +17,7 @@
 {% endif %}
 <div class="card public-head">
 {% if sender_logo %}<img class="public-head__logo" src="{{ sender_logo.path }}" alt="{{ sender_name }}" width="{{ sender_logo.width }}" height="{{ sender_logo.height }}">{% endif %}
-<p class="eyebrow">{% if is_question %}Pytanie{% else %}Prośba o dokumenty{% endif %}</p>
+<p class="eyebrow eyebrow--line">{% if is_question %}Pytanie{% else %}Prośba o dokumenty{% endif %}</p>
 {% if is_question %}<h1>{{ sender_name }} ma do Ciebie pytanie</h1>
 {% if sender_name != sender_email %}<p class="public-head__sender text-muted">{{ sender_email }}</p>{% endif %}{% else %}<h1>{{ request_obj.name }}</h1>
 <p class="public-head__sender">Od: <strong>{{ sender_name }}</strong>{% if sender_name != sender_email %} <span class="text-muted">({{ sender_email }})</span>{% endif %}</p>{% endif %}
