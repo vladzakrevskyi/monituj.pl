@@ -40,10 +40,16 @@ def _portal_path(recipient_email):
 @pytest.fixture
 def two_senders(db):
     first = User.objects.create_user(
-        email="biuro@example.com", password="x", display_name="Biuro Nowak"
+        email="biuro@example.com",
+        password="x",
+        display_name="Biuro Nowak",
+        email_verified_at=timezone.now(),
     )
     second = User.objects.create_user(
-        email="kadry@example.com", password="x", display_name="Kadry Plus"
+        email="kadry@example.com",
+        password="x",
+        display_name="Kadry Plus",
+        email_verified_at=timezone.now(),
     )
     return first, second
 

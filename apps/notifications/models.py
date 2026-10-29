@@ -10,6 +10,8 @@ from apps.requests.models import Request
 class EmailTemplate(models.TextChoices):
     INVITATION = "zaproszenie", "Zaproszenie"
     REMINDER = "przypomnienie", "Przypomnienie"
+    # One reminder about all of a client's requests (Zestawienie).
+    REMINDER_COMBINED = "przypomnienie_zbiorcze", "Przypomnienie zbiorcze"
     UPLOAD_CONFIRMATION = "potwierdzenie_uploadu", "Potwierdzenie uploadu"
     COMPLETE = "komplet_dokumentow", "Komplet dokumentów"
     REJECTION = "odrzucenie", "Odrzucenie"

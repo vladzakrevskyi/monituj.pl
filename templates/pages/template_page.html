@@ -8,11 +8,11 @@
 </nav>
 {% endblock %}
 {% block hero_eyebrow %}{{ segment.title }}{% endblock %}
-{% block hero_title %}Lista dokumentów: <strong>{{ template.title }}</strong>{% endblock %}
+{% block hero_title %}{{ template.heading }}{% endblock %}
 {% block hero_lead %}{{ template.summary }}{% endblock %}
 {% block hero_actions %}
 <div class="hero__actions">
-<a class="btn btn-dark btn-lg" href="{{ use_url }}">Użyj szablonu za darmo</a>
+<a class="btn btn-primary btn-lg" href="{{ use_url }}">Użyj szablonu za darmo</a>
 <a class="btn btn-secondary btn-lg" href="{{ guest_url }}">Wyślij bez konta</a>
 </div>
 {% endblock %}
@@ -20,6 +20,10 @@
 {% block page_body %}
 <section class="section section--flush-top">
 <div class="container container--narrow">
+{% if guide %}<div class="guide-intro">
+{% for paragraph in guide.intro %}<p>{{ paragraph }}</p>
+{% endfor %}<p class="guide-intro__updated">Sprawdzone: {{ guide.updated_on|date:"j E Y" }}</p>
+</div>{% endif %}
 <article class="template-sheet">
 <p class="template-sheet__head">Prośba „{{ template.name }}”</p>
 <ol class="template-items">
@@ -31,6 +35,20 @@
 </dl>
 <p class="template-sheet__foot">W Monituj każdy dokument ma własny status, a klient dostaje przypomnienia, dopóki nie prześle kompletu. Listę dopasujesz do siebie przed wysłaniem. Szablon jest pomocą, a nie poradą prawną ani podatkową - sprawdź, czy pasuje do Twojej sprawy.</p>
 </article>
+
+{% if guide %}
+<div class="section-head">
+<h2 class="display-2">Każdy dokument <strong>po kolei</strong></h2>
+</div>
+<div class="guide-docs">
+{% for name, where, mind in guide.documents %}<article class="guide-doc">
+<h3><span class="guide-doc__num">{{ forloop.counter }}.</span> {{ name }}</h3>
+<p><strong>Skąd go wziąć.</strong> {{ where }}</p>
+<p><strong>Na co uważać.</strong> {{ mind }}</p>
+</article>
+{% endfor %}</div>
+{% if guide.tip %}<p class="guide-tip">{{ guide.tip }}</p>{% endif %}
+{% endif %}
 
 <div class="section-head">
 <h2 class="display-2">Jak wysłać tę listę <strong>w 2 minuty</strong></h2>
@@ -59,8 +77,17 @@
 </li>
 </ol>
 <div class="section-cta">
-<a class="btn btn-dark btn-lg" href="{{ use_url }}">Użyj szablonu za darmo</a>
+<a class="btn btn-primary btn-lg" href="{{ use_url }}">Użyj szablonu za darmo</a>
 </div>
+
+{% if guide %}
+<div class="section-head">
+<h2 class="display-2">Najczęstsze <strong>pytania</strong></h2>
+</div>
+<div class="faq">
+{% for item in guide.faq_items %}{% include "pages/_faq_item.html" %}
+{% endfor %}</div>
+{% endif %}
 
 <div class="note-card">
 <h2>Inne szablony - {{ segment.title }}</h2>

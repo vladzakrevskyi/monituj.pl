@@ -1,0 +1,9 @@
+{% if awaiting_verification %}
+<div class="demo-bar demo-bar--guest verify-bar" role="status">
+<p class="demo-bar__text">{% if awaiting_verification.held %}<strong>{% if awaiting_verification.held == 1 %}Prośba czeka{% else %}Prośby ({{ awaiting_verification.held }}) czekają{% endif %} na wysłanie.</strong> {% endif %}Potwierdź adres <strong>{{ awaiting_verification.email }}</strong> linkiem z maila - dopiero wtedy wiadomości trafią do klientów.</p>
+<form method="post" action="{% url 'accounts:verification-sent' %}" class="inline-form">
+{% csrf_token %}
+<button type="submit" class="btn btn-secondary btn-sm">Wyślij link ponownie</button>
+</form>
+</div>
+{% endif %}

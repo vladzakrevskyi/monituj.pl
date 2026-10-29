@@ -407,7 +407,7 @@ ARTICLES = [
     Article(
         "czego-nie-prosic",
         "prosby",
-        "Dlaczego nie mogę poprosić o PIN, BLIK albo hasło do banku",
+        "Dlaczego nie mogę prosić o PIN albo BLIK",
         "Takich danych biuro nigdy nie potrzebuje od klienta, a oszuści zawsze "
         "o nie proszą. Dlatego prośby o nie blokujemy, dopóki konto nie ma "
         "opłaconego planu.",
@@ -479,32 +479,36 @@ ARTICLES = [
     Article(
         "zestawienie",
         "prosby",
-        "Zestawienie miesięczne, czyli kto jeszcze nie przysłał",
-        "W **Zestawieniu** widzisz wszystkich klientów i ostatnie miesiące: kto "
-        "ma komplet, komu ile brakuje, kto jest po terminie. Jednym "
-        "przyciskiem przypomnisz wszystkim, którym czegoś brakuje.",
+        "Zestawienie, czyli kto nie przysłał dokumentów",
+        "W **Zestawieniu** widzisz klientów, którym wysłałeś prośby w danym "
+        "miesiącu: kto ma komplet, czego komu brakuje i kto jest po terminie. "
+        "Jednym przyciskiem przypomnisz wszystkim, którym czegoś brakuje.",
         steps=[
             "Kliknij **Zestawienie** w menu.",
-            "Kliknij nazwę miesiąca nad tabelą - u góry zobaczysz jego "
-            "podsumowanie, np. „34 z 52 klientów ma komplet”.",
-            "Kliknij kolorowe pole przy kliencie, żeby otworzyć jego prośbę.",
-            "Kliknij **Przypomnij wszystkim, którym czegoś brakuje** - każdy taki "
-            "klient dostanie przypomnienie e-mailem.",
+            "Strzałkami obok nazwy miesiąca przejdź do innego miesiąca.",
+            "Kliknij kafelek, np. **Po terminie**, żeby zobaczyć tylko tych klientów.",
+            "Przy kliencie widzisz, czego brakuje i kiedy minął termin. Kliknij "
+            "**Przypomnij**, żeby wysłać mu przypomnienie.",
         ],
         body=[
-            "**Komplet** (zielone) - wszystko dotarło.",
-            "**Brakuje 2** (żółte) - część dotarła, części brakuje.",
-            "**Nic nie przysłał** albo **po terminie** (czerwone) - tu warto "
-            "zadzwonić.",
-            "**Zamknięta** (szare) - zakończyłeś zbieranie ręcznie.",
+            "**Komplet** - wszystko dotarło i jest zaakceptowane.",
+            "**Do sprawdzenia** - klient przesłał wszystko, czeka na Twoją akceptację.",
+            "**Czekamy na klienta** - czegoś brakuje, termin jeszcze nie minął.",
+            "**Po terminie** - czegoś brakuje, a termin minął. Tu warto zadzwonić.",
+            "Każdy klient jest liczony raz, z najpilniejszym stanem swoich próśb "
+            "z tego miesiąca.",
         ],
         tips=[
+            "Klient z kilkoma prośbami w miesiącu ma jeden wiersz - kliknij go, "
+            "żeby zobaczyć każdą prośbę osobno.",
+            "Przypomnienie z Zestawienia to jedna wiadomość do klienta ze "
+            "wszystkimi brakami ze wszystkich jego próśb, nie kilka osobnych.",
+            "Kropki przy kliencie to ostatnie miesiące. Kliknij kropkę, żeby "
+            "przejść do tego miesiąca.",
             "Miesiąc to miesiąc wysłania prośby - prośba „Dokumenty za "
-            "wrzesień” wysłana 1 października jest w kolumnie października.",
-            "Zaznacz **Tylko klienci, którym czegoś brakuje**, żeby zostawić na "
-            "liście tylko tych, na których czekasz.",
-            "Klient, któremu przypomnienie wyszło w ciągu ostatniej godziny, "
-            "zostanie pominięty.",
+            "wrzesień” wysłana 1 października jest w październiku.",
+            "Pod listą są klienci, którzy dostali prośbę wcześniej, ale nie w "
+            "tym miesiącu - kliknij nazwę, żeby wysłać.",
         ],
         panel=("requests:overview", "Zestawienie"),
         related=["statusy-prosby", "przypomnij-teraz", "prosba-co-miesiac"],
@@ -1551,7 +1555,7 @@ ARTICLES = [
     Article(
         "przypomnienia-odbiorcy",
         "dla-klientow",
-        "Dlaczego dostaję przypomnienia i jak je zatrzymać",
+        "Jak zatrzymać przypomnienia o dokumentach",
         "Przypomnienia wychodzą, dopóki brakuje dokumentów. Zatrzymasz je, "
         "przesyłając dokumenty albo zaznaczając, że któregoś nie masz.",
         body=[
@@ -1597,7 +1601,7 @@ ARTICLES = [
     Article(
         "podejrzana-prosba",
         "dla-klientow",
-        "Prośba wydaje się podejrzana. Jak to sprawdzić i zgłosić?",
+        "Podejrzana prośba? Sprawdź i zgłoś",
         "Sprawdź, od kogo jest prośba. Jeśli ktoś się pod kogoś podszywa albo "
         "prosi o hasła czy kody, kliknij **Zgłoś nadużycie** na dole maila "
         "albo strony prośby.",

@@ -67,6 +67,19 @@ def _answered_questions_count(request):
     ).count()
 
 
+def _awaiting_verification(request):
+    """The panel's bar for a new account that hasn't confirmed its address:
+    {"email", "held"} - or None."""
+    from apps.requests.services import awaits_verification, held_requests
+
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated or not request.resolver_match:
+        return None
+    if not _in_panel(request) or not awaits_verification(user):
+        return None
+    return {"email": user.email, "held": held_requests(user).count()}
+
+
 def _plan_state(request):
     from apps.billing.services import state_for
     from apps.demo.models import is_demo_user
@@ -116,6 +129,7 @@ def site(request):
         "contact_email": settings.CONTACT_EMAIL,
         "maintenance_bypass": getattr(request, "maintenance_bypass", False),
         "guest_account": is_guest_account(getattr(request, "user", None)),
+        "awaiting_verification": _awaiting_verification(request),
         # Working in a team's workspace, not one's own (apps/accounts/team.py).
         "team_member": getattr(request, "membership", None) is not None,
         "workspaces": _workspaces(request),

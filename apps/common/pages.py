@@ -37,6 +37,7 @@ def _pricing_context():
         "trial_days": plans.TRIAL_DAYS,
         "trial_plan": plans.TRIAL_PLAN,
         "free_plan": plans.FREE,
+        "plan_guide": [plans.START, plans.BIURO, plans.PRO],
         "vat_rate": plans.vat_rate(),
         "calculator_plans": _calculator_plans(plans),
     }
@@ -63,6 +64,8 @@ def _landing_context():
 
 
 landing = _page("pages/landing.html", _landing_context)
+comparison = _page("pages/comparison.html")
+calculator = _page("pages/calculator.html", _landing_context)
 pricing = _page("pages/pricing.html", _pricing_context)
 faq = _page("pages/faq.html")
 demo = _page("pages/demo.html")
@@ -109,11 +112,12 @@ def templates_library(request):
 def template_page(request, slug):
     """One ready template: the list with what each document means, and a way
     to use it - in the panel, after signing up, or without an account."""
-    from apps.requests import template_library
+    from apps.requests import template_guides, template_library
 
     template = template_library.get(slug)
     if template is None:
         raise Http404
+    guide = template_guides.get(slug)
     segment = next(s for s in SEGMENTS if s["slug"] == template.segment)
     if request.user.is_authenticated:
         use_url = f"{reverse('requests:create')}?szablon={slug}"
@@ -124,6 +128,7 @@ def template_page(request, slug):
         "pages/template_page.html",
         {
             "template": template,
+            "guide": guide,
             "segment": segment,
             "related": [
                 t
@@ -133,7 +138,7 @@ def template_page(request, slug):
             "use_url": use_url,
             "guest_url": f"{reverse('public:guest-request-create')}?szablon={slug}",
             "deadline_text": _deadline_text(template.deadline),
-            "seo": seo.template_seo(request, template, segment),
+            "seo": seo.template_seo(request, template, segment, guide),
         },
     )
 

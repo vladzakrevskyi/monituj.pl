@@ -243,8 +243,9 @@ def apply_signup_plan(user, request):
 
 
 def welcome_url(request, user):
-    """Where a brand new account lands: an account that picked a plan on the
-    pricing page sees its plan and trial first; others the panel."""
+    """Where a brand new account lands: its first request - a template picked
+    in the library, or the empty form. An account on a trial picked on the
+    pricing page also hears how long the trial lasts."""
     from django.contrib import messages
     from django.urls import reverse
 
@@ -254,8 +255,9 @@ def welcome_url(request, user):
     state = state_for(user, account)
     # A ready template picked in the library: straight to sending it.
     template_url = signup_template_url(request)
+    first_request = template_url or reverse("requests:create")
     if not account.trial_plan or state.source != "trial":
-        return template_url or reverse("accounts:panel")
+        return first_request
     from apps.common.formatting import format_date
 
     messages.success(
@@ -264,4 +266,4 @@ def welcome_url(request, user):
         f"{format_date(state.trial_ends_at)}. Potem wybierzesz plan albo konto "
         "przejdzie na bezpłatny Free.",
     )
-    return template_url or reverse("billing:plan")
+    return first_request

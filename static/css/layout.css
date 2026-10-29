@@ -357,6 +357,57 @@ body.nav-open {
   border-top: 1px solid var(--color-black-line);
 }
 
+/* Foldable footer groups (static/js/footer.js): buttons that look like the
+   headings on a computer, open and close on a phone. */
+.site-footer__toggle {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .site-footer--foldable .site-footer__col {
+    border-top: 1px solid var(--color-black-line);
+  }
+
+  .site-footer--foldable .site-footer__col h4 {
+    margin: 0;
+  }
+
+  .site-footer--foldable .site-footer__toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    min-height: 48px;
+    cursor: pointer;
+  }
+
+  .site-footer--foldable .site-footer__toggle::after {
+    content: "+";
+    font-size: 18px;
+    font-weight: 400;
+  }
+
+  .site-footer--foldable .is-open .site-footer__toggle::after {
+    content: "−";
+  }
+
+  .site-footer--foldable .site-footer__links {
+    display: none;
+    padding-bottom: var(--space-3);
+  }
+
+  .site-footer--foldable .is-open .site-footer__links {
+    display: block;
+  }
+}
+
 /* On the client's link: no site menu, a one-line footer */
 .site-header--recipient .site-header__inner {
   justify-content: space-between;
@@ -897,6 +948,50 @@ body.nav-open {
   color: #d4d4d8;
 }
 
+/* The account menu at the bottom of the sidebar: settings, plan, team, help
+   and signing out - out of the main menu, which then fits any laptop. */
+.app-account summary {
+  list-style: none;
+  cursor: pointer;
+  margin-bottom: 0;
+  padding: var(--space-2);
+  margin-inline: calc(var(--space-2) * -1);
+  border-radius: var(--radius-md);
+}
+
+.app-account summary::-webkit-details-marker {
+  display: none;
+}
+
+.app-account summary:hover {
+  background: var(--color-black-soft);
+}
+
+.app-account__chevron {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  flex-shrink: 0;
+  color: #8a8b94;
+  transform: rotate(180deg);
+  transition: transform 0.15s ease;
+}
+
+.app-account[open] .app-account__chevron {
+  transform: none;
+}
+
+.app-account__menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-3);
+}
+
+.app-account__menu form {
+  margin-top: var(--space-2);
+}
+
 .app-main {
   flex: 1;
   min-width: 0;
@@ -1074,8 +1169,13 @@ body.nav-open {
     padding: var(--space-6) var(--space-5);
   }
 
+  /* The form first on a phone; the points under it, the header has the logo. */
+  .auth-card__form {
+    order: -1;
+  }
+
   .auth-card__logo {
-    margin-bottom: var(--space-5);
+    display: none;
   }
 
   .auth-card__intro h1 {

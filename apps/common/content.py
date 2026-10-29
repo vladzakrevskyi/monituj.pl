@@ -246,6 +246,17 @@ FAQ = [
         ),
     },
     {
+        "category": "klient",
+        "home": False,
+        "q": "Czy klienci bez wprawy w komputerach sobie poradzą?",
+        "a": (
+            "Tak. Klient dostaje e-mail z jednym przyciskiem, a na stronie przy "
+            "każdym dokumencie widzi „Wybierz plik”. Działa w telefonie: może "
+            "zrobić zdjęcie dokumentu, także kilku stron, które połączymy w "
+            "jeden PDF. Nie zakłada konta i niczego nie instaluje."
+        ),
+    },
+    {
         "category": "dane",
         "home": True,
         "q": "Jak długo przechowujecie dokumenty?",
@@ -393,6 +404,17 @@ FAQ = [
             "usuwamy konto, klientów, prośby i wszystkie pliki od razu. "
             "Automatyczne przypomnienia przestają wychodzić, a odbiorcy "
             "otwartych próśb dostają informację, że prośba jest nieaktualna."
+        ),
+    },
+    {
+        "category": "konto",
+        "home": False,
+        "q": "Co z moimi danymi, jeśli zrezygnuję z płatnego planu?",
+        "a": (
+            "Nic nie ginie: konto przechodzi na bezpłatny plan Free, a klienci, "
+            "prośby i pliki zostają. Pliki pobierzesz w każdej chwili, także "
+            "wszystkie naraz jako ZIP. Usunięcie konta kasuje wszystkie dane "
+            "od razu."
         ),
     },
 ]

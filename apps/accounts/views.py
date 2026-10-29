@@ -51,6 +51,7 @@ from apps.common.responses import (
 )
 from apps.demo.models import is_demo_user
 from apps.requests import request_templates
+from apps.requests.services import held_requests
 
 DEMO_SETTINGS_MESSAGE = (
     "W wersji demo nie można zmieniać ustawień konta. Załóż własne konto, "
@@ -72,7 +73,7 @@ def register(request):
                     email=form.cleaned_data["email"],
                     password=form.cleaned_data["password"],
                     accept_terms=form.cleaned_data["accept_terms"],
-                    accept_privacy_policy=form.cleaned_data["accept_privacy_policy"],
+                    accept_privacy_policy=form.cleaned_data["accept_terms"],
                     request=request,
                 )
                 # "Wyślij ponownie" only for an account made here and now -
@@ -84,7 +85,15 @@ def register(request):
                     "email": user.email,
                     "user": user.pk if created else None,
                 }
-                redirect_url = reverse("accounts:verification-sent")
+                if created:
+                    # Straight in, to the first request: what it sends waits
+                    # for the confirmation link (awaits_verification).
+                    GuestAccessService.login(request, user)
+                    redirect_url = welcome_url(request, user)
+                else:
+                    # Someone else's unconfirmed account: only the mailbox
+                    # owner gets in, through the link.
+                    redirect_url = reverse("accounts:verification-sent")
                 if is_ajax_request(request):
                     return success_response(
                         {
@@ -119,13 +128,27 @@ def register(request):
 def verification_sent(request):
     pending = request.session.get(VERIFY_SESSION_KEY) or {}
     if request.method == "POST":
-        user = User.objects.filter(pk=pending.get("user")).first()
+        if request.user.is_authenticated and request.user.email_verified_at is None:
+            # "Wyślij link ponownie" from the panel's banner.
+            user = request.user
+        else:
+            user = User.objects.filter(pk=pending.get("user")).first()
         if user is not None and VerificationService.resend(user):
             messages.success(request, f"Wysłaliśmy nowy link na {user.email}.")
         elif user is not None and user.email_verified_at is None:
             messages.error(
                 request, "Link wysłaliśmy przed chwilą - poczekaj kilka minut."
             )
+        if request.user.is_authenticated:
+            # From the panel's bar: back to the page it was on.
+            back = request.META.get("HTTP_REFERER", "")
+            if url_has_allowed_host_and_scheme(
+                back,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            ):
+                return redirect(back)
+            return redirect("accounts:panel")
         return redirect("accounts:verification-sent")
     return render(
         request,
@@ -146,7 +169,14 @@ def verify_email(request, token):
             return render(
                 request,
                 "accounts/verify_email.html",
-                {"account_email": user.email},
+                {
+                    "account_email": user.email,
+                    # What the click sends - whoever opens the link sees it
+                    # first (someone else may have registered this address).
+                    "held": held_requests(user)
+                    .select_related("client")
+                    .order_by("created_at"),
+                },
             )
         user = VerificationService.verify(token, request=request)
     except ApplicationError as exc:
@@ -156,6 +186,18 @@ def verify_email(request, token):
             {"title": "Nieprawidłowy link", "message": exc.message},
         )
     GuestAccessService.login(request, user)
+    sent = getattr(user, "released", 0)
+    if sent:
+        messages.success(
+            request,
+            "Adres email potwierdzony - "
+            + (
+                "prośba została wysłana do klienta."
+                if sent == 1
+                else f"wysłaliśmy przygotowane prośby ({sent})."
+            ),
+        )
+        return redirect("requests:list")
     messages.success(request, "Adres email potwierdzony - witaj w Monituj!")
     return redirect(welcome_url(request, user))
 

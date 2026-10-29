@@ -132,9 +132,9 @@ def test_public_request_form_requires_sender_and_recipient():
     form = PublicRequestForm(data={"name": "R", "description": ""})
 
     assert not form.is_valid()
-    assert {"sender_name", "sender_email", "client_name", "client_email"} <= set(
-        form.errors
-    )
+    assert {"sender_name", "sender_email", "client_email"} <= set(form.errors)
+    # The recipient's name is optional - the start of the address stands in.
+    assert "client_name" not in form.errors
 
 
 def test_public_request_form_rejects_invalid_client_email():
@@ -163,9 +163,8 @@ def test_public_request_form_keeps_password_and_reminder_fields():
     form = PublicRequestForm()
 
     assert "password" in form.fields
-    assert "reminders_enabled" in form.fields
-    assert "reminder_frequency_days" in form.fields
-    assert form.fields["client_name"].label == "Imię i nazwisko lub nazwa firmy"
+    assert "reminder_preset" in form.fields
+    assert form.fields["client_name"].label == "Imię i nazwisko odbiorcy (opcjonalnie)"
     assert form.fields["client_email"].label == "Adres email odbiorcy"
     assert form.fields["sender_email"].label == "Twój adres email"
 
@@ -188,3 +187,26 @@ def test_public_request_form_deadline_converted_to_end_of_day():
     deadline = form.cleaned_data["deadline"]
     assert deadline.date() == date(2026, 10, 5)
     assert deadline.time() == time(23, 59, 59, 999999)
+
+
+def test_public_request_form_needs_only_the_essentials():
+    """Five fields: the list, the recipient's address, the deadline buttons,
+    the sender - the request's name comes from its first document."""
+    from django.http import QueryDict
+
+    data = QueryDict(mutable=True)
+    data.update(
+        {
+            "sender_name": "Jan Kowalski",
+            "sender_email": "jan@example.com",
+            "client_email": "anna@example.com",
+            "deadline_choice": "7",
+            "accept_terms": "on",
+        }
+    )
+    data.setlist("items", ["Wyciąg bankowy", "Faktury kosztowe"])
+    form = PublicRequestForm(data=data)
+
+    assert form.is_valid(), form.errors
+    assert form.cleaned_data["name"] == "Wyciąg bankowy i inne dokumenty"
+    assert form.cleaned_data["deadline"] is not None

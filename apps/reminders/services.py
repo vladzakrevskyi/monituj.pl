@@ -6,8 +6,9 @@ from django.utils import timezone
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.common.exceptions import ValidationAppError
+from apps.common.site import absolute_url
 from apps.notifications.models import EmailTemplate
-from apps.notifications.services import EmailService
+from apps.notifications.services import NOT_DELIVERED, EmailService
 from apps.reminders.models import Reminder, ReminderKind
 from apps.reminders.schedule import (
     DEADLINE_WINDOW,
@@ -18,6 +19,7 @@ from apps.reminders.schedule import (
 from apps.requests.models import Request
 from apps.requests.services import (
     RequestStatus,
+    check_can_email_others,
     compute_status,
     consume_outbound_email,
     with_stats,
@@ -31,6 +33,7 @@ MANUAL_REMINDER_COOLDOWN = timedelta(hours=1)
 class ReminderService:
     @staticmethod
     def send_manual(request_obj, actor, django_request=None):
+        check_can_email_others(request_obj.created_by)
         if request_obj.closed_at is not None or request_obj.awaiting_confirmation:
             raise ValidationAppError(
                 "Prośba jest zamknięta - otwórz ją ponownie, aby wysłać przypomnienie.",
@@ -77,6 +80,75 @@ class ReminderService:
             request=request_obj,
         )
         return reminder
+
+    @staticmethod
+    def send_combined(requests, actor, django_request=None):
+        """One email to a client about all their requests still waiting
+        (Zestawienie's "Przypomnij") - not one per request. Each request gets
+        its reminder in its history; ones reminded within the hour are left
+        out. A single request is the ordinary manual reminder. -> how many
+        requests the email was about."""
+        if len(requests) == 1:
+            ReminderService.send_manual(requests[0], actor, django_request)
+            return 1
+        owner = requests[0].created_by
+        check_can_email_others(owner)
+        recent_cutoff = timezone.now() - MANUAL_REMINDER_COOLDOWN
+        due = [
+            request_obj
+            for request_obj in requests
+            if request_obj.closed_at is None
+            and not request_obj.awaiting_confirmation
+            and not Reminder.objects.filter(
+                request=request_obj, sent_at__gte=recent_cutoff
+            ).exists()
+        ]
+        if not due:
+            raise ValidationAppError(
+                "Przypomnienie wysłano przed chwilą.", code="REMINDER_TOO_SOON"
+            )
+        if len(due) == 1:
+            ReminderService.send_manual(due[0], actor, django_request)
+            return 1
+        consume_outbound_email(owner)
+        for request_obj in due:
+            Reminder.objects.create(
+                request=request_obj,
+                kind=ReminderKind.MANUAL,
+                sequence_number=Reminder.objects.filter(request=request_obj).count()
+                + 1,
+                triggered_by=actor,
+            )
+            AuditService.log(
+                AuditEvent.REMINDER_SENT,
+                actor=actor,
+                target=request_obj,
+                request=django_request,
+                metadata={"combined": True},
+            )
+        EmailService.send(
+            EmailTemplate.REMINDER_COMBINED,
+            to_email=due[0].client.email,
+            context={
+                "requests": [
+                    {
+                        "name": request_obj.name,
+                        "deadline": request_obj.deadline,
+                        "missing_items": list(
+                            request_obj.items.filter(status__in=NOT_DELIVERED)
+                            .order_by("id")
+                            .values_list("name", flat=True)
+                        ),
+                        "link": absolute_url(f"/d/{request_obj.public_token}/"),
+                    }
+                    for request_obj in sorted(
+                        due, key=lambda r: (r.deadline is None, r.deadline or 0)
+                    )
+                ],
+            },
+            request=due[0],
+        )
+        return len(due)
 
 
 class AutomaticReminderService:

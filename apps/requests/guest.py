@@ -190,8 +190,13 @@ class GuestRequestService:
         from apps.accounts.erasure import erase_account
 
         now = now or timezone.now()
+        # Only the no-account form's requests (they have a confirmation link);
+        # an account's own held requests wait for its address (services.
+        # release_held).
         stale = Request.objects.filter(
-            awaiting_confirmation=True, created_at__lt=now - CONFIRMATION_TTL
+            awaiting_confirmation=True,
+            confirmation_token__isnull=False,
+            created_at__lt=now - CONFIRMATION_TTL,
         )
         count = stale.count()
         request_type = ContentType.objects.get_for_model(Request)

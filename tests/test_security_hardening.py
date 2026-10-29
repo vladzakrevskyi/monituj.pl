@@ -14,7 +14,7 @@ from apps.documents.validation import validate_upload
 from apps.requests.forms import RequestEditForm
 from apps.requests.models import Request
 from apps.requests.services import RequestService
-from tests.conftest import MINIMAL_PNG_BYTES, make_pdf_upload
+from tests.conftest import MINIMAL_PNG_BYTES, make_pdf_upload, page_text
 
 AJAX = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
 PASSWORD = "Sup3r-Secret-Pass!23"
@@ -45,14 +45,14 @@ def test_login_is_blocked_after_repeated_failures(client, verified):
 
 
 @pytest.mark.django_db
-def test_unconfirmed_account_cannot_log_in_but_gets_the_link_again(client):
+def test_unconfirmed_account_signs_in_but_is_reminded_to_confirm(client):
+    """It may work in the panel; what it sends waits (test_verify_later.py)."""
     User.objects.create_user(email="nowy@example.com", password=PASSWORD)
 
-    response = _login(client, "nowy@example.com")
+    _login(client, "nowy@example.com")
 
-    assert "potwierdź adres email" in response.json()["error"]["fields"]["email"][0]
-    assert "/weryfikacja-email/" in mail.outbox[-1].body
-    assert client.get(reverse("accounts:panel")).status_code == 302
+    page = page_text(client.get(reverse("accounts:panel")))
+    assert "Potwierdź adres" in page and "nowy@example.com" in page
 
 
 @pytest.mark.django_db

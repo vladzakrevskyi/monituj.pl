@@ -37,7 +37,10 @@ def _portal_path(email):
 @pytest.fixture
 def firm(db):
     return User.objects.create_user(
-        email="biuro@example.com", password="x", display_name="Biuro Nowak"
+        email="biuro@example.com",
+        password="x",
+        display_name="Biuro Nowak",
+        email_verified_at=timezone.now(),
     )
 
 

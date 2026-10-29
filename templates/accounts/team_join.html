@@ -42,14 +42,14 @@
 {% if error %}<p class="alert alert--error">{{ error }}</p>{% endif %}
 <form method="post" novalidate>
 {% csrf_token %}
-{% for field in form %}{% if field.name != "accept_terms" and field.name != "accept_privacy_policy" %}
+{% for field in form %}{% if field.name != "accept_terms" %}
 <p>
 {{ field.label_tag }}
 {{ field }}
 {{ field.errors }}
 </p>
 {% endif %}{% endfor %}
-{% include "base/_consent_fields.html" with terms_field=form.accept_terms privacy_field=form.accept_privacy_policy with_dpa=True %}
+{% include "base/_consent_fields.html" with terms_field=form.accept_terms with_dpa=True %}
 <button type="submit" class="btn btn-primary btn-lg btn-block">Dołącz do zespołu</button>
 </form>
 {% endif %}

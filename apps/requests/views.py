@@ -50,7 +50,13 @@ from apps.requests.models import (
     RequestItemKind,
     RequestItemStatus,
 )
-from apps.requests.services import RequestService, compute_status
+from apps.requests.services import (
+    RequestService,
+    awaits_verification,
+    compute_status,
+    held_message,
+    release_held,
+)
 
 
 def _filtered(owner, params):
@@ -196,7 +202,9 @@ def request_create(request):
                 )
                 messages.success(
                     request,
-                    f"Prośba „{form.cleaned_data['name']}” wysłana do "
+                    held_message(request.account, "Prośby są gotowe", many=True)
+                    if awaits_verification(request.account)
+                    else f"Prośba „{form.cleaned_data['name']}” wysłana do "
                     f"{clients_phrase(len(sent))} - wiadomości dotrą w ciągu minuty.",
                 )
                 _save_template(request, form, item_names)
@@ -231,7 +239,12 @@ def request_create(request):
                     reminder_settings=form.request_settings(),
                     request=request,
                 )
-                messages.success(request, "Prośba została wysłana.")
+                messages.success(
+                    request,
+                    held_message(request.account)
+                    if request_obj.awaiting_confirmation
+                    else "Prośba została wysłana.",
+                )
                 _save_template(request, form, item_names)
                 redirect_url = reverse("requests:detail", args=[request_obj.pk])
                 if is_ajax_request(request):
@@ -589,6 +602,25 @@ def request_close(request, request_id):
     return redirect(request_obj.panel_url())
 
 
+@login_required
+@require_http_methods(["POST"])
+def request_send_held(request, request_id):
+    """ "Wyślij teraz" for a request held from before the address was
+    confirmed - when the confirmation came another way than its link
+    (a password reset, Google)."""
+    request_obj = get_object_or_404(Request, pk=request_id, created_by=request.account)
+    if awaits_verification(request.account):
+        messages.error(request, held_message(request.account))
+    elif release_held(request.account, request, only=request_obj.pk):
+        messages.success(request, "Prośba została wysłana.")
+    else:
+        messages.error(
+            request,
+            "Nie udało się wysłać prośby - sprawdź limit planu albo napisz do nas.",
+        )
+    return redirect(request_obj.panel_url())
+
+
 def _deleted_message(removed, name=None):
     what = (
         f"prośbę „{name}”"
@@ -852,43 +884,45 @@ MONTH_PARAM = re.compile(r"\d{4}-(0[1-9]|1[0-2])")
 @login_required
 @require_http_methods(["GET"])
 def overview_view(request):
-    """Zestawienie miesięczne: who sent everything, who still owes something."""
+    """Zestawienie miesięczne: the month's clients - who sent everything,
+    who still owes something and what (apps/requests/overview.py)."""
     query = request.GET.get("q", "").strip()[:100]
-    only_missing = request.GET.get("braki") == "1"
     data = overview.build(
         request.account,
         selected=request.GET.get("m"),
+        state=request.GET.get("s", ""),
         query=query,
-        only_missing=only_missing,
     )
-    return render(
-        request,
-        "requests/overview.html",
-        {**data, "query": query, "only_missing": only_missing},
-    )
+    return render(request, "requests/overview.html", {**data, "query": query})
 
 
 @login_required
 @require_http_methods(["POST"])
 def overview_remind(request):
-    """ "Przypomnij wszystkim": one reminder to everyone who still owes
-    something from that month - the usual manual reminder, its hour's pause
-    and daily limit included."""
+    """ "Przypomnij": one email per client about all their requests of the
+    month still waiting - everyone's, or one client's (c). The usual hour's
+    pause per request and the daily limit apply."""
     selected = request.POST.get("m", "")
     if not MONTH_PARAM.fullmatch(selected):
         return redirect("requests:overview")
+    client = request.POST.get("c", "")
+    found = overview.waiting_by_client(
+        request.account, selected, int(client) if client.isdigit() else None
+    )
     sent = skipped = 0
-    for request_obj in overview.waiting_in(request.account, selected):
+    for requests in found.values():
         try:
-            ReminderService.send_manual(
-                request_obj, request.user, django_request=request
+            ReminderService.send_combined(
+                requests, request.user, django_request=request
             )
         except ApplicationError:
             skipped += 1
         else:
             sent += 1
-    if sent:
-        message = f"Wysłano przypomnienia: {sent}."
+    if sent == 1 and not skipped and client:
+        messages.success(request, "Przypomnienie wysłane.")
+    elif sent:
+        message = f"Wysłano przypomnienia do klientów: {sent}."
         if skipped:
             message += (
                 f" Pominięto: {skipped} - tym klientom przypomnienie wyszło w ciągu "
@@ -898,9 +932,13 @@ def overview_remind(request):
     elif skipped:
         messages.info(
             request,
-            "Nikomu nie wysłano przypomnienia - wszyscy dostali je w ciągu ostatniej "
-            "godziny albo osiągnięto dzienny limit wiadomości.",
+            "Nie wysłano przypomnienia - wyszło już w ciągu ostatniej godziny "
+            "albo osiągnięto dzienny limit wiadomości.",
         )
     else:
         messages.info(request, "W tym miesiącu nikt nie czeka na przypomnienie.")
-    return redirect(f"{reverse('requests:overview')}?{urlencode({'m': selected})}")
+    back = {"m": selected}
+    for key in ("s", "q"):
+        if request.POST.get(key):
+            back[key] = request.POST[key]
+    return redirect(f"{reverse('requests:overview')}?{urlencode(back)}")

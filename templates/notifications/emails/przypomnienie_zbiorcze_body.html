@@ -1,0 +1,21 @@
+{% extends "notifications/emails/base.html" %}
+{% load formatting %}
+{% block preheader %}Czekamy na dokumenty z kilku próśb - wszystko w jednej wiadomości.{% endblock %}
+{% block eyebrow %}Przypomnienie{% endblock %}
+{% block title %}Wciąż czekamy na Twoje dokumenty{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">{% if sender_name %}<strong>{{ sender_name }}</strong>{% else %}Nadawca{% endif %} wciąż czeka na dokumenty z kilku próśb. Zebraliśmy je w jednej wiadomości - przy każdej prośbie jest jej link.</p>
+{% include "notifications/emails/_details_open.html" %}
+{% include "notifications/emails/_row.html" with label="Od" value=sender_from %}
+{% if sender_firm %}{% include "notifications/emails/_row.html" with label="Firma" value=sender_firm %}{% endif %}
+{% include "notifications/emails/_details_close.html" %}
+{% for item in requests %}
+<p style="margin:0 0 4px;font-size:16px;font-weight:600;color:#0b0b0c;">{{ item.name }}</p>
+{% if item.deadline %}<p style="margin:0 0 10px;font-size:14px;color:#62636d;">Termin: {{ item.deadline|dt }}</p>{% endif %}
+{% include "notifications/emails/_missing_items.html" with missing_items=item.missing_items heading="Brakuje" %}
+{% include "notifications/emails/_button.html" with url=item.link label="Prześlij dokumenty" %}
+{% endfor %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#3f3f46;">Jeśli już wszystko przesłałeś, możesz zignorować tę wiadomość - przypomnienia wyłączą się automatycznie, gdy komplet dokumentów dotrze.</p>
+{% include "notifications/emails/_portal.html" %}
+{% endblock %}
+{% block footer_note %}Tę wiadomość wysłał Monituj{% if sender_name %} w imieniu: {{ sender_from }}{% endif %}. Jeśli nie spodziewasz się tej prośby, możesz ją zignorować.{% if report_link %} Podejrzana wiadomość? <a href="{{ report_link }}" style="color:#62636d;text-decoration:underline;">Zgłoś nadużycie</a>.{% endif %}{% endblock %}

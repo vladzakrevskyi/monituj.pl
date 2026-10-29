@@ -8,7 +8,7 @@ from django.utils import timezone as django_timezone
 
 from apps.accounts.sender import suggested_name, validate_sender_name
 from apps.clients.models import Client
-from apps.requests import content_rules
+from apps.requests import content_rules, item_kinds
 from apps.requests.models import (
     DEFAULT_RETENTION_DAYS,
     LAST_DAY_OF_MONTH,
@@ -215,6 +215,20 @@ class _RequestDetailsFieldsMixin(forms.Form):
         }
 
 
+def name_from_items(data):
+    """A request's name when none was typed: its first document ("Wyciąg
+    bankowy" or "Wyciąg bankowy i inne dokumenty")."""
+    if hasattr(data, "getlist"):
+        items = data.getlist("items")
+    else:
+        items = data.get("items") or []
+    items = [n.strip() for n in items if isinstance(n, str) and n.strip()]
+    if not items:
+        return ""
+    first = item_kinds.split(items[0])[0]
+    return (first if len(items) == 1 else f"{first} i inne dokumenty")[:255]
+
+
 class _ItemsFieldMixin(forms.Form):
     """The document list is posted as repeated "items" values by the item
     builder widget. The field exists so errors about the list can be keyed to
@@ -387,6 +401,9 @@ class RequestForm(
     def __init__(self, *args, owner=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.owner = owner
+        # One field less to fill in: empty, the name comes from the list.
+        self.fields["name"].required = False
+        self.fields["name"].help_text = "Puste - nazwiemy ją po pierwszym dokumencie."
         # Asked for once: until the account has a name to show recipients.
         self.asks_name = owner is not None and not owner.display_name
         if not self.asks_name:
@@ -582,6 +599,8 @@ class RequestForm(
 
     def clean(self):
         cleaned_data = super().clean()
+        if not cleaned_data.get("name"):
+            cleaned_data["name"] = name_from_items(self.data)
         cleaned_data["template_name"] = cleaned_data.get("name")
         self._template_to_save(cleaned_data)
         self._recipients(cleaned_data)
@@ -726,9 +745,10 @@ class PublicRequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form
         },
     )
     client_name = forms.CharField(
-        label="Imię i nazwisko lub nazwa firmy",
+        label="Imię i nazwisko odbiorcy (opcjonalnie)",
         max_length=255,
-        error_messages={"required": REQUIRED_MESSAGE},
+        required=False,
+        help_text="Puste - użyjemy początku adresu email.",
     )
     client_email = forms.EmailField(
         label="Adres email odbiorcy",
@@ -738,17 +758,60 @@ class PublicRequestForm(_ItemsFieldMixin, _RequestDetailsFieldsMixin, forms.Form
         },
     )
     password = forms.CharField(
-        label="Hasło (opcjonalnie)",
+        label="Hasło do linku (opcjonalnie)",
         required=False,
         widget=forms.PasswordInput,
         help_text="Zostaw puste, aby nie zabezpieczać linku hasłem.",
     )
+    # A few buttons instead of a date to type (the panel's form does the same).
+    deadline_choice = forms.ChoiceField(
+        label="Na kiedy?",
+        choices=[
+            ("7", "7 dni"),
+            ("14", "14 dni"),
+            ("date", "Wybierz datę"),
+            ("none", "Bez terminu"),
+        ],
+        initial="14",
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only what most people need is in sight; the rest has defaults.
+        self.fields["name"].required = False
+        self.fields["name"].label = "Nazwa prośby (opcjonalnie)"
+        self.fields["name"].help_text = "Puste - nazwiemy ją po pierwszym dokumencie."
+        self.fields["description"].label = "Wiadomość do odbiorcy (opcjonalnie)"
+        self.fields["reminder_preset"].choices = [
+            choice for choice in REMINDER_PRESET_CHOICES if choice[0] != "custom"
+        ]
 
     def clean_sender_name(self):
         # Shown in email subjects and headers, where line breaks can't go.
         name = " ".join(self.cleaned_data["sender_name"].split())
         validate_sender_name(name)
         return name
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # A date posted without a button (an older page) counts as picked.
+        choice = cleaned_data.get("deadline_choice") or (
+            "date" if cleaned_data.get("deadline") else "14"
+        )
+        today = django_timezone.localdate()
+        if choice in ("7", "14"):
+            cleaned_data["deadline"] = _deadline_to_end_of_day(
+                today + timedelta(days=int(choice))
+            )
+        elif choice == "none":
+            cleaned_data["deadline"] = None
+        elif cleaned_data.get("deadline") is None and "deadline" not in self.errors:
+            self.add_error("deadline", "Wybierz datę.")
+        if not cleaned_data.get("name"):
+            cleaned_data["name"] = name_from_items(self.data)
+        return cleaned_data
 
     accept_terms = forms.BooleanField(
         label=(

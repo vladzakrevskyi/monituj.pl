@@ -78,25 +78,21 @@ def test_without_a_valid_pick_the_trial_is_biuro(client, code):
 
 
 @pytest.mark.django_db
-def test_after_confirming_the_email_the_picked_plan_is_shown(client):
+def test_a_new_account_starts_on_its_first_request_with_the_picked_plan(client):
     client.get(reverse("accounts:register") + "?plan=start")
-    _register(client)
-    user = User.objects.get(email="nowy@example.com")
 
-    response = _verify(client, user)
+    response = _register(client)
 
-    assert response.url == reverse("billing:plan")
+    assert response.url == reverse("requests:create")
     text = " ".join(str(m) for m in get_messages(response.wsgi_request))
-    assert "Masz 30 dni planu Start za darmo" in text.replace(" ", " ")
+    assert "Masz 30 dni planu Start za darmo" in text.replace("\u00a0", " ")
 
 
 @pytest.mark.django_db
-def test_without_a_pick_confirming_leads_to_the_panel(client):
-    _register(client)
+def test_without_a_pick_the_new_account_starts_on_its_first_request(client):
+    response = _register(client)
 
-    response = _verify(client, User.objects.get(email="nowy@example.com"))
-
-    assert response.url == reverse("accounts:panel")
+    assert response.url == reverse("requests:create")
 
 
 @pytest.mark.django_db

@@ -7,13 +7,43 @@
 <div class="card">
 <p class="eyebrow eyebrow--line">Bez zakładania konta</p>
 <h1>Wyślij prośbę o dokumenty</h1>
-<p class="card-lead">Bez zakładania konta możesz wysłać jedną prośbę dziennie. Po potwierdzeniu mailem dostaniesz stały link do panelu, w którym zobaczysz wszystkie swoje prośby i przesłane pliki.</p>
-<p class="form-hint-box">Chcesz najpierw zobaczyć, jak wygląda panel z listą klientów i statusami? <a href="{% url 'pages:demo' %}">Wypróbuj demo bez rejestracji</a>.</p>
+<p class="card-lead">Podaj, czego potrzebujesz i od kogo. Odbiorca dostanie link, prześle pliki bez konta, a Monituj sam przypomni mu o brakach. Bez konta wyślesz jedną prośbę dziennie.</p>
 <form method="post" novalidate data-ajax-form>
 {% csrf_token %}
 {% include "base/_form_flash.html" %}
 
-<p class="form-divider form-divider--first">Twoje dane</p>
+<div class="item-builder">
+<label for="item-name-input">Czego potrzebujesz?</label>
+<div class="item-input-row" data-error-for="items">
+<input type="text" id="item-name-input" placeholder="Wpisz dokument i naciśnij Enter">
+<button type="button" id="add-item-button" class="btn btn-dark">Dodaj</button>
+</div>
+{{ form.items.errors }}
+{% if suggested_items %}<div class="option-row">
+{% for name in suggested_items %}<button type="button" class="option-chip option-chip--add" data-suggest="{{ name }}">+ {{ name }}</button>{% endfor %}
+</div>{% endif %}
+<ul id="item-list" class="item-list"></ul>
+{{ posted_items|json_script:"posted-items-data" }}
+</div>
+
+<p>
+{{ form.client_email.label_tag }}
+{{ form.client_email }}
+{{ form.client_email.errors }}
+</p>
+
+<fieldset class="choice-group">
+<legend>{{ form.deadline_choice.label }}</legend>
+<div class="option-row">
+{% for radio in form.deadline_choice %}<label class="option-chip option-chip--choice">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}
+</div>
+<p class="guest-form__date" data-deadline-date>
+{{ form.deadline.label_tag }}
+{{ form.deadline }}
+{{ form.deadline.errors }}
+</p>
+</fieldset>
+
 <div class="field-row">
 <p>
 {{ form.sender_name.label_tag }}
@@ -29,24 +59,13 @@
 </p>
 </div>
 
-<p class="form-divider">Odbiorca</p>
-<div class="field-row">
-<p>
-{{ form.client_name.label_tag }}
-{{ form.client_name }}
-{{ form.client_name.errors }}
-</p>
-<p>
-{{ form.client_email.label_tag }}
-{{ form.client_email }}
-{{ form.client_email.errors }}
-</p>
-</div>
-
-<p class="form-divider">Dokumenty</p>
+<details class="more-settings"{% if form.errors.name or form.errors.client_name or form.errors.password or form.errors.retention_custom_days %} open{% endif %}>
+<summary><span class="more-settings__title">Więcej ustawień</span> <span class="more-settings__summary">nazwa, wiadomość, hasło, przypomnienia, przechowywanie plików</span></summary>
+<div class="more-settings__body">
 <p>
 {{ form.name.label_tag }}
 {{ form.name }}
+<small class="help-text">{{ form.name.help_text }}</small>
 {{ form.name.errors }}
 </p>
 <p>
@@ -54,23 +73,12 @@
 {{ form.description }}
 {{ form.description.errors }}
 </p>
-
-<div class="item-builder">
-<label for="item-name-input">Lista dokumentów</label>
-<div class="item-input-row" data-error-for="items">
-<input type="text" id="item-name-input" placeholder="Np. Faktury sprzedaży">
-<button type="button" id="add-item-button" class="btn btn-dark">Dodaj</button>
-</div>
-{{ form.items.errors }}
-<ul id="item-list" class="item-list"></ul>
-{{ posted_items|json_script:"posted-items-data" }}
-</div>
-
 <div class="field-row">
 <p>
-{{ form.deadline.label_tag }}
-{{ form.deadline }}
-{{ form.deadline.errors }}
+{{ form.client_name.label_tag }}
+{{ form.client_name }}
+<small class="help-text">{{ form.client_name.help_text }}</small>
+{{ form.client_name.errors }}
 </p>
 <p>
 {{ form.password.label_tag }}
@@ -79,49 +87,35 @@
 {{ form.password.errors }}
 </p>
 </div>
-
-<p class="form-divider">Przypomnienia</p>
-<p>
-<label>{{ form.reminders_enabled }} {{ form.reminders_enabled.label }}</label>
-</p>
 <div class="field-row">
 <p>
-{{ form.first_reminder_after_days.label_tag }}
-{{ form.first_reminder_after_days }}
+{{ form.reminder_preset.label_tag }}
+{{ form.reminder_preset }}
+<small class="help-text">Standardowe: pierwsze po 2 dniach, potem co 3 dni, najwyżej 3 razy - o godzinie wysłania prośby, między 8:00 a 20:00 u odbiorcy.</small>
 </p>
-<p>
-{{ form.reminder_frequency_days.label_tag }}
-{{ form.reminder_frequency_days }}
-</p>
-<p>
-{{ form.max_reminders.label_tag }}
-{{ form.max_reminders }}
-</p>
-</div>
-<p class="text-muted form-hint">Przypomnienia wychodzą o tej samej godzinie, o której wysyłasz prośbę - według strefy czasowej odbiorcy (między 8:00 a 20:00).</p>
-
-<p class="form-divider">Przechowywanie plików</p>
-<p class="text-muted form-hint">Po tym czasie od przesłania pliki zostaną trwale usunięte z Monituj. Odbiorca dostanie o tym wiadomość. Maksymalnie 1 rok.</p>
-<div class="field-row">
 <p>
 {{ form.retention_choice.label_tag }}
 {{ form.retention_choice }}
+<small class="help-text">Potem pliki są trwale usuwane, a odbiorca dostaje o tym wiadomość.</small>
 {{ form.retention_choice.errors }}
 </p>
+</div>
 <p data-retention-custom>
 {{ form.retention_custom_days.label_tag }}
 {{ form.retention_custom_days }}
 {{ form.retention_custom_days.errors }}
 </p>
 </div>
+</details>
 
 {% include "base/_consent_fields.html" with terms_field=form.accept_terms with_dpa=True %}
 <button type="submit" class="btn btn-primary btn-lg btn-block">Dalej - potwierdź mailem</button>
-<p class="form-hint-after">Prośba trafi do odbiorcy dopiero po kliknięciu linku, który wyślemy na Twój adres.</p>
+<p class="form-hint-after">Prośba trafi do odbiorcy, gdy klikniesz link, który wyślemy na Twój adres. Potem zobaczysz ją w swoim panelu. Chcesz najpierw rozejrzeć się po panelu? <a href="{% url 'pages:demo' %}">Wypróbuj demo</a>.</p>
 </form>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/request_items.js' %}"></script>
+<script src="{% static 'js/guest_form.js' %}"></script>
 {% endblock %}

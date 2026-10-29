@@ -10,6 +10,9 @@ from apps.help.templatetags.help_text import help_plain
 INDEX_LABEL = "Centrum pomocy"
 LIVE_RESULTS = 5
 
+# Added to descriptions too short to fill a search result.
+HELP_FILLER = "Instrukcja krok po kroku w Centrum pomocy Monituj."
+
 
 def _crumbs(*trail):
     return seo.breadcrumbs([(INDEX_LABEL, reverse("help:index")), *trail])
@@ -49,7 +52,7 @@ def category(request, slug):
             "seo": seo.build(
                 request,
                 f"{current.title} w Centrum pomocy",
-                current.description,
+                seo.fit_description(current.description, HELP_FILLER),
                 jsonld=[seo.graph(_crumbs((current.title, request.path)))],
             ),
         },
@@ -85,7 +88,7 @@ def article(request, slug):
             "seo": seo.build(
                 request,
                 current.title,
-                help_plain(current.summary),
+                seo.fit_description(help_plain(current.summary), HELP_FILLER),
                 og_type="article",
                 jsonld=[
                     seo.graph(

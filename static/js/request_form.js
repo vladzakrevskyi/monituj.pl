@@ -377,7 +377,14 @@
     showTiming();
     showMore();
 
-    const name = $('input[name="name"]').value.trim() || "Prośba o dokumenty";
+    // Empty name: the server names it after the first document - say so here too.
+    const listed = Array.from(document.querySelectorAll('#item-list input[name="items"]'))
+      .map((input) => input.value.replace(/\s*\(bez pliku\)$/i, "").trim())
+      .filter(Boolean);
+    const fallback = listed.length
+      ? listed.length === 1 ? listed[0] : `${listed[0]} i inne dokumenty`
+      : "Prośba o dokumenty";
+    const name = $('input[name="name"]').value.trim() || fallback;
     const summary = $("[data-summary]");
     const submit = $("[data-submit]");
     const deadline = deadlineText();

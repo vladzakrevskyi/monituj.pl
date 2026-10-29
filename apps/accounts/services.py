@@ -31,6 +31,7 @@ from apps.documents.models import Document
 from apps.notifications.models import EmailTemplate
 from apps.notifications.services import NOT_DELIVERED, EmailService
 from apps.requests.models import Request
+from apps.requests.services import release_held
 
 EMAIL_VERIFICATION_TTL = timedelta(hours=48)
 VERIFICATION_RESEND_EVERY = timedelta(minutes=5)
@@ -211,6 +212,8 @@ class VerificationService:
         )
         # New legal versions announced ahead: this new account hears too.
         announcements.welcome(user)
+        # Requests prepared before the address was confirmed go out now.
+        user.released = release_held(user, request)
         return user
 
 
@@ -242,15 +245,9 @@ class AuthenticationService:
                 status_code=401,
             )
         throttle.clear(email_key)
-        if user.email_verified_at is None:
-            # The password is right, so help rather than just refuse: send the
-            # confirmation link again (not more often than every few minutes).
-            VerificationService.resend(user)
-            raise ValidationAppError(
-                f"Najpierw potwierdź adres email - link wysłaliśmy na {user.email}. "
-                "Po kliknięciu zalogujesz się automatycznie.",
-                code="EMAIL_NOT_VERIFIED",
-            )
+        # An account whose address isn't confirmed yet signs in too: it works
+        # in the panel, but nothing it sends leaves before the confirmation
+        # (requests.services.awaits_verification).
         if two_factor.challenge(request, user, user.backend, "password"):
             return user  # Not logged in yet: the code comes first.
         django_login(request, user)
@@ -318,6 +315,9 @@ class PasswordResetService:
         _validate_password_strength(new_password, user=user)
         user.set_password(new_password)
         # The reset link came to this address, which proves who owns it.
+        # Requests someone prepared here before (held, services.release_held)
+        # are not sent: whoever reset the password may not be who made them -
+        # they wait in the panel for a "Wyślij" of the owner.
         user.email_verified_at = user.email_verified_at or timezone.now()
         user.save(update_fields=["password", "email_verified_at"])
         # A passwordless account becomes a regular one: the permanent panel

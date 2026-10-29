@@ -1,0 +1,22 @@
+{% extends "pages/base_page.html" %}
+
+{% block hero_eyebrow %}Kalkulator czasu{% endblock %}
+{% block hero_title %}Ile kosztuje Cię <strong>przypominanie o dokumentach?</strong>{% endblock %}
+{% block hero_lead %}Ustaw, od ilu klientów co miesiąc zbierasz dokumenty, ile razy przypominasz i ile trwa jedno przypomnienie. Kalkulator pokaże, ile godzin i złotych miesięcznie zabiera ta praca.{% endblock %}
+
+{% block page_body %}
+{% include "pages/_calculator.html" %}
+
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<article class="article">
+<h2>Jak liczymy</h2>
+<p>Mnożymy liczbę klientów przez liczbę przypomnień w miesiącu i czas jednego przypomnienia. W ten czas wchodzi nie tylko napisanie maila czy telefon, ale też sprawdzenie, czego jeszcze brakuje, i odszukanie wcześniejszej wiadomości. Wynik w złotych to ten czas pomnożony przez koszt godziny Twojej pracy.</p>
+<h2>Skąd biorą się godziny</h2>
+<p>Pięć minut na jedno przypomnienie wydaje się niczym. Ale przy 50 klientach i trzech przypomnieniach w miesiącu to już 150 wiadomości i telefonów - ponad 12 godzin, zwykle skumulowanych w kilku dniach przed terminem.</p>
+<h2>Jak odzyskać ten czas</h2>
+<p>W Monituj przypomnienia wychodzą same, tylko o tym, czego naprawdę brakuje, a Ty widzisz status każdego dokumentu. Zostaje Ci sprawdzenie plików, które dotarły. Zobacz, <a href="{% url 'pages:how-it-works' %}">jak to działa</a>, albo porównaj z <a href="{% url 'pages:comparison' %}">mailem, WhatsAppem i dyskiem</a>.</p>
+</article>
+</div>
+</section>
+{% endblock %}

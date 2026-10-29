@@ -14,6 +14,7 @@ from apps.billing.services import check_question_allowed, check_request_allowed
 from apps.clients.models import Client
 from apps.common import throttle
 from apps.common.exceptions import (
+    ApplicationError,
     NotFoundAppError,
     RateLimitedAppError,
     ValidationAppError,
@@ -180,6 +181,87 @@ def check_new_recipients(owner, emails):
         )
 
 
+def awaits_verification(owner):
+    """A new account that hasn't confirmed its address yet. It works in the
+    panel straight away, but what it sends waits (held requests) until the
+    address is confirmed - then release_held() sends it all: no email leaves
+    Monituj from an address nobody has proved."""
+    from apps.demo.models import is_demo_user
+
+    return (
+        owner.email_verified_at is None
+        and owner.is_active
+        and not is_guest_account(owner)
+        and not is_demo_user(owner)
+    )
+
+
+VERIFY_FIRST_MESSAGE = (
+    "Najpierw potwierdź swój adres email - link wysłaliśmy po rejestracji. "
+    "Prośby czekają i wyjdą same zaraz po potwierdzeniu."
+)
+
+
+def check_can_email_others(owner):
+    """For emails that can't wait like a request (a manual reminder, a link
+    sent again, a team invitation)."""
+    if awaits_verification(owner):
+        raise ValidationAppError(VERIFY_FIRST_MESSAGE, code="EMAIL_NOT_VERIFIED")
+
+
+def held_message(owner, what="Prośba jest gotowa", many=False):
+    """What the panel says about a request held for the address."""
+    return (
+        f"{what}. Wyślemy {'je' if many else 'ją'}, gdy potwierdzisz adres "
+        f"{owner.email} - link czeka w Twojej skrzynce (sprawdź też spam)."
+    )
+
+
+def held_requests(owner):
+    """Requests made before the address was confirmed (awaiting, but without
+    the no-account form's confirmation link)."""
+    return Request.objects.filter(
+        created_by=owner, awaiting_confirmation=True, confirmation_token__isnull=True
+    )
+
+
+def release_held(owner, django_request=None, only=None):
+    """The address is confirmed: sends every held request (or the one with
+    pk `only`). One that can't go (a limit reached) stays held. -> how many
+    went out."""
+    sent = 0
+    held = held_requests(owner)
+    if only is not None:
+        held = held.filter(pk=only)
+    for pk in held.order_by("created_at").values_list("pk", flat=True):
+        try:
+            with transaction.atomic():
+                request_obj = (
+                    Request.objects.select_for_update(of=("self",))
+                    .select_related("client", "created_by")
+                    .get(pk=pk)
+                )
+                if not request_obj.awaiting_confirmation:
+                    continue
+                password = request_obj.pending_access_password
+                request_obj.awaiting_confirmation = False
+                request_obj.pending_access_password = ""
+                request_obj.save(
+                    update_fields=[
+                        "awaiting_confirmation",
+                        "pending_access_password",
+                        "updated_at",
+                    ]
+                )
+                RequestService.deliver(
+                    request_obj, password, actor=owner, request=django_request
+                )
+                sent += 1
+        except ApplicationError:
+            continue
+    return sent
+
+
 def consume_outbound_email(owner) -> None:
     """Counts one email the account sends to someone else."""
     throttle.consume(
@@ -292,7 +374,10 @@ class RequestService:
         the recipient; GuestRequestService.confirm() sends it later.
         queue_invitation=True leaves the invitation to the queue (create_many).
         question: the request is one question - its one item is a question
-        with this text (apps/requests/questions.py)."""
+        with this text (apps/requests/questions.py).
+        An account that hasn't confirmed its address gets the request held
+        (awaits_verification): stored, sent by release_held()."""
+        held = not awaiting_confirmation and awaits_verification(owner)
         if is_guest_account(owner):
             check_guest_daily_limit(owner)
         if question:
@@ -322,13 +407,15 @@ class RequestService:
             name=name,
             description=description,
             deadline=deadline,
-            awaiting_confirmation=awaiting_confirmation,
+            awaiting_confirmation=awaiting_confirmation or held,
             sender_timezone=owner.timezone,
             confirmation_token=(
                 generate_public_token() if awaiting_confirmation else None
             ),
-            pending_access_password=(password or "") if awaiting_confirmation else "",
-            invitation_queued=queue_invitation,
+            pending_access_password=(
+                (password or "") if awaiting_confirmation or held else ""
+            ),
+            invitation_queued=queue_invitation and not held,
             recurring=recurring,
             private_note=private_note,
             **reminder_settings,
@@ -361,7 +448,7 @@ class RequestService:
         AuditService.log(
             AuditEvent.REQUEST_CREATED, actor=owner, target=request_obj, request=request
         )
-        if not awaiting_confirmation and not queue_invitation:
+        if not awaiting_confirmation and not held and not queue_invitation:
             RequestService.deliver(request_obj, password, actor=owner, request=request)
         return request_obj
 
@@ -424,8 +511,10 @@ class RequestService:
                 for client_id in client_ids
             ]
             # Counted now, with the rest: a limit hit rolls back every request.
-            for _ in requests:
-                consume_outbound_email(owner)
+            # Held ones (address not confirmed) are counted when they go out.
+            if not awaits_verification(owner):
+                for _ in requests:
+                    consume_outbound_email(owner)
         return requests
 
     @staticmethod
@@ -510,6 +599,7 @@ class RequestService:
         request_obj, to_email, actor=None, django_request=None, counted=False
     ):
         if not counted:
+            check_can_email_others(request_obj.created_by)
             check_new_recipients(request_obj.created_by, [to_email])
             consume_outbound_email(request_obj.created_by)
         link = absolute_url(f"/d/{request_obj.public_token}/")
@@ -658,10 +748,10 @@ class DashboardService:
 
     @staticmethod
     def first_steps(owner):
-        """ "Pierwsze kroki" for a new account - None once all are done."""
+        """ "Pierwsze kroki" for a new account - None once all are done. Two
+        steps: a client is added in the request itself, no need for a step."""
         from apps.documents.models import Document
 
-        has_client = Client.objects.filter(owner=owner).exists()
         first = (
             Request.objects.filter(created_by=owner, awaiting_confirmation=False)
             .exclude(items__kind=RequestItemKind.QUESTION)
@@ -678,7 +768,6 @@ class DashboardService:
             .exists()
         )
         steps = [
-            {"done": has_client, "key": "client"},
             {"done": first is not None, "key": "request"},
             {"done": received, "key": "received"},
         ]
@@ -687,6 +776,7 @@ class DashboardService:
         return {
             "steps": steps,
             "done": sum(step["done"] for step in steps),
+            "total": len(steps),
             "public_url": (
                 absolute_url(f"/d/{first.public_token}/") if first is not None else ""
             ),

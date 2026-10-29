@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect, render
@@ -29,6 +27,7 @@ from apps.requests.guest import GuestRequestService
 from apps.requests.links import remember_recipient_timezone
 from apps.requests.models import RecipientAccess
 from apps.requests.services import PublicAccessService, compute_status
+from apps.requests.views import COMMON_ITEMS
 
 
 # Uploads go by fetch with the CSRF cookie - the page must set it even when
@@ -263,7 +262,11 @@ def guest_request_create(request):
     return render(
         request,
         "public/guest_request_form.html",
-        {"form": form, "posted_items": item_names},
+        {
+            "form": form,
+            "posted_items": item_names,
+            "suggested_items": COMMON_ITEMS[:8],
+        },
     )
 
 
@@ -285,9 +288,12 @@ def _guest_form_from_template(slug):
         "description": template.description,
     }
     if template.deadline in ("7", "14"):
-        initial["deadline"] = today + timedelta(days=int(template.deadline))
+        initial["deadline_choice"] = template.deadline
     elif template.deadline == "day10":
+        initial["deadline_choice"] = "date"
         initial["deadline"] = next_month_day(today, DEADLINE_DAY)
+    else:
+        initial["deadline_choice"] = "none"
     return PublicRequestForm(initial=initial), template.item_names
 
 

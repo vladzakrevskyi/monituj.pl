@@ -4,15 +4,15 @@
 {% block extra_css %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/billing.css' %}">{% endblock %}
 
 {% block hero_eyebrow %}Cennik{% endblock %}
-{% block hero_title %}Płacisz za prośby <strong>w toku</strong>, nie za przypomnienia{% endblock %}
-{% block hero_lead %}Plan zależy od tego, ile próśb o dokumenty prowadzisz jednocześnie, ile zapisujesz własnych szablonów i ile osób z Twojego zespołu z niego korzysta. Przypomnienia, klienci, gotowe szablony i wszystkie pozostałe funkcje są w każdym planie. Każdy płatny plan wypróbujesz przez {{ trial_days }} dni za darmo - bez karty.{% endblock %}
+{% block hero_title %}Płacisz za sprawy, <strong>na które czekasz</strong>{% endblock %}
+{% block hero_lead %}Cena zależy od tego, na ile kompletów dokumentów czekasz naraz. Zakończone prośby się nie liczą, a przypomnienia, klienci bez limitu i wszystkie funkcje są w każdym planie. Każdy płatny plan wypróbujesz przez {{ trial_days }} dni za darmo - bez karty.{% endblock %}
 
 {% block page_body %}
 <section class="section section--flush-top">
 <div class="container">
 <div class="plan-picker plan-picker--public">
 <div class="plan-picker__head">
-<p class="plan-picker__intro">Bezpłatny plan {{ free_plan.name }} działa bez limitu czasu. Płatny plan wybierasz, kiedy potrzebujesz więcej.</p>
+<p class="plan-picker__intro"><strong>Jak wybrać:</strong> policz klientów, od których co miesiąc zbierasz dokumenty.{% for plan in plan_guide %} {% if forloop.last %}Więcej - {{ plan.name }}{% else %}Do {{ plan.active_requests }} - {{ plan.name }}{% if not forloop.last %},{% endif %}{% endif %}{% endfor %}. Bezpłatny {{ free_plan.name }} działa bez limitu czasu.</p>
 {% include "billing/_price_switches.html" with yearly=False gross=False %}
 </div>
 {% include "billing/_plan_grid.html" with panel=False %}

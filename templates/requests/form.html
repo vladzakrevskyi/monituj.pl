@@ -33,8 +33,8 @@
 <h2 class="form-step__title"><span class="form-step__num">1</span>Czego potrzebujesz?</h2>
 {% include "requests/_template_picker.html" %}
 <p>
-<label for="{{ form.name.id_for_label }}">Nazwa prośby</label>
-<input type="text" name="name" id="{{ form.name.id_for_label }}" maxlength="255" placeholder="Np. Dokumenty za wrzesień"{% if form.name.value %} value="{{ form.name.value }}"{% endif %}>
+<label for="{{ form.name.id_for_label }}">Nazwa prośby <span class="label-optional">(opcjonalnie)</span></label>
+<input type="text" name="name" id="{{ form.name.id_for_label }}" maxlength="255" placeholder="Np. Dokumenty za wrzesień - puste: nazwa pierwszego dokumentu"{% if form.name.value %} value="{{ form.name.value }}"{% endif %}>
 {% if form.name.value and "{" in form.name.value %}<small class="help-text">{miesiąc} zamienimy na miesiąc, którego dotyczą dokumenty (poprzedni), np. „wrzesień 2026”.</small>{% endif %}
 {{ form.name.errors }}
 </p>

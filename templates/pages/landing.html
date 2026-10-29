@@ -11,13 +11,13 @@
 <div class="hero__copy">
 <p class="eyebrow">Dla biur rachunkowych - i nie tylko</p>
 <h1 class="display">Dokumenty od klientów <strong>na czas</strong>. Bez <strong>gonienia</strong>.</h1>
-<p class="hero__lead">Wysyłasz klientowi listę brakujących dokumentów - on przesyła je z telefonu, bez zakładania konta. Monituj sam mu przypomina, dopóki wszystkiego nie dośle, pilnuje pytań i terminów i pokazuje, na czym stoisz. Ty tylko akceptujesz pliki.</p>
+<p class="hero__lead">Wyślij klientowi listę dokumentów. Klient przesyła je z telefonu, bez zakładania konta, a Monituj sam przypomina mu o brakach, aż dotrze komplet.</p>
 <div class="hero__actions hero__actions--film">
 {% if user.is_authenticated and not demo_account %}
-<a class="btn btn-dark btn-lg" href="{% url 'accounts:panel' %}">Przejdź do panelu</a>
+<a class="btn btn-primary btn-lg" href="{% url 'accounts:panel' %}">Przejdź do panelu</a>
 <a class="btn btn-secondary btn-lg" href="{% url 'pages:how-it-works' %}">Zobacz, jak to działa</a>
 {% else %}
-<a class="btn btn-dark btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+<a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
 {% include "demo/_button.html" with cls="btn-secondary btn-lg" label="Wypróbuj demo" %}
 {% endif %}
 <a class="film-card" href="#film" data-video-open aria-controls="film-dialog" aria-haspopup="dialog" title="Zobacz film: Monituj w kilka minut">
@@ -113,9 +113,37 @@
 </div>
 </section>
 
-{% include "pages/_calculator.html" %}
+<section class="panel-section">
+<div class="container">
+<div class="section-head">
+<p class="eyebrow">Jak to działa</p>
+<h2 class="display-2">Ustawiasz raz. <strong>Monituj pilnuje do końca.</strong></h2>
+<p>Każda prośba o dokumenty przebiega według tego samego, przewidywalnego procesu.</p>
+</div>
+<ol class="steps">
+<li class="step">
+<span class="step__num">01</span>
+<h3>Określasz, czego potrzebujesz</h3>
+<p>Lista dokumentów, termin i harmonogram przypomnień - wpisane albo wzięte z gotowego szablonu. Raz przygotowana prośba zawiera wszystko, czego klient potrzebuje.</p>
+</li>
+<li class="step">
+<span class="step__num">02</span>
+<h3>Klient dostaje jeden link</h3>
+<p>Otwiera listę w przeglądarce i przesyła pliki - bez zakładania konta, bez instalowania czegokolwiek.</p>
+</li>
+<li class="step">
+<span class="step__num">03</span>
+<h3>Monituj domyka sprawę</h3>
+<p>Przypomina o brakach, aktualizuje status i przestaje, gdy dotrze komplet. Ty tylko akceptujesz dokumenty.</p>
+</li>
+</ol>
+<div class="section-cta">
+<a class="btn btn-secondary btn-lg" href="{% url 'pages:how-it-works' %}">Zobacz cały proces krok po kroku</a>
+</div>
+</div>
+</section>
 
-<section class="section section--flush-top" id="film">
+<section class="section" id="film">
 <div class="container">
 <div class="section-head">
 <p class="eyebrow">Zobacz w akcji</p>
@@ -139,6 +167,7 @@
 <p class="eyebrow eyebrow--light">To nie jest kolejny dysk na pliki</p>
 <h2 class="display-2">Dysk przechowuje pliki. <strong>Monituj pilnuje, żeby w&nbsp;ogóle do Ciebie trafiły.</strong></h2>
 <p>Monituj nie zastępuje Twojego systemu księgowego ani archiwum. Zastępuje ręczną część procesu: pamiętanie, przypominanie i sprawdzanie, czego jeszcze brakuje.</p>
+<p><a class="statement__link" href="{% url 'pages:comparison' %}">Porównaj: mail, WhatsApp, dysk i Monituj &rarr;</a></p>
 </div>
 <div class="compare" role="table" aria-label="Porównanie: email i dysk kontra Monituj">
 <div class="compare__row compare__row--head" role="row">
@@ -187,36 +216,6 @@
 <span class="compare__yes" role="cell">Usuwane automatycznie po ustalonym czasie</span>
 </div>
 </div>
-</div>
-</div>
-</section>
-
-<section class="panel-section">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">Jak to działa</p>
-<h2 class="display-2">Ustawiasz raz. <strong>Monituj pilnuje do końca.</strong></h2>
-<p>Każda prośba o dokumenty przebiega według tego samego, przewidywalnego procesu.</p>
-</div>
-<ol class="steps">
-<li class="step">
-<span class="step__num">01</span>
-<h3>Określasz, czego potrzebujesz</h3>
-<p>Lista dokumentów, termin i harmonogram przypomnień - wpisane albo wzięte z gotowego szablonu. Raz przygotowana prośba zawiera wszystko, czego klient potrzebuje.</p>
-</li>
-<li class="step">
-<span class="step__num">02</span>
-<h3>Klient dostaje jeden link</h3>
-<p>Otwiera listę w przeglądarce i przesyła pliki - bez zakładania konta, bez instalowania czegokolwiek.</p>
-</li>
-<li class="step">
-<span class="step__num">03</span>
-<h3>Monituj domyka sprawę</h3>
-<p>Przypomina o brakach, aktualizuje status i przestaje, gdy dotrze komplet. Ty tylko akceptujesz dokumenty.</p>
-</li>
-</ol>
-<div class="section-cta">
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:how-it-works' %}">Zobacz cały proces krok po kroku</a>
 </div>
 </div>
 </section>
@@ -272,23 +271,7 @@
 </div>
 </section>
 
-<section class="section">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">Co zyskuje Twoja firma</p>
-<h2 class="display-2">Lepszy proces, <strong>nie tylko wygodniejsze pliki</strong></h2>
-<p>Monituj porządkuje to, co dzieje się między „potrzebuję dokumentów” a „mam komplet”. Właśnie tam firmy tracą najwięcej czasu.</p>
-</div>
-<dl class="ledger-list">
-<div class="ledger-list__row"><dt>Terminy pod kontrolą</dt><dd>Każda prośba ma termin widoczny dla Ciebie i klienta. Prośby po terminie od razu wyróżniają się w panelu.</dd></div>
-<div class="ledger-list__row"><dt>Mniej pracy administracyjnej</dt><dd>Przypomnienia, potwierdzenia i informacje o brakach wysyłają się same. Twój zespół zajmuje się merytoryką.</dd></div>
-<div class="ledger-list__row"><dt>Powtarzalny proces</dt><dd>Każda prośba wygląda tak samo: lista z szablonu, termin, przypomnienia, akceptacja. Comiesięczne prośby wychodzą same - nic nie zależy od tego, kto akurat pamięta.</dd></div>
-<div class="ledger-list__row"><dt>Pełna widoczność</dt><dd>Widzisz, u którego klienta czego brakuje, co zostało przesłane i kiedy wyjdzie następne przypomnienie.</dd></div>
-<div class="ledger-list__row"><dt>Profesjonalny kontakt z klientem</dt><dd>Zamiast łańcucha maili klient dostaje czytelną listę i potwierdzenie każdego przesłanego pliku.</dd></div>
-<div class="ledger-list__row"><dt>Porządek w danych</dt><dd>Pliki są usuwane automatycznie po ustalonym czasie. Nie gromadzisz dokumentów klientów dłużej, niż to potrzebne.</dd></div>
-</dl>
-</div>
-</section>
+{% include "pages/_calculator.html" %}
 
 <section class="section section--flush-top">
 <div class="container">
@@ -332,14 +315,14 @@
 <p class="eyebrow">Bezpieczeństwo i RODO</p>
 <h2 class="display-2">Dokumenty klientów <strong>pod ochroną</strong></h2>
 <p>Bezpieczeństwo jest częścią procesu, a nie dodatkiem. Ty decydujesz, jak długo przechowujemy pliki - potem znikają automatycznie.</p>
-<a class="btn btn-dark btn-lg" href="{% url 'pages:security' %}">Jak chronimy dane</a>
+<a class="btn btn-secondary btn-lg" href="{% url 'pages:security' %}">Jak chronimy dane</a>
 </div>
 <ul class="check-list check-list--large">
 {% include "pages/_check.html" with text="Unikalny link do każdej prośby, opcjonalnie z hasłem" %}
 {% include "pages/_check.html" with text="Pliki w niepublicznym magazynie z kontrolą dostępu" %}
 {% include "pages/_check.html" with text="Automatyczne usuwanie po okresie przechowywania" %}
 {% include "pages/_check.html" with text="Umowa powierzenia danych w standardzie" %}
-{% include "pages/_check.html" with text="Pełna historia zdarzeń każdej prośby" %}
+{% include "pages/_check.html" with text="Skaner antywirusowy dla każdego przesłanego pliku" %}
 </ul>
 </div>
 </div>

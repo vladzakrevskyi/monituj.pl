@@ -7,9 +7,9 @@
 {% block hero_actions %}
 <div class="hero__actions">
 {% if user.is_authenticated and not demo_account %}
-<a class="btn btn-dark btn-lg" href="{% url 'accounts:panel' %}">Przejdź do swojego panelu</a>
+<a class="btn btn-primary btn-lg" href="{% url 'accounts:panel' %}">Przejdź do swojego panelu</a>
 {% else %}
-{% include "demo/_button.html" with cls="btn-dark btn-lg" label="Uruchom demo" %}
+{% include "demo/_button.html" with cls="btn-primary btn-lg" label="Uruchom demo" %}
 {% endif %}
 <a class="btn btn-secondary btn-lg" href="{% url 'public:guest-request-create' %}">Wyślij prawdziwą prośbę bez konta</a>
 </div>

@@ -35,6 +35,25 @@ def page_title(name):
     return f"{name}{TITLE_SUFFIX}"
 
 
+# What search results show of a description, in characters.
+DESCRIPTION_MIN, DESCRIPTION_MAX = 110, 160
+
+
+def fit_description(text, filler=""):
+    """A description search results show in full: a short one gets the
+    filler sentence, a long one ends at the last full sentence (or word)."""
+    text = " ".join(text.split())
+    if len(text) < DESCRIPTION_MIN and filler:
+        text = f"{text} {filler}"
+    if len(text) <= DESCRIPTION_MAX:
+        return text
+    cut = text[:DESCRIPTION_MAX]
+    end = cut.rfind(". ")
+    if end >= DESCRIPTION_MIN - 1:
+        return cut[: end + 1]
+    return cut[: cut.rfind(" ")].rstrip(" ,-") + "…"
+
+
 # url name -> page name, description (≤ 155), OG image, sitemap priority and
 # breadcrumb label. Page names lead with what people search for.
 PAGES = {
@@ -140,21 +159,45 @@ PAGES = {
     "pages:security": {
         "name": "Bezpieczne przesyłanie dokumentów i RODO",
         "description": (
-            "Unikalne linki, opcjonalne hasła, prywatny magazyn plików, "
-            "sprawdzanie typu pliku i automatyczne usuwanie po ustalonym czasie. "
-            "Umowa powierzenia w cenie."
+            "Unikalne linki, hasła, antywirus dla każdego pliku, szyfrowanie "
+            "AES-256 i automatyczne usuwanie plików po ustalonym czasie. Umowa "
+            "powierzenia w cenie."
         ),
         "og_image": "images/og/bezpieczenstwo.png",
         "priority": "0.7",
         "label": "Bezpieczeństwo",
         "template": "pages/security.html",
     },
+    "pages:comparison": {
+        "name": "Zbieranie dokumentów mailem czy WhatsAppem",
+        "description": (
+            "Porównanie sposobów zbierania dokumentów od klientów: e-mail, "
+            "WhatsApp, dysk w chmurze i Monituj. Co działa, czego brakuje i "
+            "kiedy wystarczy zwykły mail."
+        ),
+        "og_type": "article",
+        "og_image": "images/og/poradnik.png",
+        "published": "2026-10-29",
+        "modified": "2026-10-29",
+        "priority": "0.6",
+        "label": "Porównanie",
+        "template": "pages/comparison.html",
+    },
+    "pages:calculator": {
+        "name": "Kalkulator czasu na przypominanie o dokumentach",
+        "description": (
+            "Policz, ile godzin i złotych miesięcznie kosztuje Cię przypominanie "
+            "klientom o dokumentach. Kalkulator dla biur rachunkowych i firm."
+        ),
+        "priority": "0.5",
+        "label": "Kalkulator czasu",
+        "template": "pages/calculator.html",
+    },
     "pages:pricing": {
         "name": "Cennik i plany od 0 zł",
         "description": (
-            "Płacisz za prośby w toku, nie za przypomnienia. Plan Free za 0 zł, "
-            "płatne od 39 zł netto miesięcznie. Każdy 30 dni za darmo, "
-            "bez karty."
+            "Płacisz za sprawy, na które czekasz. Plan Free za 0 zł, płatne od "
+            "39 zł netto miesięcznie. Każdy płatny plan 30 dni za darmo, bez karty."
         ),
         "og_image": "images/og/cennik.png",
         "priority": "0.7",
@@ -221,7 +264,7 @@ PAGES = {
         "name": "Załóż darmowe konto",
         "description": (
             "Załóż bezpłatne konto Monituj i wyślij pierwszą prośbę o dokumenty "
-            "w 5 minut. Bez karty kredytowej, klienci nie zakładają kont."
+            "w 2 minuty. Bez karty kredytowej, klienci nie zakładają kont."
         ),
         "priority": "0.6",
         "label": "Rejestracja",
@@ -490,15 +533,20 @@ def segment_seo(request, segment):
     )
 
 
-def template_seo(request, template, segment):
-    """A ready template's page: its list is what people search for."""
+def template_seo(request, template, segment, guide=None):
+    """A ready template's page: its list is what people search for. With a
+    guide (apps/requests/template_guides.py) also its questions, as FAQ."""
+    extra = []
+    if guide is not None:
+        extra.append(faq_page(guide.faq_items))
     return build(
         request,
-        f"Lista dokumentów: {template.title}",
+        template.heading,
         template.summary,
         og_image=f"images/og/segment-{segment['slug']}.png",
         jsonld=[
             graph(
+                *extra,
                 breadcrumbs(
                     [
                         (PAGES["pages:templates"]["label"], "/szablony/"),
@@ -507,7 +555,7 @@ def template_seo(request, template, segment):
                 ),
                 {
                     "@type": "ItemList",
-                    "name": f"Lista dokumentów: {template.title}",
+                    "name": template.heading,
                     "numberOfItems": len(template.items),
                     "itemListElement": [
                         {"@type": "ListItem", "position": position, "name": name}

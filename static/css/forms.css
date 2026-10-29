@@ -730,3 +730,13 @@ label > .password-field {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* The no-account form's date, under the deadline buttons. */
+.guest-form__date {
+  margin: var(--space-3) 0 0;
+}
+
+.label-optional {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}

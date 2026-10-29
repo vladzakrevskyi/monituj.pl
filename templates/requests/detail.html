@@ -39,7 +39,16 @@
 {% if schedule %}
 <p class="alert alert--info">Ta prośba została wysłana automatycznie przez prośbę cykliczną „{{ schedule.name }}” ({{ schedule.when }}{% if schedule.active %}, następna wysyłka {{ schedule.next_run_on|d }}{% else %}, obecnie wstrzymana{% endif %}). <a href="{% url 'requests:recurring-edit' schedule.id %}">Harmonogram: wyślij teraz, wstrzymaj, zmień</a></p>
 {% endif %}
-{% if request_obj.awaiting_confirmation %}
+{% if request_obj.awaiting_confirmation and not request_obj.confirmation_token %}
+{% if awaiting_verification %}<p class="alert alert--info">{% if question %}Pytanie wyjdzie{% else %}Prośba wyjdzie{% endif %} do {{ request_obj.client.email }}, gdy potwierdzisz adres <strong>{{ request_obj.created_by.email }}</strong> linkiem z maila. Klient jeszcze nic nie dostał.</p>
+{% else %}<div class="next-step" role="status">
+<p><strong>Ta prośba nie została jeszcze wysłana.</strong> Przygotowano ją, zanim adres konta był potwierdzony. Sprawdź treść i wyślij ją do {{ request_obj.client.email }} - albo usuń.</p>
+<form method="post" action="{% url 'requests:send-held' request_obj.id %}" class="inline-form">
+{% csrf_token %}
+<button type="submit" class="btn btn-primary btn-sm">Wyślij teraz</button>
+</form>
+</div>{% endif %}
+{% elif request_obj.awaiting_confirmation %}
 <p class="alert alert--info">Ta prośba czeka na potwierdzenie linkiem z maila, który wysłaliśmy na <strong>{{ request_obj.created_by.email }}</strong>. Odbiorca jeszcze nic nie dostał. Niepotwierdzone prośby są usuwane po 48 godzinach.</p>
 {% elif waiting_for_first %}
 <div class="next-step" role="status">

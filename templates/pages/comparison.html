@@ -1,0 +1,66 @@
+{% extends "pages/base_page.html" %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Ścieżka">
+<a href="{% url 'landing' %}">Monituj</a><span aria-hidden="true">/</span>
+<span aria-current="page">Porównanie</span>
+</nav>
+{% endblock %}
+{% block hero_eyebrow %}Porównanie{% endblock %}
+{% block hero_title %}E-mail, WhatsApp, dysk czy Monituj - <strong>jak zbierać dokumenty od klientów</strong>{% endblock %}
+{% block hero_lead %}Każdy z tych sposobów pozwala dostać plik od klienta. Różnica jest w tym, co dzieje się wokół pliku: kto pamięta, czego brakuje, kto przypomina i gdzie potem szukać dokumentu. Porównujemy cztery najczęstsze sposoby.{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<article class="article">
+
+<div class="table-scroll">
+<table class="compare-table">
+<thead><tr><th scope="col"></th><th scope="col">E-mail</th><th scope="col">WhatsApp, SMS</th><th scope="col">Dysk w chmurze</th><th scope="col">Monituj</th></tr></thead>
+<tbody>
+<tr><th scope="row">Lista tego, czego brakuje</th><td>W treści maila - po odpowiedzi trzeba ją porównywać ręcznie</td><td>Brak</td><td>Folder bez listy</td><td class="compare-table__yes">Każdy dokument z osobnym statusem</td></tr>
+<tr><th scope="row">Przypomnienia</th><td>Piszesz sam</td><td>Piszesz sam</td><td>Brak</td><td class="compare-table__yes">Wychodzą same, tylko o brakach</td></tr>
+<tr><th scope="row">Termin</th><td>W treści, łatwo przeoczyć</td><td>W treści</td><td>Brak</td><td class="compare-table__yes">Przy prośbie i w kalendarzu</td></tr>
+<tr><th scope="row">Klient przesyła</th><td>Załączniki, często w kilku mailach</td><td>Zdjęcia w rozmowie</td><td>Wymaga dostępu do folderu</td><td class="compare-table__yes">Z linku, z telefonu, bez konta</td></tr>
+<tr><th scope="row">Gdzie potem szukać</th><td>W wątkach skrzynki</td><td>W historii czatu</td><td>W folderze</td><td class="compare-table__yes">Przy kliencie i prośbie, z historią</td></tr>
+<tr><th scope="row">Usuwanie po czasie (RODO)</th><td>Ręcznie</td><td>Ręcznie</td><td>Ręcznie</td><td class="compare-table__yes">Automatycznie, po okresie, który ustawisz</td></tr>
+<tr><th scope="row">Koszt</th><td>Zwykle już masz</td><td>Bezpłatny</td><td>Zwykle już masz</td><td>Plan Free za 0 zł, płatne od 39 zł netto</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>E-mail: dobry na jeden dokument, słaby na listę</h2>
+<p>Mail wystarczy, gdy potrzebujesz jednego pliku od jednej osoby. Przy liście dokumentów zaczynają się kłopoty: klient odpowiada częścią plików, potem dosyła resztę w innym wątku, a Ty porównujesz załączniki z listą. Przypomnienia piszesz ręcznie - i musisz pamiętać, komu i kiedy.</p>
+
+<h2>WhatsApp i SMS: szybko, ale bez porządku</h2>
+<p>Klienci chętnie robią zdjęcie i wysyłają je w rozmowie. Tyle że zdjęcia giną w historii czatu, trudno je potem znaleźć i przenieść do akt, a dokumenty z danymi osobowymi zostają w prywatnym telefonie na zawsze.</p>
+
+<h2>Dysk w chmurze: dobre archiwum, nie narzędzie do zbierania</h2>
+<p>Dysk dobrze przechowuje pliki, ale nie wie, czego brakuje, i nikomu nie przypomina. Klient musi mieć dostęp do folderu, a Ty i tak sprawdzasz ręcznie, czy wszystko dotarło. Dlatego wiele biur używa dysku jako archiwum - a dokumenty zbiera innym sposobem.</p>
+
+<h2>Monituj: lista, przypomnienia i status w jednym miejscu</h2>
+<p>W Monituj wysyłasz klientowi listę dokumentów z terminem. Klient przesyła pliki z linku - także zdjęcia z telefonu - bez zakładania konta. Monituj sam przypomina mu o brakach, a Ty widzisz status każdego dokumentu. Po okresie, który ustawisz, pliki są automatycznie usuwane.</p>
+<p>Monituj nie zastępuje programu księgowego ani dysku: zajmuje się tym, co dzieje się między „potrzebuję dokumentów” a „mam komplet”.</p>
+
+<h2>Kiedy wystarczy zwykły mail</h2>
+<p>Jeśli raz na jakiś czas potrzebujesz jednego dokumentu od jednej osoby - mail w zupełności wystarczy. Monituj zaczyna się opłacać, gdy co miesiąc zbierasz listę dokumentów od wielu klientów i tracisz czas na przypominanie. Ile dokładnie - policzysz w <a href="{% url 'pages:calculator' %}">kalkulatorze czasu</a>.</p>
+
+<div class="article__summary">
+<h2>W skrócie</h2>
+<ul class="check-list">
+{% include "pages/_check.html" with text="e-mail - jeden dokument od jednej osoby" %}
+{% include "pages/_check.html" with text="WhatsApp - szybko, ale pliki giną w czacie" %}
+{% include "pages/_check.html" with text="dysk - archiwum, nie zbieranie" %}
+{% include "pages/_check.html" with text="Monituj - lista, przypomnienia i status, gdy klientów jest wielu" %}
+</ul>
+<div class="hero__actions">
+<a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+<a class="btn btn-secondary btn-lg" href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
+</div>
+</div>
+
+</article>
+</div>
+</section>
+{% endblock %}

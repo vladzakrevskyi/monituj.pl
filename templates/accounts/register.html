@@ -1,11 +1,11 @@
 {% extends "base/auth_base.html" %}
 
 
-{% block auth_title %}Zacznij zbierać <strong>dokumenty</strong> w&nbsp;kilka minut{% endblock %}
+{% block auth_title %}Pierwsza prośba o <strong>dokumenty</strong> w&nbsp;2&nbsp;minuty{% endblock %}
 {% block auth_points %}
 {% if signup_plan %}{% with text="Plan "|add:signup_plan.name|add:" - 30 dni za darmo, bez karty" %}{% include "base/_auth_point.html" %}{% endwith %}{% else %}{% include "base/_auth_point.html" with text="30 dni planu Biuro za darmo, bez karty" %}{% endif %}
-{% include "base/_auth_point.html" with text="Konto gotowe w minutę" %}
-{% include "base/_auth_point.html" with text="Pierwsza prośba o dokumenty w 5 minut" %}
+{% include "base/_auth_point.html" with text="Klienci przesyłają pliki bez zakładania konta" %}
+{% include "base/_auth_point.html" with text="Przypomnienia o brakach wysyłają się same" %}
 {% endblock %}
 
 {% block auth_form %}
@@ -15,7 +15,7 @@
 {% include "base/_auth_divider.html" %}
 {% endif %}<form method="post" novalidate data-ajax-form>
 {% csrf_token %}
-{% for field in form %}{% if field.name != "accept_terms" and field.name != "accept_privacy_policy" %}
+{% for field in form %}{% if field.name != "accept_terms" %}
 <p>
 {{ field.label_tag }}
 {{ field }}
@@ -23,7 +23,7 @@
 {{ field.errors }}
 </p>
 {% endif %}{% endfor %}
-{% include "base/_consent_fields.html" with terms_field=form.accept_terms privacy_field=form.accept_privacy_policy with_dpa=True %}
+{% include "base/_consent_fields.html" with terms_field=form.accept_terms with_dpa=True %}
 <button type="submit" class="btn btn-primary btn-lg btn-block">Zarejestruj się</button>
 </form>
 <div class="auth-links">

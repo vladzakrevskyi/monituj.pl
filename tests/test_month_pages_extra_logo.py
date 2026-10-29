@@ -64,12 +64,21 @@ def three_clients(user):
     ]
 
 
-@pytest.mark.django_db
-def test_overview_sums_up_each_client_this_month(user, three_clients):
-    anna, bogdan, celina = three_clients
-    complete = _send(user, anna)
-    for item in complete.items.all():
+def _rows(data):
+    return {row.client.name: row for row in data["rows"]}
+
+
+def _deliver(request_obj, accept=False):
+    for item in request_obj.items.all():
         UploadDocumentService.upload_for_item(item, make_pdf_upload(f"{item.pk}.pdf"))
+    if accept:
+        request_obj.items.update(status=RequestItemStatus.ZAAKCEPTOWANY)
+
+
+@pytest.mark.django_db
+def test_overview_states_never_overlap(user, three_clients):
+    anna, bogdan, celina = three_clients
+    _deliver(_send(user, anna), accept=True)
     partial = _send(user, bogdan)
     UploadDocumentService.upload_for_item(partial.items.first(), make_pdf_upload())
     _send(user, celina, deadline=timezone.now() - timedelta(days=1))
@@ -77,60 +86,136 @@ def test_overview_sums_up_each_client_this_month(user, three_clients):
 
     data = overview.build(user)
 
-    cells = {row["client"].name: row["cells"][-1] for row in data["rows"]}
-    assert cells["Anna"].state == overview.KOMPLET
-    assert cells["Bogdan"].state == overview.BRAKUJE and cells["Bogdan"].missing == 1
-    assert cells["Bogdan"].to_review == 1
-    assert cells["Celina"].state == overview.PO_TERMINIE
-    summary = data["summary"]
-    assert (summary["clients"], summary["complete"], summary["waiting"]) == (3, 1, 2)
-    assert summary["remindable"] == 2
+    rows = _rows(data)
+    assert rows["Anna"].state == overview.KOMPLET
+    assert rows["Bogdan"].state == overview.CZEKAMY
+    assert rows["Bogdan"].missing == ["Faktury"]
+    assert rows["Celina"].state == overview.PO_TERMINIE
+    assert rows["Celina"].deadline_text == "1 dzień temu"
+    counts = {tile["state"]: tile["count"] for tile in data["tiles"]}
+    assert counts == {
+        "": 3,
+        overview.KOMPLET: 1,
+        overview.DO_SPRAWDZENIA: 0,
+        overview.CZEKAMY: 1,
+        overview.PO_TERMINIE: 1,
+    }
+    assert data["remindable"] == 2
 
 
 @pytest.mark.django_db
-def test_overview_puts_requests_in_the_month_they_were_sent(user, three_clients):
-    old = _send(user, three_clients[0])
-    Request.objects.filter(pk=old.pk).update(
-        created_at=timezone.now() - timedelta(days=40)
+def test_delivered_but_not_checked_is_to_review_not_complete(user, three_clients):
+    _deliver(_send(user, three_clients[0]))
+
+    row = _rows(overview.build(user))["Anna"]
+
+    assert row.state == overview.DO_SPRAWDZENIA
+    assert row.to_review == 2
+
+
+@pytest.mark.django_db
+def test_several_requests_are_one_row_with_the_most_urgent_state(user, three_clients):
+    anna = three_clients[0]
+    _deliver(_send(user, anna, name="Za październik"), accept=True)
+    _send(user, anna, name="Umowa najmu", items=("Umowa najmu", "Wyciąg"))
+    _send(
+        user,
+        anna,
+        name="Leasing",
+        items=("Oferta", "Wyciąg"),
+        deadline=timezone.now() - timedelta(days=3),
     )
-    _send(user, three_clients[1])
 
     data = overview.build(user)
 
-    anna = next(r for r in data["rows"] if r["client"].name == "Anna")
-    assert anna["cells"][-1].state == ""
-    assert anna["cells"][-2].state == overview.NIC
-    assert len(data["months"]) == overview.MONTHS
+    [row] = data["rows"]
+    assert row.state == overview.PO_TERMINIE
+    assert row.count_text == "3 prośby"
+    # Each missing document once, the most urgent request first.
+    assert row.missing == ["Oferta", "Wyciąg", "Umowa najmu"]
+    assert [line.state for line in row.lines] == [
+        overview.PO_TERMINIE,
+        overview.CZEKAMY,
+        overview.KOMPLET,
+    ]
+    assert row.url == ""  # the row opens; each request has its own link
+
+
+@pytest.mark.django_db
+def test_months_history_and_not_asked_this_month(user, three_clients):
+    anna, bogdan, _ = three_clients
+    old = _send(user, anna)
+    Request.objects.filter(pk=old.pk).update(
+        created_at=timezone.now() - timedelta(days=40)
+    )
+    _send(user, bogdan)
+
+    data = overview.build(user)
+
+    assert [row.client.name for row in data["rows"]] == ["Bogdan"]
+    assert [client.name for client in data["not_asked"]] == ["Anna"]
+    history = data["rows"][0].history
+    assert len(history) == overview.HISTORY_MONTHS
+    assert history[-1]["selected"] and history[-1]["state"] == overview.CZEKAMY
+    assert data["previous"] and not data["next"]
+
+    earlier = overview.build(user, selected=data["previous"])
+    assert [row.client.name for row in earlier["rows"]] == ["Anna"]
 
 
 @pytest.mark.django_db
 def test_overview_filters(user, three_clients):
-    complete = _send(user, three_clients[0], items=("A",))
-    UploadDocumentService.upload_for_item(complete.items.first(), make_pdf_upload())
+    _deliver(_send(user, three_clients[0], items=("A",)), accept=True)
     _send(user, three_clients[1])
 
-    only = overview.build(user, only_missing=True)
+    waiting = overview.build(user, state=overview.CZEKAMY)
     found = overview.build(user, query="anna")
 
-    assert [r["client"].name for r in only["rows"]] == ["Bogdan"]
-    assert [r["client"].name for r in found["rows"]] == ["Anna"]
+    assert [row.client.name for row in waiting["rows"]] == ["Bogdan"]
+    assert [row.client.name for row in found["rows"]] == ["Anna"]
 
 
 @pytest.mark.django_db
-def test_overview_page_and_remind_everyone(client, user, three_clients):
-    _send(user, three_clients[0])
-    _send(user, three_clients[1])
+def test_one_reminder_email_per_client_about_all_their_requests(
+    client, user, three_clients
+):
+    anna, bogdan, _ = three_clients
+    _send(user, anna, name="Za październik", items=("Wyciąg",))
+    _send(user, anna, name="Umowa najmu", items=("Umowa najmu",))
+    _send(user, bogdan)
     client.force_login(user)
     page = page_text(client.get(reverse("requests:overview")))
-    assert "Zestawienie miesięczne" in page and "Nic nie przysłał" in page
+    assert "Zestawienie miesięczne" in page and "2 prośby" in page
     month = overview.month_key(timezone.localdate())
     mail.outbox.clear()
 
     client.post(reverse("requests:overview-remind"), {"m": month})
     client.post(reverse("requests:overview-remind"), {"m": month})  # too soon
 
-    assert Reminder.objects.count() == 2
-    assert len(mail.outbox) == 2
+    to_anna = [m for m in mail.outbox if m.to == ["anna@example.com"]]
+    assert len(to_anna) == 1
+    body = to_anna[0].body.replace("\u00a0", " ")
+    assert "Za październik" in body and "Umowa najmu" in body
+    assert body.count("Prześlij: ") == 2
+    assert len([m for m in mail.outbox if m.to == ["bogdan@example.com"]]) == 1
+    # Each request has its reminder in its history.
+    assert Reminder.objects.count() == 3
+
+
+@pytest.mark.django_db
+def test_remind_one_client_from_their_row(client, user, three_clients):
+    anna, bogdan, _ = three_clients
+    _send(user, anna)
+    _send(user, bogdan)
+    client.force_login(user)
+    mail.outbox.clear()
+
+    client.post(
+        reverse("requests:overview-remind"),
+        {"m": overview.month_key(timezone.localdate()), "c": anna.pk},
+    )
+
+    assert [m.to for m in mail.outbox] == [["anna@example.com"]]
 
 
 @pytest.mark.django_db

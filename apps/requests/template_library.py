@@ -36,6 +36,13 @@ class ReadyTemplate:
     summary: str = ""
     # Items without a file - the client confirms they are done.
     confirm: tuple = ()
+    # The page's title and H1 as people search for it ("Lista dokumentów do
+    # kredytu hipotecznego"); <= 47 characters, no separators (seo.py).
+    seo_title: str = ""
+
+    @property
+    def heading(self):
+        return self.seo_title or f"Lista dokumentów: {self.title}"
 
     @property
     def item_names(self):
@@ -48,6 +55,7 @@ TEMPLATES = [
     ReadyTemplate(
         slug="dokumenty-ksiegowe-za-miesiac",
         segment="biura-rachunkowe",
+        seo_title="Dokumenty do biura rachunkowego co miesiąc",
         title="Dokumenty księgowe za miesiąc",
         name="Dokumenty za {miesiąc}",
         description=(
@@ -141,6 +149,7 @@ TEMPLATES = [
     ),
     ReadyTemplate(
         slug="nowy-klient-biura-rachunkowego",
+        seo_title="Dokumenty od nowego klienta biura",
         segment="biura-rachunkowe",
         title="Nowy klient biura rachunkowego",
         name="Dokumenty na start współpracy",
@@ -189,6 +198,7 @@ TEMPLATES = [
     ReadyTemplate(
         slug="dokumenty-nowego-pracownika",
         segment="kadry",
+        seo_title="Dokumenty do zatrudnienia pracownika",
         title="Dokumenty nowego pracownika",
         name="Dokumenty do zatrudnienia",
         description=(
@@ -417,6 +427,7 @@ TEMPLATES = [
     ReadyTemplate(
         slug="kredyt-hipoteczny",
         segment="posrednictwo",
+        seo_title="Lista dokumentów do kredytu hipotecznego",
         title="Kredyt hipoteczny",
         name="Dokumenty do wniosku o kredyt hipoteczny",
         description=(
@@ -489,6 +500,7 @@ TEMPLATES = [
     ReadyTemplate(
         slug="sprzedaz-mieszkania",
         segment="posrednictwo",
+        seo_title="Lista dokumentów do sprzedaży mieszkania",
         title="Sprzedaż mieszkania",
         name="Dokumenty do sprzedaży mieszkania",
         description=(
@@ -530,6 +542,7 @@ TEMPLATES = [
     # --- b2b ----------------------------------------------------------------
     ReadyTemplate(
         slug="weryfikacja-kontrahenta",
+        seo_title="Dokumenty do weryfikacji kontrahenta",
         segment="b2b",
         title="Weryfikacja nowego kontrahenta",
         name="Dokumenty do rozpoczęcia współpracy",
@@ -568,6 +581,7 @@ TEMPLATES = [
     ),
     ReadyTemplate(
         slug="weryfikacja-dostawcy-rodo",
+        seo_title="Weryfikacja dostawcy pod kątem RODO",
         segment="b2b",
         title="Weryfikacja dostawcy pod kątem RODO",
         name="Dokumenty RODO od dostawcy",
@@ -600,6 +614,7 @@ TEMPLATES = [
     ),
     ReadyTemplate(
         slug="rozliczenie-zlecenia",
+        seo_title="Dokumenty do rozliczenia zlecenia",
         segment="b2b",
         title="Rozliczenie zlecenia lub projektu",
         name="Dokumenty do rozliczenia zlecenia",

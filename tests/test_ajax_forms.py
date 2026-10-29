@@ -37,7 +37,8 @@ def test_register_ajax_success_returns_redirect_url(client):
     assert response.status_code == 200
     payload = response.json()
     assert payload["success"] is True
-    assert payload["data"]["redirect_url"] == reverse("accounts:verification-sent")
+    # Straight to the first request (tests/test_verify_later.py).
+    assert payload["data"]["redirect_url"] == reverse("requests:create")
     assert User.objects.filter(email="ajax-register@example.com").exists()
 
 
@@ -48,9 +49,6 @@ def test_register_ajax_validation_error_returns_field_errors(client):
         {
             "email": "ajax-mismatch@example.com",
             "password": VALID_PASSWORD,
-            "password_confirm": "different",
-            "accept_terms": "on",
-            "accept_privacy_policy": "on",
         },
         **AJAX_HEADERS,
     )
@@ -59,7 +57,7 @@ def test_register_ajax_validation_error_returns_field_errors(client):
     payload = response.json()
     assert payload["success"] is False
     assert payload["error"]["code"] == "VALIDATION_ERROR"
-    assert "Hasła nie są identyczne." in payload["error"]["fields"]["password_confirm"]
+    assert payload["error"]["fields"]["accept_terms"]
     assert not User.objects.filter(email="ajax-mismatch@example.com").exists()
 
 
@@ -70,15 +68,12 @@ def test_register_non_ajax_still_returns_html_on_error(client):
         {
             "email": "plain@example.com",
             "password": VALID_PASSWORD,
-            "password_confirm": "different",
-            "accept_terms": "on",
-            "accept_privacy_policy": "on",
         },
     )
 
     assert response.status_code == 200
     assert response["Content-Type"].startswith("text/html")
-    assert "Hasła nie są identyczne.".encode() in response.content
+    assert "Musisz zaakceptować regulamin".encode() in response.content
 
 
 @pytest.mark.django_db

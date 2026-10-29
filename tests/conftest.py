@@ -2,6 +2,7 @@ import base64
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.clients.models import Client
@@ -73,10 +74,13 @@ def _no_legal_version_in_force(settings):
 
 @pytest.fixture
 def user(db):
+    # A working account: its address confirmed. (Before that, what it sends
+    # is held - tests/test_verify_later.py.)
     return User.objects.create_user(
         email="owner@example.com",
         password="s3cr3t-pass!",
         display_name="Biuro Testowe",
+        email_verified_at=timezone.now(),
     )
 
 

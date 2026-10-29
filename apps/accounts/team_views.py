@@ -11,7 +11,7 @@ from apps.accounts import team
 from apps.accounts.sender import validate_sender_name
 from apps.billing import plans
 from apps.common.exceptions import ApplicationError
-from apps.consents.forms import LegalAcceptanceForm
+from apps.consents.forms import SignupConsentForm
 from apps.demo.models import is_demo_user
 
 REQUIRED_MESSAGE = "To pole jest wymagane."
@@ -28,7 +28,7 @@ class InviteForm(forms.Form):
     )
 
 
-class JoinForm(LegalAcceptanceForm):
+class JoinForm(SignupConsentForm):
     name = forms.CharField(
         label="Imię i nazwisko",
         max_length=255,

@@ -84,15 +84,17 @@ def test_a_new_account_sees_first_steps(client, user):
 
     page = page_text(client.get(reverse("accounts:panel")))
 
-    assert "Pierwsze kroki" in page and "0 z 3" in page
-    assert "Dodaj klienta" in page and "Wyślij pierwszą prośbę" in page
+    assert "Pierwsze kroki" in page and "0 z 2" in page
+    assert "Wyślij pierwszą prośbę" in page and "Zaimportuj ją" in page
+    # Nothing sent yet: no row of zeros.
+    assert "Brakujące dokumenty" not in page
 
 
 @pytest.mark.django_db
 def test_first_steps_go_once_a_document_arrives(user, client_record):
     request_obj = _send(user, client_record)
     steps = DashboardService.first_steps(user)
-    assert steps["done"] == 2
+    assert steps["done"] == 1
     assert steps["public_url"].endswith(f"/d/{request_obj.public_token}/")
 
     item = request_obj.items.first()

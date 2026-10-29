@@ -17,23 +17,20 @@
 <div class="first-steps__head">
 <div>
 <h2 class="card-title" id="first-steps-title">Pierwsze kroki</h2>
-<p class="first-steps__sub">Trzy kroki do pierwszych dokumentów od klienta. Potem ta lista zniknie.</p>
+<p class="first-steps__sub">Dwa kroki do pierwszych dokumentów od klienta. Potem ta lista zniknie.</p>
 </div>
-<span class="first-steps__count">{{ first_steps.done }} z 3</span>
+<span class="first-steps__count">{{ first_steps.done }} z {{ first_steps.total }}</span>
 </div>
 <ol class="first-steps__list">
 {% for step in first_steps.steps %}
 <li class="first-step{% if step.done %} is-done{% endif %}">
 <span class="first-step__mark" aria-hidden="true">{% if step.done %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>{% else %}{{ forloop.counter }}{% endif %}</span>
 <div class="first-step__body">
-{% if step.key == "client" %}
-<p class="first-step__title">Dodaj klienta{% if step.done %} <span class="visually-hidden">- zrobione</span>{% endif %}</p>
-<p class="first-step__text">Nazwa i adres e-mail - albo cała lista z Excela lub CSV. Możesz też wpisać e-mail nowego klienta od razu w prośbie.</p>
-{% if not step.done %}<div class="first-step__actions"><a class="btn btn-primary btn-sm" href="{% url 'clients:create' %}">Dodaj klienta</a><a class="btn btn-secondary btn-sm" href="{% url 'clients:import' %}">Importuj z pliku</a></div>{% endif %}
-{% elif step.key == "request" %}
+{% if step.key == "request" %}
 <p class="first-step__title">Wyślij pierwszą prośbę{% if step.done %} <span class="visually-hidden">- zrobione</span>{% endif %}</p>
-<p class="first-step__text">Wybierz gotowy szablon, np. „Dokumenty księgowe za miesiąc”, ustaw termin i wyślij. Klient dostanie e-mail z linkiem, a Monituj sam przypomni o brakach.</p>
-{% if not step.done %}<div class="first-step__actions"><a class="btn btn-primary btn-sm" href="{% url 'requests:create' %}">Nowa prośba</a><a class="btn btn-secondary btn-sm" href="{% url 'requests:templates' %}">Zobacz szablony</a></div>{% endif %}
+<p class="first-step__text">Wybierz gotowy szablon albo wpisz dokumenty, podaj e-mail klienta i wyślij. Klient dostanie link, a Monituj sam przypomni mu o brakach.</p>
+{% if not step.done %}<div class="first-step__actions"><a class="btn btn-primary" href="{% url 'requests:create' %}">Wyślij pierwszą prośbę</a></div>
+<p class="first-step__aside">Masz listę klientów w Excelu? <a href="{% url 'clients:import' %}">Zaimportuj ją</a> - przyda się przy kolejnych prośbach.</p>{% endif %}
 {% else %}
 <p class="first-step__title">Odbierz pierwszy dokument{% if step.done %} <span class="visually-hidden">- zrobione</span>{% endif %}</p>
 <p class="first-step__text">Gdy klient coś prześle, dostaniesz e-mail, a dokument pojawi się w „Do zrobienia” - zaakceptujesz go jednym kliknięciem. Zobacz, co widzi klient: link działa bez logowania.</p>
@@ -67,6 +64,7 @@
 </a>
 {% endif %}
 
+{% if not first_steps or active_requests %}
 <div class="stat-grid">
 <div class="stat-tile stat-tile--dark">
 <div class="stat-tile__value">{{ active_requests }}</div>
@@ -85,6 +83,7 @@
 <div class="stat-tile__label">Przypomnienia wysłane</div>
 </div>
 </div>
+{% endif %}
 
 <div class="dashboard-grid">
 <div class="dashboard-main">

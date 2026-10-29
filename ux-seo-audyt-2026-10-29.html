@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аудит UX и SEO Monituj</title>
+<style>
+:root {
+  --bg: #f7f7f8; --paper: #fff; --text: #18181b; --muted: #5b5b66; --line: #e4e4e8; --code: #f1f1f4; --accent: #ff6b00;
+  --high: #c2410c; --med: #b54708; --low: #2e5aac; --ok: #217a3c;
+  --high-bg: #fdeee6; --med-bg: #fdf3e2; --low-bg: #e9effb; --ok-bg: #e5f4ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0e10; --paper: #17171a; --text: #ececf0; --muted: #a1a1aa; --line: #2b2b31; --code: #222227;
+    --high: #ff9a66; --med: #f5b95c; --low: #8fb0ff; --ok: #6fd28f;
+    --high-bg: #3a1d10; --med-bg: #33260f; --low-bg: #16213a; --ok-bg: #12301c;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0e10; --paper: #17171a; --text: #ececf0; --muted: #a1a1aa; --line: #2b2b31; --code: #222227;
+  --high: #ff9a66; --med: #f5b95c; --low: #8fb0ff; --ok: #6fd28f;
+  --high-bg: #3a1d10; --med-bg: #33260f; --low-bg: #16213a; --ok-bg: #12301c;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; }
+main { max-width: 940px; margin: 0 auto; padding: 48px 16px 96px; }
+header.cover { border-bottom: 2px solid var(--text); padding-bottom: 20px; margin-bottom: 28px; }
+.kicker { display: flex; justify-content: space-between; gap: 16px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.kicker span:last-child { font-family: ui-monospace, Menlo, monospace; font-weight: 400; }
+h1 { font-size: 38px; line-height: 1.1; letter-spacing: -0.03em; margin: 16px 0 8px; }
+h2 { font-size: 25px; letter-spacing: -0.02em; margin: 56px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+h3 { font-size: 18px; margin: 0 0 6px; }
+p { margin: 0 0 12px; }
+.lead { font-size: 18px; color: var(--muted); max-width: 62ch; }
+.box { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px; margin: 14px 0; }
+.box.key { border-left: 4px solid var(--accent); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.stat b { display: block; font-size: 30px; line-height: 1.1; }
+.stat span { font-size: 13px; color: var(--muted); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--paper); border: 1px solid var(--line); }
+th, td { text-align: left; padding: 9px 11px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 13px; color: var(--muted); background: var(--code); }
+.wrap { overflow-x: auto; }
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.high { color: var(--high); background: var(--high-bg); } .med { color: var(--med); background: var(--med-bg); }
+.low { color: var(--low); background: var(--low-bg); } .ok { color: var(--ok); background: var(--ok-bg); }
+.item { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px; margin: 14px 0; }
+.item header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; margin-bottom: 8px; }
+.item .id { font-family: ui-monospace, Menlo, monospace; font-size: 13px; color: var(--muted); margin-right: 6px; }
+.item dl { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 6px 14px; margin: 0; font-size: 15px; }
+.item dt { color: var(--muted); font-weight: 600; font-size: 14px; }
+.item dd { margin: 0; }
+ul { padding-left: 20px; margin: 0 0 8px; } li { margin-bottom: 4px; }
+code { font-family: ui-monospace, Menlo, monospace; font-size: .88em; background: var(--code); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.pl { font-style: italic; }
+.flow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.flow ol { margin: 0; padding-left: 20px; font-size: 14px; }
+footer { margin-top: 56px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+@media (max-width: 640px) {
+  h1 { font-size: 29px; } .item dl { grid-template-columns: 1fr; gap: 2px; } .item dd { margin-bottom: 8px; } .flow { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<main>
+<header class="cover">
+  <div class="kicker"><span>Аудит UX, конверсии и SEO</span><span>29.10.2026</span></div>
+  <h1>Monituj: где сайт теряет людей и поисковый трафик</h1>
+  <p class="lead">Главная, цены, регистрация, гостевая форма, первый вход в панель и форма prośby. Проверено на 1440 px и 390 px. Плюс SEO-обход всех 114 страниц из sitemap.</p>
+</header>
+
+<section>
+  <h2>1. Главное</h2>
+  <div class="box key">
+    <p><strong>Техническое SEO и визуальная часть уже на хорошем уровне.</strong> Что сделано хорошо:</p>
+    <ul>
+      <li>у каждой из 114 страниц свой title, description, canonical и ровно один H1;</li>
+      <li>на всех страницах есть schema.org разметка (FAQ, Article, ItemList, хлебные крошки);</li>
+      <li>картинок без alt нет, страница загружается за ~0,3 с.</li>
+    </ul>
+    <p>Слабые места не в технике, а в трёх вещах:</p>
+    <ul>
+      <li><strong>Длинный путь до результата.</strong> От кнопки «Zacznij za darmo» до первой отправленной prośby — около 12 действий и уход в почту. Гостевая форма «без аккаунта», которая должна быть самым коротким путём, — 16 полей.</li>
+      <li><strong>Ни одного доказательства от реальных людей.</strong> Нет отзывов, логотипов, цифр, страницы «O nas». Для B2B-сервиса, которому отдают документы клиентов, это главный барьер доверия.</li>
+      <li><strong>Контента мало там, где есть спрос.</strong> Страницы со списками документов («dokumenty do kredytu hipotecznego», «sprzedaż mieszkania», «nowy pracownik») — это самые частые запросы в нише, а на них в среднем 286 слов. Конкуренты в выдаче пишут 1500+.</li>
+    </ul>
+  </div>
+  <div class="grid">
+    <div class="box stat"><b>~12</b><span>действий от главной до первой отправленной prośby (цель — 6)</span></div>
+    <div class="box stat"><b>16</b><span>полей в гостевой форме «Wyślij prośbę bez konta»</span></div>
+    <div class="box stat"><b>21</b><span>экран прокрутки на главной на телефоне (18 000 px, 13 блоков)</span></div>
+    <div class="box stat"><b>0</b><span>отзывов, логотипов, цифр от клиентов и страниц «O nas»</span></div>
+    <div class="box stat"><b>286</b><span>слов в среднем на 15 страницах шаблонов — главном SEO-активе</span></div>
+    <div class="box stat"><b>3</b><span>статьи в разделе «Poradnik» — вся блоговая часть сайта</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>2. Путь пользователя: сейчас и цель</h2>
+  <div class="flow">
+    <div class="box"><h3>Сейчас: регистрация → первая prośba</h3><ol>
+      <li>«Zacznij za darmo» на главной</li>
+      <li>Форма: email, пароль, повтор пароля, 2 галочки</li>
+      <li>«Sprawdź skrzynkę» — уйти в почту</li>
+      <li>Открыть письмо, нажать ссылку</li>
+      <li>Нажать кнопку подтверждения на странице</li>
+      <li>Попасть на «Plan i płatności» (если выбран план) или в панель</li>
+      <li>«Pierwsze kroki»: шаг 1 «Dodaj klienta»</li>
+      <li>«Nowa prośba»</li>
+      <li>«Jak przedstawić Cię klientowi?»</li>
+      <li>Выбрать шаблон или вписать документы, дать название</li>
+      <li>Клиент: имя и email</li>
+      <li>Срок → «Wyślij prośbę»</li>
+    </ol></div>
+    <div class="box"><h3>Цель: 6 шагов, почта не прерывает</h3><ol>
+      <li>«Zacznij za darmo» (или Google)</li>
+      <li>Email + пароль, одна галочка</li>
+      <li>Сразу в форму первой prośby, шаблон уже выбран по отрасли</li>
+      <li>Email клиента (название и имя подставляются сами)</li>
+      <li>«Wyślij prośbę»</li>
+      <li>«Potwierdź adres — prośba wyjdzie od razu»: письмо подтверждения отправляет prośbę</li>
+    </ol>
+    <p style="font-size:14px;color:var(--muted);margin-top:8px">Проверка email сохраняется: без неё ни одно письмо клиенту не уходит. Меняется только порядок: сначала человек получает результат, потом подтверждает.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>3. UX: что мешает дойти до результата</h2>
+
+  <article class="item"><header><h3><span class="id">U-1</span>Гостевая форма на 16 полей</h3><span class="tag high">Высокий</span></header><dl>
+    <dt>Где</dt><dd><code>/wyslij-prosbe/</code>, <code>templates/public/guest_request_form.html</code></dd>
+    <dt>Сейчас</dt><dd>Имя, email, имя и email получателя, название, описание, список, дата (на телефоне <code>mm/dd/yyyy</code>), пароль, переключатель и три числа напоминаний, срок хранения, согласие. В форме панели всё это давно упрощено (шаблоны, кнопки сроков, «Więcej ustawień»), а в гостевой — нет.</dd>
+    <dt>Предлагаю</dt><dd>Использовать ту же форму, что в панели. Видимы 5 полей: «Twój e-mail», «Jak się przedstawić», «E-mail odbiorcy», документы с кнопками шаблонов, кнопки срока. Остальное — в свёрнутом «Więcej ustawień» с нормальными значениями по умолчанию. Название prośby генерируется само.</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">U-2</span>Подтверждение email стоит перед первым результатом</h3><span class="tag high">Высокий</span></header><dl>
+    <dt>Сейчас</dt><dd>Без перехода по ссылке в почте в панель не попасть. Часть людей уходит на этом шаге навсегда: письмо в спаме, отвлекли, «потом».</dd>
+    <dt>Предлагаю</dt><dd>Пускать в панель сразу после регистрации. Можно добавлять клиентов и готовить prośbę, но <strong>отправка</strong> ждёт подтверждения: «Prośba gotowa — potwierdź adres, a wyślemy ją od razu». Защита от злоупотреблений (M-04) остаётся: без подтверждённого адреса ни одного письма наружу.</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">U-3</span>Регистрация: лишнее поле и две галочки</h3><span class="tag med">Средний</span></header><dl>
+    <dt>Сейчас</dt><dd>«Powtórz hasło», хотя у поля уже есть кнопка «показать пароль». Две отдельные галочки. На телефоне чёрный блок с преимуществами выталкивает форму на второй экран.</dd>
+    <dt>Предлагаю</dt><dd>Убрать «Powtórz hasło». Одна галочка «Akceptuję Regulamin i umowę powierzenia», а политику конфиденциальности — текстом «Szczegóły w Polityce prywatności» (её достаточно сообщить, принимать не обязательно — <em>проверить с юристом</em>). На телефоне показывать блок преимуществ под формой.</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">U-4</span>«Pierwsze kroki» начинаются с необязательного шага</h3><span class="tag med">Средний</span></header><dl>
+    <dt>Сейчас</dt><dd>Шаг 1 — «Dodaj klienta», хотя клиента можно вписать прямо в prośbę. Новичок делает лишнее действие, а пустые карточки «0 / 0 / 0 / 0» занимают первый экран.</dd>
+    <dt>Предлагаю</dt><dd>Одна главная кнопка «Wyślij pierwszą prośbę» с шаблоном по выбранной отрасли (для бюро — «Dokumenty księgowe za miesiąc»). Импорт клиентов — второстепенной ссылкой. Карточки статистики скрыть до первой prośby. В форме: название подставлять из шаблона, поле «Jak przedstawić Cię klientowi?» заполнять из данных Google или домена email.</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">U-5</span>Меню панели обрезается на ноутбуке</h3><span class="tag med">Средний</span></header><dl>
+    <dt>Сейчас</dt><dd>12 пунктов. На экране 1440×900 видно только 7, а «Powiadomienia», «Zespół», «Plan», «Ustawienia», «Pomoc» спрятаны за прокруткой меню.</dd>
+    <dt>Предлагаю</dt><dd>В основном меню 6 пунктов: Panel, Klienci, Prośby, Pytania, Zestawienie, Kalendarz. «Szablony» и «Otrzymane» сделать вкладками внутри «Prośby». Ustawienia, Plan, Zespół, Pomoc вынести в меню аккаунта внизу (по клику на email). Уведомления показать колокольчиком со счётчиком.</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">U-6</span>Главная слишком длинная, особенно на телефоне</h3><span class="tag med">Средний</span></header><dl>
+    <dt>Сейчас</dt><dd>13 блоков, 1800 слов, 21 экран на телефоне. «Pamięć biura» и «Co zyskuje» говорят примерно одно и то же. Блок KSeF важен только бюро.</dd>
+    <dt>Предлагаю</dt><dd>Оставить 8 блоков: герой → проблема → как это работает (видео + 3 шага) → сравнение «e-mail i dysk vs Monituj» → отзывы (U-7) → калькулятор → «Wypróbuj» + безопасность → FAQ. KSeF перенести на страницу «Biura rachunkowe», «Pamięć biura» объединить с «Co zyskuje». На телефоне свернуть 5 колонок ссылок в подвале аккордеоном: сейчас подвал занимает почти экран.</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">U-7</span>Нет ни одного доказательства от реальных людей</h3><span class="tag high">Высокий</span></header><dl>
+    <dt>Сейчас</dt><dd>Ни отзывов, ни логотипов, ни цифр, ни страницы «O nas». Человек отдаёт сервису документы своих клиентов и не видит, кто за ним стоит.</dd>
+    <dt>Предлагаю</dt><dd>
+      <ul>
+        <li>Страница «O nas»: кто делает, зачем, реквизиты фирмы, контакт. Это и доверие, и сигнал E-E-A-T для Google.</li>
+        <li>Блок отзывов на главной и в ценах — <strong>только реальные</strong>, с именем, фирмой и разрешением. Пока их нет — короткая записка основателя («dlaczego zbudowałem Monituj») с фото.</li>
+        <li>Когда появятся оценки в Trustpilot (приглашения уже рассылаются), показывать оценку у кнопок.</li>
+        <li>Цифры из самого продукта, когда они станут заметными: «X dokumentów zebranych w tym miesiącu».</li>
+      </ul>
+      Придумывать отзывы нельзя — это и нечестно, и незаконно (UOKiK).</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">U-8</span>Кнопки разного цвета и текста для одного действия</h3><span class="tag low">Низкий</span></header><dl>
+    <dt>Сейчас</dt><dd>Регистрация называется «Zacznij za darmo», «Wypróbuj 30 dni za darmo», «Wypróbuj Biuro za darmo». В шапке кнопка оранжевая, в герое и в конце страницы — чёрная. Время до результата тоже везде своё: «w kilka minut», «w dwie minuty», «Konto gotowe w minutę», «Pierwsza prośba w 5 minut».</dd>
+    <dt>Предлагаю</dt><dd>Главное действие всегда оранжевое и всегда «Zacznij za darmo», второстепенное — контурное. Одно обещание по времени везде: «Pierwsza prośba w 2 minuty». Оно станет правдой после U-1…U-4.</dd>
+  </dl></article>
+</section>
+
+<section>
+  <h2>4. Тексты и конверсия</h2>
+
+  <article class="item"><header><h3><span class="id">C-1</span>Подзаголовок главной: три предложения вместо одного</h3><span class="tag med">Средний</span></header><dl>
+    <dt>Сейчас</dt><dd class="pl">«Wysyłasz klientowi listę brakujących dokumentów - on przesyła je z telefonu, bez zakładania konta. Monituj sam mu przypomina, dopóki wszystkiego nie dośle, pilnuje pytań i terminów i pokazuje, na czym stoisz. Ty tylko akceptujesz pliki.»</dd>
+    <dt>Варианты</dt><dd><ul>
+      <li class="pl">«Wyślij klientowi listę dokumentów. Monituj sam mu przypomina o brakach, a Ty dostajesz komplet - bez maili i telefonów.» — выгода в конце, 20 слов.</li>
+      <li class="pl">«Klient przesyła dokumenty z telefonu, bez zakładania konta. Monituj przypomina mu za Ciebie, aż dotrze komplet.» — снимает главное возражение «клиент не станет регистрироваться».</li>
+    </ul>H1 «Dokumenty od klientów na czas. Bez gonienia.» хороший, оставить.</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">C-2</span>«Prośba w toku» — внутренний термин в заголовке цен</h3><span class="tag med">Средний</span></header><dl>
+    <dt>Сейчас</dt><dd class="pl">«Płacisz za prośby w toku, nie za przypomnienia». Новичок не знает, что такое «prośba w toku», и не может выбрать план. Строка «Pytania bez odpowiedzi: do 20» на карточках тоже непонятна без объяснения.</dd>
+    <dt>Варианты</dt><dd><ul>
+      <li class="pl">«Płacisz za sprawy, na które czekasz. Zakończone się nie liczą.»</li>
+      <li class="pl">«Cena zależy od tego, na ile kompletów dokumentów czekasz naraz.»</li>
+    </ul>Под карточками — подсказка выбора: «40 klientów co miesiąc → Biuro». Строку про вопросы перенести в общий блок «W każdym planie» или переписать: «Pytania do klientów: 20 naraz».</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">C-3</span>Возражения, на которые сайт не отвечает рядом с кнопкой</h3><span class="tag low">Низкий</span></header><dl>
+    <dt>Что спросит бюро</dt><dd>«Czy moi klienci (60+, bez komputera) sobie poradzą?» — показать экран клиента на телефоне рядом с кнопкой. «Co z moimi danymi, jeśli zrezygnuję?» — «Eksport wszystkiego jednym kliknięciem, usuniemy dane w ciągu…». «Czy to zastąpi mój program księgowy?» — уже есть в блоке сравнения, стоит повторить в FAQ на ценах.</dd>
+  </dl></article>
+</section>
+
+<section>
+  <h2>5. SEO</h2>
+
+  <article class="item"><header><h3><span class="id">S-1</span>Страницы шаблонов слишком тонкие для своих запросов</h3><span class="tag high">Высокий</span></header><dl>
+    <dt>Сейчас</dt><dd>15 страниц <code>/szablony/…</code>, медиана 286 слов: список и кнопка. По этим запросам ищут больше всего во всей нише: «dokumenty do kredytu hipotecznego», «dokumenty do sprzedaży mieszkania», «dokumenty nowego pracownika», «dokumenty do sprawy spadkowej». В выдаче стоят статьи по 1500–2500 слов.</dd>
+    <dt>Предлагаю</dt><dd>Превратить каждую страницу в полный путеводитель:
+      <ul>
+        <li>по каждому документу: что это, где взять, сколько стоит, сколько действует;</li>
+        <li>частые ошибки;</li>
+        <li>FAQ с разметкой FAQPage;</li>
+        <li>дату обновления;</li>
+        <li>кнопку «Wyślij tę listę klientowi».</li>
+      </ul>
+      Начать с 4 самых массовых. Это самая выгодная SEO-работа на сайте: запросы с намерением, а продукт прямо решает задачу.</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">S-2</span>Нет страниц под коммерческие запросы и сравнения</h3><span class="tag high">Высокий</span></header><dl>
+    <dt>Сейчас</dt><dd>Нет страниц под «program do zbierania dokumentów od klientów», «portal klienta dla biura rachunkowego», «przypomnienia o dokumentach dla klientów». Нет сравнений с тем, чем люди пользуются сейчас.</dd>
+    <dt>Предлагаю</dt><dd>
+      <ul>
+        <li>«Monituj a e-mail, WhatsApp i Dysk Google».</li>
+        <li>«Jak biura zbierają dokumenty: porównanie sposobów».</li>
+        <li>Позже — честные сравнения с порталами из программ бухучёта (Saldeo, Symfonia, Comarch). Только с проверяемыми фактами и датой проверки.</li>
+      </ul></dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">S-3</span>Блог из трёх статей — нет тематического кластера</h3><span class="tag med">Средний</span></header><dl>
+    <dt>Предлагаю</dt><dd>10–12 статей для бюро рахунковых вокруг ядра «zbieranie dokumentów»:
+      <ul>
+        <li>«Wzór maila z przypomnieniem o dokumentach» — частый запрос, плюс бесплатный шаблон;</li>
+        <li>«Termin dostarczenia dokumentów do biura rachunkowego»;</li>
+        <li>«Co zrobić, gdy klient spóźnia się z dokumentami»;</li>
+        <li>«Zapisy o dokumentach w umowie z biurem»;</li>
+        <li>«Lista dokumentów do zamknięcia roku»;</li>
+        <li>календарь сроков JPK/VAT/ZUS по месяцам.</li>
+      </ul>
+      Каждая статья ссылается на шаблон и на страницу «biura rachunkowe». Калькулятор времени вынести на отдельную страницу «Kalkulator kosztu gonienia klientów» — на неё охотно ставят ссылки.</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">S-4</span>Длина title и description</h3><span class="tag low">Низкий</span></header><dl>
+    <dt>Сейчас</dt><dd>8 title длиннее 60 символов (Google обрежет). У 44 из 114 страниц description вне диапазона 110–160: темы помощи по 42–58 символов, несколько статей длиннее 180.</dd>
+    <dt>Предлагаю</dt><dd>Быстрая правка: сократить 8 title, дописать описания тем помощи по шаблону «Instrukcje: …», обрезать длинные. Это делается в <code>apps/common/seo.py</code> и <code>apps/help/articles.py</code>, около часа.</dd>
+  </dl></article>
+
+  <article class="item"><header><h3><span class="id">S-5</span>Доверие для поисковика (E-E-A-T)</h3><span class="tag med">Средний</span></header><dl>
+    <dt>Предлагаю</dt><dd>Страница «O nas» (U-7) с разметкой Organization (реквизиты, NIP, адрес — уже есть в <code>LEGAL_ENTITY</code>). У статей и путеводителей — автор и дата проверки. Профиль на LinkedIn и в каталогах SaaS (G2, Capterra, AlternativeTo, польские каталоги для бюро) дадут первые ссылки на сайт.</dd>
+  </dl></article>
+
+  <div class="box"><h3>Что уже сделано хорошо — не трогать</h3><ul>
+    <li>Уникальные title и description, canonical, один H1 на каждой странице.</li>
+    <li>Schema.org разметка: Organization, WebSite, SoftwareApplication, FAQPage, VideoObject, Article, ItemList, BreadcrumbList.</li>
+    <li>robots.txt закрывает панель и ссылки клиентов; приватные страницы с <code>noindex</code>; есть <code>llms.txt</code>.</li>
+    <li>Чистые человекочитаемые URL; 78 статей помощи закрывают длинный хвост запросов.</li>
+    <li>Скорость: DOMContentLoaded и LCP около 0,3 с локально, 28 запросов.</li>
+  </ul></div>
+</section>
+
+<section>
+  <h2>6. План работ</h2>
+  <div class="wrap"><table>
+    <thead><tr><th>Этап</th><th>Что</th><th>Эффект</th><th>Объём</th></tr></thead>
+    <tbody>
+      <tr><td>1. Быстрые правки</td><td>U-3 (регистрация), U-8 (кнопки и обещания), C-1, C-2 (тексты), S-4 (title и description), подвал на телефоне</td><td>Меньше трения, понятные цены, чистая выдача</td><td>1 день</td></tr>
+      <tr><td>2. Путь до результата</td><td>U-1 (гостевая форма = форма панели), U-2 (сначала prośba, потом подтверждение), U-4 (первые шаги), U-5 (меню)</td><td>Главный рост конверсии из регистрации в первую отправку</td><td>3–4 дня</td></tr>
+      <tr><td>3. Доверие</td><td>U-7 и S-5: «O nas», блок отзывов (нужны реальные отзывы от тебя), U-6 (короче главная)</td><td>Конверсия холодного трафика</td><td>1–2 дня + твои материалы</td></tr>
+      <tr><td>4. Контент</td><td>S-1 (4 путеводителя), S-2 (2 страницы сравнения), S-3 (план статей, по 1–2 в неделю)</td><td>Органический трафик через 2–4 месяца</td><td>постоянно</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin-top:12px">Чтобы видеть эффект, в GA4 нужна воронка: <code>sign_up</code> уже отправляется. Добавить ещё два события — «email подтверждён» и «первая prośba отправлена». Тогда видно, на каком шаге люди уходят.</p>
+</section>
+
+<footer>
+  <p>Метод: обход sitemap (114 страниц), полностраничные скриншоты на 1440 и 390 px (Playwright), путь нового пользователя на временном тестовом аккаунте (удалён), разбор по чек-листам CRO и SEO. Без доступа к Search Console и аналитике, поэтому без реальных цифр трафика и позиций. Объёмы запросов — экспертная оценка ниши, перед написанием контента их стоит проверить в Ahrefs, Semrush или Senuto.</p>
+</footer>
+</main>
+</body>
+</html>

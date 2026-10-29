@@ -37,26 +37,8 @@ def test_register_view_post_creates_user_and_redirects(client):
     )
 
     assert response.status_code == 302
-    assert response.url == reverse("accounts:verification-sent")
+    assert response.url == reverse("requests:create")
     assert User.objects.filter(email="view-test@example.com").exists()
-
-
-@pytest.mark.django_db
-def test_register_view_post_password_mismatch_shows_error(client):
-    response = client.post(
-        reverse("accounts:register"),
-        {
-            "email": "mismatch@example.com",
-            "password": VALID_PASSWORD,
-            "password_confirm": "different",
-            "accept_terms": "on",
-            "accept_privacy_policy": "on",
-        },
-    )
-
-    assert response.status_code == 200
-    assert "Hasła nie są identyczne.".encode() in response.content
-    assert not User.objects.filter(email="mismatch@example.com").exists()
 
 
 @pytest.mark.django_db
@@ -97,7 +79,7 @@ def test_verify_email_view_accepts_valid_token(client):
     response = client.post(url)
 
     # Confirming the address logs straight in.
-    assert response.url == reverse("accounts:panel")
+    assert response.url == reverse("requests:create")
     assert client.get(reverse("accounts:panel")).status_code == 200
     user.refresh_from_db()
     assert user.is_email_verified is True

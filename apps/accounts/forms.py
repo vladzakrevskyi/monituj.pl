@@ -1,7 +1,7 @@
 from django import forms
 
 from apps.accounts.sender import validate_sender_name
-from apps.consents.forms import LegalAcceptanceForm
+from apps.consents.forms import SignupConsentForm
 
 REQUIRED_MESSAGE = "To pole jest wymagane."
 
@@ -19,32 +19,21 @@ class RegistrationForm(forms.Form):
         widget=forms.PasswordInput,
         error_messages={"required": REQUIRED_MESSAGE},
     )
-    password_confirm = forms.CharField(
-        label="Powtórz hasło",
-        widget=forms.PasswordInput,
-        error_messages={"required": REQUIRED_MESSAGE},
-    )
+    # One checkbox for the Terms with the DPA and the Privacy policy, as on
+    # the no-account form; the password field has "show" instead of a repeat.
     accept_terms = forms.BooleanField(
-        label="Akceptuję Regulamin wraz z umową powierzenia przetwarzania danych",
+        label=(
+            "Akceptuję Regulamin wraz z umową powierzenia przetwarzania danych "
+            "i Politykę prywatności"
+        ),
         required=True,
-        error_messages={"required": "Musisz zaakceptować regulamin."},
-    )
-    accept_privacy_policy = forms.BooleanField(
-        label="Zapoznałem się z Polityką prywatności",
-        required=True,
-        error_messages={"required": "Musisz zaakceptować politykę prywatności."},
+        error_messages={
+            "required": "Musisz zaakceptować regulamin i politykę prywatności."
+        },
     )
 
-    def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        password_confirm = cleaned_data.get("password_confirm")
-        if password and password_confirm and password != password_confirm:
-            self.add_error("password_confirm", "Hasła nie są identyczne.")
-        return cleaned_data
 
-
-class GoogleSignupForm(LegalAcceptanceForm):
+class GoogleSignupForm(SignupConsentForm):
     pass
 
 

@@ -74,6 +74,7 @@ urlpatterns = [
     path("prosby/<int:request_id>/", views.request_detail, name="detail"),
     path("prosby/<int:request_id>/edytuj/", views.request_edit, name="edit"),
     path("prosby/<int:request_id>/zamknij/", views.request_close, name="close"),
+    path("prosby/<int:request_id>/wyslij/", views.request_send_held, name="send-held"),
     path(
         "prosby/<int:request_id>/pliki.zip",
         views.request_files_zip,

@@ -14,7 +14,7 @@ from apps.common.forms import add_service_error
 from apps.requests import questions
 from apps.requests.forms import PrivateNoteForm, QuestionForm
 from apps.requests.models import RequestItemKind, RequestItemStatus
-from apps.requests.services import RequestService
+from apps.requests.services import RequestService, held_message
 
 TABS = [
     (
@@ -95,7 +95,10 @@ def question_create(request):
                 add_service_error(form, exc)
             else:
                 messages.success(
-                    request, f"Pytanie wysłane do klienta {data['client'].name}."
+                    request,
+                    held_message(request.account, "Pytanie jest gotowe")
+                    if request_obj.awaiting_confirmation
+                    else f"Pytanie wysłane do klienta {data['client'].name}.",
                 )
                 return redirect("requests:question-detail", request_obj.pk)
     else:

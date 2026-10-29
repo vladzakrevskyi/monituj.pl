@@ -172,12 +172,34 @@ def sender_context(user):
     }
 
 
+# Mailboxes anyone can have: their domain says nothing about the firm.
+FREE_MAIL = {
+    "gmail.com", "googlemail.com", "wp.pl", "o2.pl", "onet.pl", "onet.eu",
+    "op.pl", "interia.pl", "interia.eu", "poczta.fm", "tlen.pl", "gazeta.pl",
+    "outlook.com", "hotmail.com", "live.com", "yahoo.com", "icloud.com",
+    "me.com", "proton.me", "protonmail.com", "vp.pl", "spoko.pl", "buziaczek.pl",
+}  # fmt: skip
+
+
+def name_from_domain(email):
+    """ "anna@biuro-kowalska.pl" -> "Biuro Kowalska"; nothing for a free
+    mailbox or a name that would be refused."""
+    domain = (email or "").rpartition("@")[2].lower()
+    if not domain or domain in FREE_MAIL:
+        return ""
+    label = domain.split(".")[0]
+    name = " ".join(part.capitalize() for part in re.split(r"[-_]+", label) if part)
+    return "" if not name or is_deceptive(name) else name
+
+
 def suggested_name(user):
     """A first guess for the name to show recipients: the firm from the
-    invoice details, if any."""
+    invoice details, else the firm's email domain."""
     from apps.billing.models import BillingProfile
 
     profile = BillingProfile.objects.filter(user=user).first()
-    if profile is None:
-        return ""
-    return profile.company_name if profile.is_company else profile.display_name
+    if profile is not None:
+        found = profile.company_name if profile.is_company else profile.display_name
+        if found:
+            return found
+    return name_from_domain(user.email)

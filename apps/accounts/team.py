@@ -195,7 +195,9 @@ def invite(owner, email, django_request=None):
     waiting one. -> the invitation."""
     from apps.notifications.models import EmailTemplate
     from apps.notifications.services import EmailService
+    from apps.requests.services import check_can_email_others
 
+    check_can_email_others(owner)
     email = User.objects.normalize_email(email.strip())
     existing = User.objects.filter(email__iexact=email).first()
     if email.lower() == owner.email.lower():
@@ -355,6 +357,14 @@ def join_as_new(invitation, name, password, django_request):
 
 @transaction.atomic
 def join_as_existing(invitation, user, django_request):
+    # An account may be used before its address is confirmed - but only the
+    # owner of the mailbox the invitation went to may join with it.
+    if user.email_verified_at is None:
+        raise ValidationAppError(
+            "Najpierw potwierdź swój adres email linkiem, który wysłaliśmy po "
+            "rejestracji - potem otwórz zaproszenie jeszcze raz.",
+            code="EMAIL_NOT_VERIFIED",
+        )
     if user.email.lower() != invitation.email.lower():
         raise ValidationAppError(
             f"To zaproszenie jest dla {invitation.email}. Wyloguj się i zaloguj "

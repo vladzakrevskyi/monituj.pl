@@ -159,7 +159,7 @@ def google_signup(request):
                 outcome, result = GoogleAuthService.complete_signup(
                     request,
                     form.cleaned_data["accept_terms"],
-                    form.cleaned_data["accept_privacy_policy"],
+                    form.cleaned_data["accept_terms"],
                 )
             except ApplicationError as exc:
                 if exc.code == "GOOGLE_SIGNUP" or exc.code == "EMAIL_TAKEN":
