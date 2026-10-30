@@ -25,6 +25,14 @@
   margin-bottom: 0;
 }
 
+.mt-4 {
+  margin-top: var(--space-4);
+}
+
+.mb-4 {
+  margin-bottom: var(--space-4);
+}
+
 .mt-5 {
   margin-top: var(--space-5);
 }
@@ -61,4 +69,101 @@
 /* Lets a single-button POST form sit in a flex row like a plain link. */
 .inline-form {
   display: contents;
+}
+
+/* Phones: buttons never float half-way across a row. One button takes the
+   whole row, two share it 50/50, a third starts a new row; a "⋯" menu
+   keeps its size beside them. */
+@media (max-width: 560px) {
+  :is(
+      .form-actions,
+      .set-row__buttons,
+      .template-row__actions,
+      .table-actions,
+      .first-step__actions,
+      .filter-panel__actions,
+      .stack-actions,
+      .security-hint__actions,
+      .recurring-status__actions,
+      .question-card__actions,
+      .plan-status__actions,
+      .ov-toolbar,
+      .billing-profile__actions,
+      .demo-bar__actions
+    ) {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  :is(
+      .form-actions,
+      .set-row__buttons,
+      .template-row__actions,
+      .table-actions,
+      .first-step__actions,
+      .filter-panel__actions,
+      .stack-actions,
+      .security-hint__actions,
+      .recurring-status__actions,
+      .question-card__actions,
+      .plan-status__actions,
+      .ov-toolbar,
+      .billing-profile__actions,
+      .demo-bar__actions
+    )
+    > :is(.btn, form, a.btn) {
+    flex: 1 1 calc(50% - var(--space-3));
+    min-width: 0;
+    margin: 0;
+  }
+
+  :is(
+      .form-actions,
+      .set-row__buttons,
+      .template-row__actions,
+      .table-actions,
+      .first-step__actions,
+      .filter-panel__actions,
+      .stack-actions,
+      .security-hint__actions,
+      .recurring-status__actions,
+      .question-card__actions,
+      .plan-status__actions,
+      .ov-toolbar,
+      .billing-profile__actions,
+      .demo-bar__actions
+    )
+    > form
+    > .btn,
+  .ov-toolbar > form {
+    width: 100%;
+  }
+
+  :is(.form-actions, .set-row__buttons, .template-row__actions, .table-actions) > .menu {
+    flex: 0 0 auto;
+  }
+
+  /* A lone button under a form or in a card: the whole row. */
+  :is(form, .card, .empty-state, .next-step, .first-step__body) > :is(.btn, a.btn):not(.btn-icon) {
+    width: 100%;
+  }
+
+  .set-row__aside {
+    margin-left: 0;
+  }
+
+  .ov-toolbar > .ov-search {
+    flex-basis: 100%;
+  }
+
+  .ov-action,
+  .ov-action > .btn {
+    width: 100%;
+  }
+
+  /* An odd tile left over at the end takes the whole row. */
+  .ov-tile:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }

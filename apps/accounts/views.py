@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse
@@ -492,10 +494,22 @@ def password_reset_confirm(request, token):
 
 @login_required
 def dashboard(request):
+    from apps.agenda.calendar import today_summary
+    from apps.requests.models import RecurringRequest
     from apps.requests.services import DashboardService
 
     stats = DashboardService.for_owner(request.account)
     stats["security_hint"] = two_factor.show_hint(request.user)
+    now = timezone.localtime()
+    stats["greeting"] = "Dobry wieczór" if now.hour >= 18 else "Dzień dobry"
+    stats["today"] = now.date()
+    stats["tomorrow"] = now.date() + timedelta(days=1)
+    stats["summary"] = today_summary(request.account, request.user)
+    stats["next_send"] = (
+        RecurringRequest.objects.filter(owner=request.account, active=True)
+        .order_by("next_run_on", "id")
+        .first()
+    )
     return render(request, "accounts/dashboard.html", stats)
 
 
@@ -558,6 +572,9 @@ def settings_view(request):
                 return ajax_form_error_response(profile_form)
         elif action == "logo":
             uploaded = request.FILES.get("logo")
+            # #logo opens the logo's row again to try another file; #profil
+            # just shows the tab with the saved logo in it.
+            anchor = "#logo"
             if uploaded is None:
                 messages.error(request, "Wybierz plik z logo.")
             else:
@@ -567,11 +584,12 @@ def settings_view(request):
                     messages.error(request, exc.message)
                 else:
                     messages.success(request, "Logo zapisane.")
-            return redirect(reverse("accounts:settings") + "#logo")
+                    anchor = "#profil"
+            return redirect(reverse("accounts:settings") + anchor)
         elif action == "logo_remove":
             branding.remove_logo(request.user)
             messages.success(request, "Logo usunięte.")
-            return redirect(reverse("accounts:settings") + "#logo")
+            return redirect(reverse("accounts:settings") + "#profil")
         elif action == "password":
             password_form = PasswordChangeForm(request.POST, auto_id="id_password_%s")
             if password_form.is_valid():
@@ -681,11 +699,15 @@ def settings_view(request):
                 success_message = (
                     "Odłączono Google. Logujesz się teraz adresem email i hasłem."
                 )
+                # The page reloads either way; the message shows after it.
+                messages.success(request, success_message)
                 if ajax:
                     return success_response(
-                        {"message": success_message, "redirect_url": request.path}
+                        {
+                            "message": success_message,
+                            "redirect_url": reverse("accounts:settings") + "#google",
+                        }
                     )
-                messages.success(request, success_message)
             except ApplicationError as exc:
                 if ajax:
                     return error_response(exc.code, exc.message, status=400)
@@ -761,8 +783,16 @@ def settings_view(request):
             "two_factor_enabled": two_factor.is_enabled(request.user),
             "two_factor_method": two_factor.method_of(request.user),
             "memberships": request.user.memberships.select_related("owner"),
+            # "Plan i zespół": the seats taken, for owners of an account.
+            "team_usage": None if guest else _team_usage(request.user),
         },
     )
+
+
+def _team_usage(user):
+    from apps.accounts import team
+
+    return team.usage(user)
 
 
 @require_http_methods(["GET", "POST"])

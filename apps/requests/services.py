@@ -82,7 +82,7 @@ NOT_DELIVERED_STATUSES = [
 class RequestStatus(models.TextChoices):
     MISSING = "brak_dokumentow", "Nic nie przesłano"
     IN_PROGRESS = "w_trakcie", "W trakcie"
-    COMPLETE = "kompletny", "Kompletny"
+    COMPLETE = "kompletny", "Komplet"
     OVERDUE = "po_terminie", "Po terminie"
     CLOSED = "zamkniety", "Zamknięta"
     AWAITING = "niepotwierdzony", "Czeka na potwierdzenie"
@@ -704,6 +704,11 @@ class PublicAccessService:
 CLIENT_EVENTS = [AuditEvent.CLIENT_CREATED, AuditEvent.CLIENTS_IMPORTED]
 ACTIVITY_LENGTH = 10
 TO_DO_LENGTH = 8
+# "Nie otworzył linku": after this many days without a single visit.
+UNOPENED_DAYS = 3
+# "Najbliższe terminy": deadlines this many days ahead, at most this many.
+UPCOMING_DAYS = 7
+UPCOMING_LENGTH = 6
 
 
 def _plural(n, one, few, many):
@@ -733,16 +738,39 @@ class DashboardService:
         )
 
         active_requests = in_progress(owner).count()
+        overdue_requests = (
+            in_progress(owner).filter(deadline__lt=timezone.now()).count()
+        )
+        # The same rule as DocumentReviewService.to_review, answers included.
+        to_review = (
+            RequestItem.objects.filter(
+                request_id__in=request_ids,
+                request__closed_at__isnull=True,
+                request__awaiting_confirmation=False,
+            )
+            .filter(
+                Q(status=RequestItemStatus.DOSTARCZONY)
+                | Q(
+                    status=RequestItemStatus.NIE_DOTYCZY,
+                    not_applicable_accepted=False,
+                )
+            )
+            .count()
+        )
 
         reminders_sent = Reminder.objects.filter(request_id__in=request_ids).count()
 
         return {
             "active_requests": active_requests,
+            "overdue_requests": overdue_requests,
+            "to_review": to_review,
             "missing_documents": item_stats["missing"] or 0,
             "delivered_documents": item_stats["delivered"] or 0,
             "reminders_sent": reminders_sent,
             "recent_activity": DashboardService.activity(owner),
             "to_do": DashboardService.to_do(owner),
+            "upcoming": DashboardService.upcoming(owner),
+            "month": DashboardService.month(owner),
             "first_steps": DashboardService.first_steps(owner),
         }
 
@@ -857,9 +885,88 @@ class DashboardService:
                     "meta": f"{request_obj.client.name} · termin minął "
                     f"{format_date(request_obj.deadline)} · brakuje {missing}",
                     "url": reverse("requests:detail", args=[request_obj.pk]),
+                    "remind": request_obj,
+                }
+            )
+        for request_obj in DashboardService.unopened(owner)[:TO_DO_LENGTH]:
+            days = (timezone.now() - request_obj.created_at).days
+            entries.append(
+                {
+                    "kind": "unopened",
+                    "label": "Nie otworzył linku",
+                    "title": request_obj.name,
+                    "meta": f"{request_obj.client.name} · wysłane {days} "
+                    + _plural(days, "dzień", "dni", "dni")
+                    + " temu, link nieotwarty",
+                    "url": reverse("requests:detail", args=[request_obj.pk]),
+                    "remind": request_obj,
                 }
             )
         return entries[:TO_DO_LENGTH]
+
+    @staticmethod
+    def unopened(owner):
+        """Requests sent days ago whose link the client hasn't opened even
+        once - the email may have gone to spam or a wrong address. Past their
+        deadline they are on the list as late already."""
+        from django.contrib.contenttypes.models import ContentType
+
+        from apps.audit.models import AuditLog
+
+        sent = list(
+            with_stats(
+                Request.objects.filter(
+                    created_by=owner,
+                    awaiting_confirmation=False,
+                    closed_at__isnull=True,
+                    created_at__lte=timezone.now() - timedelta(days=UNOPENED_DAYS),
+                )
+            )
+            .filter(delivered_items=0)
+            .exclude(deadline__lt=timezone.now())
+            .select_related("client")
+            .order_by("created_at")
+        )
+        opened = set(
+            AuditLog.objects.filter(
+                content_type=ContentType.objects.get_for_model(Request),
+                object_id__in=[request_obj.pk for request_obj in sent],
+                event=AuditEvent.PUBLIC_LINK_ACCESSED,
+            ).values_list("object_id", flat=True)
+        )
+        return [request_obj for request_obj in sent if request_obj.pk not in opened]
+
+    @staticmethod
+    def upcoming(owner, days=UPCOMING_DAYS):
+        """Requests still waiting whose deadline comes within `days`."""
+        now = timezone.now()
+        return list(
+            in_progress(owner)
+            .filter(deadline__gte=now, deadline__lt=now + timedelta(days=days))
+            .select_related("client")
+            .order_by("deadline")[:UPCOMING_LENGTH]
+        )
+
+    @staticmethod
+    def month(owner):
+        """This month in short, from Zestawienie: how many clients have
+        everything, how many are still at it or late."""
+        from apps.requests import overview
+
+        data = overview.build(owner, selected=overview.month_key(timezone.localdate()))
+        counts = {tile["state"]: tile["count"] for tile in data["tiles"]}
+        total = counts[""]
+        return {
+            "label": data["month_label"],
+            "key": data["selected"],
+            "total": total,
+            "complete": counts[overview.KOMPLET],
+            "to_check": counts[overview.DO_SPRAWDZENIA],
+            "waiting": counts[overview.CZEKAMY],
+            "late": counts[overview.PO_TERMINIE],
+            "remindable": data["remindable"],
+            "percent": round(100 * counts[overview.KOMPLET] / total) if total else 0,
+        }
 
     @staticmethod
     def activity(owner):

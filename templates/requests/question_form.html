@@ -6,9 +6,13 @@
 
 {% block content %}
 <a class="back-link" href="{% url 'requests:questions' %}" title="Wróć: Pytania">&larr; Pytania</a>
-<div class="card request-form">
+<div class="page-header">
+<div>
 <h1>Zadaj pytanie klientowi</h1>
-<p class="card-lead">Klient odpowie tekstem albo plikiem, bez logowania. Monituj będzie mu przypominał, a Tobie zapamięta, o co pytasz i po co. {% include "help/_hint.html" with slug="zadaj-pytanie" %}</p>
+<p class="page-header__sub">Klient odpowie tekstem albo plikiem, bez logowania. Monituj będzie mu przypominał, a Tobie zapamięta, o co pytasz i po co. {% include "help/_hint.html" with slug="zadaj-pytanie" %}</p>
+</div>
+</div>
+<div class="card request-form">
 <form method="post" novalidate class="question-form">
 {% csrf_token %}
 {% include "base/_form_flash.html" %}

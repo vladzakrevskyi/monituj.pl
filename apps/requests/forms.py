@@ -871,7 +871,7 @@ class RequestFilterForm(forms.Form):
         ("", "Wszystkie"),
         ("brak_dokumentow", "Nic nie przesłano"),
         ("w_trakcie", "W trakcie"),
-        ("kompletny", "Kompletne"),
+        ("kompletny", "Komplet"),
         ("po_terminie", "Po terminie"),
         ("zamkniety", "Zamknięte"),
     ]

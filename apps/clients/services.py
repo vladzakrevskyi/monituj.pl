@@ -19,8 +19,8 @@ class ClientStatus(models.TextChoices):
     # Something sent, something still missing.
     ACTIVE = "aktywny", "W trakcie"
     # Asked, but nothing sent yet.
-    MISSING_DOCUMENTS = "brak_dokumentow", "Nic nie przesłał"
-    ALL_DELIVERED = "wszystko_dostarczone", "Wszystko dostarczone"
+    MISSING_DOCUMENTS = "brak_dokumentow", "Nic nie przesłano"
+    ALL_DELIVERED = "wszystko_dostarczone", "Komplet"
     INACTIVE = "nieaktywny", "Nieaktywny"
 
 

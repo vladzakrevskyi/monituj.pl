@@ -180,6 +180,8 @@ const FormErrors = (function () {
             return;
           }
           showToast(payload.message || "Zmiany zostały zapisane.", "success");
+          // Page scripts may need to show what was saved (before the reset).
+          form.dispatchEvent(new CustomEvent("ajax-form:success", { detail: payload }));
           if (form.dataset.resetOnSuccess !== undefined) {
             form.reset();
           }

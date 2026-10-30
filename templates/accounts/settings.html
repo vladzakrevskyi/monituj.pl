@@ -2,119 +2,64 @@
 {% load formatting static %}
 
 {% block page_name %}Ustawienia{% endblock %}
-{% block page_class %}page--narrow{% endblock %}
 
 {% block content %}
 <div class="page-header">
+<div>
 <h1>Ustawienia</h1>
+<p class="page-header__sub">Jak przedstawiasz się klientom, jak logujesz się do Monituj i co z Twoim kontem.</p>
+</div>
 </div>
 
-{% if is_guest %}
-<div class="card card--accent" id="haslo">
-<h2 class="mt-0">Ustaw hasło</h2>
-<p class="text-muted">Twoje konto powstało przy wysyłaniu prośby bez rejestracji. Otwierasz je stałym linkiem z maila i możesz wysłać jedną prośbę dziennie. Po ustawieniu hasła logujesz się adresem <strong>{{ user.email }}</strong> i hasłem, limit znika, a linki z maili przestają działać. Hasło zacznie działać po kliknięciu linku, który wyślemy na ten adres.</p>
-<form method="post" novalidate data-ajax-form data-reset-on-success>
-{% csrf_token %}
-<input type="hidden" name="form_action" value="set_password">
-{% include "base/_form_flash.html" with form=set_password_form %}
-<div class="field-row">
-<p>
-{{ set_password_form.new_password.label_tag }}
-{{ set_password_form.new_password }}
-{{ set_password_form.new_password.errors }}
-</p>
-<p>
-{{ set_password_form.new_password_confirm.label_tag }}
-{{ set_password_form.new_password_confirm }}
-{{ set_password_form.new_password_confirm.errors }}
-</p>
-</div>
-<button type="submit" class="btn btn-primary">Ustaw hasło</button>
-</form>
-</div>
+{% comment %}
+One page, section after section: what it is on the left, the settings on
+the right. Sensitive things (email, password, Google, deleting the account)
+open their form in their row; a link to #haslo, #logo or #usun-konto
+scrolls there and opens it.
+{% endcomment %}
+<nav class="set-nav" aria-label="Sekcje ustawień">
+<a href="#profil">Profil dla klientów</a>
+<a href="#bezpieczenstwo">Logowanie</a>
+{% if memberships %}<a href="#zespoly">Zespoły</a>{% endif %}
+{% if not team_member %}<a href="#plan-i-zespol">Plan i zespół</a>{% endif %}
+<a href="#usuniecie">Usunięcie konta</a>
+</nav>
 
-<div class="card">
-<h2 class="mt-0">Stały link do panelu</h2>
-<p class="text-muted">Jeśli ktoś mógł zobaczyć Twój link (np. przesłałeś komuś maila), wygeneruj nowy. Wszystkie poprzednie linki przestaną działać, a nowy wyślemy na <strong>{{ user.email }}</strong>.</p>
-<form method="post" data-ajax-form>
-{% csrf_token %}
-<input type="hidden" name="form_action" value="rotate_link">
-<button type="submit" class="btn btn-secondary">Wygeneruj nowy link</button>
-</form>
+<section class="set-section" id="profil">
+<div class="set-section__about">
+<h2>Profil dla klientów</h2>
+<p>Tak przedstawiasz się na stronie prośby i w mailach od Monituj. Podgląd obok pokazuje, jak to wygląda u klienta.</p>
 </div>
-{% elif not has_password %}
-<div class="card card--accent" id="haslo">
-<h2 class="mt-0">Ustaw hasło</h2>
-<p class="text-muted">Logujesz się przez Google. Możesz też ustawić hasło - wtedy zalogujesz się również adresem <strong>{{ user.email }}</strong> i hasłem, a w ustawieniach zmienisz adres email. Hasło zacznie działać po kliknięciu linku, który wyślemy na ten adres; potem zalogujesz się ponownie.</p>
-<form method="post" novalidate data-ajax-form data-reset-on-success>
-{% csrf_token %}
-<input type="hidden" name="form_action" value="set_password">
-{% include "base/_form_flash.html" with form=set_password_form %}
-<div class="field-row">
-<p>
-{{ set_password_form.new_password.label_tag }}
-{{ set_password_form.new_password }}
-{{ set_password_form.new_password.errors }}
-</p>
-<p>
-{{ set_password_form.new_password_confirm.label_tag }}
-{{ set_password_form.new_password_confirm }}
-{{ set_password_form.new_password_confirm.errors }}
-</p>
-</div>
-<button type="submit" class="btn btn-primary">Ustaw hasło</button>
-</form>
-</div>
-{% endif %}
-
-{% if memberships %}
-<div class="card" id="zespoly">
-<h2 class="mt-0">Zespoły, do których należysz</h2>
-<p class="text-muted">Pracujesz w nich na klientach i prośbach firmy - przełączasz się w menu po lewej. Twoje konto i jego klienci są osobno.</p>
-<ul class="template-list">
-{% for membership in memberships %}
-<li class="template-row">
-<div class="template-row__main">
-<span class="template-row__title">{{ membership.owner.display_name|default:membership.owner.email }}</span>
-<span class="template-row__meta">{{ membership.owner.email }} · od {{ membership.joined_at|d }}</span>
-</div>
-<div class="template-row__actions">
-<form method="post" action="{% url 'accounts:team-leave' %}" class="inline-form" data-confirm="Stracisz dostęp do klientów i próśb tego zespołu. Twoja praca zostaje w koncie zespołu, a Twoje własne konto - bez zmian." data-confirm-title="Opuścić zespół?" data-confirm-label="Opuść zespół">
-{% csrf_token %}
-<input type="hidden" name="owner" value="{{ membership.owner_id }}">
-<button type="submit" class="btn btn-danger btn-sm">Opuść</button>
-</form>
-</div>
-</li>
-{% endfor %}
-</ul>
-</div>
-{% endif %}
-
-<div class="card">
-<h2 class="mt-0">Dane konta</h2>
-<p class="text-muted">Ta nazwa pojawia się w prośbach o dokumenty i mailach wysyłanych do klientów.</p>
-<form method="post" novalidate data-ajax-form>
+<div class="set-section__body set-profile">
+<div class="card card--flush set-list">
+<form method="post" novalidate data-ajax-form data-set-profile class="set-form" id="nadawca">
 {% csrf_token %}
 <input type="hidden" name="form_action" value="profile">
 {% include "base/_form_flash.html" with form=profile_form %}
 <p>
 {{ profile_form.display_name.label_tag }}
 {{ profile_form.display_name }}
+<small class="help-text">{{ profile_form.display_name.help_text }}</small>
 {{ profile_form.display_name.errors }}
 </p>
 <p>
 <label>{{ profile_form.show_paying_firm }} {{ profile_form.show_paying_firm.label }}</label>
-<small class="help-text">{{ profile_form.show_paying_firm.help_text }}{% if paying_firm %} Teraz: {{ paying_firm }}.{% endif %}</small>
+<small class="help-text">{{ profile_form.show_paying_firm.help_text }}</small>
 </p>
+<div class="set-row__buttons" data-set-save>
 <button type="submit" class="btn btn-primary">Zapisz</button>
-</form>
+<button type="button" class="btn btn-secondary" data-set-revert>Anuluj</button>
 </div>
-
+</form>
 {% if not guest_account %}
-<div class="card" id="logo">
-<h2 class="mt-0">Logo dla klientów</h2>
-<p class="text-muted">Twoje logo zobaczą klienci na stronie prośby i w mailach od Monituj - od razu wiedzą, od kogo jest prośba. {% if logo_shown %}Pokazujemy je w Twoim planie.{% else %}Pokazujemy je w płatnych planach i w okresie próbnym - w planie Free logo czeka zapisane.{% endif %}</p>
+<details class="set-row set-row--logo" id="logo">
+<summary class="set-row__head">
+<span class="set-row__label">Logo</span>
+<span class="set-row__value">{% if logo %}<span class="set-logo"><img src="{% url 'accounts:logo' logo.key %}" alt="Twoje logo" width="{{ logo.width }}" height="{{ logo.height }}"></span>{% if not logo_shown %}<small class="set-row__sub">Zapisane - klienci zobaczą je w płatnym planie</small>{% endif %}{% else %}<span class="text-muted">Nie dodano</span>{% endif %}</span>
+<span class="set-row__action">{% if logo %}Zmień{% else %}Dodaj logo{% endif %}</span>
+</summary>
+<div class="set-row__body">
+<p class="set-row__intro">Twoje logo zobaczą klienci na stronie prośby i w mailach od Monituj - od razu wiedzą, od kogo jest prośba. {% if logo_shown %}Pokazujemy je w Twoim planie.{% else %}Pokazujemy je w płatnych planach i w okresie próbnym - w planie Free logo czeka zapisane.{% endif %}</p>
 <form method="post" enctype="multipart/form-data" data-logo-form>
 {% csrf_token %}
 <input type="hidden" name="form_action" value="logo">
@@ -126,75 +71,59 @@
 <span class="logo-drop__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>
 <img class="logo-drop__new" alt="" hidden data-logo-preview>
 {% endif %}
-<p class="logo-drop__hint" data-logo-hint>{% if logo %}Tak klienci widzą Twoje logo. Przeciągnij tu nowe albo{% else %}Przeciągnij logo tutaj albo{% endif %}</p>
-<label for="id_logo" class="btn {% if logo %}btn-secondary{% else %}btn-primary{% endif %}" data-logo-pick>{% if logo %}Zmień logo{% else %}Wybierz plik{% endif %}</label>
+<p class="logo-drop__hint" data-logo-hint>{% if logo %}Przeciągnij tu nowe logo albo{% else %}Przeciągnij logo tutaj albo{% endif %}</p>
+<label for="id_logo" class="btn btn-primary" data-logo-pick>Wybierz plik</label>
 <p class="logo-drop__note">PNG, JPG albo WebP, do 3 MB. Najlepiej poziome, na przezroczystym tle - puste brzegi przytniemy sami.</p>
 </div>
 <noscript><button type="submit" class="btn btn-primary mt-5">Zapisz logo</button></noscript>
 </form>
+<div class="set-row__buttons">
+<button type="button" class="btn btn-secondary" data-set-close>Anuluj</button>
 {% if logo %}
-<form method="post" class="inline-form logo-remove" data-confirm="Klienci przestaną widzieć Twoje logo." data-confirm-title="Usunąć logo?" data-confirm-label="Usuń">
+<form method="post" class="inline-form set-row__aside" data-confirm="Klienci przestaną widzieć Twoje logo." data-confirm-title="Usunąć logo?" data-confirm-label="Usuń">
 {% csrf_token %}
 <input type="hidden" name="form_action" value="logo_remove">
-<button type="submit" class="btn-link">Usuń logo</button>
+<button type="submit" class="btn-link set-danger-link">Usuń logo</button>
 </form>
 {% endif %}
 </div>
+</div>
+</details>
 {% endif %}
+</div>
 
-{% if google_account or google_login and not demo_account %}
-<div class="card" id="google">
-<h2 class="mt-0">Logowanie przez Google</h2>
-{% if google_account %}
-<p class="text-muted">Konto jest połączone z Google: <strong>{{ google_account.email }}</strong>. Możesz logować się przyciskiem „Zaloguj się przez Google”{% if has_password %} albo adresem email i hasłem{% endif %}.</p>
-{% if has_password %}
-<form method="post" data-ajax-form>
-{% csrf_token %}
-<input type="hidden" name="form_action" value="google_disconnect">
-<button type="submit" class="btn btn-secondary">Odłącz Google</button>
-</form>
-{% else %}
-<p class="text-muted mb-0">Aby odłączyć Google, najpierw ustaw hasło - inaczej nie mógłbyś się zalogować.</p>
-{% endif %}
-{% else %}
-<p class="text-muted">Loguj się jednym kliknięciem kontem Google - adres konta Google może być inny niż {{ user.email }}. {% if is_guest %}Po połączeniu stałe linki z maili przestaną działać, a limit jednej prośby dziennie zniknie.{% else %}Hasło nadal będzie działać.{% endif %}</p>
-<form method="post" novalidate data-ajax-form>
-{% csrf_token %}
-<input type="hidden" name="form_action" value="google_connect">
-{% include "base/_form_flash.html" with form=google_form %}
-{% if has_password %}
-<p>
-{{ google_form.current_password.label_tag }}
-{{ google_form.current_password }}
-{{ google_form.current_password.errors }}
-<span class="helptext">Dla bezpieczeństwa: bez hasła nikt, kto przejąłby Twoją sesję, nie dopnie do konta własnego Google.</span>
-</p>
-{% else %}
-<p class="text-muted">Dla bezpieczeństwa wyślemy na {{ user.email }} link potwierdzający - otwórz go w tej przeglądarce.</p>
-{% endif %}
-<button type="submit" class="btn btn-google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Połącz z Google</button>
-</form>
-{% endif %}
+<aside class="set-preview" aria-label="Podgląd: tak widzi to klient">
+<p class="set-preview__label">Tak widzi to klient</p>
+<div class="set-preview__mail">
+{% if logo and logo_shown %}<img class="set-preview__logo" src="{% url 'accounts:logo' logo.key %}" alt="" width="{{ logo.width }}" height="{{ logo.height }}">{% else %}<span class="set-preview__mark" aria-hidden="true" data-preview-initial>{{ user.display_name|default:user.email|first|upper }}</span>{% endif %}
+<p class="set-preview__name" data-preview-name data-fallback="{{ user.email }}">{{ user.display_name|default:user.email }}</p>
+<p class="set-preview__meta">{{ user.email }}</p>
+<p class="set-preview__firm" data-preview-firm{% if not user.show_paying_firm %} hidden{% endif %}>{% if paying_firm %}{{ paying_firm }}{% else %}Nazwa firmy i NIP - po opłaceniu planu na firmę{% endif %}</p>
+<p class="set-preview__text">prosi Cię o dokumenty. Prześlij je jednym kliknięciem, bez logowania.</p>
+<span class="set-preview__button" aria-hidden="true">Prześlij dokumenty</span>
 </div>
-{% endif %}
+{% if logo and not logo_shown %}<p class="set-preview__note">Logo pokażemy w płatnym planie i w okresie próbnym.</p>{% endif %}
+</aside>
+</div>
+</section>
 
-{% if not is_guest and not demo_account %}
-<div class="card" id="weryfikacja-dwuetapowa">
-<h2 class="mt-0">Weryfikacja dwuetapowa</h2>
-{% if two_factor_enabled %}
-<p class="text-muted"><span class="badge badge--complete">Włączona</span> Przy logowaniu prosimy o {% if two_factor_method == "email" %}kod wysłany na Twój e-mail{% else %}kod z aplikacji w telefonie{% endif %}.</p>
-<a class="btn btn-secondary" href="{% url 'accounts:two-factor' %}">Zarządzaj</a>
-{% else %}
-<p class="text-muted"><span class="badge badge--neutral">Wyłączona</span> Oprócz {% if has_password %}hasła{% else %}konta Google{% endif %} do logowania potrzebny będzie kod - z aplikacji w telefonie albo z e-maila, jak wolisz.</p>
-<a class="btn btn-secondary" href="{% url 'accounts:two-factor' %}">Włącz</a>
-{% endif %}
+<section class="set-section" id="bezpieczenstwo">
+<div class="set-section__about">
+<h2>Logowanie i bezpieczeństwo</h2>
+<p>Jak wchodzisz do Monituj. Zmiany adresu i hasła potwierdzasz mailem.</p>
 </div>
-{% endif %}
+<div class="set-section__body">
+<div class="card card--flush set-list">
 
 {% if not is_guest and has_password %}
-<div class="card">
-<h2 class="mt-0">Adres email</h2>
-<p class="text-muted">Obecny adres: <strong>{{ user.email }}</strong>. Zmiana wymaga potwierdzenia na nowym adresie.</p>
+<details class="set-row" id="adres-email"{% if email_form.errors %} open{% endif %}>
+<summary class="set-row__head">
+<span class="set-row__label">Adres email</span>
+<span class="set-row__value"><strong>{{ user.email }}</strong></span>
+<span class="set-row__action">Zmień</span>
+</summary>
+<div class="set-row__body">
+<p class="set-row__intro">Zmiana wymaga potwierdzenia: wyślemy link na nowy adres, a do tego czasu logujesz się obecnym.</p>
 <form method="post" novalidate data-ajax-form data-reset-on-success>
 {% csrf_token %}
 <input type="hidden" name="form_action" value="email">
@@ -209,13 +138,61 @@
 {{ email_form.current_password }}
 {{ email_form.current_password.errors }}
 </p>
-<button type="submit" class="btn btn-primary">Zmień adres email</button>
+{% include "accounts/_settings_buttons.html" with label="Wyślij link potwierdzający" %}
 </form>
 </div>
+</details>
+{% else %}
+<div class="set-row set-row--static" id="adres-email">
+<div class="set-row__head">
+<span class="set-row__label">Adres email</span>
+<span class="set-row__value"><strong>{{ user.email }}</strong><small class="set-row__sub">{% if is_guest %}Zmienisz go po ustawieniu hasła{% else %}Aby zmienić adres, najpierw ustaw hasło{% endif %}</small></span>
+</div>
+</div>
+{% endif %}
 
-<div class="card">
-<h2 class="mt-0">Hasło</h2>
-<p class="text-muted">Zmiana wymaga potwierdzenia mailem i wyloguje Cię ze wszystkich urządzeń.</p>
+{% if is_guest or not has_password %}
+<details class="set-row" id="haslo"{% if set_password_form.errors %} open{% endif %}>
+<summary class="set-row__head">
+<span class="set-row__label">Hasło</span>
+<span class="set-row__value"><span class="badge badge--progress">Nie ustawiono</span></span>
+<span class="set-row__action">Ustaw hasło</span>
+</summary>
+<div class="set-row__body">
+{% if is_guest %}
+<p class="set-row__intro">Twoje konto powstało przy wysyłaniu prośby bez rejestracji. Otwierasz je stałym linkiem z maila i możesz wysłać jedną prośbę dziennie. Po ustawieniu hasła logujesz się adresem <strong>{{ user.email }}</strong> i hasłem, limit znika, a linki z maili przestają działać. Hasło zacznie działać po kliknięciu linku, który wyślemy na ten adres.</p>
+{% else %}
+<p class="set-row__intro">Logujesz się przez Google. Z hasłem zalogujesz się również adresem <strong>{{ user.email }}</strong> i zmienisz adres email. Hasło zacznie działać po kliknięciu linku, który wyślemy na ten adres; potem zalogujesz się ponownie.</p>
+{% endif %}
+<form method="post" novalidate data-ajax-form data-reset-on-success>
+{% csrf_token %}
+<input type="hidden" name="form_action" value="set_password">
+{% include "base/_form_flash.html" with form=set_password_form %}
+<div class="field-row">
+<p>
+{{ set_password_form.new_password.label_tag }}
+{{ set_password_form.new_password }}
+{{ set_password_form.new_password.errors }}
+</p>
+<p>
+{{ set_password_form.new_password_confirm.label_tag }}
+{{ set_password_form.new_password_confirm }}
+{{ set_password_form.new_password_confirm.errors }}
+</p>
+</div>
+{% include "accounts/_settings_buttons.html" with label="Ustaw hasło" %}
+</form>
+</div>
+</details>
+{% else %}
+<details class="set-row" id="haslo"{% if password_form.errors %} open{% endif %}>
+<summary class="set-row__head">
+<span class="set-row__label">Hasło</span>
+<span class="set-row__value"><span class="set-dots" aria-label="Ustawione">••••••••</span></span>
+<span class="set-row__action">Zmień</span>
+</summary>
+<div class="set-row__body">
+<p class="set-row__intro">Zmiana wymaga potwierdzenia mailem i wyloguje Cię ze wszystkich urządzeń.</p>
 <form method="post" novalidate data-ajax-form data-reset-on-success>
 {% csrf_token %}
 <input type="hidden" name="form_action" value="password">
@@ -225,6 +202,7 @@
 {{ password_form.current_password }}
 {{ password_form.current_password.errors }}
 </p>
+<div class="field-row">
 <p>
 {{ password_form.new_password.label_tag }}
 {{ password_form.new_password }}
@@ -235,16 +213,160 @@
 {{ password_form.new_password_confirm }}
 {{ password_form.new_password_confirm.errors }}
 </p>
-<button type="submit" class="btn btn-primary">Zmień hasło</button>
+</div>
+{% include "accounts/_settings_buttons.html" with label="Zmień hasło" %}
 </form>
 </div>
-
+</details>
 {% endif %}
 
-<div class="card card--danger" id="usun-konto">
-<h2 class="mt-0">Usunięcie konta</h2>
-<p class="text-muted">Usuniemy konto razem z klientami, prośbami, przypomnieniami i wszystkimi przesłanymi plikami{% if memberships %} - i opuścisz zespoły, do których należysz (ich dane zostają bez zmian){% endif %}. Tej operacji nie można cofnąć. Jeśli musisz archiwizować dokumenty klientów, pobierz je wcześniej.</p>
-<p class="text-muted">{% if has_password %}Po wpisaniu hasła wyślemy{% else %}Wyślemy{% endif %} na <strong>{{ user.email }}</strong> link potwierdzający. Konto zostanie usunięte dopiero po kliknięciu w link.</p>
+{% if not is_guest and not demo_account %}
+<div class="set-row set-row--static" id="weryfikacja-dwuetapowa">
+<div class="set-row__head">
+<span class="set-row__label">Weryfikacja dwuetapowa</span>
+<span class="set-row__value">{% if two_factor_enabled %}<span class="badge badge--complete">Włączona</span><small class="set-row__sub">Przy logowaniu prosimy o {% if two_factor_method == "email" %}kod wysłany na Twój e-mail{% else %}kod z aplikacji w telefonie{% endif %}</small>{% else %}<span class="badge badge--progress">Wyłączona</span><small class="set-row__sub">Oprócz {% if has_password %}hasła{% else %}konta Google{% endif %} poprosimy o kod z telefonu albo z e-maila</small>{% endif %}</span>
+<a class="set-row__action" href="{% url 'accounts:two-factor' %}">{% if two_factor_enabled %}Zarządzaj{% else %}Włącz{% endif %}</a>
+</div>
+</div>
+{% endif %}
+
+{% if google_account or google_login and not demo_account %}
+<details class="set-row" id="google"{% if google_form.errors %} open{% endif %}>
+<summary class="set-row__head">
+<span class="set-row__label">Logowanie przez Google</span>
+<span class="set-row__value">{% if google_account %}<span class="badge badge--complete">Połączone</span><small class="set-row__sub">{{ google_account.email }}</small>{% else %}<span class="text-muted">Niepołączone</span>{% endif %}</span>
+<span class="set-row__action">{% if google_account %}{% if has_password %}Odłącz{% else %}Szczegóły{% endif %}{% else %}Połącz{% endif %}</span>
+</summary>
+<div class="set-row__body">
+{% if google_account %}
+<p class="set-row__intro">Logujesz się przyciskiem „Zaloguj się przez Google”{% if has_password %} albo adresem email i hasłem. Po odłączeniu zostaje tylko hasło{% endif %}.</p>
+{% if has_password %}
+<form method="post" data-ajax-form>
+{% csrf_token %}
+<input type="hidden" name="form_action" value="google_disconnect">
+<div class="set-row__buttons">
+<button type="submit" class="btn btn-primary">Odłącz Google</button>
+<button type="button" class="btn btn-secondary" data-set-close>Anuluj</button>
+</div>
+</form>
+{% else %}
+<p class="set-row__intro mb-0">Aby odłączyć Google, najpierw <a href="#haslo" data-set-open="haslo">ustaw hasło</a> - inaczej nie mógłbyś się zalogować.</p>
+{% endif %}
+{% else %}
+<p class="set-row__intro">Loguj się jednym kliknięciem kontem Google - adres konta Google może być inny niż {{ user.email }}. {% if is_guest %}Po połączeniu stałe linki z maili przestaną działać, a limit jednej prośby dziennie zniknie.{% else %}Hasło nadal będzie działać.{% endif %}</p>
+<form method="post" novalidate data-ajax-form>
+{% csrf_token %}
+<input type="hidden" name="form_action" value="google_connect">
+{% include "base/_form_flash.html" with form=google_form %}
+{% if has_password %}
+<p>
+{{ google_form.current_password.label_tag }}
+{{ google_form.current_password }}
+{{ google_form.current_password.errors }}
+<span class="helptext">Dla bezpieczeństwa: bez hasła nikt, kto przejąłby Twoją sesję, nie dopnie do konta własnego Google.</span>
+</p>
+{% else %}
+<p class="set-row__intro">Dla bezpieczeństwa wyślemy na {{ user.email }} link potwierdzający - otwórz go w tej przeglądarce.</p>
+{% endif %}
+<div class="set-row__buttons">
+<button type="submit" class="btn btn-google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Połącz z Google</button>
+<button type="button" class="btn btn-secondary" data-set-close>Anuluj</button>
+</div>
+</form>
+{% endif %}
+</div>
+</details>
+{% endif %}
+
+{% if is_guest %}
+<details class="set-row" id="staly-link">
+<summary class="set-row__head">
+<span class="set-row__label">Stały link do panelu</span>
+<span class="set-row__value">Link z maila<small class="set-row__sub">Tak teraz otwierasz konto</small></span>
+<span class="set-row__action">Nowy link</span>
+</summary>
+<div class="set-row__body">
+<p class="set-row__intro">Jeśli ktoś mógł zobaczyć Twój link (np. przesłałeś komuś maila), wygeneruj nowy. Wszystkie poprzednie linki przestaną działać, a nowy wyślemy na <strong>{{ user.email }}</strong>.</p>
+<form method="post" data-ajax-form>
+{% csrf_token %}
+<input type="hidden" name="form_action" value="rotate_link">
+{% include "accounts/_settings_buttons.html" with label="Wygeneruj nowy link" %}
+</form>
+</div>
+</details>
+{% endif %}
+
+</div>
+</div>
+</section>
+
+{% if memberships %}
+<section class="set-section" id="zespoly">
+<div class="set-section__about">
+<h2>Zespoły, do których należysz</h2>
+<p>Pracujesz w nich na klientach i prośbach firmy - przełączasz się w menu po lewej. Twoje konto i jego klienci są osobno.</p>
+</div>
+<div class="set-section__body">
+<div class="card card--flush set-list">
+{% for membership in memberships %}
+<div class="set-row set-row--static">
+<div class="set-row__head">
+<span class="set-row__label">{{ membership.owner.display_name|default:membership.owner.email }}</span>
+<span class="set-row__value text-muted">{{ membership.owner.email }} · od {{ membership.joined_at|d }}</span>
+<form method="post" action="{% url 'accounts:team-leave' %}" class="inline-form" data-confirm="Stracisz dostęp do klientów i próśb tego zespołu. Twoja praca zostaje w koncie zespołu, a Twoje własne konto - bez zmian." data-confirm-title="Opuścić zespół?" data-confirm-label="Opuść zespół">
+{% csrf_token %}
+<input type="hidden" name="owner" value="{{ membership.owner_id }}">
+<button type="submit" class="set-row__action set-danger-link">Opuść</button>
+</form>
+</div>
+</div>
+{% endfor %}
+</div>
+</div>
+</section>
+{% endif %}
+
+{% if not team_member %}
+<section class="set-section" id="plan-i-zespol">
+<div class="set-section__about">
+<h2>Plan i zespół</h2>
+<p>Ile próśb możesz mieć w toku i kto pracuje z Tobą.</p>
+</div>
+<div class="set-section__body set-tiles">
+<a class="card set-tile" href="{% url 'billing:plan' %}">
+<span class="set-tile__label">Plan</span>
+<strong class="set-tile__value">{% if plan_state %}{{ plan_state.plan.name }}{% else %}Twój plan{% endif %}</strong>
+<span class="set-tile__sub">{% if plan_state %}{% if plan_state.source == 'trial' %}Okres próbny · {% endif %}{% if plan_state.limit %}{{ plan_state.used }} z {{ plan_state.limit }} próśb w toku{% else %}bez limitu próśb{% endif %}{% else %}Plan, płatności i faktury{% endif %}</span>
+<span class="set-tile__go">Plan i płatności &rarr;</span>
+</a>
+{% if team_usage and not guest_account %}
+<a class="card set-tile" href="{% url 'accounts:team' %}">
+<span class="set-tile__label">Zespół</span>
+<strong class="set-tile__value">{{ team_usage.used }} z {{ team_usage.seats }} {% if team_usage.seats == 1 %}osoby{% else %}osób{% endif %}</strong>
+<span class="set-tile__sub">Osoby pracujące z Tobą na Twoich klientach</span>
+<span class="set-tile__go">{% if team_usage.free %}Zaproś osobę{% else %}Zarządzaj zespołem{% endif %} &rarr;</span>
+</a>
+{% endif %}
+</div>
+</section>
+{% endif %}
+
+<section class="set-section set-section--danger" id="usuniecie">
+<div class="set-section__about">
+<h2>Usunięcie konta</h2>
+<p>Konto, klienci, prośby i pliki znikną na zawsze.</p>
+</div>
+<div class="set-section__body">
+<div class="card card--flush set-list set-list--danger">
+<details class="set-row" id="usun-konto"{% if deletion_form.errors %} open{% endif %}>
+<summary class="set-row__head">
+<span class="set-row__label">Usuń konto</span>
+<span class="set-row__value text-muted">Konto, klienci, prośby i pliki</span>
+<span class="set-row__action set-danger-link">Usuń konto…</span>
+</summary>
+<div class="set-row__body">
+<p class="set-row__intro">Usuniemy konto razem z klientami, prośbami, przypomnieniami i wszystkimi przesłanymi plikami{% if memberships %} - i opuścisz zespoły, do których należysz (ich dane zostają bez zmian){% endif %}. Tej operacji nie można cofnąć. Jeśli musisz archiwizować dokumenty klientów, pobierz je wcześniej.</p>
+<p class="set-row__intro">{% if has_password %}Po wpisaniu hasła wyślemy{% else %}Wyślemy{% endif %} na <strong>{{ user.email }}</strong> link potwierdzający. Konto zostanie usunięte dopiero po kliknięciu w link.</p>
 <form method="post" novalidate data-ajax-form data-reset-on-success>
 {% csrf_token %}
 <input type="hidden" name="form_action" value="delete">
@@ -261,8 +383,15 @@
 {{ deletion_form.understood }}
 {{ deletion_form.understood.errors }}
 </p>
-<button type="submit" class="btn btn-danger-solid">Usuń konto</button>
+<div class="set-row__buttons">
+<button type="submit" class="btn btn-danger-solid">Wyślij link do usunięcia konta</button>
+<button type="button" class="btn btn-secondary" data-set-close>Anuluj</button>
+</div>
 </form>
 </div>
+</details>
+</div>
+</div>
+</section>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'js/logo_upload.js' %}" defer></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'js/logo_upload.js' %}" defer></script><script src="{% static 'js/settings.js' %}" defer></script>{% endblock %}

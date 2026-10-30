@@ -27,12 +27,15 @@
 <span class="template-row__meta">„{{ template.name }}” · {{ template.item_names|length }} dok. · {{ template.deadline_text }}</span>
 </div>
 <div class="template-row__actions">
-<a class="btn btn-primary btn-sm" href="{% url 'requests:create' %}?szablon={{ template.pk }}">Użyj</a>
-<a class="btn btn-secondary btn-sm" href="{% url 'requests:template-edit' template.pk %}">Edytuj</a>
-<form method="post" action="{% url 'requests:template-delete' template.pk %}" class="inline-form" data-confirm="Usunąć szablon „{{ template.title }}”? Prośby wysłane z niego zostaną bez zmian.">
+<a class="btn btn-secondary btn-sm" href="{% url 'requests:create' %}?szablon={{ template.pk }}" title="Nowa prośba z szablonu „{{ template.title }}”">Użyj</a>
+{% include "base/_row_menu.html" with label=template.title %}
+<a class="menu__item" href="{% url 'requests:template-edit' template.pk %}">Edytuj szablon</a>
+<div class="menu__sep" role="separator"></div>
+<form method="post" action="{% url 'requests:template-delete' template.pk %}" data-confirm="Prośby wysłane z niego zostaną bez zmian." data-confirm-title="Usunąć szablon „{{ template.title }}”?" data-confirm-label="Usuń">
 {% csrf_token %}
-<button type="submit" class="btn btn-danger btn-sm">Usuń</button>
+<button type="submit" class="menu__item menu__item--danger">Usuń szablon</button>
 </form>
+{% include "base/_row_menu_end.html" %}
 </div>
 </li>
 {% endfor %}
@@ -55,7 +58,7 @@
 <span class="template-row__meta">{{ template.items|length }} dok. · {{ template.summary }}</span>
 </div>
 <div class="template-row__actions">
-<a class="btn btn-primary btn-sm" href="{% url 'requests:create' %}?szablon={{ template.slug }}">Użyj</a>
+<a class="btn btn-secondary btn-sm" href="{% url 'requests:create' %}?szablon={{ template.slug }}" title="Nowa prośba z szablonu „{{ template.title }}”">Użyj</a>
 <form method="post" action="{% url 'requests:template-copy' template.slug %}" class="inline-form">
 {% csrf_token %}
 <button type="submit" class="btn btn-secondary btn-sm"{% if usage.at_limit %} disabled title="Limit szablonów wykorzystany"{% endif %}>Zapisz jako mój</button>

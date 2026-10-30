@@ -16,13 +16,12 @@
 </div>
 </div>
 
-<form method="get" class="filter-panel" role="search">
+<form method="get" class="filter-panel" role="search" data-live-search>
 <div class="search-bar">
 <div class="search-bar__field">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
 {{ filters.q }}
 </div>
-<button type="submit" class="btn btn-dark">Szukaj</button>
 <button type="button" class="btn btn-secondary" data-disclosure="#client-filters" aria-controls="client-filters" aria-expanded="{% if advanced_count %}true{% else %}false{% endif %}">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
 Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</span>{% endif %}
@@ -56,40 +55,40 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 <thead>
 <tr>
 {% if not team_member %}<th class="cell-check">{% if page_obj.object_list %}<input type="checkbox" data-select-page aria-label="Zaznacz wszystkich na tej stronie">{% endif %}</th>{% endif %}
-<th>Nazwa</th>
-<th>Email</th>
-<th class="cell-num" title="Aktywne prośby">Prośby</th>
-<th class="cell-num" title="Brakujące dokumenty">Braki</th>
-<th>Aktywność</th>
+<th>Klient</th>
 <th>Status</th>
-<th class="cell-right">Akcje</th>
+<th class="cell-num" title="Prośby w toku">Prośby</th>
+<th class="cell-num" title="Brakujące dokumenty">Braki</th>
+<th>Ostatnia aktywność</th>
+<th class="cell-right"><span class="visually-hidden">Działania</span></th>
 </tr>
 </thead>
 <tbody id="clients-table-body">
 {% for client in page_obj.object_list %}
-<tr data-client-id="{{ client.id }}">
+<tr data-client-id="{{ client.id }}" data-href="{% url 'clients:detail' client.id %}">
 {% if not team_member %}<td class="cell-check"><input type="checkbox" name="ids" value="{{ client.id }}" form="bulk-form" data-select-row aria-label="Zaznacz: {{ client.name }}"></td>{% endif %}
-<td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'clients:detail' client.id %}">{{ client.name }}</a>{% if client.nip %}<span class="cell-sub">NIP {{ client.nip }}</span>{% endif %}</td>
-<td class="cell-wrap" data-label="Email">{{ client.email }}</td>
-<td class="cell-num" data-label="Aktywne prośby">
-{% if client.active_requests %}<a class="count-link" href="{% url 'requests:list' %}?client={{ client.id }}" title="Pokaż przypomnienia klienta">{{ client.active_requests }}</a>{% else %}0{% endif %}
+<td class="cell-strong" data-label="Klient"><a class="link-plain" href="{% url 'clients:detail' client.id %}">{{ client.name }}</a><span class="cell-sub">{{ client.email }}{% if client.nip %} · NIP {{ client.nip }}{% endif %}</span></td>
+<td data-label="Status"><span class="badge {{ client.status_code|badge_class }}">{{ client.status_label }}</span></td>
+<td class="cell-num" data-label="Prośby">
+{% if client.active_requests %}<a class="count-link" href="{% url 'requests:list' %}?client={{ client.id }}" title="Pokaż prośby klienta">{{ client.active_requests }}</a>{% else %}0{% endif %}
 </td>
-<td class="cell-num" data-label="Brakujące dokumenty">
+<td class="cell-num" data-label="Braki">
 {% if client.missing_items %}<a class="count-link count-link--alert" href="{% url 'clients:documents' client.id %}?status=brakujace" title="Pokaż brakujące dokumenty">{{ client.missing_items }}</a>{% else %}0{% endif %}
 </td>
-<td class="cell-muted" data-label="Ostatnia aktywność">{% if client.last_activity %}{{ client.last_activity|dt }}{% else %}-{% endif %}</td>
-<td data-label="Status"><span class="badge {{ client.status_code|badge_class }}">{{ client.status_label }}</span></td>
-<td class="cell-right cell-actions" data-label="Akcje">
-<div class="table-actions">
-<a class="btn btn-secondary btn-sm" href="{% url 'clients:documents' client.id %}">Dokumenty</a>
-<a class="btn btn-secondary btn-sm" href="{% url 'requests:question-create' %}?client={{ client.id }}" title="Zadaj pytanie klientowi {{ client.name }}">Zapytaj</a>
-<a class="btn btn-secondary btn-sm btn-icon" href="{% url 'clients:edit' client.id %}" title="Edytuj" aria-label="Edytuj klienta {{ client.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></a>
-{% if not team_member or not client.request_count %}<button type="button" class="btn btn-danger btn-sm btn-icon delete-client" data-client-id="{{ client.id }}" data-client-name="{{ client.name }}" data-request-count="{{ client.request_count }}" title="Usuń" aria-label="Usuń klienta {{ client.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>{% endif %}
-</div>
+<td class="cell-muted cell-nowrap" data-label="Aktywność">{% if client.last_activity %}<span title="{{ client.last_activity|dt }}">{{ client.last_activity|d }}</span>{% else %}-{% endif %}</td>
+<td class="cell-right cell-actions" data-label="Działania">
+{% include "base/_row_menu.html" with label=client.name %}
+<a class="menu__item" href="{% url 'requests:create' %}?client={{ client.id }}">Nowa prośba</a>
+<a class="menu__item" href="{% url 'requests:question-create' %}?client={{ client.id }}">Zadaj pytanie</a>
+<a class="menu__item" href="{% url 'clients:documents' client.id %}">Wszystkie dokumenty</a>
+<a class="menu__item" href="{% url 'clients:edit' client.id %}">Edytuj dane</a>
+{% if not team_member or not client.request_count %}<div class="menu__sep" role="separator"></div>
+<button type="button" class="menu__item menu__item--danger delete-client" data-client-id="{{ client.id }}" data-client-name="{{ client.name }}" data-request-count="{{ client.request_count }}">Usuń klienta</button>{% endif %}
+{% include "base/_row_menu_end.html" %}
 </td>
 </tr>
 {% empty %}
-<tr id="clients-empty-row" class="table-empty"><td colspan="{% if team_member %}7{% else %}8{% endif %}">{% if has_filters or filters.data.status %}Brak klientów pasujących do filtrów.{% else %}Brak klientów. Dodaj pierwszego albo <a href="{% url 'clients:import' %}">zaimportuj wszystkich z pliku CSV lub Excel</a>.{% endif %}</td></tr>
+<tr id="clients-empty-row" class="table-empty"><td colspan="{% if team_member %}6{% else %}7{% endif %}">{% if has_filters or filters.data.status %}Żaden klient nie pasuje. <a href="{% url 'clients:list' %}">Pokaż wszystkich</a>{% else %}Nie masz jeszcze klientów. Dodaj pierwszego albo <a href="{% url 'clients:import' %}">zaimportuj wszystkich z pliku CSV lub Excel</a>.{% endif %}</td></tr>
 {% endfor %}
 </tbody>
 </table>

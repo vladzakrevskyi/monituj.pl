@@ -12,9 +12,16 @@
 <p class="page-header__sub">{% if client.nip %}NIP {{ client.nip }} &middot; {% endif %}{{ client.email }}{% if client.phone %} &middot; {{ client.phone }}{% endif %}</p>
 </div>
 <div class="page-header__actions">
-<a class="btn btn-secondary" href="{% url 'clients:edit' client.id %}">Edytuj</a>
-<a class="btn btn-secondary" href="{% url 'requests:create' %}?client={{ client.id }}">Nowa prośba</a>
-<a class="btn btn-primary" href="{% url 'requests:question-create' %}?client={{ client.id }}">Zadaj pytanie</a>
+<a class="btn btn-secondary" href="{% url 'requests:question-create' %}?client={{ client.id }}">Zadaj pytanie</a>
+<a class="btn btn-primary" href="{% url 'requests:create' %}?client={{ client.id }}">Nowa prośba</a>
+<details class="menu">
+<summary class="btn btn-secondary btn-icon menu__toggle" aria-label="Więcej działań" title="Więcej działań"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></summary>
+<div class="menu__list">
+<a class="menu__item" href="{% url 'clients:edit' client.id %}">Edytuj dane klienta</a>
+<a class="menu__item" href="{% url 'clients:documents' client.id %}">Wszystkie dokumenty</a>
+<a class="menu__item" href="{% url 'requests:list' %}?client={{ client.id }}">Wszystkie prośby</a>
+</div>
+</details>
 </div>
 </div>
 
@@ -73,7 +80,7 @@
 <input type="text" id="card-reminder-text" name="text" maxlength="300" required placeholder="Np. zadzwonić w sprawie leasingu">
 <label for="card-reminder-day" class="visually-hidden">Dnia</label>
 <input type="date" id="card-reminder-day" name="due_on" required value="{{ tomorrow|date:'Y-m-d' }}">
-<button type="submit" class="btn btn-secondary btn-sm">Przypomnij</button>
+<button type="submit" class="btn btn-secondary btn-sm">Dodaj przypomnienie</button>
 </form>
 <p class="form-hint text-muted mb-0">Pojawi się w kalendarzu i w porannym e-mailu „Na dziś”.</p>
 </section>

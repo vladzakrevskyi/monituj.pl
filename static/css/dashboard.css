@@ -158,3 +158,174 @@
   font-size: 14px;
   color: var(--color-text-muted);
 }
+
+/* Panel: what needs doing on the left, the month and the day on the right */
+.dashboard-col {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.dashboard-col > .card {
+  margin: 0;
+}
+
+/* A to-do with its own button ("Przypomnij") on the right */
+.open-item:has(.open-item__action) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--space-4);
+  align-items: center;
+}
+
+.open-item:has(.open-item__action) > :not(.open-item__action) {
+  grid-column: 1;
+}
+
+.open-item__action {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+}
+
+.open-item--unopened {
+  border-left: 3px solid var(--color-primary);
+}
+
+.open-item--unopened .open-item__kind {
+  color: var(--color-primary-text);
+}
+
+/* "Najbliższe terminy" */
+.due-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.due-list__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 110px auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.due-list__item:first-child {
+  padding-top: 0;
+}
+
+.due-list__item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.due-list__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.due-list__main:hover .due-list__name {
+  text-decoration: underline;
+}
+
+.due-list__name {
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.due-list__client {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.due-list__when {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.due-list__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* The month card */
+.month-card__lead {
+  margin: 0 0 var(--space-2);
+  font-size: 15px;
+}
+
+progress.month-card__bar {
+  margin-bottom: var(--space-4);
+}
+
+.month-card__facts {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.month-card__facts a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px var(--space-2);
+  margin: 0 calc(var(--space-2) * -1);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.month-card__facts a:hover {
+  background: var(--color-bg-subtle);
+}
+
+.month-card__facts strong {
+  margin-left: auto;
+}
+
+.today-next {
+  margin: var(--space-4) 0 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 720px) {
+  .due-list__item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .due-list__progress {
+    grid-column: 1;
+  }
+
+  .due-list__item > .btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .open-item:has(.open-item__action) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .open-item__action {
+    grid-column: 1;
+    grid-row: auto;
+    width: 100%;
+    margin-top: var(--space-2);
+  }
+}

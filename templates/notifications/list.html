@@ -7,7 +7,7 @@
 <div class="page-header">
 <div>
 <h1>Powiadomienia</h1>
-<p class="page-header__sub">Dokumenty przesłane przez Twoich klientów - i te, których nie mają - od najnowszych. Informujemy o nich też mailem.</p>
+<p class="page-header__sub">Co przysłali klienci: dokumenty, odpowiedzi i informacje, że czegoś nie mają - od najnowszych.</p>
 </div>
 </div>
 
@@ -31,8 +31,10 @@
 
 {% pagination page_obj %}
 {% else %}
-<div class="card">
-<p class="mb-0">Nie masz jeszcze powiadomień. Gdy klient prześle dokument, zobaczysz to tutaj.</p>
+<div class="card empty-state">
+<h2>Na razie cisza</h2>
+<p>Gdy klient prześle dokument, odpowie na pytanie albo napisze, że czegoś nie ma, zobaczysz to tutaj - i dostaniesz e-mail.</p>
+<a class="btn btn-secondary" href="{% url 'requests:list' %}">Zobacz swoje prośby</a>
 </div>
 {% endif %}
 {% endblock %}

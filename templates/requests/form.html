@@ -6,9 +6,13 @@
 
 {% block content %}
 <a class="back-link" href="{% url 'requests:list' %}" title="Wróć: Prośby">&larr; Prośby</a>
-<div class="card request-form">
+<div class="page-header">
+<div>
 <h1>Nowa prośba o dokumenty</h1>
-<p class="card-lead">Trzy kroki: czego potrzebujesz, od kogo i na kiedy. Resztę ustawisz, jeśli chcesz. {% include "help/_hint.html" with slug="pierwsza-prosba" %}</p>
+<p class="page-header__sub">Trzy kroki: czego potrzebujesz, od kogo i na kiedy. Resztę ustawisz, jeśli chcesz. {% include "help/_hint.html" with slug="pierwsza-prosba" %}</p>
+</div>
+</div>
+<div class="card request-form">
 {% if plan_state.at_limit %}
 <p class="alert alert--info">Masz już {{ plan_state.used }} z {{ plan_state.limit }} próśb w toku - tyle obejmuje plan {{ plan_state.plan.name }}. <a href="{% url 'billing:plan' %}">Zmień plan</a> albo zamknij prośbę, na którą już nie czekasz.</p>
 {% endif %}
@@ -42,7 +46,7 @@
 <label for="item-name-input">Dokumenty</label>
 <div class="item-input-row" data-error-for="items">
 <input type="text" id="item-name-input" placeholder="Wpisz dokument i naciśnij Enter">
-<button type="button" id="add-item-button" class="btn btn-dark">Dodaj</button>
+<button type="button" id="add-item-button" class="btn btn-secondary">Dodaj</button>
 </div>
 {{ form.items.errors }}
 <ul id="item-list" class="item-list"></ul>

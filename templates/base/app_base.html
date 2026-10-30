@@ -79,7 +79,7 @@ Nowa prośba
 </a>
 {% endif %}
 <div class="app-sidebar__footer">
-<details class="app-account"{% if '/ustawienia/' in request.path or '/zespol/' in request.path or request.path|slice:':6' == '/plan/' %} open{% endif %}>
+<details class="app-account{% if '/ustawienia/' in request.path or '/zespol/' in request.path or request.path|slice:':6' == '/plan/' %} is-current{% endif %}">
 <summary class="app-user">
 {% if demo_account %}
 <span class="app-user__avatar" aria-hidden="true">D</span>

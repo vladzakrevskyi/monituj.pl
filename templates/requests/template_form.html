@@ -6,9 +6,13 @@
 
 {% block content %}
 <a class="back-link" href="{% url 'requests:templates' %}" title="Wróć: Szablony próśb">&larr; Szablony próśb</a>
-<div class="card">
+<div class="page-header">
+<div>
 <h1>{% if template %}Szablon „{{ template.title }}”{% else %}Nowy szablon{% endif %}</h1>
-<p class="card-lead">Szablon zapamiętuje, o co prosisz - klientów wybierzesz przy wysyłce. Zmiany nie dotyczą próśb już wysłanych.</p>
+<p class="page-header__sub">Szablon zapamiętuje, o co prosisz - klientów wybierzesz przy wysyłce. Zmiany nie dotyczą próśb już wysłanych.</p>
+</div>
+</div>
+<div class="card">
 <form method="post" novalidate data-ajax-form>
 {% csrf_token %}
 {% include "base/_form_flash.html" %}
@@ -29,7 +33,7 @@
 <label for="item-name-input">Dokumenty</label>
 <div class="item-input-row" data-error-for="items">
 <input type="text" id="item-name-input" placeholder="Wpisz dokument i naciśnij Enter">
-<button type="button" id="add-item-button" class="btn btn-dark">Dodaj</button>
+<button type="button" id="add-item-button" class="btn btn-secondary">Dodaj</button>
 </div>
 {{ form.items.errors }}
 <ul id="item-list" class="item-list"></ul>

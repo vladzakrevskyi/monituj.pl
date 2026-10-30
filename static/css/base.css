@@ -22,12 +22,14 @@
 
   --color-success: #15803d;
   --color-success-bg: #e6f4ea;
-  --color-warning: #a15c07;
-  --color-warning-bg: #fdf3d7;
+  /* Only orange, black, grey and white, plus green and red for status:
+     "warning" is the orange tint, "info" (something to do) is black. */
+  --color-warning: #c24e00;
+  --color-warning-bg: #fff0e5;
   --color-danger: #c81e1e;
   --color-danger-bg: #fdecec;
-  --color-info: #1d4ed8;
-  --color-info-bg: #e8effd;
+  --color-info: #0b0b0c;
+  --color-info-bg: #ececef;
   --color-neutral-bg: #ececef;
 
   --font-sans:

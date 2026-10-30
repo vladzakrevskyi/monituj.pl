@@ -1,13 +1,17 @@
 {% extends "base/app_base.html" %}
 
-{% block page_name %}{% if question_page %}Edytuj pytanie{% else %}Edytuj przypomnienie{% endif %}{% endblock %}
+{% block page_name %}{% if question_page %}Edytuj pytanie{% else %}Edytuj prośbę{% endif %}{% endblock %}
 {% block page_class %}page--narrow{% endblock %}
 
 {% block content %}
 <a class="back-link" href="{% url 'requests:detail' request_obj.id %}" title="Wróć: {{ request_obj.name }}">&larr; {{ request_obj.name }}</a>
+<div class="page-header">
+<div>
+<h1>{% if question_page %}Edytuj pytanie{% else %}Edytuj prośbę{% endif %}</h1>
+<p class="page-header__sub">{% if question_page %}Zmień termin odpowiedzi lub ustawienia przypomnień.{% else %}Zmień nazwę, termin lub ustawienia przypomnień.{% endif %}</p>
+</div>
+</div>
 <div class="card">
-<h1>{% if question_page %}Edytuj pytanie{% else %}Edytuj przypomnienie{% endif %}</h1>
-<p class="card-lead">{% if question_page %}Zmień termin odpowiedzi lub ustawienia przypomnień.{% else %}Zmień nazwę, termin lub ustawienia przypomnień.{% endif %}</p>
 <form method="post" novalidate data-ajax-form>
 {% csrf_token %}
 {{ form.as_p }}

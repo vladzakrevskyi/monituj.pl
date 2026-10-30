@@ -453,7 +453,7 @@ def request_detail(request, request_id):
             "to_review": DocumentReviewService.to_review(request_obj).count(),
             "reminders": reminders,
             "history": history,
-            # A question shows where the conversation stands, not "Kompletny".
+            # A question shows where the conversation stands, not "Komplet".
             "status_label": (
                 request_obj.question_item.status_label
                 if request_obj.question_item is not None and not request_obj.is_closed

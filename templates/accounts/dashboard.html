@@ -3,12 +3,26 @@
 
 {% block page_name %}Panel{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">{% endblock %}
+{% block extra_js %}<script src="{% static 'js/core.js' %}"></script>{% endblock %}
 
 {% block content %}
 <div class="page-header">
 <div>
-<h1>Panel</h1>
-<p class="page-header__sub">Przegląd Twoich próśb o dokumenty i aktywności klientów.</p>
+<h1>{{ greeting }}{% if user.display_name %}, {{ user.display_name }}{% endif %}</h1>
+<p class="page-header__sub">{{ today|date:"l, j E"|capfirst }} · co czeka na Ciebie i na Twoich klientów.</p>
+</div>
+<div class="page-header__actions">
+<a class="btn btn-secondary" href="{% url 'requests:question-create' %}">Zadaj pytanie</a>
+<a class="btn btn-primary" href="{% url 'requests:create' %}">Nowa prośba</a>
+<details class="menu">
+<summary class="btn btn-secondary btn-icon menu__toggle" aria-label="Więcej działań" title="Więcej działań"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></summary>
+<div class="menu__list">
+<a class="menu__item" href="{% url 'clients:create' %}">Dodaj klienta</a>
+<a class="menu__item" href="{% url 'clients:import' %}">Importuj klientów z pliku</a>
+<a class="menu__item" href="{% url 'requests:templates' %}">Szablony próśb</a>
+<a class="menu__item" href="{% url 'requests:overview' %}">Zestawienie miesiąca</a>
+</div>
+</details>
 </div>
 </div>
 
@@ -65,48 +79,144 @@
 {% endif %}
 
 {% if not first_steps or active_requests %}
-<div class="stat-grid">
-<div class="stat-tile stat-tile--dark">
-<div class="stat-tile__value">{{ active_requests }}</div>
-<div class="stat-tile__label">Aktywne prośby</div>
-</div>
-<div class="stat-tile">
-<div class="stat-tile__value">{{ missing_documents }}</div>
-<div class="stat-tile__label">Brakujące dokumenty</div>
-</div>
-<div class="stat-tile">
-<div class="stat-tile__value">{{ delivered_documents }}</div>
-<div class="stat-tile__label">Dokumenty dostarczone</div>
-</div>
-<div class="stat-tile">
-<div class="stat-tile__value">{{ reminders_sent }}</div>
-<div class="stat-tile__label">Przypomnienia wysłane</div>
-</div>
-</div>
+<nav class="stat-grid" aria-label="Podsumowanie">
+<a class="stat-tile stat-tile--action" href="#do-zrobienia">
+<span class="stat-tile__value">{{ to_review }}</span>
+<span class="stat-tile__label">Do sprawdzenia</span>
+<span class="stat-tile__hint">{% if to_review %}Dokumenty czekają na Ciebie{% else %}Nic nie czeka na Ciebie{% endif %}</span>
+</a>
+<a class="stat-tile stat-tile--progress" href="{% url 'requests:list' %}">
+<span class="stat-tile__value">{{ active_requests }}</span>
+<span class="stat-tile__label">Aktywne prośby</span>
+<span class="stat-tile__hint">Czekamy na klientów</span>
+</a>
+<a class="stat-tile stat-tile--overdue" href="{% url 'requests:list' %}?status=po_terminie">
+<span class="stat-tile__value">{{ overdue_requests }}</span>
+<span class="stat-tile__label">Po terminie</span>
+<span class="stat-tile__hint">{% if overdue_requests %}Warto zadzwonić{% else %}Wszyscy w terminie{% endif %}</span>
+</a>
+<a class="stat-tile" href="{% url 'requests:overview' %}">
+<span class="stat-tile__value">{{ missing_documents }}</span>
+<span class="stat-tile__label">Brakujące dokumenty</span>
+<span class="stat-tile__hint">Kto i czego nie przysłał</span>
+</a>
+</nav>
 {% endif %}
 
 <div class="dashboard-grid">
-<div class="dashboard-main">
-<section class="card" aria-labelledby="to-do-title">
+<div class="dashboard-col">
+<section class="card" id="do-zrobienia" aria-labelledby="to-do-title">
 <h2 class="card-title" id="to-do-title">Do zrobienia</h2>
 {% if to_do %}
 <ul class="open-list">
 {% for entry in to_do %}
-<li class="open-item{% if entry.kind == 'overdue' %} open-item--late{% else %} open-item--review{% endif %}">
+<li class="open-item open-item--{{ entry.kind }}{% if entry.kind == 'overdue' %} open-item--late{% elif entry.kind == 'review' or entry.kind == 'answer' %} open-item--review{% endif %}">
 <span class="open-item__kind">{{ entry.label }}</span>
 <a class="open-item__title" href="{{ entry.url }}">{{ entry.title|truncatechars:110 }}</a>
 <span class="open-item__meta">{{ entry.meta|truncatechars:140 }}</span>
+{% if entry.remind %}<button type="button" class="btn btn-secondary btn-sm open-item__action" data-remind-request="{{ entry.remind.id }}" data-client="{{ entry.remind.client.name }}">Przypomnij</button>{% endif %}
 </li>
 {% endfor %}
 </ul>
 {% else %}
-<p class="text-muted">{% if first_steps %}Tu pojawią się dokumenty do sprawdzenia, odpowiedzi klientów i prośby po terminie.{% else %}Nic nie czeka na Ciebie. Monituj przypomina klientom o brakach - napiszemy, gdy coś przyjdzie.{% endif %}</p>
+<div class="all-clear">
+<span class="all-clear__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>
+<p class="mb-0">{% if first_steps %}Tu pojawią się dokumenty do sprawdzenia, odpowiedzi klientów i prośby po terminie.{% else %}Nic nie czeka na Ciebie. Monituj przypomina klientom o brakach - napiszemy, gdy coś przyjdzie.{% endif %}</p>
+</div>
 {% endif %}
 </section>
+
+<section class="card" aria-labelledby="upcoming-title">
+<div class="card-title-row">
+<h2 class="card-title" id="upcoming-title">Najbliższe terminy</h2>
+<a class="card-title-row__link" href="{% url 'agenda:calendar' %}">Kalendarz</a>
+</div>
+{% if upcoming %}
+<ul class="due-list">
+{% for request_obj in upcoming %}
+<li class="due-list__item">
+<a class="due-list__main" href="{% url 'requests:detail' request_obj.id %}">
+<span class="due-list__name">{{ request_obj.name }}</span>
+<span class="due-list__client">{{ request_obj.client.name }}</span>
+</a>
+<span class="due-list__when" title="{{ request_obj.deadline|dt }}">{{ request_obj.deadline|due|capfirst }}</span>
+<span class="due-list__progress"><progress class="progress-bar" value="{{ request_obj.delivered_items }}" max="{{ request_obj.total_items|default:1 }}" aria-label="Gotowe dokumenty"></progress><span>{{ request_obj.delivered_items }}/{{ request_obj.total_items }}</span></span>
+<button type="button" class="btn btn-secondary btn-sm" data-remind-request="{{ request_obj.id }}" data-client="{{ request_obj.client.name }}">Przypomnij</button>
+</li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="text-muted mb-0">W najbliższych 7 dniach nie mija żaden termin. <a href="{% url 'requests:list' %}">Wszystkie prośby</a></p>
+{% endif %}
+</section>
+</div>
+
+<div class="dashboard-col">
+<section class="card" aria-labelledby="month-title">
+<div class="card-title-row">
+<h2 class="card-title" id="month-title">{{ month.label|capfirst }}</h2>
+<a class="card-title-row__link" href="{% url 'requests:overview' %}">Zestawienie</a>
+</div>
+{% if month.total %}
+<p class="month-card__lead"><strong>{{ month.complete }} z {{ month.total }}</strong> {% if month.total == 1 %}klienta ma{% else %}klientów ma{% endif %} komplet</p>
+<progress class="progress-bar month-card__bar" value="{{ month.complete }}" max="{{ month.total }}" aria-label="Klienci z kompletem"></progress>
+<ul class="month-card__facts">
+<li><a href="{% url 'requests:overview' %}?m={{ month.key }}&amp;s=czekamy"><span class="ov-dot ov-dot--czekamy"></span>W trakcie <strong>{{ month.waiting }}</strong></a></li>
+<li><a href="{% url 'requests:overview' %}?m={{ month.key }}&amp;s=po_terminie"><span class="ov-dot ov-dot--po_terminie"></span>Po terminie <strong>{{ month.late }}</strong></a></li>
+<li><a href="{% url 'requests:overview' %}?m={{ month.key }}&amp;s=do_sprawdzenia"><span class="ov-dot ov-dot--do_sprawdzenia"></span>Do sprawdzenia <strong>{{ month.to_check }}</strong></a></li>
+</ul>
+{% if month.remindable %}
+<form method="post" action="{% url 'requests:overview-remind' %}" data-confirm="Każdy klient, któremu czegoś brakuje w prośbach z tego miesiąca, dostanie jedną wiadomość z listą wszystkich braków ({{ month.remindable }}). Pominiemy prośby, o których przypomnienie wyszło w ciągu ostatniej godziny." data-confirm-title="Przypomnieć wszystkim?" data-confirm-label="Wyślij przypomnienia">
+{% csrf_token %}
+<input type="hidden" name="m" value="{{ month.key }}">
+<button type="submit" class="btn btn-secondary btn-block">Przypomnij wszystkim z brakami ({{ month.remindable }})</button>
+</form>
+{% endif %}
+{% else %}
+<p class="text-muted mb-0">W tym miesiącu nie wysłałeś jeszcze próśb. <a href="{% url 'requests:create' %}">Wyślij pierwszą</a></p>
+{% endif %}
+</section>
+
+<section class="card" aria-labelledby="today-title">
+<h2 class="card-title" id="today-title">Dziś</h2>
+{% if summary.reminders %}
+<ul class="today-list">
+{% for reminder in summary.reminders %}
+<li class="today-list__item">
+<form method="post" action="{% url 'agenda:reminder-done' reminder.id %}" class="inline-form">
+{% csrf_token %}
+<input type="hidden" name="next" value="{{ request.path }}">
+<button type="submit" class="today-list__check" aria-label="Zrobione: {{ reminder.text }}" title="Zrobione"></button>
+</form>
+<div>
+<p class="today-list__text">{{ reminder.text }}</p>
+<p class="today-list__meta">{% if reminder.due_on < summary.today %}zaległe od {{ reminder.due_on|d }}{% else %}na dziś{% endif %}{% if reminder.client %} · <a href="{% url 'clients:detail' reminder.client.id %}">{{ reminder.client.name }}</a>{% endif %}</p>
+</div>
+</li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="text-muted">Na dziś nie masz przypomnień dla siebie.</p>
+{% endif %}
+<form method="post" action="{% url 'agenda:reminder-add' %}" novalidate class="reminder-form reminder-form--compact">
+{% csrf_token %}
+<input type="hidden" name="next" value="{{ request.path }}">
+<label for="home-reminder-text" class="visually-hidden">O czym przypomnieć</label>
+<input type="text" id="home-reminder-text" name="text" maxlength="300" required placeholder="Przypomnij mi… np. zadzwonić do Kowalskiego">
+<label for="home-reminder-day" class="visually-hidden">Dnia</label>
+<input type="date" id="home-reminder-day" name="due_on" required value="{{ tomorrow|date:'Y-m-d' }}">
+<button type="submit" class="btn btn-secondary btn-sm">Dodaj przypomnienie</button>
+</form>
+{% if next_send %}<p class="today-next">Następna wysyłka cykliczna: <a href="{% url 'requests:recurring-edit' next_send.id %}">{{ next_send.name }}</a> · {{ next_send.next_run_on|d }}</p>{% endif %}
+</section>
+
 <section class="card" aria-labelledby="activity-title">
+<div class="card-title-row">
 <h2 class="card-title" id="activity-title">Ostatnia aktywność</h2>
-<ul class="history-list">
-{% for entry in recent_activity %}
+{% if recent_activity %}<a class="card-title-row__link" href="{% url 'notifications:list' %}">Wszystkie</a>{% endif %}
+</div>
+<ul class="history-list history-list--compact">
+{% for entry in recent_activity|slice:":5" %}
 <li><span class="history-time">{{ entry.created_at|dt }}</span><span>{{ entry.label_pl }}{% if entry.request %} - {% if entry.url %}<a href="{{ entry.url }}">{{ entry.request.name|truncatechars:60 }}</a>{% else %}{{ entry.request.name|truncatechars:60 }}{% endif %} <span class="text-muted">({{ entry.request.client.name }})</span>{% endif %}{% if entry.actor and entry.actor != user and entry.actor != request.account %} · {{ entry.actor.display_name|default:entry.actor.email }}{% endif %}</span></li>
 {% empty %}
 <li>Tu zobaczysz, co dzieje się u klientów: otwarcia linków, przesłane pliki, przypomnienia.</li>
@@ -114,14 +224,5 @@
 </ul>
 </section>
 </div>
-<aside class="card">
-<h2 class="card-title">Szybkie akcje</h2>
-<div class="quick-actions">
-<a class="btn btn-primary btn-block" href="{% url 'requests:create' %}">Nowa prośba</a>
-<a class="btn btn-secondary btn-block" href="{% url 'requests:question-create' %}">Zadaj pytanie</a>
-<a class="btn btn-secondary btn-block" href="{% url 'clients:create' %}">Dodaj klienta</a>
-<a class="btn btn-secondary btn-block" href="{% url 'requests:list' %}">Wszystkie prośby</a>
-</div>
-</aside>
 </div>
 {% endblock %}

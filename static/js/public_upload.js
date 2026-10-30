@@ -9,7 +9,7 @@
   const REQUEST_STATUS_LABELS = {
     brak_dokumentow: "Nic nie przesłano",
     w_trakcie: "W trakcie",
-    kompletny: "Kompletny",
+    kompletny: "Komplet",
     po_terminie: "Po terminie",
   };
   const DOWNLOAD_ICON =

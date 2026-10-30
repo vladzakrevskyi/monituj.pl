@@ -8,11 +8,10 @@
 <a class="back-link" href="{% url 'clients:detail' client.id %}" title="Wróć: karta klienta">&larr; Karta klienta</a>
 <div class="page-header">
 <div>
-<h1>{{ client.name }}</h1>
+<h1>Dokumenty: {{ client.name }}</h1>
 <p class="page-header__sub">{{ client.email }}{% if client.phone %} &middot; {{ client.phone }}{% endif %}{% if client.nip %} &middot; NIP {{ client.nip }}{% endif %}</p>
 </div>
 <div class="page-header__actions">
-<a class="btn btn-secondary" href="{% url 'clients:edit' client.id %}">Edytuj klienta</a>
 <a class="btn btn-secondary" href="{% url 'requests:question-create' %}?client={{ client.id }}">Zadaj pytanie</a>
 <a class="btn btn-primary" href="{% url 'requests:create' %}?client={{ client.id }}">Nowa prośba</a>
 </div>
@@ -33,15 +32,14 @@
 <th>Status</th>
 <th>Pliki</th>
 <th>Termin</th>
-<th class="cell-right">Akcje</th>
 </tr>
 </thead>
 <tbody>
 {% for item in page_obj.object_list %}
-<tr>
+<tr data-href="{% url 'requests:detail' item.request.id %}">
 <td class="cell-strong" data-label="Dokument">{{ item.name }}</td>
 <td data-label="Prośba"><a href="{% url 'requests:detail' item.request.id %}">{{ item.request.name }}</a></td>
-<td data-label="Status"><span class="badge {{ item.status|badge_class }}">{{ item.status_label }}</span>{% if item.rejection_reason %}<span class="cell-note">{{ item.rejection_reason }}</span>{% endif %}</td>
+<td data-label="Status"><span class="badge {{ item|item_badge_class }}">{{ item.status_label }}</span>{% if item.rejection_reason %}<span class="cell-note">{{ item.rejection_reason }}</span>{% endif %}</td>
 <td data-label="Pliki">
 <ul class="file-list">
 {% for document in item.documents.all %}
@@ -51,15 +49,10 @@
 {% endfor %}
 </ul>
 </td>
-<td class="cell-muted" data-label="Termin">{% if item.request.deadline %}{{ item.request.deadline|dt }}{% else %}Bez terminu{% endif %}</td>
-<td class="cell-right cell-actions" data-label="Akcje">
-<div class="table-actions">
-<a class="btn btn-secondary btn-sm" href="{% url 'requests:detail' item.request.id %}" title="Otwórz prośbę: {{ item.request.name }}">Otwórz</a>
-</div>
-</td>
+<td class="cell-muted cell-nowrap" data-label="Termin">{% if item.request.deadline %}<span title="{{ item.request.deadline|dt }}">{{ item.request.deadline|d }}</span>{% else %}Bez terminu{% endif %}</td>
 </tr>
 {% empty %}
-<tr class="table-empty"><td colspan="6">
+<tr class="table-empty"><td colspan="5">
 {% if status_filter == "brakujace" %}Ten klient nie ma brakujących dokumentów.{% elif status_filter == "dostarczone" %}Klient nie dostarczył jeszcze żadnych dokumentów.{% else %}Brak dokumentów dla tego klienta.{% endif %}
 </td></tr>
 {% endfor %}

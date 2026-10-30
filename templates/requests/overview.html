@@ -32,11 +32,11 @@
 {% endfor %}</nav>
 
 <div class="ov-toolbar">
-<form method="get" class="ov-search" role="search">
+<form method="get" class="ov-search" role="search" data-live-search>
 <input type="hidden" name="m" value="{{ selected }}">
 {% if state %}<input type="hidden" name="s" value="{{ state }}">{% endif %}
 <label class="visually-hidden" for="overview-q">Szukaj klienta</label>
-<input type="search" id="overview-q" name="q" value="{{ query }}" placeholder="Szukaj klienta i naciśnij Enter">
+<input type="search" id="overview-q" name="q" value="{{ query }}" placeholder="Szukaj klienta">
 </form>
 {% if remindable %}
 <form method="post" action="{% url 'requests:overview-remind' %}" class="inline-form" data-confirm="Każdy klient, któremu czegoś brakuje w prośbach z tego miesiąca, dostanie jedną wiadomość z listą wszystkich braków ({{ remindable }}). Pominiemy prośby, o których przypomnienie wyszło w ciągu ostatniej godziny." data-confirm-title="Przypomnieć wszystkim?" data-confirm-label="Wyślij przypomnienia">
@@ -92,6 +92,6 @@
 <p class="ov-not-asked"><strong>Bez prośby w tym miesiącu ({{ not_asked|length }}):</strong> {% for client in not_asked %}<a href="{% url 'requests:create' %}?client={{ client.id }}" title="Wyślij prośbę do: {{ client.name }}">{{ client.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %} <span class="text-muted">- dostali prośbę w poprzednich miesiącach. Kliknij nazwę, żeby wysłać.</span></p>
 {% endif %}
 
-<p class="ov-legend text-muted"><span class="ov-dot ov-dot--komplet"></span> komplet <span class="ov-dot ov-dot--do_sprawdzenia"></span> do sprawdzenia <span class="ov-dot ov-dot--czekamy"></span> czekamy <span class="ov-dot ov-dot--po_terminie"></span> po terminie <span class="ov-dot ov-dot--none"></span> bez prośby · Miesiąc to miesiąc wysłania prośby. Kliknij kropkę, żeby przejść do tego miesiąca.</p>
+<p class="ov-legend text-muted"><span class="ov-dot ov-dot--komplet"></span> komplet <span class="ov-dot ov-dot--do_sprawdzenia"></span> do sprawdzenia <span class="ov-dot ov-dot--czekamy"></span> w trakcie <span class="ov-dot ov-dot--po_terminie"></span> po terminie <span class="ov-dot ov-dot--none"></span> bez prośby · Miesiąc to miesiąc wysłania prośby. Kliknij kropkę, żeby przejść do tego miesiąca.</p>
 {% endif %}
 {% endblock %}

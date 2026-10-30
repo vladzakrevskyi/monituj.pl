@@ -292,8 +292,8 @@ ARTICLES = [
             "Gotowe szablony dla biur rachunkowych, kadr, kancelarii i innych "
             "branż są w zakładce **Szablony** - kliknij **Użyj**.",
             "Własny szablon zapiszesz na trzy sposoby: zaznacz **Zapisz jako "
-            "szablon** przy wysyłaniu prośby, kliknij **Zapisz jako szablon** "
-            "na stronie wysłanej prośby albo **Nowy szablon** w zakładce "
+            "szablon** przy wysyłaniu prośby, wybierz **⋯ → Zapisz jako "
+            "szablon** na stronie wysłanej prośby albo **Nowy szablon** w zakładce "
             "Szablony.",
             "W nowej prośbie wybierz szablon z listy **Zacznij od szablonu**.",
         ],
@@ -434,15 +434,16 @@ ARTICLES = [
         "zmien-zamknij-usun",
         "prosby",
         "Jak zmienić, zamknąć albo usunąć prośbę",
-        "Wszystko robisz na stronie prośby - przyciski są u góry.",
+        "Wszystko robisz na stronie prośby: **Edytuj** jest u góry, a "
+        "zamknięcie i usunięcie - w menu **⋯** obok.",
         steps=[
             "**Edytuj** - zmienisz nazwę, opis, termin, przypomnienia i czas "
             "przechowywania plików.",
-            "**Zamknij prośbę** - kończysz zbieranie. Przypomnienia przestają "
-            "wychodzić, klient nie może już przesyłać plików, a prośba zostaje w "
-            "historii. Możesz ją **Otworzyć ponownie**.",
-            "**Usuń** - prośba znika razem z plikami i historią, a link u "
-            "klienta przestaje działać. Tego nie da się cofnąć.",
+            "**⋯ → Zamknij prośbę** - kończysz zbieranie. Przypomnienia "
+            "przestają wychodzić, klient nie może już przesyłać plików, a "
+            "prośba zostaje w historii. Możesz ją **Otworzyć ponownie**.",
+            "**⋯ → Usuń prośbę** - prośba znika razem z plikami i historią, a "
+            "link u klienta przestaje działać. Tego nie da się cofnąć.",
         ],
         tips=[
             "Listy dokumentów w wysłanej prośbie nie zmienisz. Jeśli czegoś "
@@ -462,15 +463,15 @@ ARTICLES = [
         body=[
             "**Nic nie przesłano** - klient jeszcze niczego nie wysłał.",
             "**W trakcie** - część dokumentów dotarła, części brakuje.",
-            "**Kompletny** - wszystko dotarło. Przypomnienia się wyłączyły.",
+            "**Komplet** - wszystko dotarło. Przypomnienia się wyłączyły.",
             "**Po terminie** - termin minął, a czegoś wciąż brakuje.",
             "**Zamknięta** - zakończyłeś zbieranie ręcznie.",
         ],
         tips=[
             "Przy pojedynczych dokumentach statusy to: Brak, Dostarczony, "
             "Zaakceptowany, Odrzucony i Nie dotyczy.",
-            "Klienci na liście **Klienci** mają podobne statusy: „Nic nie "
-            "przesłał”, „W trakcie”, „Wszystko dostarczone”.",
+            "Klienci na liście **Klienci** mają te same statusy: „Nic nie "
+            "przesłano”, „W trakcie”, „Komplet”.",
         ],
         related=["sprawdz-dokumenty", "zmien-zamknij-usun"],
         keywords="status statusy co znaczy w trakcie kompletny po terminie "
@@ -493,7 +494,7 @@ ARTICLES = [
         body=[
             "**Komplet** - wszystko dotarło i jest zaakceptowane.",
             "**Do sprawdzenia** - klient przesłał wszystko, czeka na Twoją akceptację.",
-            "**Czekamy na klienta** - czegoś brakuje, termin jeszcze nie minął.",
+            "**W trakcie** - czegoś brakuje, termin jeszcze nie minął.",
             "**Po terminie** - czegoś brakuje, a termin minął. Tu warto zadzwonić.",
             "Każdy klient jest liczony raz, z najpilniejszym stanem swoich próśb "
             "z tego miesiąca.",
@@ -606,10 +607,10 @@ ARTICLES = [
         "dokumenty",
         "Jak pobrać pliki, także wszystkie naraz",
         "Pojedynczy plik pobierzesz, klikając jego nazwę. Wszystkie pliki "
-        "prośby - przyciskiem **Pobierz wszystko (ZIP)**.",
+        "prośby - w menu **⋯** u góry strony prośby.",
         steps=[
             "Otwórz prośbę.",
-            "Kliknij **Pobierz wszystko (ZIP)** u góry strony.",
+            "Kliknij **⋯** u góry strony i wybierz **Pobierz wszystkie pliki (ZIP)**.",
             "W archiwum każdy dokument z listy ma swój folder.",
         ],
         tips=[
@@ -713,11 +714,11 @@ ARTICLES = [
         "przypomnij-teraz",
         "przypomnienia",
         "Jak przypomnieć klientowi od razu",
-        "Na stronie prośby kliknij **Wyślij przypomnienie teraz**. Klient "
+        "Na stronie prośby kliknij **Przypomnij teraz**. Klient "
         "dostanie e-mail z listą tego, czego brakuje.",
         steps=[
             "Otwórz prośbę.",
-            "W karcie **Przypomnienia** kliknij **Wyślij przypomnienie teraz**.",
+            "Kliknij **Przypomnij teraz** u góry strony.",
         ],
         tips=[
             "Ręczne przypomnienie wyślesz raz na godzinę dla jednej prośby.",
@@ -849,9 +850,10 @@ ARTICLES = [
         "Dane zmienisz na karcie klienta. Usunięcie klienta kasuje też "
         "wszystkie jego prośby, pliki i historię.",
         steps=[
-            "Otwórz kartę klienta i kliknij **Edytuj**, żeby zmienić nazwę albo "
-            "adres e-mail.",
-            "Żeby usunąć klienta, skorzystaj z akcji na liście **Klienci**.",
+            "Otwórz kartę klienta, kliknij **⋯** i wybierz **Edytuj dane "
+            "klienta**, żeby zmienić nazwę albo adres e-mail.",
+            "Żeby usunąć klienta, na liście **Klienci** kliknij **⋯** przy "
+            "nim i wybierz **Usuń klienta**.",
         ],
         tips=[
             "Usuniętych danych nie da się przywrócić. Tak spełnisz prośbę "

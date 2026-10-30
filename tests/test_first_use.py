@@ -253,7 +253,7 @@ def test_month_label_is_the_previous_month():
 def test_client_statuses_say_what_they_mean():
     from apps.clients.services import ClientStatus
 
-    assert ClientStatus.MISSING_DOCUMENTS.label == "Nic nie przesłał"
+    assert ClientStatus.MISSING_DOCUMENTS.label == "Nic nie przesłano"
     assert ClientStatus.ACTIVE.label == "W trakcie"
 
 

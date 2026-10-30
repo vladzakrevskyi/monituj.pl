@@ -17,6 +17,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.formats import date_format
 
+from apps.common.formatting import days_text as deadline_text
 from apps.requests.models import (
     Request,
     RequestItem,
@@ -41,7 +42,7 @@ ZAMKNIETA = "zamknieta"
 URGENCY = [PO_TERMINIE, CZEKAMY, DO_SPRAWDZENIA, KOMPLET, ZAMKNIETA]
 LABELS = {
     PO_TERMINIE: "Po terminie",
-    CZEKAMY: "Czekamy na klienta",
+    CZEKAMY: "W trakcie",
     DO_SPRAWDZENIA: "Do sprawdzenia",
     KOMPLET: "Komplet",
     ZAMKNIETA: "Zamknięta",
@@ -50,17 +51,6 @@ LABELS = {
 TILES = ["", KOMPLET, DO_SPRAWDZENIA, CZEKAMY, PO_TERMINIE]
 # The client still owes something - what "Przypomnij" is for.
 WAITING = {PO_TERMINIE, CZEKAMY}
-
-
-def deadline_text(days):
-    """ "3 dni temu", "dziś", "za 1 dzień" - or "" without a deadline."""
-    if days is None:
-        return ""
-    if days == 0:
-        return "dziś"
-    count = abs(days)
-    unit = "dzień" if count == 1 else "dni"
-    return f"{count} {unit} temu" if days < 0 else f"za {count} {unit}"
 
 
 @dataclass

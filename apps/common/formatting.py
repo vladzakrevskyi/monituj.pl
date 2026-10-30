@@ -20,3 +20,25 @@ def format_date(value):
     if hasattr(value, "tzinfo") and timezone.is_aware(value):
         value = timezone.localtime(value)
     return date_format(value, DATE_FORMAT)
+
+
+def days_text(days):
+    """ "3 dni temu", "dziś", "za 1 dzień" - or "" for None."""
+    if days is None:
+        return ""
+    if days == 0:
+        return "dziś"
+    count = abs(days)
+    unit = "dzień" if count == 1 else "dni"
+    return f"{count} {unit} temu" if days < 0 else f"za {count} {unit}"
+
+
+def days_until(value, today=None):
+    """Whole days from today to a date or datetime - negative once past."""
+    if value is None:
+        return None
+    if hasattr(value, "tzinfo") and timezone.is_aware(value):
+        value = timezone.localtime(value)
+    if hasattr(value, "date"):
+        value = value.date()
+    return (value - (today or timezone.localdate())).days

@@ -5,9 +5,13 @@
 
 {% block content %}
 <a class="back-link" href="{% url 'clients:list' %}" title="Wróć: Klienci">&larr; Klienci</a>
-<div class="card">
+<div class="page-header">
+<div>
 <h1>{% if mode == "edit" %}Edytuj klienta{% else %}Dodaj klienta{% endif %}</h1>
-<p class="card-lead">Dane kontaktowe, na które wyślemy prośbę o dokumenty.</p>
+<p class="page-header__sub">Dane kontaktowe, na które wyślemy prośbę o dokumenty.</p>
+</div>
+</div>
+<div class="card">
 <form method="post" novalidate data-ajax-form>
 {% csrf_token %}
 {{ form.as_p }}

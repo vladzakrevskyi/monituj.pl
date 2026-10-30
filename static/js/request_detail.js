@@ -154,41 +154,31 @@
       else showToast(errorMessage(data), "error");
     });
   }
+})();
 
-  const remindButton = document.getElementById("send-reminder");
-  if (remindButton) {
-    remindButton.addEventListener("click", async () => {
-      const confirmed = await Modal.confirm({
-        title: "Wysłać przypomnienie?",
-        message: "Klient dostanie teraz email z przypomnieniem o brakujących dokumentach.",
-        confirmLabel: "Wyślij przypomnienie",
-      });
-      if (!confirmed) return;
-      const { ok, data } = await ButtonLoader.run(remindButton, () =>
-        apiFetch(`/api/requests/${remindButton.dataset.requestId}/remind/`, {
-          method: "POST",
-        })
-      );
-      if (!ok) {
-        showToast(errorMessage(data), "error");
-        return;
-      }
-      showToast("Przypomnienie wysłane.", "success");
-      const history = document.getElementById("reminders-history");
-      const emptyItem = history.querySelector("li");
-      if (emptyItem && emptyItem.textContent === "Brak wysłanych przypomnień.") {
-        emptyItem.remove();
-      }
-      const item = document.createElement("li");
-      const time = document.createElement("span");
-      time.className = "history-time";
-      time.textContent = new Date().toLocaleString("pl-PL");
-      const label = document.createElement("span");
-      label.textContent = "Ręczne";
-      item.append(time, label);
-      history.prepend(item);
-    });
+// The side column: a reminder sent from the header shows up in "Wysłane",
+// and "Wyślij link". Both also on a question's page, which has no table.
+(function () {
+  function errorMessage(data) {
+    return data && data.error ? data.error.message : "Wystąpił błąd.";
   }
+
+  document.addEventListener("reminder-sent", () => {
+    const history = document.getElementById("reminders-history");
+    if (!history) return;
+    const emptyItem = history.querySelector("li");
+    if (emptyItem && emptyItem.textContent === "Brak wysłanych przypomnień.") {
+      emptyItem.remove();
+    }
+    const item = document.createElement("li");
+    const time = document.createElement("span");
+    time.className = "history-time";
+    time.textContent = new Date().toLocaleString("pl-PL");
+    const label = document.createElement("span");
+    label.textContent = "Ręczne";
+    item.append(time, label);
+    history.prepend(item);
+  });
 
   const sendLinkForm = document.getElementById("send-link-form");
   if (sendLinkForm) {

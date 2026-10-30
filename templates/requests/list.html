@@ -12,18 +12,16 @@
 </div>
 <div class="page-header__actions">
 <a class="btn btn-secondary" href="{% url 'requests:templates' %}">Szablony</a>
-<a class="btn btn-secondary" href="{% url 'requests:question-create' %}">Zadaj pytanie</a>
 <a class="btn btn-primary" href="{% url 'requests:create' %}">Nowa prośba</a>
 </div>
 </div>
 
-<form method="get" class="filter-panel" role="search">
+<form method="get" class="filter-panel" role="search" data-live-search>
 <div class="search-bar">
 <div class="search-bar__field">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
 {{ filters.q }}
 </div>
-<button type="submit" class="btn btn-dark">Szukaj</button>
 <button type="button" class="btn btn-secondary" data-disclosure="#advanced-filters" aria-controls="advanced-filters" aria-expanded="{% if advanced_count %}true{% else %}false{% endif %}">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
 Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</span>{% endif %}
@@ -62,50 +60,36 @@ Filtry{% if advanced_count %}<span class="filter-count">{{ advanced_count }}</sp
 <th>Klient</th>
 <th>Termin</th>
 <th>Postęp</th>
-<th>Przypomnienia</th>
 <th>Status</th>
-<th class="cell-right">Akcje</th>
 </tr>
 </thead>
 <tbody>
 {% for schedule in planned %}
-<tr>
+<tr data-href="{% url 'requests:recurring-edit' schedule.id %}">
 {% if not team_member %}<td class="cell-check"></td>{% endif %}
 <td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'requests:recurring-edit' schedule.id %}">{{ schedule.next_name }}</a><span class="cell-sub"><span class="badge badge--neutral">Cykliczna</span> {{ schedule.when }}{% if schedule.active %} · pierwsza {{ schedule.next_run_on|date:"j.m" }}{% endif %}</span>{% if schedule.last_result.skipped %}<span class="cell-note">Nie wyszła {{ schedule.last_run_at|d }}: {{ schedule.last_result.skipped }}</span>{% endif %}</td>
 <td class="cell-muted" data-label="Klient">{{ schedule.clients_count }} {% if schedule.clients_count == 1 %}klient{% else %}klientów{% endif %}</td>
 <td class="cell-muted" data-label="Termin">{{ schedule.deadline_text|capfirst }}</td>
 <td class="cell-muted" data-label="Postęp">-</td>
-<td class="cell-muted" data-label="Przypomnienia">{% if schedule.reminders_enabled %}Włączone{% else %}Wyłączone{% endif %}</td>
 <td data-label="Status">{% if schedule.active %}<span class="badge badge--neutral">Zaplanowana</span>{% else %}<span class="badge badge--neutral">Wstrzymana</span>{% endif %}</td>
-<td class="cell-right cell-actions" data-label="Akcje">
-<div class="table-actions">
-<a class="btn btn-secondary btn-sm" href="{% url 'requests:recurring-edit' schedule.id %}" title="Harmonogram: {{ schedule.next_name }}">Harmonogram</a>
-</div>
-</td>
 </tr>
 {% endfor %}
 {% for request_obj in page_obj.object_list %}
-<tr>
+<tr data-href="{% url 'requests:detail' request_obj.id %}">
 {% if not team_member %}<td class="cell-check"><input type="checkbox" name="ids" value="{{ request_obj.id }}" form="bulk-form" data-select-row aria-label="Zaznacz: {{ request_obj.name }}"></td>{% endif %}
 <td class="cell-strong" data-label="Nazwa"><a class="link-plain" href="{% url 'requests:detail' request_obj.id %}">{{ request_obj.name }}</a>{% if request_obj.schedule %}<span class="cell-sub"><span class="badge badge--neutral">Cykliczna</span> <a href="{% url 'requests:recurring-edit' request_obj.schedule.id %}" title="Harmonogram: wyślij teraz, wstrzymaj, zmień">{{ request_obj.schedule.when }} · {% if request_obj.schedule.active %}następna {{ request_obj.schedule.next_run_on|date:"j.m" }}{% else %}wstrzymana{% endif %}</a></span>{% endif %}</td>
 <td data-label="Klient"><a class="link-plain" href="{% url 'clients:documents' request_obj.client.id %}">{{ request_obj.client.name }}</a></td>
-<td class="cell-muted" data-label="Termin">{% if request_obj.deadline %}{{ request_obj.deadline|dt }}{% else %}Bez terminu{% endif %}</td>
+<td class="cell-nowrap" data-label="Termin">{% if request_obj.deadline %}<span class="due{% if request_obj.status_code == 'po_terminie' %} due--late{% endif %}" title="{{ request_obj.deadline|dt }}">{{ request_obj.deadline|due|capfirst }}</span><span class="cell-sub">{{ request_obj.deadline|d }}</span>{% else %}<span class="text-muted">Bez terminu</span>{% endif %}</td>
 <td data-label="Postęp">
 <div class="progress-cell">
 <progress class="progress-bar" value="{{ request_obj.delivered_items }}" max="{{ request_obj.total_items|default:1 }}"></progress>
 <span>{{ request_obj.delivered_items }}/{{ request_obj.total_items }}</span>
 </div>
 </td>
-<td class="cell-muted" data-label="Przypomnienia">{% if request_obj.reminders_enabled %}Włączone{% else %}Wyłączone{% endif %}</td>
-<td data-label="Status"><span class="badge {{ request_obj.status_code|badge_class }}">{{ request_obj.status_label }}</span></td>
-<td class="cell-right cell-actions" data-label="Akcje">
-<div class="table-actions">
-<a class="btn btn-secondary btn-sm" href="{% url 'requests:detail' request_obj.id %}" title="Otwórz prośbę: {{ request_obj.name }}">Otwórz</a>
-</div>
-</td>
+<td data-label="Status"><span class="badge {{ request_obj.status_code|badge_class }}">{{ request_obj.status_label }}</span>{% if not request_obj.reminders_enabled and request_obj.status_code != 'kompletny' and request_obj.status_code != 'zamkniety' %}<span class="cell-sub">bez przypomnień</span>{% endif %}</td>
 </tr>
 {% empty %}
-{% if not planned %}<tr class="table-empty"><td colspan="{% if team_member %}7{% else %}8{% endif %}">{% if has_filters or filters.data.status %}Brak próśb pasujących do filtrów.{% else %}Brak próśb. Wyślij pierwszą - z gotowego szablonu zajmie to minutę.{% endif %}</td></tr>{% endif %}
+{% if not planned %}<tr class="table-empty"><td colspan="{% if team_member %}5{% else %}6{% endif %}">{% if has_filters or filters.data.status %}Żadna prośba nie pasuje. <a href="{% url 'requests:list' %}">Pokaż wszystkie</a>{% else %}Nie masz jeszcze próśb. <a href="{% url 'requests:create' %}">Wyślij pierwszą</a> - z gotowego szablonu zajmie to minutę.{% endif %}</td></tr>{% endif %}
 {% endfor %}
 </tbody>
 </table>

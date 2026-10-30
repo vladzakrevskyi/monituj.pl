@@ -6,11 +6,17 @@
 
 {% block content %}
 <div class="page-header">
-<div class="calendar-head">
-<h1>{{ month.title }}</h1>
-<a class="btn btn-secondary btn-icon" href="?m={{ month.previous }}" aria-label="Poprzedni miesiąc" title="Poprzedni miesiąc">‹</a>
-<a class="btn btn-secondary btn-icon" href="?m={{ month.next }}" aria-label="Następny miesiąc" title="Następny miesiąc">›</a>
+<div>
+<h1>Kalendarz</h1>
+<p class="page-header__sub">Terminy klientów, pytania, wysyłki próśb cyklicznych i Twoje przypomnienia.</p>
+</div>
+<div class="page-header__actions">
 {% if not month.is_current %}<a class="btn btn-secondary" href="{% url 'agenda:calendar' %}">Dziś</a>{% endif %}
+<nav class="ov-month" aria-label="Miesiąc">
+<a class="ov-month__arrow" href="?m={{ month.previous }}" aria-label="Poprzedni miesiąc" title="Poprzedni miesiąc">&lsaquo;</a>
+<span class="ov-month__label">{{ month.title }}</span>
+<a class="ov-month__arrow" href="?m={{ month.next }}" aria-label="Następny miesiąc" title="Następny miesiąc">&rsaquo;</a>
+</nav>
 </div>
 </div>
 
@@ -40,6 +46,21 @@
 </div>
 {% endfor %}
 </div>
+</div>
+
+{# Phones: no 7-column grid - just the days that have something on them. #}
+<div class="calendar-agenda">
+<ol class="calendar-agenda__list">
+{% for week in month.weeks %}{% for cell in week %}{% if cell.in_month and cell.events %}
+<li class="calendar-agenda__day{% if cell.today %} is-today{% endif %}">
+<span class="calendar-agenda__date">{{ cell.day|d }}{% if cell.today %} · dziś{% endif %}</span>
+{% for event in cell.events %}
+{% if event.url %}<a class="calendar-event calendar-event--{{ event.kind }}{% if event.done %} is-done{% endif %}" href="{{ event.url }}">{% else %}<span class="calendar-event calendar-event--{{ event.kind }}{% if event.done %} is-done{% endif %}">{% endif %}{{ event.label }}{% if event.client %}<span class="calendar-event__client">{{ event.client }}</span>{% endif %}{% if event.url %}</a>{% else %}</span>{% endif %}
+{% endfor %}
+</li>
+{% endif %}{% endfor %}{% endfor %}
+</ol>
+<p class="calendar-agenda__empty text-muted">W tym miesiącu nic nie jest zaplanowane.</p>
 </div>
 
 <aside class="calendar-side">

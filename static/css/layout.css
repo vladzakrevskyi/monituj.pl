@@ -470,6 +470,12 @@ body.nav-open {
   margin-bottom: var(--space-6);
 }
 
+/* The title and its line shrink first, so the buttons stay on the right. */
+.page-header > div:first-child {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
 .page-header h1 {
   margin: 0;
 }
@@ -963,7 +969,8 @@ body.nav-open {
   display: none;
 }
 
-.app-account summary:hover {
+.app-account summary:hover,
+.app-account.is-current summary {
   background: var(--color-black-soft);
 }
 
@@ -997,6 +1004,8 @@ body.nav-open {
   min-width: 0;
 }
 
+/* Pages sit in the middle of the space next to the menu; narrow ones (forms,
+   settings) are narrower but centred the same way. */
 .app-main .page {
   margin: 0 auto;
 }
@@ -1759,4 +1768,30 @@ html.cookie-locked body {
 .workspace__option:hover,
 .workspace__option.is-current {
   background: #2a2b31;
+}
+
+/* Phones: the header's buttons share one row, the "⋯" stays beside them. */
+@media (max-width: 560px) {
+  .page-header__actions {
+    width: 100%;
+    flex-wrap: nowrap;
+  }
+
+  .page-header__actions > .btn,
+  .page-header__actions > form {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .page-header__actions > form > .btn {
+    width: 100%;
+  }
+
+  .page-header__actions > .btn {
+    padding-inline: var(--space-3);
+  }
+
+  .page-header__actions > .menu {
+    flex: 0 0 auto;
+  }
 }

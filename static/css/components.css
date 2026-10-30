@@ -45,6 +45,12 @@
   color: var(--color-text-muted);
 }
 
+/* Your turn: delivered, waiting for your check. */
+.badge--action {
+  background: var(--color-black);
+  color: #fff;
+}
+
 /* The small line above headings, set like a line in a ledger: the label on
    the left, above a firm rule. Page and section heads also carry their
    position on the page on the right - "03/09" (static/js/ledger.js counts
@@ -201,11 +207,9 @@ main[data-poz-single] .eyebrow::after {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .stat-tile__label::before {
@@ -213,8 +217,21 @@ main[data-poz-single] .eyebrow::after {
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background: var(--color-primary);
+  background: var(--color-text-faint);
   flex-shrink: 0;
+}
+
+/* The dot says what kind of number it is, in the status colours. */
+.stat-tile--action .stat-tile__label::before {
+  background: var(--color-black);
+}
+
+.stat-tile--progress .stat-tile__label::before {
+  background: var(--color-primary);
+}
+
+.stat-tile--overdue .stat-tile__label::before {
+  background: var(--color-danger);
 }
 
 .stat-tile__value {
@@ -226,30 +243,81 @@ main[data-poz-single] .eyebrow::after {
   color: var(--color-text);
 }
 
-.stat-tile--dark {
-  background: var(--color-black);
-  border-color: var(--color-black);
+.stat-tile__hint {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  color: var(--color-text-muted);
 }
 
-.stat-tile--dark .stat-tile__value {
-  color: var(--color-primary);
+a.stat-tile {
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.stat-tile--dark .stat-tile__label {
-  color: #b4b5bd;
+a.stat-tile:hover {
+  border-color: var(--color-text);
+}
+
+a.stat-tile:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
   gap: var(--space-5);
   align-items: start;
 }
 
-.quick-actions {
+.dashboard-grid > .card + .card {
+  margin-top: 0;
+}
+
+/* "Do zrobienia" with nothing in it */
+.all-clear {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.all-clear__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.all-clear__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* A card title with a link on the right ("Wszystkie") */
+.card-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.card-title-row .card-title {
+  margin: 0;
+}
+
+.card-title-row__link {
+  font-size: 14px;
+  font-weight: 600;
 }
 
 /* Key/value meta grid (request detail) */
@@ -1464,13 +1532,13 @@ a.pagination__page:hover {
 }
 
 .count-link--alert {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
+  background: var(--color-primary-bg);
+  color: var(--color-primary-text);
 }
 
 .count-link--alert:hover {
-  background: var(--color-danger);
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 .progress-cell {
@@ -1713,8 +1781,8 @@ a.pagination__page:hover {
 }
 
 .legal-todo {
-  background: #fff3bf;
-  color: #7a4a00;
+  background: var(--color-primary-bg);
+  color: var(--color-primary-text);
   padding: 0 4px;
   border-radius: 3px;
   font-weight: 600;
@@ -2445,7 +2513,7 @@ a.pagination__page:hover {
   align-self: flex-start;
   border-radius: var(--radius-sm);
   background: var(--color-warning-bg);
-  color: #6b4a0a;
+  color: var(--color-primary-text);
   font-size: 14px;
 }
 
@@ -2502,7 +2570,7 @@ a.pagination__page:hover {
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: #6b4a0a;
+  color: var(--color-primary-text);
 }
 
 .private-note-card form {
@@ -2512,7 +2580,7 @@ a.pagination__page:hover {
 }
 
 .private-note-card textarea {
-  background: #fffdf5;
+  background: var(--color-bg-subtle);
 }
 
 .private-note-card .btn {
@@ -2659,15 +2727,19 @@ a.pagination__page:hover {
 
 /* --- The client's card (apps/clients/card.py) ---------------------------- */
 
+/* Client card: the history on the left, the side column on the right - as
+   on a request's page and in the calendar. On narrow screens the side
+   (open matters first) comes on top. */
 .client-card {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: var(--space-5);
-  align-items: flex-start;
+  align-items: start;
 }
 
 .client-card__side {
-  flex: 1 1 340px;
+  grid-column: 2;
+  grid-row: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -2679,9 +2751,22 @@ a.pagination__page:hover {
 }
 
 .client-card__history {
-  flex: 999 1 520px;
+  grid-column: 1;
+  grid-row: 1;
   min-width: 0;
   margin: 0;
+}
+
+@media (max-width: 1080px) {
+  .client-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .client-card__side,
+  .client-card__history {
+    grid-column: 1;
+    grid-row: auto;
+  }
 }
 
 .client-card__more {
@@ -2709,10 +2794,12 @@ a.pagination__page:hover {
 
 .open-item--late {
   background: var(--color-danger-bg);
+  border-left: 3px solid var(--color-danger);
 }
 
 .open-item--review {
-  background: var(--color-success-bg);
+  background: var(--color-bg-subtle);
+  border-left: 3px solid var(--color-black);
 }
 
 .open-item__kind {
@@ -2728,7 +2815,7 @@ a.pagination__page:hover {
 }
 
 .open-item--review .open-item__kind {
-  color: var(--color-success);
+  color: var(--color-text);
 }
 
 .open-item__title {
@@ -2752,7 +2839,7 @@ a.pagination__page:hover {
   padding: 1px 8px;
   border-radius: var(--radius-sm);
   background: var(--color-warning-bg);
-  color: #6b4a0a;
+  color: var(--color-primary-text);
   font-size: 13px;
 }
 
@@ -2776,9 +2863,9 @@ a.pagination__page:hover {
 .client-note--pinned {
   margin-bottom: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border: 1px solid #f0e2b0;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: #fffdf5;
+  background: var(--color-bg-subtle);
 }
 
 .client-note__meta {
@@ -2812,30 +2899,34 @@ a.pagination__page:hover {
   margin: 0;
 }
 
+/* Filters inside a card: the same underlined tabs as on the lists. */
 .chip-filter {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 0 var(--space-1);
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .chip-filter__item {
-  padding: 6px 12px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 999px;
-  color: var(--color-text);
+  margin-bottom: -1px;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-muted);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .chip-filter__item:hover {
-  border-color: var(--color-text-muted);
+  color: var(--color-text);
+  text-decoration: none;
 }
 
 .chip-filter__item.is-active {
-  border-color: var(--color-black);
-  background: var(--color-black);
-  color: #fff;
+  border-bottom-color: var(--color-primary);
+  color: var(--color-text);
 }
 
 .timeline-list {
@@ -2929,7 +3020,7 @@ a.pagination__page:hover {
 .calendar-dot--deadline { background: var(--color-primary); }
 .calendar-dot--question { background: #fdba74; }
 .calendar-dot--send { background: var(--color-black); }
-.calendar-dot--mine { background: #1d4ed8; }
+.calendar-dot--mine { background: var(--color-text-faint); }
 
 .calendar-layout {
   display: flex;
@@ -2939,13 +3030,13 @@ a.pagination__page:hover {
 }
 
 .calendar-scroll {
-  flex: 999 1 640px;
+  flex: 1 1 560px;
   min-width: 0;
   overflow-x: auto;
 }
 
 .calendar {
-  min-width: 640px;
+  min-width: 560px;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -3020,9 +3111,9 @@ a.pagination__page:hover {
 }
 
 .calendar-event--deadline { background: var(--color-primary); color: var(--color-on-primary); font-weight: 700; }
-.calendar-event--question { background: #ffedd5; color: #7c2d12; font-weight: 700; }
+.calendar-event--question { background: var(--color-primary-bg); color: var(--color-primary-text); font-weight: 700; }
 .calendar-event--send { background: var(--color-black); color: #fff; }
-.calendar-event--mine { background: #1d4ed8; color: #fff; }
+.calendar-event--mine { background: var(--color-bg-muted); color: var(--color-text); }
 
 .calendar-event.is-done {
   opacity: 0.55;
@@ -3040,7 +3131,7 @@ a.pagination__page:hover {
 }
 
 .calendar-side {
-  flex: 1 1 300px;
+  flex: 0 1 340px;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -3128,11 +3219,11 @@ a.pagination__page:hover {
 }
 
 .open-item--mine {
-  background: #e8f0fc;
+  background: var(--color-bg-muted);
 }
 
 .open-item--mine .open-item__kind {
-  color: #1d4ed8;
+  color: var(--color-text);
 }
 
 .open-item--mine .btn-link {
@@ -3152,8 +3243,12 @@ a.pagination__page:hover {
 }
 
 .reminder-form--compact input[type="date"] {
-  flex: 1 1 140px;
+  flex: 1 1 100%;
   width: auto;
+}
+
+.reminder-form--compact .btn {
+  flex: 0 0 auto;
 }
 
 /* "Jak to działa?" next to a page's subtitle: the help article, new tab */
@@ -3449,7 +3544,7 @@ summary.ov-row__main:hover,
 }
 
 .ov-pill--komplet { background: var(--color-success-bg); color: var(--color-success); }
-.ov-pill--do_sprawdzenia { background: var(--color-info-bg); color: var(--color-info); }
+.ov-pill--do_sprawdzenia { background: var(--color-black); color: #fff; }
 .ov-pill--czekamy { background: var(--color-warning-bg); color: var(--color-warning); }
 .ov-pill--po_terminie { background: var(--color-danger-bg); color: var(--color-danger); }
 .ov-pill--zamknieta { background: var(--color-bg-subtle); color: var(--color-text-muted); }
@@ -3492,7 +3587,7 @@ summary.ov-row__main:hover,
 
 .ov-dot--komplet { background: var(--color-success); }
 .ov-dot--do_sprawdzenia { background: var(--color-info); }
-.ov-dot--czekamy { background: #e8a33d; }
+.ov-dot--czekamy { background: var(--color-primary); }
 .ov-dot--po_terminie { background: var(--color-danger); }
 .ov-dot--zamknieta { background: var(--color-text-faint); }
 
@@ -3577,4 +3672,724 @@ summary.ov-row__main:hover,
     width: 100%;
     justify-content: space-between;
   }
+}
+
+/* Ustawienia: rows "what it is / how it is now / Zmień" - the form opens
+   in the row, and only an open form has an orange button. */
+.set-row + .set-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.set-row__head {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  min-height: 64px;
+  padding: var(--space-3) var(--space-5);
+}
+
+summary.set-row__head {
+  list-style: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+summary.set-row__head::-webkit-details-marker {
+  display: none;
+}
+
+summary.set-row__head:hover {
+  background: var(--color-bg-subtle);
+}
+
+summary.set-row__head:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.set-row__label {
+  font-weight: 600;
+}
+
+.set-row__value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.set-row__sub {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.set-row__sub[hidden] {
+  display: none;
+}
+
+/* Looks like a quiet button wherever it is: a summary's span, a link, the
+   "Opuść" button. */
+.set-row__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 136px;
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+a.set-row__action:hover,
+button.set-row__action:hover,
+summary:hover .set-row__action {
+  border-color: var(--color-text);
+  text-decoration: none;
+}
+
+.set-row[open] .set-row__action {
+  visibility: hidden;
+}
+
+.set-row[open] > summary.set-row__head {
+  background: var(--color-bg-subtle);
+}
+
+.set-row__body {
+  padding: var(--space-2) var(--space-5) var(--space-5);
+  background: var(--color-bg-subtle);
+}
+
+.set-row__body form > p,
+.set-row__body .field-row {
+  max-width: 520px;
+}
+
+.set-row__intro {
+  max-width: 560px;
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.set-row__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.set-row__aside {
+  margin-left: auto;
+}
+
+.set-danger-link,
+.set-danger-link.btn-link {
+  color: var(--color-danger);
+}
+
+.set-row__action.set-danger-link:hover,
+summary:hover .set-row__action.set-danger-link {
+  border-color: var(--color-danger);
+}
+
+.set-logo {
+  display: inline-flex;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+}
+
+.set-logo img {
+  display: block;
+  width: auto;
+  max-width: 180px;
+  height: auto;
+  max-height: 32px;
+}
+
+.set-dots {
+  letter-spacing: 2px;
+  color: var(--color-text-muted);
+}
+
+.set-row .logo-drop {
+  background: var(--color-bg);
+}
+
+/* A long checkbox label stays beside its box instead of wrapping under. */
+.set-row__body form p:has(> input[type="checkbox"]) {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+.set-row__body form p:has(> input[type="checkbox"]) > label {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.set-row__body form p:has(> input[type="checkbox"]):has(> .errorlist) {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 560px) {
+  .set-row__head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+    padding: var(--space-4);
+  }
+
+  .set-row__head > .set-row__action,
+  .set-row__head > form {
+    width: 100%;
+    margin-top: var(--space-2);
+  }
+
+  .set-row__head > form > .set-row__action {
+    width: 100%;
+  }
+
+  .set-row[open] .set-row__action {
+    display: none;
+  }
+
+  .set-row__body {
+    padding: var(--space-2) var(--space-4) var(--space-4);
+  }
+}
+
+/* "⋯" menu: what a page can do besides its main action - the rare and the
+   destructive, out of the way. */
+.menu {
+  position: relative;
+  display: inline-block;
+}
+
+.menu > summary {
+  list-style: none;
+}
+
+.menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.menu__toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.menu__list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  min-width: 240px;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-md);
+}
+
+.menu__list form {
+  margin: 0;
+}
+
+.menu__item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menu__item:hover,
+.menu__item:focus-visible {
+  background: var(--color-bg-subtle);
+  text-decoration: none;
+}
+
+.menu__item--danger {
+  color: var(--color-danger);
+}
+
+.menu__sep {
+  height: 1px;
+  margin: 6px 0;
+  background: var(--color-border);
+}
+
+/* A list row that opens on a click anywhere */
+tr[data-href],
+[data-href].list-row {
+  cursor: pointer;
+}
+
+tr[data-href]:hover > td {
+  background: var(--color-bg-subtle);
+}
+
+/* Request page: what to do (documents, the question, history) on the left,
+   the details on the right; one column on narrow screens. */
+.detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.detail-layout__main,
+.detail-layout__side {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.detail-layout .card + .card {
+  margin-top: 0;
+}
+
+.detail-layout__side .card {
+  padding: var(--space-5);
+}
+
+.detail-layout__side .card-title {
+  font-size: 16px;
+  margin-bottom: var(--space-3);
+}
+
+.meta-list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.docs-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+
+.docs-head__count {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+progress.docs-head__bar {
+  display: block;
+  width: 100%;
+  height: 4px;
+  border-radius: 0;
+}
+
+.detail-history > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.detail-history > summary::-webkit-details-marker {
+  display: none;
+}
+
+.detail-history__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.detail-history__head .card-title {
+  margin: 0;
+}
+
+.detail-history__count {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--color-bg-muted);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.detail-history__head::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 2px solid var(--color-text-muted);
+  border-bottom: 2px solid var(--color-text-muted);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.detail-history[open] .detail-history__head::after {
+  transform: rotate(-135deg);
+}
+
+.detail-history[open] .history-list {
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 1080px) {
+  .detail-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A deadline in a list: "za 4 dni", red once it's past and still open */
+.due {
+  font-weight: 500;
+}
+
+.due--late {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+/* Calendar on phones: a list of the days that have something on them */
+.calendar-agenda {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .calendar-scroll {
+    display: none;
+  }
+
+  .calendar-agenda {
+    display: block;
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+}
+
+.calendar-agenda__list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calendar-agenda__day {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+
+.calendar-agenda__day.is-today {
+  border-color: var(--color-primary);
+}
+
+.calendar-agenda__date {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.calendar-agenda__empty {
+  display: none;
+  margin: 0;
+}
+
+.calendar-agenda__list:not(:has(li)) {
+  display: none;
+}
+
+.calendar-agenda__list:not(:has(li)) + .calendar-agenda__empty {
+  display: block;
+}
+
+/* Laptops too narrow for both: the side column goes under the calendar. */
+@media (max-width: 1100px) {
+  .calendar-scroll,
+  .calendar-side {
+    flex: 1 1 100%;
+  }
+}
+
+/* Ustawienia as one page: a section is what it is (left) and its settings
+   (right); on narrow screens the description goes on top. */
+.set-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.set-nav a {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.set-nav a:hover {
+  border-color: var(--color-text);
+}
+
+.set-section {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: var(--space-6);
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--color-border);
+  scroll-margin-top: var(--space-5);
+}
+
+.set-section__about h2 {
+  margin: 0 0 var(--space-2);
+  font-size: 18px;
+}
+
+.set-section__about p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.set-section--danger .set-section__about h2 {
+  color: var(--color-danger);
+}
+
+.set-section__body {
+  min-width: 0;
+}
+
+.set-section__body > .card + .card {
+  margin-top: 0;
+}
+
+.set-list--danger {
+  border-color: color-mix(in srgb, var(--color-danger) 35%, transparent);
+}
+
+/* The profile: the form on the left, the client's view on the right */
+.set-profile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.set-form {
+  padding: var(--space-5) var(--space-5) var(--space-4);
+}
+
+.set-form > p {
+  max-width: 520px;
+}
+
+.set-form > p:last-of-type {
+  margin-bottom: 0;
+}
+
+.set-form + .set-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.set-form .set-row__buttons {
+  margin-top: var(--space-4);
+}
+
+.set-preview {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-muted);
+}
+
+.set-preview__label {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.set-preview__mail {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.set-preview__logo {
+  display: block;
+  width: auto;
+  max-width: 160px;
+  height: auto;
+  max-height: 36px;
+  margin-bottom: var(--space-3);
+}
+
+.set-preview__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-black);
+  color: #fff;
+  font-weight: 700;
+}
+
+.set-preview__name {
+  margin: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.set-preview__meta,
+.set-preview__firm {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.set-preview__firm[hidden] {
+  display: none;
+}
+
+.set-preview__text {
+  margin: var(--space-3) 0;
+  font-size: 14px;
+}
+
+.set-preview__button {
+  justify-self: start;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.set-preview__note {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+/* Plan and team: two tiles with the real numbers */
+.set-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.set-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: 150px;
+  padding: var(--space-5);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+.set-tile:hover {
+  border-color: var(--color-text);
+  text-decoration: none;
+}
+
+.set-tile__label {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.set-tile__value {
+  font-size: 20px;
+}
+
+.set-tile__sub {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.set-tile__go {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  color: var(--color-primary-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 1080px) {
+  .set-section {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .set-section__about p {
+    max-width: 560px;
+  }
+}
+
+@media (max-width: 860px) {
+  .set-profile {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .set-tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .set-tile {
+    min-height: 0;
+  }
+
+  .set-form {
+    padding: var(--space-4);
+  }
+}
+
+/* The logo's row sits in the narrower profile card: a shorter label. */
+@media (min-width: 561px) {
+  .set-row--logo .set-row__head {
+    grid-template-columns: 110px minmax(0, 1fr) auto;
+  }
+}
+
+/* Every button in Ustawienia is as wide as the rows' "Zmień". */
+.set-row__buttons > .btn {
+  min-width: 136px;
 }

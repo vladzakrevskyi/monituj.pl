@@ -69,7 +69,7 @@ td.cell-nowrap {
 }
 
 td.cell-strong {
-  width: 20%;
+  min-width: 180px;
   font-weight: 500;
 }
 
@@ -168,14 +168,66 @@ td.cell-right {
     width: auto;
   }
 
+  /* A compact card: the name on top, then "label  value" lines - the
+     label in a narrow column on the left, not a line of its own. */
+  tbody tr {
+    position: relative;
+  }
+
+  tbody td[data-label] {
+    position: relative;
+    min-height: 28px;
+    padding-left: 96px;
+  }
+
   tbody td[data-label]::before {
     content: attr(data-label);
-    display: block;
+    position: absolute;
+    top: 6px;
+    left: 0;
+    width: 88px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--color-text-faint);
+  }
+
+  tbody td.cell-strong,
+  tbody td.cell-strong[data-label] {
+    padding-left: 0;
+    padding-bottom: var(--space-2);
+    padding-right: 40px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  tbody td.cell-strong::before {
+    display: none;
+  }
+
+  /* The row's checkbox sits in its top-right corner. */
+  tbody td.cell-check {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-5);
+    padding: 0;
+  }
+
+  /* No buttons for this row - no empty "Akcje" line either. */
+  tbody td.cell-actions:not(:has(button, a, form)) {
+    display: none;
+  }
+
+  tbody td.cell-actions[data-label] {
+    padding-left: 0;
+  }
+
+  tbody td.cell-actions::before {
+    display: none;
   }
 
   td.cell-right {
