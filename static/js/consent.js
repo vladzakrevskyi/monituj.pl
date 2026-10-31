@@ -4,8 +4,9 @@
 // templates/base/_cookie_consent.html. Google Tag Manager is not even
 // downloaded until the visitor agrees to at least one optional category, and
 // every tag inside it checks the consent of its own category. Tools Monituj
-// loads itself (config.direct, e.g. Plerdy) are downloaded only once their
-// own category is accepted - the same rule, with no Consent Mode needed.
+// puts on the page itself (an inline snippet before </body>, e.g. Plerdy)
+// start through monitujConsent.when() - only once their own category is
+// accepted, the same rule, with no Consent Mode needed.
 (function () {
   const script = document.currentScript;
   const gtmId = script.dataset.gtmId;
@@ -118,32 +119,27 @@
     return domains;
   }
 
-  const direct = new Set(); // the direct tools already on this page
-
-  // At the end of <body>, before </body>. A returning visitor's choice is
-  // applied while <head> is still being read - then once the page is.
-  function appendToBody(tag) {
-    if (document.body) {
-      document.body.appendChild(tag);
-      return;
-    }
-    document.addEventListener("DOMContentLoaded", () => document.body.appendChild(tag));
-  }
-
-  function loadDirect(choices) {
+  // For the inline snippets of tools Monituj puts on the page itself:
+  // window.monitujConsent.when("analytics", start) runs start() now if that
+  // category is accepted, or the moment it is.
+  const waiting = [];
+  let started = false;
+  function startWaiting(choices) {
     if (!tagsAllowed) return;
-    (config.direct || []).forEach((tool) => {
-      if (!choices[tool.category] || direct.has(tool.key)) return;
-      direct.add(tool.key);
-      const tag = document.createElement("script");
-      tag.async = true;
-      tag.src = tool.src;
-      Object.entries(tool.data).forEach(([name, value]) => {
-        tag.dataset[name] = value;
-      });
-      appendToBody(tag);
-    });
+    for (let i = waiting.length - 1; i >= 0; i -= 1) {
+      const [category, start] = waiting[i];
+      if (!choices[category]) continue;
+      waiting.splice(i, 1);
+      started = true;
+      start();
+    }
   }
+  window.monitujConsent = {
+    when(category, start) {
+      waiting.push([category, start]);
+      if (current) startWaiting(current);
+    },
+  };
 
   function matches(name, pattern) {
     return pattern.endsWith("*") ? name.startsWith(pattern.slice(0, -1)) : name === pattern;
@@ -187,7 +183,7 @@
     });
     gtag("consent", "update", update);
     if (categories.some((key) => choices[key])) loadTagManager();
-    loadDirect(choices);
+    startWaiting(choices);
     // For GTM triggers on tools that don't read Consent Mode themselves.
     window.dataLayer.push({ event: "cookie_consent_update", cookie_consent: { ...choices } });
   }
@@ -232,7 +228,7 @@
       // Tags already running keep going until the page reloads, so taking
       // consent back reloads it - with the tools off from the first moment.
       const withdrawn =
-        (loaded || direct.size > 0) &&
+        (loaded || started) &&
         current &&
         categories.some((key) => current[key] && !choices[key]);
       current = choices;

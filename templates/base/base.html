@@ -70,5 +70,6 @@
 <script src="{% static 'js/modal.js' %}"></script>
 <script src="{% static 'js/panel.js' %}"></script>
 {% block extra_js %}{% endblock %}
-</body>
+{% if cookie_consent.enabled and seo.public %}{% for snippet in cookie_consent.inline_scripts %}<script{% for name, value in snippet.attrs.items %} {{ name }}="{{ value }}"{% endfor %}>{{ snippet.code|safe }}</script>
+{% endfor %}{% endif %}</body>
 </html>

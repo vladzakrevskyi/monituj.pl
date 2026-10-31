@@ -1,3 +1,5 @@
+import base64
+import hashlib
 import json
 import re
 
@@ -224,28 +226,46 @@ def plerdy(settings):
 
 
 @pytest.mark.django_db
-def test_plerdy_is_loaded_by_monituj_after_analytics_consent(tracking, plerdy):
+def test_plerdy_snippet_is_inline_before_body_end_and_waits_for_consent(
+    tracking, plerdy
+):
     tracking("ga4", "plerdy")
 
-    html = _text(_get("/"))
-    config = _config(html)
+    response = _get("/")
+    html = response.content.decode()
     policy = _text(_get(reverse("legal:cookies")))
+    snippet = re.search(r'<script data-plerdy_code="1">(.*?)</script>', html, re.S)
 
-    assert config["direct"] == [
-        {
-            "key": "plerdy",
-            "category": "analytics",
-            "src": "/static/js/plerdy.js",
-            "data": {"siteHash": "140ac26953c1cdc01e82fd4b4f0003a6", "suid": "82477"},
-        }
-    ]
-    # Withdrawing consent clears its local storage too.
-    assert "plerdy_*" in config["categories"]["analytics"]["storage"]
-    # No inline snippet anywhere - only the allowed host.
-    assert "a.plerdy.com" not in html
+    assert snippet, "the snippet is on the page"
+    code = snippet.group(1)
+    # Right before </body>, as Plerdy's instructions say.
+    after = html[html.index(snippet.group(0)) + len(snippet.group(0)) :]
+    assert after.lstrip().startswith("</body>")
+    assert '_site_hash_code="140ac26953c1cdc01e82fd4b4f0003a6"' in code
+    assert "_suid=82477" in code
+    # Started by consent.js only once analytics cookies are accepted.
+    assert code.startswith("(function(w,d){if(!w.monitujConsent)return;")
+    assert 'monitujConsent.when("analytics",' in code
+    # Allowed by its own hash - no 'unsafe-inline'.
+    digest = base64.b64encode(hashlib.sha256(code.encode()).digest()).decode()
+    csp = response["Content-Security-Policy"]
+    assert f"'sha256-{digest}'" in csp
+    assert "unsafe-inline" not in csp
     assert "https://a.plerdy.com" in cookies.csp_sources()["script-src"]
+    # Withdrawing consent clears its local storage too.
+    assert "plerdy_*" in _config(html)["categories"]["analytics"]["storage"]
     assert "plerdyVisitorId (pamięć przeglądarki)" in policy
     assert "przez Google Tag Manager lub bezpośrednio przez Serwis" in policy
+
+
+@pytest.mark.django_db
+def test_plerdy_snippet_stays_off_private_pages(client, user, tracking, plerdy):
+    tracking("plerdy")
+    client.force_login(user)
+
+    html = client.get(reverse("accounts:panel")).content.decode()
+
+    assert "data-plerdy_code" not in html
 
 
 def test_plerdy_works_without_gtm(settings, plerdy):
@@ -270,7 +290,7 @@ def test_plerdy_needs_its_ids(tracking, settings):
 
 def test_plerdy_ids_are_only_ids(tracking, plerdy, settings):
     tracking("plerdy")
-    settings.PLERDY_SUID = '1"><script>'
+    settings.PLERDY_SUID = "1;alert(1)"
 
     with pytest.raises(ImproperlyConfigured):
         cookies.consent()

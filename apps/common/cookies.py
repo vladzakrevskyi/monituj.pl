@@ -10,13 +10,15 @@ To add a tool that runs through Google Tag Manager:
 3. in GTM, open the tag -> Consent settings -> require the consent types of
    its category (CATEGORIES[...]["consent"]), unless it's a Google tag, which
    reads them on its own.
-A tool with "direct" is loaded by Monituj itself instead (static/js/consent.js
-loads its script only once its category is accepted) - for tools whose code
-is an inline snippet, which our Content-Security-Policy doesn't let GTM run.
-Its ids come from the settings named in "direct"; it works without GTM too.
+A tool with "direct" is put on the page by Monituj itself instead: its own
+inline snippet before </body> (inline_scripts), allowed by the CSP through
+its sha256 alone, and started by static/js/consent.js only once its category
+is accepted. Its ids come from the settings named in "direct"; it works
+without GTM too.
 Visitors are asked again whenever the list of active tools changes.
 """
 
+import base64
 import hashlib
 import re
 
@@ -103,8 +105,8 @@ GOOGLE_TRANSFER = "Google LLC (USA)"
 # Tools that can be switched on with TRACKING_SERVICES. For each:
 # - storage: (key pattern, purpose, lifetime) in the browser's local storage
 #   - shown with the cookies, and cleared too when consent is withdrawn;
-# - direct: {"script": static file, "settings": {data name: setting}} for a
-#   tool loaded by Monituj rather than GTM (see the module docstring);
+# - direct: {"snippet": inline code, "settings": {placeholder: setting}} for
+#   a tool put on the page by Monituj rather than GTM (module docstring);
 # - cookies: (name, purpose, lifetime); first_party=False marks cookies set
 #   on the provider's own domain - we can't delete those, only stop the tool;
 # - csp: sources the tool loads from, added to the Content-Security-Policy;
@@ -306,8 +308,30 @@ SERVICES["plerdy"] = {
         "connect-src": ["https://a.plerdy.com"],
     },
     "direct": {
-        "script": "js/plerdy.js",
-        "settings": {"siteHash": "PLERDY_SITE_HASH", "suid": "PLERDY_SUID"},
+        # Plerdy's install snippet, as Plerdy gives it - only started through
+        # monitujConsent.when() (static/js/consent.js) and placed in <body>.
+        "snippet": (
+            "(function(w,d){"
+            "if(!w.monitujConsent)return;"
+            'w.monitujConsent.when("analytics",function(){'
+            "if(w.__plerdyCode)return;"
+            "w.__plerdyCode=1;"
+            'w._protocol=w.location.protocol=="https:"?"https://":"http://";'
+            'w._site_hash_code="{site_hash}";'
+            "w._suid={suid};"
+            'var s=d.createElement("script");'
+            "s.async=true;"
+            's.referrerPolicy="strict-origin-when-cross-origin";'
+            's.src="https://a.plerdy.com/public/js/click/main.js?v="+Math.random();'
+            "d.body.appendChild(s);"
+            "});"
+            "})(window,document);"
+        ),
+        "attrs": {"data-plerdy_code": "1"},
+        "settings": {
+            "site_hash": ("PLERDY_SITE_HASH", r"[0-9a-f]{32}"),
+            "suid": ("PLERDY_SUID", r"[0-9]{1,12}"),
+        },
     },
 }
 
@@ -351,22 +375,45 @@ def active_service_keys():
     if not gtm_id():
         keys = [key for key in keys if "direct" in SERVICES[key]]
     for key in keys:
-        for name in SERVICES[key].get("direct", {}).get("settings", {}).values():
+        for name, _ in SERVICES[key].get("direct", {}).get("settings", {}).values():
             if not (getattr(settings, name, "") or "").strip():
                 raise ImproperlyConfigured(f"TRACKING_SERVICES has {key!r}: set {name}")
     return keys
 
 
 def direct_settings(key):
-    """The ids a direct tool's script gets, from the settings; only letters,
-    digits and dashes - they end up in its script."""
+    """The ids a direct tool's snippet gets, from the settings - each checked
+    against its pattern, since it ends up in a script."""
     values = {}
-    for data_name, setting in SERVICES[key]["direct"]["settings"].items():
+    for placeholder, (setting, pattern) in SERVICES[key]["direct"]["settings"].items():
         value = str(getattr(settings, setting, "")).strip()
-        if not re.fullmatch(r"[A-Za-z0-9-]{1,64}", value):
+        if not re.fullmatch(pattern, value):
             raise ImproperlyConfigured(f"{setting} {value!r} is not a valid id")
-        values[data_name] = value
+        values[placeholder] = value
     return values
+
+
+def inline_scripts():
+    """The direct tools' snippets for the end of <body>: the code, its
+    attributes and the CSP hash that lets exactly this code run."""
+    scripts = []
+    for key in active_service_keys():
+        direct = SERVICES[key].get("direct")
+        if not direct:
+            continue
+        code = direct["snippet"]
+        for placeholder, value in direct_settings(key).items():
+            code = code.replace("{" + placeholder + "}", value)
+        digest = base64.b64encode(hashlib.sha256(code.encode()).digest()).decode()
+        scripts.append(
+            {
+                "key": key,
+                "code": code,
+                "attrs": direct.get("attrs", {}),
+                "csp": f"'sha256-{digest}'",
+            }
+        )
+    return scripts
 
 
 def active_services():
@@ -391,7 +438,9 @@ def csp_sources():
         return {}
     extra = {}
     gtm = [GTM_CSP] if gtm_id() else []
-    for sources in [*gtm, *(SERVICES[key]["csp"] for key in keys)]:
+    # Each inline snippet runs because of its own hash - no 'unsafe-inline'.
+    snippets = [{"script-src": [s["csp"] for s in inline_scripts()]}]
+    for sources in [*gtm, *snippets, *(SERVICES[key]["csp"] for key in keys)]:
         for directive, values in sources.items():
             bucket = extra.setdefault(directive, [])
             bucket.extend(value for value in values if value not in bucket)
@@ -420,12 +469,6 @@ def loaded_by(services):
 
 def consent():
     """Everything the banner, the dialog and the policies need."""
-    from django.templatetags.static import static
-    from django.utils.functional import lazy
-
-    # Worked out only when the page's config block is written: the policies
-    # use this too, also in the worker, which has no static files manifest.
-    static_url = lazy(static, str)
     services = active_services()
     categories = []
     for key, category in CATEGORIES.items():
@@ -473,16 +516,7 @@ def consent():
                 }
                 for c in optional
             },
-            # Loaded by consent.js itself once their category is accepted.
-            "direct": [
-                {
-                    "key": s["key"],
-                    "category": s["category"],
-                    "src": static_url(s["direct"]["script"]),
-                    "data": direct_settings(s["key"]),
-                }
-                for s in services
-                if "direct" in s
-            ],
         },
+        # Put before </body> by templates/base/base.html (public pages only).
+        "inline_scripts": inline_scripts(),
     }
