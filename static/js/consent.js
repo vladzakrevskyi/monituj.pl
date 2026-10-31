@@ -119,6 +119,17 @@
   }
 
   const direct = new Set(); // the direct tools already on this page
+
+  // At the end of <body>, before </body>. A returning visitor's choice is
+  // applied while <head> is still being read - then once the page is.
+  function appendToBody(tag) {
+    if (document.body) {
+      document.body.appendChild(tag);
+      return;
+    }
+    document.addEventListener("DOMContentLoaded", () => document.body.appendChild(tag));
+  }
+
   function loadDirect(choices) {
     if (!tagsAllowed) return;
     (config.direct || []).forEach((tool) => {
@@ -130,7 +141,7 @@
       Object.entries(tool.data).forEach(([name, value]) => {
         tag.dataset[name] = value;
       });
-      document.head.appendChild(tag);
+      appendToBody(tag);
     });
   }
 

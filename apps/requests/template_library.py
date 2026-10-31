@@ -42,7 +42,7 @@ class ReadyTemplate:
 
     @property
     def heading(self):
-        return self.seo_title or f"Lista dokumentów: {self.title}"
+        return self.seo_title or self.title
 
     @property
     def item_names(self):
@@ -106,6 +106,7 @@ TEMPLATES = [
     ReadyTemplate(
         slug="zamkniecie-roku",
         segment="biura-rachunkowe",
+        seo_title="Lista dokumentów do zamknięcia roku",
         title="Zamknięcie roku",
         name="Dokumenty do zamknięcia roku",
         description=(
@@ -245,6 +246,7 @@ TEMPLATES = [
     ReadyTemplate(
         slug="umowa-zlecenia",
         segment="kadry",
+        seo_title="Lista dokumentów do umowy zlecenia",
         title="Umowa zlecenia",
         name="Dokumenty do umowy zlecenia",
         description=(
@@ -278,6 +280,7 @@ TEMPLATES = [
     ReadyTemplate(
         slug="zatrudnienie-cudzoziemca",
         segment="kadry",
+        seo_title="Lista dokumentów do zatrudnienia cudzoziemca",
         title="Zatrudnienie cudzoziemca",
         name="Dokumenty do zatrudnienia cudzoziemca",
         description=(
@@ -321,6 +324,7 @@ TEMPLATES = [
     ReadyTemplate(
         slug="nowy-klient-kancelarii",
         segment="kancelarie",
+        seo_title="Lista dokumentów od nowego klienta kancelarii",
         title="Nowy klient kancelarii",
         name="Dokumenty do sprawy",
         description=(
@@ -348,12 +352,14 @@ TEMPLATES = [
         deadline="7",
         summary=(
             "Dokumenty od nowego klienta kancelarii: umowa, pełnomocnictwo, "
-            "opłata skarbowa 17 zł i dokumenty sprawy."
+            "opłata skarbowa 17 zł i dokumenty sprawy - komplet przed pierwszym "
+            "spotkaniem."
         ),
     ),
     ReadyTemplate(
         slug="sprawa-spadkowa",
         segment="kancelarie",
+        seo_title="Lista dokumentów do sprawy spadkowej",
         title="Sprawa spadkowa",
         name="Dokumenty do sprawy spadkowej",
         description=(
@@ -392,6 +398,7 @@ TEMPLATES = [
     ReadyTemplate(
         slug="windykacja-naleznosci",
         segment="kancelarie",
+        seo_title="Lista dokumentów do windykacji należności",
         title="Windykacja należności",
         name="Dokumenty do windykacji",
         description=(
@@ -471,6 +478,7 @@ TEMPLATES = [
     ReadyTemplate(
         slug="leasing-dla-firmy",
         segment="posrednictwo",
+        seo_title="Lista dokumentów do leasingu dla firmy",
         title="Leasing dla firmy",
         name="Dokumenty do wniosku leasingowego",
         description=(

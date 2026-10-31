@@ -77,3 +77,17 @@
   if (window.ResizeObserver) new ResizeObserver(update).observe(nav);
   update();
 })();
+
+// The account menu at the bottom of the sidebar opens downwards; on a phone
+// that is below the screen - so the sidebar scrolls until it all shows.
+(function () {
+  var account = document.querySelector(".app-account");
+  if (!account) return;
+  account.addEventListener("toggle", function () {
+    if (!account.open) return;
+    var menu = account.querySelector(".app-account__menu");
+    if (!menu) return;
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    menu.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  });
+})();

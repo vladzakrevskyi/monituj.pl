@@ -75,8 +75,8 @@ def test_every_indexed_page_has_a_unique_title():
 @pytest.mark.parametrize(
     "path, name",
     [
-        ("/", "Automatyczne zbieranie dokumentów od klientów"),
-        ("/dla-kogo/kadry/", "Dokumenty do akt nowego pracownika"),
+        ("/", "Program do zbierania dokumentów od klientów"),
+        ("/dla-kogo/kadry/", "Dokumenty do akt osobowych nowego pracownika"),
         ("/logowanie/", "Zaloguj się"),
     ],
 )

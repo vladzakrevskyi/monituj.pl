@@ -58,11 +58,11 @@ def fit_description(text, filler=""):
 # breadcrumb label. Page names lead with what people search for.
 PAGES = {
     "landing": {
-        "name": "Automatyczne zbieranie dokumentów od klientów",
+        "name": "Program do zbierania dokumentów od klientów",
         "description": (
-            "Przestań gonić klientów o dokumenty. Monituj wysyła listę, sam "
-            "przypomina o brakach i pilnuje terminów. Klient przesyła pliki bez "
-            "konta. Za darmo."
+            "Program, który zbiera dokumenty od klientów za Ciebie: wysyła listę, "
+            "sam przypomina o brakach i pilnuje terminów. Klient przesyła pliki "
+            "bez konta."
         ),
         "og_image": "images/og/landing.png",
         "priority": "1.0",
@@ -80,11 +80,11 @@ PAGES = {
         "template": "pages/how_it_works.html",
     },
     "pages:features": {
-        "name": "Przypomnienia i statusy dokumentów klientów",
+        "name": "Automatyczne przypomnienia o dokumentach",
         "description": (
-            "Automatyczne przypomnienia o dokumentach, lista braków, pytania do "
-            "klientów, karta klienta i kalendarz terminów. Klient bez konta, "
-            "usuwanie plików wg RODO."
+            "Automatyczne przypomnienia o brakujących dokumentach, statusy, "
+            "pytania do klientów, karta klienta i kalendarz terminów. Klient "
+            "przesyła pliki bez konta."
         ),
         "og_image": "images/og/funkcje.png",
         "priority": "0.8",
@@ -92,11 +92,11 @@ PAGES = {
         "template": "pages/features.html",
     },
     "pages:for-whom": {
-        "name": "Dla biur rachunkowych, kadr i kancelarii",
+        "name": "Zbieranie dokumentów dla biur i kancelarii",
         "description": (
-            "Monituj dla biur rachunkowych, działów kadr, kancelarii, pośredników "
-            "kredytowych i firm B2B - wszędzie tam, gdzie praca czeka na "
-            "dokumenty od klientów."
+            "Program do zbierania dokumentów dla biur rachunkowych, działów kadr, "
+            "kancelarii i pośredników kredytowych - wszędzie, gdzie praca czeka "
+            "na klienta."
         ),
         "og_image": "images/og/dla-kogo.png",
         "priority": "0.8",
@@ -146,22 +146,22 @@ PAGES = {
         "modified": "2026-10-25",
     },
     "pages:templates": {
-        "name": "Szablony list dokumentów od klientów",
+        "name": "Gotowe listy dokumentów dla klientów",
         "description": (
-            "Gotowe listy dokumentów dla biur rachunkowych, kadr, kancelarii, "
-            "pośredników i firm B2B - aktualne dla Polski. Użyj ich w Monituj za "
-            "darmo."
+            "Gotowe listy dokumentów dla biura rachunkowego, kadr, kancelarii, "
+            "kredytu hipotecznego i sprzedaży mieszkania. Wyślij klientowi "
+            "jednym kliknięciem."
         ),
         "priority": "0.8",
         "label": "Szablony dokumentów",
         "template": "pages/templates_library.html",
     },
     "pages:security": {
-        "name": "Bezpieczne przesyłanie dokumentów i RODO",
+        "name": "Bezpieczne przesyłanie dokumentów od klientów",
         "description": (
-            "Unikalne linki, hasła, antywirus dla każdego pliku, szyfrowanie "
-            "AES-256 i automatyczne usuwanie plików po ustalonym czasie. Umowa "
-            "powierzenia w cenie."
+            "Bezpieczne przesyłanie dokumentów zgodnie z RODO: unikalne linki, "
+            "hasła, antywirus dla każdego pliku, szyfrowanie AES-256 i "
+            "automatyczne usuwanie plików."
         ),
         "og_image": "images/og/bezpieczenstwo.png",
         "priority": "0.7",
@@ -228,10 +228,11 @@ PAGES = {
         "template": "pages/faq.html",
     },
     "pages:demo": {
-        "name": "Demo Monituj bez rejestracji",
+        "name": "Demo programu do zbierania dokumentów",
         "description": (
-            "Własne konto demonstracyjne z przykładowymi klientami i prośbami o "
-            "dokumenty - gotowe w jedno kliknięcie, bez podawania adresu email."
+            "Wypróbuj program do zbierania dokumentów bez rejestracji: konto demo "
+            "z przykładowymi klientami i prośbami, gotowe w jedno kliknięcie, bez "
+            "adresu e-mail."
         ),
         "og_image": "images/og/demo.png",
         "priority": "0.7",

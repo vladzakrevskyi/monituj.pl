@@ -1,7 +1,8 @@
 // Plerdy (heat maps, session recordings) - what its install snippet does,
 // as a file: our Content-Security-Policy runs no inline scripts. Loaded only
-// by static/js/consent.js, once the visitor accepts analytics cookies; the
-// ids come from PLERDY_SITE_HASH and PLERDY_SUID (apps/common/cookies.py).
+// by static/js/consent.js, once the visitor accepts analytics cookies, at the
+// end of <body>; the ids come from PLERDY_SITE_HASH and PLERDY_SUID
+// (apps/common/cookies.py).
 (function (w, d) {
   if (w.__plerdyCode) return;
   const data = d.currentScript.dataset;
@@ -13,5 +14,5 @@
   tag.async = true;
   tag.referrerPolicy = "strict-origin-when-cross-origin";
   tag.src = `https://a.plerdy.com/public/js/click/main.js?v=${Math.random()}`;
-  d.head.appendChild(tag);
+  d.body.appendChild(tag);
 })(window, document);

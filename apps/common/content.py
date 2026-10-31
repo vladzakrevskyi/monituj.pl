@@ -560,11 +560,11 @@ SEGMENTS = [
 # what people there actually search for.
 SEGMENT_PAGES = {
     "biura-rachunkowe": {
-        "seo_name": "Dokumenty od klientów biura rachunkowego",
+        "seo_name": "Portal klienta dla biura rachunkowego",
         "seo_description": (
-            "Faktury i wyciągi od klientów przed terminem VAT i JPK, bez maili i "
-            "telefonów. Monituj przypomina o brakach, a pytania do klientów i "
-            "terminy masz w kalendarzu."
+            "Wyciągi, faktury spoza KSeF i raporty od klientów biura rachunkowego "
+            "przed terminem VAT i JPK. Lista co miesiąc, przypomnienia same, "
+            "klient bez konta."
         ),
         "h1": "Dokumenty od klientów biura rachunkowego - na czas, bez pogoni",
         "lead": (
@@ -641,7 +641,7 @@ SEGMENT_PAGES = {
         ],
     },
     "kadry": {
-        "seo_name": "Dokumenty do akt nowego pracownika",
+        "seo_name": "Dokumenty do akt osobowych nowego pracownika",
         "seo_description": (
             "Świadectwa pracy, badania, kwestionariusz osobowy - komplet do akt "
             "przed pierwszym dniem pracy. Monituj sam przypomina o brakach."
