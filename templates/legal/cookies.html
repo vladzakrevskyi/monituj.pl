@@ -8,7 +8,7 @@
 
 <h2>2. Jakich plików cookies używamy</h2>
 {% if cookie_consent.enabled %}
-<p>Serwis Monituj używa plików cookies niezbędnych do jego działania - na nie nie potrzebujemy zgody (art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. - Prawo komunikacji elektronicznej). Na stronach informacyjnych Serwisu, wyłącznie za Twoją zgodą, używamy też cookies {{ cookie_consent.optional_genitive }} dostawców zewnętrznych, wczytywanych przez Google Tag Manager. Zgodę wyrażasz osobno dla każdej kategorii. Tych cookies nie używamy w panelu ani na stronach z linkami do próśb.</p>
+<p>Serwis Monituj używa plików cookies niezbędnych do jego działania - na nie nie potrzebujemy zgody (art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. - Prawo komunikacji elektronicznej). Na stronach informacyjnych Serwisu, wyłącznie za Twoją zgodą, używamy też cookies {{ cookie_consent.optional_genitive }} dostawców zewnętrznych, wczytywanych {{ cookie_consent.loaded_by }}. Zgodę wyrażasz osobno dla każdej kategorii. Tych cookies nie używamy w panelu ani na stronach z linkami do próśb.</p>
 <h3>Cookies niezbędne</h3>
 {% else %}
 <p>Serwis Monituj używa wyłącznie plików cookies niezbędnych do jego działania. Nie stosujemy cookies analitycznych, reklamowych ani plików cookies podmiotów trzecich. Dlatego nie prosimy o zgodę - zgodnie z art. 399 ust. 3 ustawy z dnia 12 lipca 2024 r. - Prawo komunikacji elektronicznej zgoda nie jest wymagana dla cookies niezbędnych do świadczenia usługi.</p>

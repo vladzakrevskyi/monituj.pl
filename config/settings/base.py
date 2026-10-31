@@ -382,9 +382,13 @@ BILLING_VAT_RATE = env.int("BILLING_VAT_RATE", default=23)
 # See apps/common/analytics.py for where and when it loads.
 GTM_ID = env("GTM_ID", default="")
 # Tools loaded through GTM, keys from apps/common/cookies.py SERVICES:
-# ga4, google_ads, meta_pixel, clarity, linkedin. They decide the categories in
+# ga4, google_ads, meta_pixel, clarity, linkedin, plerdy. They decide the categories in
 # the cookie banner, the policies and the CSP. Ignored without GTM_ID.
 TRACKING_SERVICES = env.list("TRACKING_SERVICES", default=["ga4"])
+# Plerdy (key "plerdy"): loaded by Monituj itself, not GTM - the two ids from
+# its install snippet: _site_hash_code and _suid.
+PLERDY_SITE_HASH = env("PLERDY_SITE_HASH", default="")
+PLERDY_SUID = env("PLERDY_SUID", default="")
 
 # Search Console / Bing Webmaster Tools ownership tokens (optional).
 GOOGLE_SITE_VERIFICATION = env("GOOGLE_SITE_VERIFICATION", default="")

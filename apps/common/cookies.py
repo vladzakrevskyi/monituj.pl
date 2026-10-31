@@ -10,10 +10,15 @@ To add a tool that runs through Google Tag Manager:
 3. in GTM, open the tag -> Consent settings -> require the consent types of
    its category (CATEGORIES[...]["consent"]), unless it's a Google tag, which
    reads them on its own.
+A tool with "direct" is loaded by Monituj itself instead (static/js/consent.js
+loads its script only once its category is accepted) - for tools whose code
+is an inline snippet, which our Content-Security-Policy doesn't let GTM run.
+Its ids come from the settings named in "direct"; it works without GTM too.
 Visitors are asked again whenever the list of active tools changes.
 """
 
 import hashlib
+import re
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -96,6 +101,10 @@ GOOGLE = "Google Ireland Ltd."
 GOOGLE_TRANSFER = "Google LLC (USA)"
 
 # Tools that can be switched on with TRACKING_SERVICES. For each:
+# - storage: (key pattern, purpose, lifetime) in the browser's local storage
+#   - shown with the cookies, and cleared too when consent is withdrawn;
+# - direct: {"script": static file, "settings": {data name: setting}} for a
+#   tool loaded by Monituj rather than GTM (see the module docstring);
 # - cookies: (name, purpose, lifetime); first_party=False marks cookies set
 #   on the provider's own domain - we can't delete those, only stop the tool;
 # - csp: sources the tool loads from, added to the Content-Security-Policy;
@@ -259,6 +268,49 @@ SERVICES = {
     },
 }
 
+SERVICES["plerdy"] = {
+    "name": "Plerdy",
+    "provider": "Plerdy",
+    "category": "analytics",
+    "purpose": (
+        "Mapy kliknięć i przewijania oraz nagrania sesji - jak odwiedzający "
+        "korzystają ze strony"
+    ),
+    "data": (
+        "losowy identyfikator przeglądarki, kliknięcia, ruchy myszy i przewijanie, "
+        "odwiedzone strony, źródło wizyty (np. kampania), informacje o urządzeniu"
+    ),
+    # To confirm with Plerdy (and the lawyer): how long the data is kept,
+    # the company's legal name, and where the data is stored - if outside
+    # the EEA, add "transfer" so the privacy policy names it.
+    "retention": "zgodnie z ustawieniami konta Plerdy",
+    "policy_url": "https://www.plerdy.com/privacy-policy/",
+    # Plerdy keeps everything in local storage, no cookies (checked
+    # 31.10.2026 with its tracker: plerdyVisitorId and plerdy_* keys).
+    "cookies": [],
+    "storage": [
+        ("plerdyVisitorId", "Rozróżnianie odwiedzających w Plerdy", "Do usunięcia"),
+        (
+            "plerdy_*",
+            "Stan wizyty w Plerdy: źródło wizyty, znaczniki czasu",
+            "Do usunięcia",
+        ),
+        ("session_plerdy_*", "Łączenie odsłon w jedno nagranie sesji", "Do usunięcia"),
+        ("id_page*", "Identyfikator odsłony strony w Plerdy", "Do usunięcia"),
+        ("_site_hash_code*", "Identyfikator Serwisu w Plerdy", "Do usunięcia"),
+        ("_suid*", "Identyfikator konta Serwisu w Plerdy", "Do usunięcia"),
+    ],
+    "csp": {
+        "script-src": ["https://a.plerdy.com"],
+        "img-src": ["https://a.plerdy.com"],
+        "connect-src": ["https://a.plerdy.com"],
+    },
+    "direct": {
+        "script": "js/plerdy.js",
+        "settings": {"siteHash": "PLERDY_SITE_HASH", "suid": "PLERDY_SUID"},
+    },
+}
+
 # Google Tag Manager itself sets no cookies; it only loads the tools above.
 GTM_CSP = {"script-src": ["https://www.googletagmanager.com"]}
 
@@ -273,25 +325,57 @@ def _cookie(entry):
     }
 
 
+def _stored(entry):
+    """A local storage key, listed with the cookies."""
+    pattern, purpose, lifetime = entry
+    return {
+        "name": f"{pattern} (pamięć przeglądarki)",
+        "purpose": purpose,
+        "lifetime": lifetime,
+        # Not a cookie: cleared from local storage, not by name as a cookie.
+        "first_party": False,
+    }
+
+
 def active_service_keys():
+    """The tools that run: those in TRACKING_SERVICES - the ones loaded by GTM
+    only when there is a GTM container, the direct ones on their own."""
     from apps.common.analytics import gtm_id
 
-    if not gtm_id():
-        return []
     keys = list(getattr(settings, "TRACKING_SERVICES", []))
     unknown = [key for key in keys if key not in SERVICES]
     if unknown:
         raise ImproperlyConfigured(
             f"TRACKING_SERVICES: unknown {unknown}; known: {sorted(SERVICES)}"
         )
+    if not gtm_id():
+        keys = [key for key in keys if "direct" in SERVICES[key]]
+    for key in keys:
+        for name in SERVICES[key].get("direct", {}).get("settings", {}).values():
+            if not (getattr(settings, name, "") or "").strip():
+                raise ImproperlyConfigured(f"TRACKING_SERVICES has {key!r}: set {name}")
     return keys
+
+
+def direct_settings(key):
+    """The ids a direct tool's script gets, from the settings; only letters,
+    digits and dashes - they end up in its script."""
+    values = {}
+    for data_name, setting in SERVICES[key]["direct"]["settings"].items():
+        value = str(getattr(settings, setting, "")).strip()
+        if not re.fullmatch(r"[A-Za-z0-9-]{1,64}", value):
+            raise ImproperlyConfigured(f"{setting} {value!r} is not a valid id")
+        values[data_name] = value
+    return values
 
 
 def active_services():
     services = []
     for key in active_service_keys():
         service = dict(SERVICES[key], key=key)
-        service["cookies"] = [_cookie(entry) for entry in service["cookies"]]
+        service["cookies"] = [_cookie(entry) for entry in service["cookies"]] + [
+            _stored(entry) for entry in service.get("storage", [])
+        ]
         service["category_name"] = CATEGORIES[service["category"]]["name"]
         service["category_genitive"] = CATEGORIES[service["category"]]["genitive"]
         services.append(service)
@@ -300,11 +384,14 @@ def active_services():
 
 def csp_sources():
     """Extra Content-Security-Policy sources for GTM and the active tools."""
+    from apps.common.analytics import gtm_id
+
     keys = active_service_keys()
     if not keys:
         return {}
     extra = {}
-    for sources in [GTM_CSP, *(SERVICES[key]["csp"] for key in keys)]:
+    gtm = [GTM_CSP] if gtm_id() else []
+    for sources in [*gtm, *(SERVICES[key]["csp"] for key in keys)]:
         for directive, values in sources.items():
             bucket = extra.setdefault(directive, [])
             bucket.extend(value for value in values if value not in bucket)
@@ -322,8 +409,23 @@ def version(keys):
     return hashlib.sha256(",".join(sorted(keys)).encode()).hexdigest()[:10]
 
 
+def loaded_by(services):
+    """How the policies say the tools get onto the page."""
+    via_gtm = any("direct" not in s for s in services)
+    direct = any("direct" in s for s in services)
+    if via_gtm and direct:
+        return "przez Google Tag Manager lub bezpośrednio przez Serwis"
+    return "przez Google Tag Manager" if via_gtm else "bezpośrednio przez Serwis"
+
+
 def consent():
     """Everything the banner, the dialog and the policies need."""
+    from django.templatetags.static import static
+    from django.utils.functional import lazy
+
+    # Worked out only when the page's config block is written: the policies
+    # use this too, also in the worker, which has no static files manifest.
+    static_url = lazy(static, str)
     services = active_services()
     categories = []
     for key, category in CATEGORIES.items():
@@ -342,6 +444,8 @@ def consent():
         "necessary_cookies": [_cookie(entry) for entry in NECESSARY_COOKIES],
         "consent_cookie": _cookie(CONSENT_COOKIE),
         "transfers": [s for s in services if s.get("transfer")],
+        "via_gtm": any("direct" not in s for s in services),
+        "loaded_by": loaded_by(services),
         # For static/js/consent.js; category keys -> consent types and the
         # first-party cookies to delete when consent is withdrawn.
         "config": {
@@ -359,8 +463,26 @@ def consent():
                             if cookie["first_party"]
                         }
                     ),
+                    "storage": sorted(
+                        {
+                            entry[0]
+                            for s in c["services"]
+                            for entry in s.get("storage", [])
+                        }
+                    ),
                 }
                 for c in optional
             },
+            # Loaded by consent.js itself once their category is accepted.
+            "direct": [
+                {
+                    "key": s["key"],
+                    "category": s["category"],
+                    "src": static_url(s["direct"]["script"]),
+                    "data": direct_settings(s["key"]),
+                }
+                for s in services
+                if "direct" in s
+            ],
         },
     }

@@ -56,9 +56,11 @@ def test_every_service_is_fully_described(key):
     assert service["policy_url"].startswith("https://")
     for field in ("name", "provider", "purpose", "data", "retention"):
         assert service[field], field
-    assert service["cookies"]
+    assert service["cookies"] or service.get("storage")
     for entry in service["cookies"]:
         assert len(entry) in (3, 4), entry
+    for entry in service.get("storage", []):
+        assert len(entry) == 3, entry
     assert set(service["csp"]) <= DIRECTIVES
     for sources in service["csp"].values():
         assert all(source.startswith("https://") for source in sources)
@@ -180,6 +182,7 @@ def test_banner_shows_on_every_page_but_tags_stay_off_private_ones(tracking, pat
 @pytest.mark.django_db
 def test_policies_without_tools_say_only_necessary_cookies(settings):
     settings.GTM_ID = ""
+    settings.TRACKING_SERVICES = ["ga4"]
 
     cookie_policy = _text(_get(reverse("legal:cookies")))
     privacy = _text(_get(reverse("legal:privacy")))
@@ -212,3 +215,62 @@ def test_policies_stay_readable_before_deciding(tracking, name):
     assert "data-cookie-banner" in html
     assert "data-cookie-lock" not in html
     assert "data-cookie-overlay" not in html
+
+
+@pytest.fixture
+def plerdy(settings):
+    settings.PLERDY_SITE_HASH = "140ac26953c1cdc01e82fd4b4f0003a6"
+    settings.PLERDY_SUID = "82477"
+
+
+@pytest.mark.django_db
+def test_plerdy_is_loaded_by_monituj_after_analytics_consent(tracking, plerdy):
+    tracking("ga4", "plerdy")
+
+    html = _text(_get("/"))
+    config = _config(html)
+    policy = _text(_get(reverse("legal:cookies")))
+
+    assert config["direct"] == [
+        {
+            "key": "plerdy",
+            "category": "analytics",
+            "src": "/static/js/plerdy.js",
+            "data": {"siteHash": "140ac26953c1cdc01e82fd4b4f0003a6", "suid": "82477"},
+        }
+    ]
+    # Withdrawing consent clears its local storage too.
+    assert "plerdy_*" in config["categories"]["analytics"]["storage"]
+    # No inline snippet anywhere - only the allowed host.
+    assert "a.plerdy.com" not in html
+    assert "https://a.plerdy.com" in cookies.csp_sources()["script-src"]
+    assert "plerdyVisitorId (pamięć przeglądarki)" in policy
+    assert "przez Google Tag Manager lub bezpośrednio przez Serwis" in policy
+
+
+def test_plerdy_works_without_gtm(settings, plerdy):
+    settings.GTM_ID = ""
+    settings.TRACKING_SERVICES = ["ga4", "plerdy"]
+
+    consent = cookies.consent()
+
+    assert [s["key"] for s in consent["services"]] == ["plerdy"]
+    assert consent["via_gtm"] is False
+    assert consent["loaded_by"] == "bezpośrednio przez Serwis"
+    assert "https://www.googletagmanager.com" not in cookies.csp_sources()["script-src"]
+
+
+def test_plerdy_needs_its_ids(tracking, settings):
+    tracking("plerdy")
+    settings.PLERDY_SITE_HASH = ""
+
+    with pytest.raises(ImproperlyConfigured):
+        cookies.consent()
+
+
+def test_plerdy_ids_are_only_ids(tracking, plerdy, settings):
+    tracking("plerdy")
+    settings.PLERDY_SUID = '1"><script>'
+
+    with pytest.raises(ImproperlyConfigured):
+        cookies.consent()

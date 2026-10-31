@@ -59,6 +59,15 @@ def _no_antivirus(settings):
 
 
 @pytest.fixture(autouse=True)
+def _tracking_as_in_tests(settings):
+    """Google Analytics only, whatever the local .env switches on; tests of
+    other tools turn them on themselves (tests/test_cookie_consent.py)."""
+    settings.TRACKING_SERVICES = ["ga4"]
+    settings.PLERDY_SITE_HASH = ""
+    settings.PLERDY_SUID = ""
+
+
+@pytest.fixture(autouse=True)
 def _no_error_emails(settings):
     """Errors logged on purpose in tests don't email anyone (see
     tests/test_error_mail.py for the emails themselves)."""

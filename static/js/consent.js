@@ -3,7 +3,9 @@
 // #cookie-consent-config block; the banner and the dialog are rendered by
 // templates/base/_cookie_consent.html. Google Tag Manager is not even
 // downloaded until the visitor agrees to at least one optional category, and
-// every tag inside it checks the consent of its own category.
+// every tag inside it checks the consent of its own category. Tools Monituj
+// loads itself (config.direct, e.g. Plerdy) are downloaded only once their
+// own category is accepted - the same rule, with no Consent Mode needed.
 (function () {
   const script = document.currentScript;
   const gtmId = script.dataset.gtmId;
@@ -13,7 +15,7 @@
   // addresses must not reach any third party.
   const tagsAllowed = script.dataset.loadTags === "1";
   const configBlock = document.getElementById("cookie-consent-config");
-  if (!gtmId || !configBlock) return;
+  if (!configBlock) return;
   const config = JSON.parse(configBlock.textContent);
   const categories = Object.keys(config.categories);
   const MAX_AGE = 365 * 24 * 60 * 60 * 1000; // ask again after a year
@@ -96,7 +98,7 @@
 
   let loaded = false;
   function loadTagManager() {
-    if (loaded || !tagsAllowed) return;
+    if (loaded || !tagsAllowed || !gtmId) return;
     loaded = true;
     window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
     const tag = document.createElement("script");
@@ -116,6 +118,22 @@
     return domains;
   }
 
+  const direct = new Set(); // the direct tools already on this page
+  function loadDirect(choices) {
+    if (!tagsAllowed) return;
+    (config.direct || []).forEach((tool) => {
+      if (!choices[tool.category] || direct.has(tool.key)) return;
+      direct.add(tool.key);
+      const tag = document.createElement("script");
+      tag.async = true;
+      tag.src = tool.src;
+      Object.entries(tool.data).forEach(([name, value]) => {
+        tag.dataset[name] = value;
+      });
+      document.head.appendChild(tag);
+    });
+  }
+
   function matches(name, pattern) {
     return pattern.endsWith("*") ? name.startsWith(pattern.slice(0, -1)) : name === pattern;
   }
@@ -132,16 +150,33 @@
     });
   }
 
+  function deleteStorage(patterns) {
+    if (!patterns || !patterns.length) return;
+    try {
+      Object.keys(window.localStorage).forEach((key) => {
+        if (patterns.some((pattern) => matches(key, pattern))) {
+          window.localStorage.removeItem(key);
+        }
+      });
+    } catch {
+      // Storage blocked: nothing was kept there either.
+    }
+  }
+
   function apply(choices) {
     const update = {};
     categories.forEach((key) => {
       config.categories[key].consent.forEach((type) => {
         update[type] = choices[key] ? "granted" : "denied";
       });
-      if (!choices[key]) deleteCookies(config.categories[key].cookies);
+      if (!choices[key]) {
+        deleteCookies(config.categories[key].cookies);
+        deleteStorage(config.categories[key].storage);
+      }
     });
     gtag("consent", "update", update);
     if (categories.some((key) => choices[key])) loadTagManager();
+    loadDirect(choices);
     // For GTM triggers on tools that don't read Consent Mode themselves.
     window.dataLayer.push({ event: "cookie_consent_update", cookie_consent: { ...choices } });
   }
@@ -186,7 +221,9 @@
       // Tags already running keep going until the page reloads, so taking
       // consent back reloads it - with the tools off from the first moment.
       const withdrawn =
-        loaded && current && categories.some((key) => current[key] && !choices[key]);
+        (loaded || direct.size > 0) &&
+        current &&
+        categories.some((key) => current[key] && !choices[key]);
       current = choices;
       remember(choices);
       banner.hidden = true;
