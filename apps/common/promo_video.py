@@ -22,20 +22,20 @@ DESCRIPTION = (
     "wszystko o kliencie na jego karcie, a terminy w kalendarzu - razem z "
     "zespołem."
 )
-PUBLISHED = "2026-10-28"
-SECONDS = 254
+PUBLISHED = "2026-10-31"
+SECONDS = 255
 # (label, start in the wide cut, start in the tall cut), seconds.
 CHAPTERS = [
     ("Konto", 0, 0),
-    ("Klienci", 29.6, 31.3),
-    ("Prośba", 47.4, 48.9),
-    ("Klient", 88.1, 90.8),
-    ("Panel", 121.2, 124.2),
-    ("Zestawienie", 133.6, 136.7),
-    ("Pytanie", 142.5, 146.6),
-    ("Karta klienta", 185.2, 188.4),
-    ("Kalendarz", 202.2, 203.0),
-    ("Zespół", 226.9, 228.1),
+    ("Klienci", 29.0, 29.9),
+    ("Prośba", 46.8, 47.4),
+    ("Klient", 87.3, 88.8),
+    ("Panel", 120.4, 121.9),
+    ("Zestawienie", 138.2, 140.9),
+    ("Pytanie", 149.3, 152.1),
+    ("Karta klienta", 189.6, 193.1),
+    ("Kalendarz", 206.0, 207.7),
+    ("Zespół", 230.6, 231.4),
 ]
 
 
