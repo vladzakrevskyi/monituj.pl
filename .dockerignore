@@ -1,16 +1,47 @@
+# What the production image never needs. The server builds it from a Git
+# checkout (deploy/deploy.sh), so this mostly keeps out the repository's own
+# tooling; secrets and client files are listed too, for local builds.
+
+# Secrets and local configuration
 .env
 .env.*
 !.env.example
+
+# Client documents, generated and local data
+storage/*
+staticfiles
+backups
+celerybeat-schedule*
+*.log
+
+# Version control, editors, Python caches
 .git
+.github
 .venv
 venv
 .idea
+.vscode
 .claude
+.DS_Store
 __pycache__
 *.pyc
 .mypy_cache
 .pytest_cache
 .ruff_cache
-storage/*
-staticfiles
-backups
+.coverage
+htmlcov
+
+# Development only: tests, scanner reports, marketing notes, local scripts
+tests
+pytest.ini
+semgrep*
+bandit*
+marketing
+scripts
+
+# Server-side files, used from the checkout on the host, not from the image
+# (docker-compose mounts deploy/clamav/clamd.conf from the host).
+deploy
+docker-compose*.yml
+Dockerfile
+.dockerignore

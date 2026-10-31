@@ -39,6 +39,12 @@ dist/
 .coverage
 .coverage.*
 htmlcov/
+# Security scanner reports (semgrep, bandit, pip-audit) - run locally, not kept.
+semgrep*.txt
+semgrep*.json
+bandit*.txt
+bandit*.json
+pip-audit*.txt
 
 # --- Editors and operating systems -------------------------------------------
 # IDE settings are personal (and .idea/dataSources* can hold database logins).
