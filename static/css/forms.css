@@ -670,11 +670,13 @@ label > .password-field {
   border-radius: var(--radius-md);
 }
 
+/* The title, under it what is set now; the same chevron on the right as
+   everywhere that opens. */
 .more-settings summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-1) var(--space-3);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px var(--space-3);
   padding: var(--space-3) var(--space-4);
   cursor: pointer;
   list-style: none;
@@ -685,13 +687,26 @@ label > .password-field {
 }
 
 .more-settings summary::after {
-  content: "▾";
-  margin-left: auto;
-  color: var(--color-text-muted);
+  content: "";
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 8px;
+  height: 8px;
+  margin: 0 4px 4px 0;
+  border-right: 2px solid var(--color-text-muted);
+  border-bottom: 2px solid var(--color-text-muted);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
 }
 
 .more-settings[open] summary::after {
-  content: "▴";
+  margin: 4px 4px 0 0;
+  transform: rotate(-135deg);
+}
+
+.more-settings[open] summary {
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-4);
 }
 
 .more-settings__title {
@@ -699,6 +714,7 @@ label > .password-field {
 }
 
 .more-settings__summary {
+  grid-column: 1;
   font-size: 13px;
   color: var(--color-text-muted);
 }
@@ -708,8 +724,21 @@ label > .password-field {
 }
 
 .form-subtitle {
-  margin: var(--space-4) 0 0;
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: 15px;
   font-weight: 700;
+}
+
+/* Inside "Więcej ustawień": each part under a thin line. */
+.more-settings__body > .form-subtitle:not(:first-child),
+.more-settings__body > div > .form-subtitle:first-child {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.more-settings__body .field-row > p,
+.more-settings__body .field-row {
+  margin-bottom: var(--space-2);
 }
 
 .form-subtitle:first-child {

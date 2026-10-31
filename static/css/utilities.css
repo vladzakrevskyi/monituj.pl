@@ -118,6 +118,32 @@
     margin: 0;
   }
 
+  /* Half a row is narrow: less padding, so a label stays on one line. */
+  :is(.form-actions, .set-row__buttons, .first-step__actions) > .btn {
+    padding-inline: var(--space-3);
+  }
+
+  /* A form here is a box of its own (.inline-form is display: contents). */
+  :is(
+      .form-actions,
+      .set-row__buttons,
+      .template-row__actions,
+      .table-actions,
+      .first-step__actions,
+      .filter-panel__actions,
+      .stack-actions,
+      .security-hint__actions,
+      .recurring-status__actions,
+      .question-card__actions,
+      .plan-status__actions,
+      .ov-toolbar,
+      .billing-profile__actions,
+      .demo-bar__actions
+    )
+    > form {
+    display: block;
+  }
+
   :is(
       .form-actions,
       .set-row__buttons,
@@ -144,8 +170,19 @@
     flex: 0 0 auto;
   }
 
-  /* A lone button under a form or in a card: the whole row. */
-  :is(form, .card, .empty-state, .next-step, .first-step__body) > :is(.btn, a.btn):not(.btn-icon) {
+  /* A lone button closing a card or a small form: the whole row. Only the
+     places listed - a search box keeps its button beside the field. */
+  :is(
+      .card,
+      .empty-state,
+      .next-step,
+      .first-step__body,
+      .client-note-form,
+      .private-note-card form,
+      .reminder-form,
+      .daily-email-form
+    )
+    > :is(.btn, a.btn):not(.btn-icon) {
     width: 100%;
   }
 

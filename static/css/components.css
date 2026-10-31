@@ -2075,6 +2075,14 @@ a.pagination__page:hover {
   margin-top: var(--space-3);
 }
 
+/* The checkbox and its name on one line, what it does under the name. */
+.save-template__hint {
+  display: block;
+  margin: 2px 0 0 calc(20px + var(--space-3));
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
 .template-usage {
   font-size: 14px;
   font-weight: 400;

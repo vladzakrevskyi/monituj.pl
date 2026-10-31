@@ -388,14 +388,34 @@ body.nav-open {
     cursor: pointer;
   }
 
+  /* The same chevron as everywhere else that opens: down, up when open. */
   .site-footer--foldable .site-footer__toggle::after {
-    content: "+";
-    font-size: 18px;
-    font-weight: 400;
+    content: "";
+    width: 8px;
+    height: 8px;
+    margin: 0 4px 4px 0;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
   }
 
   .site-footer--foldable .is-open .site-footer__toggle::after {
-    content: "−";
+    margin: 4px 4px 0 0;
+    transform: rotate(-135deg);
+  }
+
+  /* Folded groups sit right under each other - no grid gap between them. */
+  .site-footer--foldable .site-footer__inner {
+    row-gap: 0;
+  }
+
+  .site-footer--foldable .site-footer__brand {
+    margin-bottom: var(--space-6);
+  }
+
+  .site-footer--foldable .site-footer__col:last-child {
+    border-bottom: 1px solid var(--color-black-line);
   }
 
   .site-footer--foldable .site-footer__links {
@@ -694,6 +714,9 @@ body.nav-open {
   position: sticky;
   top: 0;
   height: 100vh;
+  /* The visible height: on an iPhone 100vh reaches under Safari's bottom
+     bar, which hid the account menu's last line. */
+  height: 100dvh;
 }
 
 .app-sidebar .brand {
@@ -823,6 +846,7 @@ body.nav-open {
 .app-sidebar__footer {
   border-top: 1px solid var(--color-black-line);
   padding: var(--space-5);
+  padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
 }
 
 /* Plan usage above the account box: "Plan Free · 2 z 3 próśb w toku". */
@@ -1040,6 +1064,29 @@ body.nav-open {
 
   .app-sidebar.is-open {
     transform: translateX(0);
+  }
+
+  /* A short screen (a phone on its side, the account menu open): the whole
+     drawer scrolls rather than cutting its bottom off. */
+  .app-sidebar {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .app-sidebar > * {
+    flex-shrink: 0;
+  }
+
+  .app-nav-wrap {
+    flex: 1 0 auto;
+  }
+
+  .app-nav {
+    overflow: visible;
+  }
+
+  .app-nav__more {
+    display: none;
   }
 
   .app-topbar {
@@ -1770,28 +1817,39 @@ html.cookie-locked body {
   background: #2a2b31;
 }
 
-/* Phones: the header's buttons share one row, the "⋯" stays beside them. */
+/* Phones: the header's buttons share one row in equal columns, the "⋯"
+   keeps its own size beside them. */
 @media (max-width: 560px) {
   .page-header__actions {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     width: 100%;
-    flex-wrap: nowrap;
   }
 
-  .page-header__actions > .btn,
+  .page-header__actions:has(> .menu) {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .page-header__actions:has(> .menu):has(> :nth-child(3)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  }
+
+  .page-header__actions:has(> .menu):has(> :nth-child(4)) {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  }
+
+  /* .inline-form is display: contents - here it must be a box of its own,
+     or its button's width: 100% takes the whole row. */
   .page-header__actions > form {
-    flex: 1 1 0;
+    display: block;
     min-width: 0;
   }
 
-  .page-header__actions > form > .btn {
-    width: 100%;
-  }
-
+  .page-header__actions > form > .btn,
   .page-header__actions > .btn {
+    width: 100%;
+    min-width: 0;
     padding-inline: var(--space-3);
-  }
-
-  .page-header__actions > .menu {
-    flex: 0 0 auto;
   }
 }
