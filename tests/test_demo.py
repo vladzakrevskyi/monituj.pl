@@ -9,7 +9,13 @@ from django.utils import timezone
 from apps.accounts.models import User
 from apps.clients.models import Client
 from apps.demo.models import DemoAccount
-from apps.demo.services import DEMO_MAX_PER_IP, DemoService
+from apps.demo.services import (
+    BUSY_MESSAGE,
+    DEMO_MAX_PER_HOUR,
+    DEMO_MAX_PER_IP,
+    RESUME_COOKIE,
+    DemoService,
+)
 from apps.documents.models import Document
 from apps.documents.storage import private_storage, read_document_file
 from apps.notifications.models import EmailLog, EmailStatus
@@ -179,3 +185,62 @@ def test_demo_start_button_hidden_for_logged_in_real_user(client, user):
     client.force_login(user)
 
     assert reverse("demo:start") not in client.get("/").content.decode()
+
+
+@pytest.mark.django_db
+def test_coming_back_after_logging_out_resumes_the_same_demo(client):
+    _start(client)
+    demo = _demo_user()
+    assert client.cookies[RESUME_COOKIE]["httponly"]
+    client.post(reverse("accounts:logout"))
+
+    response = _start(client)
+
+    assert response.url == reverse("accounts:panel")
+    assert DemoAccount.objects.count() == 1
+    assert client.get(reverse("accounts:panel")).context["user"] == demo
+
+
+@pytest.mark.django_db
+def test_a_forged_or_finished_demo_cookie_starts_a_new_demo(client):
+    _start(client)
+    first = _demo_user()
+    client.post(reverse("accounts:logout"))
+    DemoAccount.objects.filter(user=first).update(
+        expires_at=timezone.now() - timedelta(minutes=1)
+    )
+
+    _start(client)
+    other = TestClient()
+    other.cookies[RESUME_COOKIE] = f"{first.pk}:forged"
+    other.post(reverse("demo:start"))
+
+    assert DemoAccount.objects.count() == 3
+
+
+@pytest.mark.django_db
+def test_too_many_demos_in_an_hour_ask_to_come_back_later(client, user):
+    # Rows only: whatever the addresses, the site makes at most so many.
+    for n in range(DEMO_MAX_PER_HOUR):
+        extra = User.objects.create_user(email=f"demo-{n}@demo.invalid")
+        DemoAccount.objects.create(
+            user=extra,
+            ip_hash=f"ip-{n}",
+            expires_at=timezone.now() + timedelta(hours=1),
+        )
+
+    response = _start(client)
+
+    assert response.url == reverse("pages:demo")
+    assert DemoAccount.objects.count() == DEMO_MAX_PER_HOUR
+    page = client.get(response.url).content.decode().replace("\u00a0", " ")
+    assert BUSY_MESSAGE.split(".")[0] in page
+
+
+@pytest.mark.django_db
+def test_ending_the_demo_forgets_the_resume_cookie(client):
+    _start(client)
+
+    response = client.post(reverse("demo:end"))
+
+    assert response.cookies[RESUME_COOKIE].value == ""

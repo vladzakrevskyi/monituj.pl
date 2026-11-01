@@ -145,8 +145,11 @@ def test_several_requests_are_one_row_with_the_most_urgent_state(user, three_cli
 def test_months_history_and_not_asked_this_month(user, three_clients):
     anna, bogdan, _ = three_clients
     old = _send(user, anna)
+    # The middle of last month, whatever today is (40 days back from the
+    # 1st is already the month before).
+    first_of_month = timezone.localtime().replace(day=1, hour=12)
     Request.objects.filter(pk=old.pk).update(
-        created_at=timezone.now() - timedelta(days=40)
+        created_at=first_of_month - timedelta(days=15)
     )
     _send(user, bogdan)
 

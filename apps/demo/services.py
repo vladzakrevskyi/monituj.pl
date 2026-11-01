@@ -4,6 +4,7 @@ from datetime import datetime, time, timedelta
 
 from django.contrib.auth import login
 from django.contrib.contenttypes.models import ContentType
+from django.core import signing
 from django.db import transaction
 from django.utils import timezone
 
@@ -21,11 +22,25 @@ from apps.requests.models import Request, RequestItem, RequestTemplate
 from apps.requests.models import RequestItemStatus as Status
 
 DEMO_LIFETIME = timedelta(hours=24)
-DEMO_MAX_PER_IP = 10
+# Each start creates a real account with clients, requests and files - the
+# limits are against scripts, not people: an office or a mobile network
+# shares one address, so 30 a day per address; and whatever the addresses,
+# no more than 300 new demos an hour for the whole site.
+DEMO_MAX_PER_IP = 30
+DEMO_MAX_PER_HOUR = 300
 LIMIT_MESSAGE = (
     "Z tego adresu uruchomiono dziś już kilka wersji demo. Załóż bezpłatne konto, "
     "aby dalej korzystać z Monituj."
 )
+BUSY_MESSAGE = (
+    "Wersja demo jest teraz bardzo oblegana. Spróbuj za kilka minut albo załóż "
+    "bezpłatne konto - zajmie to minutę."
+)
+# A visitor who comes back (logged out, signed in elsewhere in between) is
+# taken to the demo they already have, not a new one: its id, signed, in a
+# cookie that lives as long as the demo.
+RESUME_COOKIE = "monituj_demo"
+RESUME_SALT = "monituj.demo.resume"
 
 
 _ASCII = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
@@ -274,6 +289,35 @@ class _Seeder:
 
 class DemoService:
     @staticmethod
+    def resume(django_request):
+        """The visitor's own demo, still running, from the resume cookie -
+        logged in again; None without one."""
+        raw = django_request.COOKIES.get(RESUME_COOKIE)
+        if not raw:
+            return None
+        try:
+            user_id = signing.loads(raw, salt=RESUME_SALT)
+        except signing.BadSignature:
+            return None
+        demo = (
+            DemoAccount.objects.select_related("user")
+            .filter(user_id=user_id, expires_at__gt=timezone.now())
+            .first()
+        )
+        if demo is None:
+            return None
+        DemoService._log_in(django_request, demo.user)
+        return demo.user
+
+    @staticmethod
+    def resume_cookie(user):
+        """(value, expires) of the cookie that brings this visitor back."""
+        return (
+            signing.dumps(user.pk, salt=RESUME_SALT),
+            user.demo_account.expires_at,
+        )
+
+    @staticmethod
     def start(django_request):
         """Creates a fresh demo account for this visitor and logs them in."""
         now = timezone.now()
@@ -283,6 +327,11 @@ class DemoService:
         ).count()
         if recent >= DEMO_MAX_PER_IP:
             raise RateLimitedAppError(LIMIT_MESSAGE, code="DEMO_LIMIT_REACHED")
+        last_hour = DemoAccount.objects.filter(
+            created_at__gte=now - timedelta(hours=1)
+        ).count()
+        if last_hour >= DEMO_MAX_PER_HOUR:
+            raise RateLimitedAppError(BUSY_MESSAGE, code="DEMO_BUSY")
 
         with transaction.atomic():
             user = User.objects.create_user(
@@ -295,9 +344,13 @@ class DemoService:
             )
             _Seeder(user, now).seed()
 
+        DemoService._log_in(django_request, user)
+        return user
+
+    @staticmethod
+    def _log_in(django_request, user):
         login(django_request, user, backend="django.contrib.auth.backends.ModelBackend")
         django_request.session.set_expiry(user.demo_account.expires_at)
-        return user
 
     @staticmethod
     def showcase_request(user):

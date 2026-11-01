@@ -89,6 +89,12 @@ NECESSARY_COOKIES = [
         "zostały zapisane”)",
         "Do wyświetlenia komunikatu",
     ),
+    (
+        "monituj_demo",
+        "Tylko po uruchomieniu wersji demo: powrót do niej zamiast tworzenia "
+        "nowej (podpisany identyfikator konta demo, bez danych osobowych)",
+        "Do końca wersji demo, najwyżej 24 godziny",
+    ),
 ]
 
 CONSENT_STORAGE_KEY = "monituj-consent"
