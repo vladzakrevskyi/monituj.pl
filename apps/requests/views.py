@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import models, transaction
+from django.db.models import Prefetch
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -24,6 +25,7 @@ from apps.common.responses import (
     success_response,
 )
 from apps.documents import archive
+from apps.documents.models import Document, rejected_last
 from apps.documents.services import DocumentReviewService
 from apps.notifications import inbox
 from apps.reminders.schedule import recipient_zone, send_clock
@@ -415,7 +417,16 @@ def request_detail(request, request_id):
 
     # Whoever opens the request has seen what arrived.
     inbox.mark_read(request.account, request_obj)
-    items = request_obj.items.all().order_by("id")
+    items = (
+        request_obj.items.all()
+        .order_by("id")
+        .prefetch_related(
+            Prefetch(
+                "documents",
+                queryset=rejected_last(Document.objects.all(), "uploaded_at", "id"),
+            )
+        )
+    )
     reminders = request_obj.reminders.all().order_by("-sent_at")
     history = AuditService.history_for_request(request_obj)
     # With a team, who did it (apps/accounts/team.py).

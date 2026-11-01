@@ -12,7 +12,7 @@ from apps.common.exceptions import (
     PermissionDeniedAppError,
     ValidationAppError,
 )
-from apps.documents.models import Document, DocumentStatus
+from apps.documents.models import Document, DocumentStatus, rejected_last
 from apps.documents.storage import private_storage, save_document_file
 from apps.documents.validation import validate_upload
 from apps.notifications.inbox import (
@@ -598,8 +598,8 @@ class GuestDeleteService:
 class GuestUploadContext:
     @staticmethod
     def all_documents_by_item(request_obj):
-        docs = Document.objects.filter(request_item__request=request_obj).order_by(
-            "-uploaded_at"
+        docs = rejected_last(
+            Document.objects.filter(request_item__request=request_obj), "-uploaded_at"
         )
         result: dict[int, list[Document]] = {}
         for doc in docs:
@@ -610,9 +610,12 @@ class GuestUploadContext:
     def own_documents_by_item(request_obj, session_key):
         if not session_key:
             return {}
-        docs = Document.objects.filter(
-            request_item__request=request_obj, uploaded_by_session_key=session_key
-        ).order_by("-uploaded_at")
+        docs = rejected_last(
+            Document.objects.filter(
+                request_item__request=request_obj, uploaded_by_session_key=session_key
+            ),
+            "-uploaded_at",
+        )
         result: dict[int, list[Document]] = {}
         for doc in docs:
             result.setdefault(doc.request_item_id, []).append(doc)

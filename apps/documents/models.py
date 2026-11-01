@@ -44,3 +44,15 @@ class Document(TimeStampedModel):
     @property
     def is_anonymized(self) -> bool:
         return self.anonymized_at is not None
+
+
+def rejected_last(queryset, *ordering):
+    """Files of a document as people read them: the current ones first, the
+    ones sent back (rejected - an earlier, wrong version) after them."""
+    return queryset.annotate(
+        _rejected=models.Case(
+            models.When(status=DocumentStatus.REJECTED, then=models.Value(1)),
+            default=models.Value(0),
+            output_field=models.IntegerField(),
+        )
+    ).order_by("_rejected", *ordering)

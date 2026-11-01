@@ -408,3 +408,24 @@ td.cell-check {
     justify-self: end;
   }
 }
+
+/* A file the sender sent back - an earlier, wrong version: greyed and
+   crossed out, after the current ones (apps/documents/models.rejected_last). */
+.file-list .file-link--rejected a {
+  color: var(--color-text-faint);
+  text-decoration: line-through;
+}
+
+.file-list .file-link--rejected svg {
+  opacity: 0.6;
+}
+
+.file-status {
+  margin-left: var(--space-1);
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--color-neutral-bg);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}

@@ -1,12 +1,13 @@
 from django.core.paginator import Paginator
 from django.db import models
-from django.db.models import Count, Max, Q
+from django.db.models import Count, Max, Prefetch, Q
 
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from apps.clients.models import Client
 from apps.common import nip as nip_rules
 from apps.common.exceptions import NotFoundAppError, ValidationAppError
+from apps.documents.models import Document, rejected_last
 from apps.requests.models import RequestItem, RequestItemKind
 from apps.requests.services import (
     DELIVERED_STATUSES,
@@ -180,7 +181,12 @@ class ClientService:
             RequestItem.objects.filter(request__client=client)
             .exclude(kind=RequestItemKind.QUESTION)
             .select_related("request")
-            .prefetch_related("documents")
+            .prefetch_related(
+                Prefetch(
+                    "documents",
+                    queryset=rejected_last(Document.objects.all(), "uploaded_at", "id"),
+                )
+            )
             .order_by("-request__created_at", "id")
         )
         if status_filter == "brakujace":

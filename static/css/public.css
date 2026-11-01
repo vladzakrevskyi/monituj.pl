@@ -630,3 +630,13 @@
   font-size: 14px;
   color: var(--color-text-muted);
 }
+
+/* A file the sender sent back: greyed, after the current ones. */
+.uploaded-file--rejected .uploaded-file__link {
+  color: var(--color-text-faint);
+  text-decoration: line-through;
+}
+
+.uploaded-file--rejected .uploaded-file__date strong {
+  color: var(--color-danger);
+}

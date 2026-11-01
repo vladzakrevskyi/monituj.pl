@@ -7,8 +7,23 @@
     return data && data.error ? data.error.message : "Wystąpił błąd.";
   }
 
+  // The files waiting for this decision get it too: rejected ones are shown
+  // apart (greyed, "odrzucony"), so a new upload is never mixed up with them.
+  function markFiles(row, decision) {
+    row.querySelectorAll('[data-document-status="uploaded"]').forEach((file) => {
+      file.dataset.documentStatus = decision;
+      if (decision !== "rejected") return;
+      file.classList.add("file-link--rejected");
+      const label = document.createElement("span");
+      label.className = "file-status";
+      label.textContent = "odrzucony";
+      file.append(" ", label);
+    });
+  }
+
   function applyRowUpdate(row, item, rejectionReason) {
     row.dataset.status = item.status.code;
+    markFiles(row, rejectionReason ? "rejected" : "accepted");
     const label = row.querySelector(".item-status-label");
     label.textContent = item.status.label;
     label.className = `badge item-status-label ${statusBadgeClass(item.status.code)}`;

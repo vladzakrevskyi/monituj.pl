@@ -11,7 +11,7 @@ import zipfile
 from django.core.exceptions import ImproperlyConfigured
 
 from apps.documents.encryption import DecryptionError
-from apps.documents.models import Document
+from apps.documents.models import Document, DocumentStatus
 from apps.documents.storage import read_document_file
 
 logger = logging.getLogger("monituj")
@@ -19,6 +19,7 @@ logger = logging.getLogger("monituj")
 # Kept in memory up to this size, then spilled to disk.
 IN_MEMORY = 20 * 1024 * 1024
 UNREADABLE_NOTE = "NIE_UDALO_SIE_OTWORZYC.txt"
+REJECTED_FOLDER = "Odrzucone"
 
 
 def safe_name(value, fallback="plik"):
@@ -61,8 +62,11 @@ def build(request_obj):
                 logger.exception("Document %s could not be read", document.pk)
                 unreadable.append(document)
                 continue
+            # A file sent back is an earlier, wrong version - kept, apart.
+            rejected = document.status == DocumentStatus.REJECTED
             path = _unique(
                 f"{folder[document.request_item_id]}/"
+                f"{REJECTED_FOLDER + '/' if rejected else ''}"
                 f"{safe_name(document.original_filename)}",
                 used,
             )
