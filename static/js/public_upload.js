@@ -238,7 +238,9 @@
       if (!pages.length || sendButton.classList.contains("is-loading")) return;
       ButtonLoader.start(sendButton);
       const formData = new FormData();
-      for (const page of await Promise.all(pages.map(shrink))) {
+      // (file) => shrink(file): map() also passes the index, which shrink()
+      // would take for the page size - page 2 came out 1 pixel wide.
+      for (const page of await Promise.all(pages.map((file) => shrink(file)))) {
         formData.append("pages", page, page.name);
       }
       const count = pages.length;

@@ -50,11 +50,11 @@ def test_the_png_from_the_audit_is_refused_before_decoding():
 def test_a_jpeg_may_be_far_bigger_than_a_png(monkeypatch):
     monkeypatch.setattr(images, "MAX_PIXELS", 100)
 
-    pdf = pages.photos_to_pdf([_image("strona.jpg", "JPEG")], "Wyciąg")
+    pdf = pages.photos_to_pdf([_image("strona.jpg", "JPEG", (400, 200))], "Wyciąg")
     assert pdf.name == "Wyciąg (1 str.).pdf"
 
     with pytest.raises(ValidationAppError) as exc_info:
-        pages.photos_to_pdf([_image("strona.png", "PNG")], "Wyciąg")
+        pages.photos_to_pdf([_image("strona.png", "PNG", (400, 200))], "Wyciąg")
     assert exc_info.value.code == "IMAGE_TOO_LARGE"
 
 
@@ -77,7 +77,7 @@ def test_a_big_jpeg_page_is_shrunk_to_the_page_size(monkeypatch):
 def test_a_page_is_turned_the_way_it_was_taken():
     exif = Image.Exif()
     exif[0x0112] = 6  # taken with the phone turned: rotate 90 degrees
-    photo = _image("strona.jpg", "JPEG", (40, 20), exif=exif.tobytes())
+    photo = _image("strona.jpg", "JPEG", (400, 200), exif=exif.tobytes())
 
     pdf = pages.photos_to_pdf([photo], "Wyciąg")
 
@@ -137,3 +137,14 @@ def test_the_turn_is_given_back_after_an_error():
         cursor.execute("SELECT pg_try_advisory_lock(%s)", [images.LOCK_KEY])
         assert cursor.fetchone()[0]
         cursor.execute("SELECT pg_advisory_unlock(%s)", [images.LOCK_KEY])
+
+
+def test_a_page_too_small_to_read_is_refused_not_a_blank_page():
+    # A browser once sent pages 1 and 2 pixels wide - never again silently.
+    tiny = _image("strona.jpg", "JPEG", (2, 2))
+    fine = _image("strona.jpg", "JPEG", (400, 600))
+
+    with pytest.raises(ValidationAppError) as exc_info:
+        pages.photos_to_pdf([fine, tiny], "Wyciąg")
+
+    assert exc_info.value.code == "PAGE_TOO_SMALL"

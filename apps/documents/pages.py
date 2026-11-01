@@ -18,6 +18,8 @@ from apps.documents.validation import MAX_UPLOAD_SIZE, validate_upload
 MAX_PAGES = 15
 # A page's longer side, in pixels - an A4 at about 200 dpi, sharp to read.
 PAGE_LONG_SIDE = 2200
+# Below this no page can be read - refused, never a blank page in the PDF.
+PAGE_MIN_SIDE = 200
 PAGE_RESOLUTION = 200
 PHOTO_EXTENSIONS = {"jpg", "jpeg", "png", "heic", "heif"}
 
@@ -38,6 +40,12 @@ def _page(uploaded, request_obj=None):
     try:
         with Image.open(io.BytesIO(validated.content)) as image:
             images.check_size(image)
+            if max(image.size) < PAGE_MIN_SIDE:
+                raise ValidationAppError(
+                    "Jedno ze zdjęć jest za małe, żeby dało się je przeczytać. "
+                    "Zrób zdjęcie tej strony jeszcze raz.",
+                    code="PAGE_TOO_SMALL",
+                )
             if image.format == "JPEG":
                 # reducing_gap=1: decoded at 1/2-1/8 of each side, as close
                 # to the page size as JPEG allows (200 MP -> ~40 MB).
