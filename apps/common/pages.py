@@ -20,6 +20,7 @@ how_it_works = _page(
     "pages/how_it_works.html",
     lambda: {"max_upload_mb": MAX_UPLOAD_SIZE // (1024 * 1024)},
 )
+film = _page("pages/film.html")
 features = _page("pages/features.html")
 for_whom = _page("pages/for_whom.html")
 security = _page(

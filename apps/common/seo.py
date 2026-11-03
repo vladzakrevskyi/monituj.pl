@@ -79,6 +79,18 @@ PAGES = {
         "label": "Jak to działa",
         "template": "pages/how_it_works.html",
     },
+    "pages:film": {
+        "name": "Film o tym, jak działa Monituj",
+        "description": (
+            "Zobacz w kilka minut, jak Monituj zbiera dokumenty od klientów: od "
+            "założenia konta i pierwszej prośby po przypomnienia, pytania i "
+            "kalendarz terminów."
+        ),
+        "og_image": "images/og/jak-to-dziala.png",
+        "priority": "0.7",
+        "label": "Film",
+        "template": "pages/film.html",
+    },
     "pages:features": {
         "name": "Automatyczne przypomnienia o dokumentach",
         "description": (
@@ -583,7 +595,6 @@ def _page_jsonld(view_name, page, request):
                 website(),
                 software_application(),
                 faq_page([item for item in FAQ if item["home"]]),
-                promo_video.video_object(),
             )
         ]
     nodes = [breadcrumbs([(page["label"], request.path)])]
@@ -593,6 +604,6 @@ def _page_jsonld(view_name, page, request):
         nodes.append(faq_page(FAQ))
     if view_name == "pages:pricing":
         nodes.append(software_application())
-    if view_name == "pages:how-it-works":
+    if view_name == "pages:film":
         nodes.append(promo_video.video_object())
     return [graph(*nodes)]

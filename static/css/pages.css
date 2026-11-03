@@ -1949,6 +1949,38 @@ a.contact-card__value:hover {
   color: var(--color-on-primary);
 }
 
+.promo-video__page {
+  margin-top: var(--space-4);
+  text-align: center;
+}
+
+/* /film/: the film is what the page is for, so it starts high up; below it,
+   what each chapter shows, with a link to its second. */
+.page-hero--film {
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-5);
+}
+
+.page-hero--film .page-hero__lead {
+  margin-bottom: 0;
+}
+
+.film-steps {
+  margin-top: var(--space-6);
+}
+
+.film-steps .timeline__body h3 {
+  margin: 0 0 var(--space-2);
+  font-size: 18px;
+}
+
+.film-steps__time {
+  margin-left: var(--space-2);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 /* "Zobacz, jak to działa" in the hero: a card with a still from the film,
    as wide as the two buttons above it together. */
 .hero__actions--film {

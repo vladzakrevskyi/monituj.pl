@@ -1,0 +1,32 @@
+{% extends "pages/base_page.html" %}
+{% load static promo_video %}
+
+{% block hero_class %} page-hero--film{% endblock %}
+{% block hero_eyebrow %}Film{% endblock %}
+{% block hero_title %}Jak działa Monituj, <strong>w kilka minut</strong>{% endblock %}
+{% block hero_lead %}Od założenia konta po komplet dokumentów, pytania do klientów i kalendarz. Film trwa {% promo_video_clock %} i pokazuje, jak wygląda praca u Ciebie i u Twojego klienta.{% endblock %}
+
+{% block page_body %}
+<section class="section section--flush-top">
+<div class="container">
+{% promo_video deep_link=True %}
+</div>
+</section>
+
+<section class="section section--flush-top">
+<div class="container container--narrow">
+<h2 class="display-2">Co zobaczysz <strong>w filmie</strong></h2>
+<ol class="timeline film-steps">
+{% promo_video_chapters as steps %}{% for step in steps %}<li class="timeline__step">
+<span class="timeline__num">{{ step.number }}</span>
+<div class="timeline__body">
+<h3>{{ step.label }} <a class="film-steps__time" href="?t={{ step.second }}" data-film-chapter="{{ step.number }}" title="Odtwórz od {{ step.clock }}">{{ step.clock }}</a></h3>
+<p>{{ step.summary }}</p>
+</div>
+</li>
+{% endfor %}</ol>
+</div>
+</section>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/promo_video.js' %}"></script>{% endblock %}

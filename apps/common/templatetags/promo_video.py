@@ -7,17 +7,18 @@ register = template.Library()
 
 
 @register.inclusion_tag("pages/_promo_video.html")
-def promo_video(chapters=True):
+def promo_video(chapters=True, deep_link=False):
     """{% promo_video %} - the film with its chapter buttons;
-    chapters=False for the copy in the hero dialog."""
+    chapters=False for the copy in the hero dialog, deep_link=True on /film/,
+    where ?t=29 opens it at that second."""
     return {
         "film": film,
-        "chapters": [
-            {"number": number, "label": label, "wide": wide, "tall": tall}
-            for number, (label, wide, tall) in enumerate(film.CHAPTERS, start=1)
-        ]
-        if chapters
-        else [],
+        "wide": film.stable_url(film.WIDE),
+        "wide_poster": film.stable_url(film.WIDE_POSTER),
+        "tall": film.stable_url(film.TALL),
+        "tall_poster": film.stable_url(film.TALL_POSTER),
+        "deep_link": deep_link,
+        "chapters": film.chapters() if chapters else [],
     }
 
 
@@ -29,8 +30,12 @@ def promo_video_minutes():
 @register.simple_tag
 def promo_video_clock():
     """The length as a player shows it: 2:10."""
-    minutes, seconds = divmod(film.SECONDS, 60)
-    return f"{minutes}:{seconds:02d}"
+    return film.clock(film.SECONDS)
+
+
+@register.simple_tag
+def promo_video_chapters():
+    return film.chapters()
 
 
 @register.simple_tag

@@ -14,7 +14,7 @@ from django.urls import reverse
 from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET
 
-from apps.common import seo
+from apps.common import promo_video, seo
 from apps.common.content import FAQ, SEGMENTS
 from apps.common.middleware import PRIVATE_PREFIXES
 from apps.common.site import absolute_url
@@ -52,6 +52,9 @@ def sitemap_entries():
                 "loc": absolute_url(reverse(view_name)),
                 "lastmod": _modified(TEMPLATES_DIR / page["template"], CONTENT_FILE),
                 "priority": page["priority"],
+                "video": promo_video.sitemap_video()
+                if view_name == "pages:film"
+                else None,
             }
         )
     segment_modified = _modified(TEMPLATES_DIR / "pages/segment.html", CONTENT_FILE)

@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
 {% for entry in entries %}<url>
 <loc>{{ entry.loc }}</loc>{% if entry.lastmod %}
 <lastmod>{{ entry.lastmod }}</lastmod>{% endif %}
-<priority>{{ entry.priority }}</priority>
+<priority>{{ entry.priority }}</priority>{% if entry.video %}
+<video:video>
+<video:thumbnail_loc>{{ entry.video.thumbnail }}</video:thumbnail_loc>
+<video:title>{{ entry.video.title }}</video:title>
+<video:description>{{ entry.video.description }}</video:description>
+<video:content_loc>{{ entry.video.content }}</video:content_loc>
+<video:duration>{{ entry.video.duration }}</video:duration>
+<video:publication_date>{{ entry.video.published }}</video:publication_date>
+</video:video>{% endif %}
 </url>
 {% endfor %}</urlset>

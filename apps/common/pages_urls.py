@@ -7,6 +7,7 @@ app_name = "pages"
 
 urlpatterns = [
     path("jak-to-dziala/", pages.how_it_works, name="how-it-works"),
+    path("film/", pages.film, name="film"),
     path("funkcje/", pages.features, name="features"),
     path("dla-kogo/", pages.for_whom, name="for-whom"),
     path("dla-kogo/<slug:slug>/", pages.segment, name="segment"),

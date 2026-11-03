@@ -5,7 +5,7 @@
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages.css' %}">{% endblock %}
 
 {% block content %}
-<section class="page-hero">
+<section class="page-hero{% block hero_class %}{% endblock %}">
 <div class="container">
 {% block breadcrumbs %}{% endblock %}
 <p class="eyebrow">{% block hero_eyebrow %}{% endblock %}</p>
