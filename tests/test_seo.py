@@ -114,6 +114,19 @@ def test_landing_describes_the_organization_and_the_product(client):
 
 
 @pytest.mark.django_db
+def test_organization_links_to_its_social_profiles(client):
+    blocks = _jsonld(_head(client.get("/")))
+    organization = next(
+        n for b in blocks for n in b["@graph"] if n["@type"] == "Organization"
+    )
+
+    assert organization["sameAs"] == [
+        "https://www.facebook.com/monitujpl/",
+        "https://www.instagram.com/monitujpl/",
+    ]
+
+
+@pytest.mark.django_db
 def test_faq_page_marks_up_every_question(client):
     from apps.common.content import FAQ
 

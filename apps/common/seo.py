@@ -406,6 +406,12 @@ def for_request(request):
 # --- schema.org -----------------------------------------------------------
 
 
+SOCIAL_PROFILES = [
+    "https://www.facebook.com/monitujpl/",
+    "https://www.instagram.com/monitujpl/",
+]
+
+
 def organization():
     return {
         "@type": "Organization",
@@ -420,6 +426,7 @@ def organization():
             "email": settings.CONTACT_EMAIL,
             "availableLanguage": ["pl"],
         },
+        "sameAs": SOCIAL_PROFILES,
     }
 
 

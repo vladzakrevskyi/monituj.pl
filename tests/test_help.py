@@ -2,10 +2,12 @@
 finds the answer to questions typed the way people type them."""
 
 import re
+from html import unescape
 
 import pytest
 from django.urls import reverse
 
+from apps.common.seo import DESCRIPTION_MAX, DESCRIPTION_MIN
 from apps.help import articles
 from apps.help.search import normalize, search
 from apps.requests.services import RequestService
@@ -42,6 +44,19 @@ def test_every_page_opens(client):
     for article in articles.ARTICLES:
         response = client.get(reverse("help:article", args=[article.slug]))
         assert response.status_code == 200, article.slug
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("category", articles.CATEGORIES, ids=lambda c: c.slug)
+def test_category_page_has_a_plain_heading_and_a_full_description(client, category):
+    html = client.get(reverse("help:category", args=[category.slug])).content.decode()
+    # The site's typography glues short words to the next one.
+    headings = re.findall(r"<h1[^>]*>(.*?)</h1>", html.replace("\xa0", " "), re.S)
+
+    assert headings == [category.title]
+    description = re.search(r'<meta name="description" content="([^"]*)"', html)
+    length = len(unescape(description.group(1)))
+    assert DESCRIPTION_MIN <= length <= DESCRIPTION_MAX
 
 
 @pytest.mark.django_db

@@ -12,6 +12,10 @@ LIVE_RESULTS = 5
 
 # Added to descriptions too short to fill a search result.
 HELP_FILLER = "Instrukcja krok po kroku w Centrum pomocy Monituj."
+# Category descriptions are one short line, so they need a longer sentence.
+CATEGORY_FILLER = (
+    "Instrukcje krok po kroku i odpowiedzi na częste pytania w Centrum pomocy Monituj."
+)
 
 
 def _crumbs(*trail):
@@ -52,7 +56,7 @@ def category(request, slug):
             "seo": seo.build(
                 request,
                 f"{current.title} w Centrum pomocy",
-                seo.fit_description(current.description, HELP_FILLER),
+                seo.fit_description(current.description, CATEGORY_FILLER),
                 jsonld=[seo.graph(_crumbs((current.title, request.path)))],
             ),
         },
