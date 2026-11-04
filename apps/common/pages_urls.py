@@ -1,11 +1,17 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
 from apps.common import pages
 from apps.contact.views import contact
 
 app_name = "pages"
 
+# Short address for the Instagram profile: Instagram shows the link in full,
+# so the campaign tags live here. Temporary, so the target can still change.
+INSTAGRAM_BIO_TARGET = "/?utm_source=instagram&utm_medium=social&utm_campaign=bio"
+
 urlpatterns = [
+    path("ig/", RedirectView.as_view(url=INSTAGRAM_BIO_TARGET), name="instagram-bio"),
     path("jak-to-dziala/", pages.how_it_works, name="how-it-works"),
     path("film/", pages.film, name="film"),
     path("funkcje/", pages.features, name="features"),

@@ -289,3 +289,22 @@ def test_404_page_looks_like_the_site_and_is_never_indexed(client):
     assert _meta(_head(response), "name", "robots") == "noindex, nofollow"
     # The typed address is shown back, but only as text.
     assert "<script>alert(1)</script>" not in html
+
+
+@pytest.mark.parametrize("path", ["/ig/", "/ig"])
+def test_instagram_short_address_leads_to_the_tagged_home_page(client, path):
+    response = client.get(path, follow=True)
+
+    assert response.status_code == 200
+    assert response.redirect_chain[-1] == (
+        "/?utm_source=instagram&utm_medium=social&utm_campaign=bio",
+        302,
+    )
+    # The tags must not create a second address of the home page.
+    canonical = re.search(r'rel="canonical" href="([^"]*)"', _head(response))
+    assert canonical.group(1).endswith("/")
+    assert "utm_" not in canonical.group(1)
+
+
+def test_instagram_short_address_stays_out_of_the_sitemap(client):
+    assert "/ig/" not in client.get("/sitemap.xml").content.decode()
