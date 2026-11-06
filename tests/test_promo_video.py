@@ -103,7 +103,7 @@ def test_film_page_opens_on_the_film_and_describes_each_chapter(client):
     assert page.count("data-deep-link") == 1
     assert page.index("data-promo-video") < page.index("Co zobaczysz")
     assert page.count("data-film-chapter") == len(film.CHAPTERS)
-    assert 'href="?t=29"' in page
+    assert f'href="?t={int(film.CHAPTERS[1][1])}"' in page
     assert "js/promo_video.js" in page
 
 
@@ -112,7 +112,8 @@ def test_clips_mark_every_chapter_up_to_the_end_of_the_film(client):
     clips = _videos(client, "/film/")[0]["hasPart"]
 
     assert [clip["name"] for clip in clips] == [c[0] for c in film.CHAPTERS]
-    assert clips[1]["url"] == "http://localhost:8000/film/?t=29"
+    second = int(film.CHAPTERS[1][1])
+    assert clips[1]["url"] == f"http://localhost:8000/film/?t={second}"
     assert clips[-1]["endOffset"] == film.SECONDS
     starts = [clip["startOffset"] for clip in clips]
     assert len(starts) == len(set(starts))

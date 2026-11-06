@@ -27,7 +27,7 @@ DESCRIPTION = (
 # When the film first went out. Stays as it is when the film is re-cut: Google
 # asks for the first publication, with the time zone.
 PUBLISHED = "2026-10-06T12:53:00+02:00"
-SECONDS = 255
+SECONDS = 243
 # (label, start in the wide cut, start in the tall cut, what it shows), seconds.
 CHAPTERS = [
     (
@@ -39,64 +39,64 @@ CHAPTERS = [
     ),
     (
         "Klienci",
-        29.0,
-        29.9,
+        28.2,
+        28.9,
         "Dodajesz klienta ręcznie - nazwa i e-mail wystarczą. Masz ich więcej? "
         "Importujesz wszystkich z Excela albo programu księgowego.",
     ),
     (
         "Prośba",
-        46.8,
-        47.4,
+        45.2,
+        46.1,
         "Zaczynasz od gotowego szablonu, dopisujesz brakujące dokumenty, wybierasz "
         "klientów i termin. Każdy klient dostaje mail z własnym linkiem.",
     ),
     (
         "Klient",
-        87.3,
-        88.8,
+        85.3,
+        87.7,
         "Klient przesyła pliki bez zakładania konta. Kilka zdjęć stron łączymy w "
         "jeden PDF, a dokument spoza listy klient dodaje sam, z opisem.",
     ),
     (
         "Panel",
-        120.4,
-        121.9,
+        118.1,
+        121.7,
         "W panelu widzisz, co czeka na Ciebie i co jest po terminie. Akceptujesz "
         "dokumenty jednym kliknięciem, a o brakach przypominamy klientowi sami.",
     ),
     (
         "Zestawienie",
-        138.2,
-        140.9,
+        130.1,
+        133.8,
         "Zestawienie pokazuje, kto ma komplet, a komu czegoś brakuje. Jednym "
         "kliknięciem przypominasz wszystkim, którym czegoś brakuje.",
     ),
     (
         "Pytanie",
-        149.3,
-        152.1,
+        139.1,
+        143.0,
         "Coś jest niejasne na wyciągu? Pytasz klienta i dopytujesz w tej samej "
         "rozmowie, a cała historia zostaje w jednym miejscu.",
     ),
     (
         "Karta klienta",
-        189.6,
-        193.1,
+        179.3,
+        183.8,
         "Wszystko o kliencie na jednej stronie: notatki zespołu i przypomnienia o "
         "tym, o czym nie chcesz zapomnieć.",
     ),
     (
         "Kalendarz",
-        206.0,
-        207.7,
+        195.4,
+        198.3,
         "Terminy klientów, pytania i Twoje przypomnienia w jednym widoku. Rano "
         "dostajesz mail „Na dziś”, a kalendarz dodasz też do telefonu.",
     ),
     (
         "Zespół",
-        230.6,
-        231.4,
+        219.6,
+        222.3,
         "Zapraszasz współpracowników. Każdy ma własny login i od razu pracuje na "
         "tych samych klientach, pytaniach i kalendarzu.",
     ),
