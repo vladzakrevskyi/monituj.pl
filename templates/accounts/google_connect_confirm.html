@@ -1,9 +1,8 @@
-{% extends "base/base.html" %}
+{% extends "base/auth_base.html" %}
 
 {% block page_name %}Połącz konto z Google{% endblock %}
-{% block page_class %}page--compact{% endblock %}
 
-{% block content %}
+{% block auth_form %}
 <div class="card">
 <h1>Połącz konto z Google</h1>
 <p>Kliknij, aby przejść do Google i wybrać konto, którym będziesz logować się do Monituj ({{ user.email }}).</p>

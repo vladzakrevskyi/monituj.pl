@@ -57,7 +57,9 @@ def test_accepted_document_stays_visible_and_downloadable(
     assert client.get(download).status_code == 200
     # Accepted: no deleting it and no new uploads for that item.
     block = html[html.index(f'data-item-id="{request_item.pk}"') :]
-    block = block[: block.index('class="request-item"', 10)]
+    # Up to the next item, or the end of the list (sent items come last).
+    end = block.find('class="request-item"', 10)
+    block = block[: end if end != -1 else block.index("data-extra")]
     assert "delete-document" not in block
     assert "upload-zone" not in block
 

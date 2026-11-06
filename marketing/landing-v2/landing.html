@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monituj — nowa strona główna (makieta)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@500;600;700&family=Funnel+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#ff6b00; --orange-text:#c24e00; --orange-bg:#fff0e5;
+  --black:#0b0b0c; --black-2:#141416; --line-dark:#232327;
+  --grey-1:#f1f1f3; --grey-2:#e4e4e8; --grey-3:#9a9ba5; --grey-4:#62636d;
+  --white:#fff; --green:#15803d; --green-bg:#e6f4ea;
+  --display:"Funnel Display","Helvetica Neue",Arial,sans-serif;
+  --sans:"Funnel Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --wrap:1240px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--sans);color:var(--black);background:var(--white);font-size:17px;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 40px}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.label{display:inline-flex;gap:10px;align-items:center;color:var(--grey-4)}
+.label b{color:var(--orange-text);font-weight:500}
+.btn{display:inline-flex;align-items:center;gap:12px;height:56px;padding:0 26px;border-radius:999px;font-weight:600;font-size:16px;white-space:nowrap}
+.btn--orange{background:var(--orange);color:var(--black)}
+.btn--ghost{border:1px solid #3a3a40;color:var(--white)}
+.btn--black{background:var(--black);color:var(--white)}
+.btn .arr{font-family:var(--mono);font-weight:500}
+.play{width:22px;height:22px;border-radius:50%;background:var(--white);display:grid;place-items:center}
+.play:after{content:"";border-left:7px solid var(--black);border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;margin-left:2px}
+
+/* ---------- HERO ---------- */
+.hero{background:var(--black);color:var(--white);position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(to right,var(--line-dark) 1px,transparent 1px);
+  background-size:calc(var(--wrap) / 6) 100%;background-position:center top;opacity:.55;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 70%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 70%,transparent 100%)}
+.nav{position:relative;display:flex;align-items:center;justify-content:space-between;height:88px}
+.nav .logo svg{height:34px;display:block}
+.nav ul{display:flex;gap:34px;list-style:none;font-size:15px;color:#c9c9cf}
+.nav .right{display:flex;gap:22px;align-items:center;font-size:15px}
+.nav .right .btn{height:44px;padding:0 20px;font-size:15px}
+.hero__grid{position:relative;display:grid;grid-template-columns:1.08fr .92fr;gap:64px;align-items:center;padding:40px 0 120px}
+.hero .label{color:#8b8b94}
+.hero h1{font-family:var(--display);font-weight:600;font-size:104px;line-height:.93;letter-spacing:-.035em;margin:28px 0 30px}
+.hero h1 em{font-style:normal;color:var(--orange)}
+.lead{font-size:20px;line-height:1.5;color:#c9c9cf;max-width:520px}
+.lead strong{color:var(--white);font-weight:500}
+.cta{display:flex;gap:14px;margin-top:40px;flex-wrap:wrap}
+.fine{margin-top:22px;color:#8b8b94;display:flex;gap:18px;flex-wrap:wrap}
+.fine span:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--orange);margin-right:8px;vertical-align:1px}
+
+/* the instrument: one request, from first email to complete */
+.card{background:var(--white);color:var(--black);border-radius:20px;padding:26px 28px;position:relative;box-shadow:0 0 0 1px #2a2a2f, 0 40px 80px -30px rgba(0,0,0,.8)}
+.card__top{display:flex;justify-content:space-between;align-items:center;color:var(--grey-4)}
+.live{display:inline-flex;align-items:center;gap:8px;color:var(--green)}
+.live:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--green-bg)}
+.card h3{font-family:var(--display);font-size:28px;font-weight:600;letter-spacing:-.02em;margin-top:18px;line-height:1.1}
+.card .card__who{color:var(--grey-4);font-size:15px;margin-top:4px}
+.bar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:22px 0 8px}
+.bar i{height:8px;border-radius:2px;background:var(--orange)}
+.bar-meta{display:flex;justify-content:space-between;color:var(--grey-4)}
+.bar-meta strong{color:var(--black);font-weight:500}
+.docs{list-style:none;margin-top:18px;border-top:1px solid var(--grey-2)}
+.docs li{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--grey-2);font-size:16px}
+.docs li span{display:flex;gap:12px;align-items:center}
+.tick{width:20px;height:20px;border-radius:50%;background:var(--black);display:grid;place-items:center}
+.tick:after{content:"";width:8px;height:4px;border-left:2px solid var(--orange);border-bottom:2px solid var(--orange);transform:rotate(-45deg) translate(1px,-1px)}
+.docs time{color:var(--grey-3)}
+.log{list-style:none;margin-top:18px}
+.log li{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:5px 0;font-size:14px;color:var(--grey-4)}
+.log li .mono{font-size:11.5px;letter-spacing:.04em;color:var(--grey-3);text-transform:none;padding-top:2px}
+.log .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:var(--orange-bg);color:var(--orange-text);border-radius:4px;padding:1px 6px;margin-left:8px}
+.log li.done{color:var(--green);font-weight:500}
+.zero{display:flex;justify-content:space-between;align-items:flex-end;background:var(--black);color:var(--white);border-radius:14px;padding:16px 20px;margin-top:20px}
+.zero p{color:#a3a3ab;font-size:14px;line-height:1.35}
+.zero p strong{display:block;color:var(--white);font-size:16px;font-weight:500}
+.zero b{font-family:var(--display);font-size:56px;line-height:.8;color:var(--orange);font-weight:600;letter-spacing:-.04em}
+
+/* ---------- SECTIONS ---------- */
+section{padding:128px 0}
+h2{font-family:var(--display);font-weight:600;font-size:64px;line-height:1;letter-spacing:-.04em;max-width:900px;margin-top:20px}
+h2 em{font-style:normal;color:var(--orange-text)}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);margin-top:72px;border-top:1px solid var(--black)}
+.step{padding:28px 32px 0 0}
+.step + .step{padding-left:32px;border-left:1px solid var(--grey-2)}
+.step .n{font-family:var(--mono);font-size:14px;color:var(--orange-text)}
+.step h3{font-family:var(--display);font-size:30px;font-weight:600;letter-spacing:-.025em;margin:56px 0 10px;line-height:1.05}
+.step p{color:var(--grey-4);max-width:300px}
+
+.versus{background:var(--grey-1)}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:64px}
+.vs > div{border-radius:24px;padding:40px}
+.vs .before{background:var(--white);color:var(--grey-4)}
+.vs .after{background:var(--black);color:var(--white)}
+.vs h3{margin-bottom:28px}
+.vs ul{list-style:none}
+.vs li{display:flex;gap:16px;align-items:center;padding:16px 0;border-top:1px solid var(--grey-2);font-size:19px}
+.vs .after li{border-color:#2a2a2f}
+.vs .before li s{text-decoration-color:var(--grey-3)}
+.x{width:22px;height:22px;flex:none;position:relative}
+.x:before,.x:after{content:"";position:absolute;left:10px;top:3px;width:2px;height:16px;background:var(--grey-3);transform:rotate(45deg)}
+.x:after{transform:rotate(-45deg)}
+.vs .after .tick{background:var(--orange);flex:none;width:22px;height:22px}
+.vs .after .tick:after{border-color:var(--black)}
+
+.product{padding-bottom:0}
+.product__head{display:flex;justify-content:space-between;align-items:flex-end;gap:40px}
+.product__head p{max-width:360px;color:var(--grey-4)}
+.stage{position:relative;margin-top:64px;height:790px}
+.stage .screen{position:absolute;left:0;top:0;width:78%;border-radius:18px;overflow:hidden;box-shadow:0 0 0 1px var(--grey-2),0 30px 60px -30px rgba(11,11,12,.35)}
+.stage .screen img{display:block;width:100%}
+.phone{position:absolute;right:0;top:110px;width:270px;aspect-ratio:9/19;border-radius:44px;background:var(--black);padding:10px;box-shadow:0 40px 80px -30px rgba(11,11,12,.6)}
+.phone .scr{height:100%;border-radius:35px;overflow:hidden;background:#fff;padding-top:46px}
+.phone img{width:100%;display:block}
+.phone:before{content:"";position:absolute;top:22px;left:50%;width:80px;height:24px;margin-left:-40px;background:var(--black);border-radius:20px;z-index:2}
+.cap{position:absolute;display:flex;gap:10px;align-items:center;background:var(--white);border:1px solid var(--grey-2);border-radius:999px;padding:8px 14px}
+.cap i{width:8px;height:8px;border-radius:50%;background:var(--orange)}
+.cap--a{left:0;top:740px}.cap--b{right:0;top:740px}
+
+.who{padding-top:128px}
+.chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:48px}
+.chip{display:inline-flex;align-items:center;gap:14px;border:1px solid var(--grey-2);border-radius:999px;padding:14px 22px;font-size:18px;font-weight:500}
+.chip .arr{font-family:var(--mono);color:var(--orange-text)}
+.trust{display:grid;grid-template-columns:repeat(3,1fr);margin-top:112px;border-top:1px solid var(--grey-2)}
+.trust div{padding:28px 32px 0 0}
+.trust div + div{padding-left:32px;border-left:1px solid var(--grey-2)}
+.trust p{margin-top:14px;font-size:18px;line-height:1.4}
+
+.final{background:var(--orange);color:var(--black);padding:120px 0 0;overflow:hidden}
+.final h2{font-size:120px;line-height:.9;max-width:1100px;letter-spacing:-.05em;margin-top:0}
+.final .row{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;margin-top:56px;padding-bottom:120px}
+.final .row p{max-width:520px;font-size:19px}
+.final .btn{height:64px;padding:0 34px;font-size:17px}
+.foot{display:flex;justify-content:space-between;align-items:center;padding:28px 0 32px;font-size:14px}
+.foot ul{display:flex;gap:28px;list-style:none}
+
+/* header extras */
+.nav .login{color:#c9c9cf}
+.btn--demo{border:1px solid #3a3a40;color:var(--white);gap:10px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 4px rgba(255,107,0,.18)}
+.burger{display:none}
+
+/* calculator */
+.calc{background:var(--black);color:var(--white)}
+.calc .label{color:#8b8b94}
+.calc__grid{display:grid;grid-template-columns:1.15fr .85fr;gap:72px;align-items:start}
+.sliders{margin-top:56px;border-top:1px solid var(--line-dark)}
+.sliders label{display:grid;grid-template-columns:1fr auto;gap:14px 24px;padding:24px 0;border-bottom:1px solid var(--line-dark);font-size:17px;color:#c9c9cf}
+.sliders output{font-size:20px;color:var(--white);letter-spacing:0;text-transform:none}
+.sliders input{grid-column:1/-1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:linear-gradient(to right,var(--orange) var(--v,16%),#2c2c31 var(--v,16%))}
+.sliders input::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--white);border:5px solid var(--orange);cursor:pointer}
+.sliders label:nth-child(2) input{--v:22%}.sliders label:nth-child(3) input{--v:14%}.sliders label:nth-child(4) input{--v:21%}
+.result{position:sticky;top:40px;background:var(--black-2);border:1px solid var(--line-dark);border-radius:24px;padding:36px}
+.big{font-family:var(--display);font-weight:600;font-size:132px;line-height:.9;letter-spacing:-.05em;color:var(--orange);margin-top:20px}
+.big small{font-size:48px;margin-left:8px;letter-spacing:-.02em}
+.money{font-family:var(--display);font-size:36px;font-weight:600;letter-spacing:-.03em;margin-top:6px}
+.plan{margin:32px 0 28px;padding-top:24px;border-top:1px solid var(--line-dark)}
+.plan p span{display:block;color:#8b8b94;font-size:11.5px;margin-bottom:6px}
+.plan strong{font-size:19px;font-weight:500}
+.payback{color:#a3a3ab;font-size:15px;margin-top:8px}
+.result .btn{width:100%;justify-content:center}
+.note{color:#6b6b74;font-size:10.5px;margin-top:14px;text-align:center}
+
+/* faq */
+.faq{background:var(--grey-1)}
+.faq__grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:72px}
+.more{display:inline-flex;gap:10px;margin-top:32px;font-weight:600;border-bottom:1.5px solid var(--black);padding-bottom:3px}
+.more .arr{font-family:var(--mono);color:var(--orange-text)}
+.qa{border-top:1px solid var(--black)}
+.qa details{border-bottom:1px solid var(--grey-2);padding:26px 0}
+.qa summary{list-style:none;display:flex;justify-content:space-between;gap:24px;font-family:var(--display);font-size:24px;font-weight:600;letter-spacing:-.02em;cursor:pointer}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary:after{content:"+";font-family:var(--mono);font-weight:400;color:var(--orange-text)}
+.qa details[open] summary:after{content:"−"}
+.qa p{color:var(--grey-4);margin-top:12px;max-width:620px}
+
+/* footer */
+.site-foot{background:var(--black);color:#a3a3ab;padding:88px 0 32px}
+.foot-grid{display:grid;grid-template-columns:1.5fr repeat(5,1fr);gap:40px}
+.foot-brand svg{height:32px;display:block}
+.foot-brand p{margin-top:20px;font-size:15px;max-width:280px}
+.foot-brand .mail{display:inline-block;margin-top:20px;color:var(--white);border-bottom:1px solid #3a3a40}
+.social{display:flex;gap:18px;margin-top:20px;font-size:14px;color:var(--white)}
+.foot-grid h4{color:var(--white);font-weight:500;font-size:11.5px;margin-bottom:18px}
+.foot-grid > div:not(.foot-brand) a{display:block;font-size:14.5px;padding:5px 0}
+.foot-bottom{display:flex;justify-content:space-between;margin-top:72px;padding-top:24px;border-top:1px solid var(--line-dark);font-size:11px;color:#6b6b74}
+
+/* ---------- MOBILE ---------- */
+@media (max-width:760px){
+  .wrap{padding:0 20px}
+  .nav{height:68px}.nav ul,.nav .login,.nav .btn--orange{display:none}.nav .logo svg{height:28px}
+  .burger{display:grid;gap:6px;width:40px;height:40px;place-content:center;border:1px solid #3a3a40;border-radius:50%}.burger i{display:block;width:16px;height:1.5px;background:var(--white)}
+  .nav .right .btn{height:40px;padding:0 16px;font-size:14px}
+  .hero__grid{grid-template-columns:1fr;gap:48px;padding:36px 0 72px}
+  .hero h1{font-size:54px;margin:20px 0 20px}
+  .lead{font-size:18px}
+  .cta .btn{flex:1;justify-content:center}
+  .card{padding:20px}
+  section{padding:88px 0}
+  h2{font-size:40px}
+  .steps,.trust,.vs{grid-template-columns:1fr}
+  .step,.step + .step,.trust div,.trust div + div{padding:24px 0 28px;border-left:0;border-bottom:1px solid var(--grey-2)}
+  .step h3{margin-top:20px}
+  .vs > div{padding:28px 22px}
+  .product__head{flex-direction:column;align-items:flex-start}
+  .stage{height:auto;margin-top:40px;padding-bottom:40px}
+  .stage .screen{position:relative;width:100%}
+  .phone{position:relative;right:auto;top:auto;width:62%;margin:-110px 0 0 auto}
+  .cap{display:none}
+  .chip{font-size:16px;padding:12px 18px}
+  .final{padding-top:80px}
+  .final h2{font-size:58px}
+  .final .row{flex-direction:column;align-items:flex-start;padding-bottom:64px}
+  .final .btn{width:100%;justify-content:center}
+  .calc__grid,.faq__grid{grid-template-columns:1fr;gap:40px}
+  .sliders{margin-top:32px}.sliders label{font-size:15px}
+  .result{position:static;padding:26px}
+  .big{font-size:96px}
+  .qa summary{font-size:19px}
+  .foot-grid{grid-template-columns:1fr 1fr;gap:36px 24px}
+  .foot-brand{grid-column:1/-1}
+  .foot-bottom{margin-top:48px}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <nav class="nav">
+      <a class="logo" href="#"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 348.92 100" role="img" aria-label="Monituj">
+<rect width="100" height="100" rx="23.08" fill="#ff6b00"/>
+<path fill="#0b0b0c" transform="scale(1.562500)" d="M16.00 46.00 L16.00 18.00 L22.27 18.00 L32.00 35.19 L41.73 18.00 L48.00 18.00 L48.00 46.00 L42.40 46.00 L42.40 27.39 L33.80 42.59 L30.20 42.59 L21.60 27.39 L21.60 46.00 Z"/>
+<path fill="#ffffff" transform="scale(100)" d="M1.403896484375 0.721904296875V0.27809570312500004H1.5380078124999998L1.6185351562499999 0.580830078125L1.6981542968749999 0.27809570312500004H1.8325683593749997V0.721904296875H1.74931640625V0.372548828125L1.661220703125 0.721904296875H1.5749414062499998L1.4871484375 0.372548828125V0.721904296875Z M1.8888890625 0.556611328125Q1.8888890625 0.514228515625 1.909777734375 0.47457031250000004Q1.93066640625 0.434912109375 1.9689623046875 0.41402343750000004Q2.007258203125 0.393134765625 2.0544847656250003 0.393134765625Q2.12744375 0.393134765625 2.17406484375 0.44051269531250004Q2.2206859375 0.487890625 2.2206859375 0.560244140625Q2.2206859375 0.633203125 2.1736107421875 0.6811865234375001Q2.126535546875 0.7291699218750001 2.055090234375 0.7291699218750001Q2.010891015625 0.7291699218750001 1.9707787109375001 0.709189453125Q1.93066640625 0.689208984375 1.909777734375 0.6506103515625Q1.8888890625 0.61201171875 1.8888890625 0.556611328125ZM1.9760765625 0.56115234375Q1.9760765625 0.608984375 1.9987816406249999 0.6344140625000001Q2.02148671875 0.6598437500000001 2.0547875 0.6598437500000001Q2.08808828125 0.6598437500000001 2.1106419921875004 0.6344140625000001Q2.133195703125 0.608984375 2.133195703125 0.560546875Q2.133195703125 0.5133203125 2.1106419921875004 0.487890625Q2.08808828125 0.4624609375 2.0547875 0.4624609375Q2.02148671875 0.4624609375 1.9987816406249999 0.487890625Q1.9760765625 0.5133203125 1.9760765625 0.56115234375Z M2.56732890625 0.721904296875H2.482260546875V0.557822265625Q2.482260546875 0.505751953125 2.4768113281249997 0.4904638671875Q2.471362109375 0.47517578125000004 2.4591013671875 0.46669921875000003Q2.446840625 0.45822265625 2.429584765625 0.45822265625Q2.40748515625 0.45822265625 2.3899265625 0.47033203125Q2.37236796875 0.48244140625 2.3658591796875 0.502421875Q2.359350390625 0.52240234375 2.359350390625 0.5762890625V0.721904296875H2.27428203125V0.40040039062500005H2.353295703125V0.447626953125Q2.39537578125 0.393134765625 2.459252734375 0.393134765625Q2.48740703125 0.393134765625 2.510717578125 0.40327636718750004Q2.534028125 0.41341796875000003 2.5459861328124997 0.42916015625000004Q2.557944140625 0.44490234375000004 2.5626365234375 0.4648828125Q2.56732890625 0.48486328125 2.56732890625 0.522099609375Z M2.641208203125 0.356806640625V0.27809570312500004H2.7262765625V0.356806640625ZM2.641208203125 0.721904296875V0.40040039062500005H2.7262765625V0.721904296875Z M2.948495703125 0.40040039062500005V0.46821289062500004H2.890370703125V0.597783203125Q2.890370703125 0.6371386718750001 2.8920357421875 0.6436474609375Q2.8937007812499997 0.65015625 2.8996041015625 0.65439453125Q2.905507421875 0.6586328125 2.9139839843749997 0.6586328125Q2.925790625 0.6586328125 2.94819296875 0.650458984375L2.95545859375 0.716455078125Q2.925790625 0.7291699218750001 2.8882515625 0.7291699218750001Q2.86524375 0.7291699218750001 2.8467769531249996 0.7214501953125001Q2.8283101562499997 0.71373046875 2.8196822265624997 0.7014697265625001Q2.811054296875 0.689208984375 2.80772421875 0.6683203125Q2.804999609375 0.6534863281250001 2.804999609375 0.60837890625V0.46821289062500004H2.765946875V0.40040039062500005H2.804999609375V0.3365234375L2.890370703125 0.28687500000000005V0.40040039062500005Z M3.206740234375 0.721904296875V0.67376953125Q3.189181640625 0.699501953125 3.1605732421875 0.7143359375Q3.13196484375 0.7291699218750001 3.100177734375 0.7291699218750001Q3.06778515625 0.7291699218750001 3.042052734375 0.71494140625Q3.0163203125 0.700712890625 3.00481640625 0.6749804687500001Q2.9933125 0.649248046875 2.9933125 0.603837890625V0.40040039062500005H3.078380859375V0.548134765625Q3.078380859375 0.615947265625 3.0830732421875 0.6312353515625Q3.087765625 0.6465234375 3.100177734375 0.6554541015625Q3.11258984375 0.664384765625 3.131662109375 0.664384765625Q3.153458984375 0.664384765625 3.17071484375 0.6524267578125Q3.187970703125 0.64046875 3.194328125 0.6227587890625Q3.200685546875 0.605048828125 3.200685546875 0.536025390625V0.40040039062500005H3.28575390625V0.721904296875Z M3.359633203125 0.356806640625V0.27809570312500004H3.4447015625V0.356806640625ZM3.4447015625 0.40040039062500005V0.7119140625Q3.4447015625 0.7733691406250001 3.4366791015625 0.7986474609375Q3.428656640625 0.82392578125 3.4058001953124997 0.838154296875Q3.38294375 0.8523828125 3.347523828125 0.8523828125Q3.334808984375 0.8523828125 3.3201263671875 0.8501123046875001Q3.30544375 0.847841796875 3.288490625 0.84330078125L3.303324609375 0.77064453125Q3.309379296875 0.77185546875 3.3146771484375 0.7726123046875Q3.319975 0.7733691406250001 3.324516015625 0.7733691406250001Q3.33753359375 0.7733691406250001 3.3458587890625 0.7677685546875Q3.354183984375 0.76216796875 3.35690859375 0.7542968750000001Q3.359633203125 0.74642578125 3.359633203125 0.7070703125V0.40040039062500005Z"/>
+</svg></a>
+      <ul><li>Jak to działa</li><li>Funkcje</li><li>Dla kogo</li><li>Cennik</li><li>Bezpieczeństwo</li></ul>
+      <div class="right"><a class="login" href="#">Zaloguj się</a><a class="btn btn--demo" href="#"><span class="pulse"></span>Demo</a><a class="btn btn--orange" href="#">Zacznij za darmo</a><span class="burger"><i></i><i></i></span></div>
+    </nav>
+
+    <div class="hero__grid">
+      <div>
+        <span class="mono label"><b>●</b> Dla biur rachunkowych, kadr i kancelarii</span>
+        <h1>Dokumenty od klientów. <em>Bez&nbsp;gonienia.</em></h1>
+        <p class="lead">Wysyłasz klientowi listę. Klient przesyła pliki z telefonu, bez zakładania konta. <strong>Monituj sam przypomina o brakach, aż dotrze komplet.</strong></p>
+        <div class="cta">
+          <a class="btn btn--orange" href="#">Zacznij za darmo <span class="arr">→</span></a>
+          <a class="btn btn--ghost" href="#"><span class="play"></span>Zobacz film · 4 min</a>
+        </div>
+        <p class="fine mono"><span>Plan Free bez limitu czasu</span><span>Bez karty</span></p>
+      </div>
+
+      <div class="card">
+        <div class="card__top mono"><span>Prośba o dokumenty</span><span class="live">Komplet</span></div>
+        <h3>Dokumenty za wrzesień</h3>
+        <p class="card__who">Kowalski Sp. z o.o. · termin 10.10</p>
+        <div class="bar"><i></i><i></i><i></i><i></i></div>
+        <div class="bar-meta mono"><span>Dostarczono</span><strong>4 z 4</strong></div>
+        <ul class="docs">
+          <li><span><i class="tick"></i>Wyciąg bankowy</span><time class="mono">03.10</time></li>
+          <li><span><i class="tick"></i>Faktury kosztowe</span><time class="mono">06.10</time></li>
+          <li><span><i class="tick"></i>Umowa leasingu</span><time class="mono">08.10</time></li>
+          <li><span><i class="tick"></i>Paragony</span><time class="mono">08.10</time></li>
+        </ul>
+        <ul class="log">
+          <li><span class="mono">01.10 · 09:00</span><span>Prośba wysłana</span></li>
+          <li><span class="mono">04.10 · 09:00</span><span>Przypomnienie o 3 brakach<span class="tag">auto</span></span></li>
+          <li><span class="mono">07.10 · 09:00</span><span>Przypomnienie o 2 brakach<span class="tag">auto</span></span></li>
+          <li class="done"><span class="mono">08.10 · 16:42</span><span>Komplet. Przypomnienia zatrzymane.</span></li>
+        </ul>
+        <div class="zero"><p><strong>Twoje maile z przypomnieniem</strong>Monituj wysłał je za Ciebie</p><b>0</b></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <span class="mono label"><b>01</b> Jak to działa</span>
+    <h2>Trzy kroki. Resztą zajmuje się Monituj.</h2>
+    <div class="steps">
+      <div class="step"><span class="n">01</span><h3>Wybierz listę</h3><p>Z gotowego szablonu albo własną. Ustaw termin.</p></div>
+      <div class="step"><span class="n">02</span><h3>Wyślij jeden link</h3><p>Klient otwiera go w telefonie i przesyła pliki. Bez konta i bez aplikacji.</p></div>
+      <div class="step"><span class="n">03</span><h3>Odbierz komplet</h3><p>Monituj przypomina o brakach i przestaje, gdy wszystko dotrze.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="versus">
+  <div class="wrap">
+    <span class="mono label"><b>02</b> Różnica</span>
+    <h2>Koniec z „przypominam o&nbsp;dokumentach”.</h2>
+    <div class="vs">
+      <div class="before">
+        <h3 class="mono label">Dziś</h3>
+        <ul>
+          <li><i class="x"></i><s>Załączniki rozrzucone po wątkach</s></li>
+          <li><i class="x"></i><s>Excel z brakami do pilnowania</s></li>
+          <li><i class="x"></i><s>Ręczne przypomnienia co kilka dni</s></li>
+          <li><i class="x"></i><s>Braki wychodzą tuż przed terminem</s></li>
+        </ul>
+      </div>
+      <div class="after">
+        <h3 class="mono label" style="color:#8b8b94"><b>●</b> Z Monituj</h3>
+        <ul>
+          <li><i class="tick"></i>Jedna lista dla każdego klienta</li>
+          <li><i class="tick"></i>Wszystkie statusy w jednym panelu</li>
+          <li><i class="tick"></i>Przypomnienia wychodzą same</li>
+          <li><i class="tick"></i>Braki widać od pierwszego dnia</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="calc">
+  <div class="wrap calc__grid">
+    <div>
+      <span class="mono label"><b>03</b> Kalkulator</span>
+      <h2>Ile kosztuje Cię przypominanie?</h2>
+      <div class="sliders">
+        <label><span>Klienci, od których co miesiąc zbierasz dokumenty</span><output class="mono">50</output><input type="range" min="1" max="300" value="50"></label>
+        <label><span>Przypomnienia do jednego klienta w miesiącu</span><output class="mono">3</output><input type="range" min="1" max="10" value="3"></label>
+        <label><span>Minuty na jedno przypomnienie</span><output class="mono">5</output><input type="range" min="1" max="30" value="5"></label>
+        <label><span>Koszt godziny Twojej pracy</span><output class="mono">80 zł</output><input type="range" min="20" max="300" step="10" value="80"></label>
+      </div>
+    </div>
+    <div class="result">
+      <span class="mono label">Co miesiąc tracisz</span>
+      <p class="big">12,5<small>h</small></p>
+      <p class="money">≈ 1 000 zł</p>
+      <div class="plan">
+        <p><span class="mono">Monituj zrobi to za</span><strong>Plan Biuro · 89 zł netto / mies.</strong></p>
+        <p class="payback">Zwraca się, gdy zaoszczędzi Ci 67 min w miesiącu.</p>
+      </div>
+      <a class="btn btn--orange" href="#">Odzyskaj ten czas <span class="arr">→</span></a>
+      <p class="note mono">Liczone w przeglądarce. Nic nie wysyłamy.</p>
+    </div>
+  </div>
+</section>
+
+<section class="product">
+  <div class="wrap">
+    <div class="product__head">
+      <div><span class="mono label"><b>04</b> Produkt</span><h2>Ty widzisz braki. Klient widzi, co wysłać.</h2></div>
+      <p>Panel pokazuje, kto i czego jeszcze nie przysłał. Klient dostaje prostą listę na telefonie.</p>
+    </div>
+    <div class="stage">
+      <div class="screen"><img src="panel-s.png" alt=""></div>
+      <div class="phone"><div class="scr"><img src="client-s.png" alt=""></div></div>
+      <span class="cap cap--a mono"><i></i>Twój panel</span>
+      <span class="cap cap--b mono"><i></i>Telefon klienta · bez konta</span>
+    </div>
+  </div>
+</section>
+
+<section class="who">
+  <div class="wrap">
+    <span class="mono label"><b>05</b> Dla kogo</span>
+    <h2>Dla każdego, kto co miesiąc czeka na dokumenty.</h2>
+    <div class="chips">
+      <a class="chip" href="#">Biura rachunkowe <span class="arr">→</span></a>
+      <a class="chip" href="#">Kadry i HR <span class="arr">→</span></a>
+      <a class="chip" href="#">Kancelarie prawne <span class="arr">→</span></a>
+      <a class="chip" href="#">Nieruchomości, kredyty i ubezpieczenia <span class="arr">→</span></a>
+      <a class="chip" href="#">Firmy usługowe i B2B <span class="arr">→</span></a>
+    </div>
+    <div class="trust">
+      <div><span class="mono label"><b>●</b> Dostęp</span><p>Dokumenty widzisz Ty i osoba z linkiem. Nikt więcej.</p></div>
+      <div><span class="mono label"><b>●</b> Usuwanie</span><p>Pliki znikają same po wybranym czasie, od 30 do 365 dni.</p></div>
+      <div><span class="mono label"><b>●</b> RODO</span><p>Gotowa umowa powierzenia przetwarzania danych.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="wrap faq__grid">
+    <div>
+      <span class="mono label"><b>06</b> Pytania</span>
+      <h2>Krótko i&nbsp;konkretnie.</h2>
+      <a class="more" href="#">Wszystkie pytania <span class="arr">→</span></a>
+    </div>
+    <div class="qa">
+      <details open><summary>Czy mój klient musi zakładać konto?</summary><p>Nie. Dostaje mail z linkiem, otwiera listę w przeglądarce i przesyła pliki. Niczego nie instaluje.</p></details>
+      <details><summary>Czym to się różni od maila albo dysku?</summary><p>Dysk i mail tylko przechowują pliki. Monituj pilnuje listy, sam przypomina o brakach i pokazuje status każdego dokumentu.</p></details>
+      <details><summary>Co z fakturami, które są w KSeF?</summary><p>Tych nie musisz zbierać. W Monituj prosisz o to, czego w KSeF nie ma: wyciągi, paragony, umowy, faktury zagraniczne.</p></details>
+      <details><summary>Czy dokumenty są bezpieczne?</summary><p>Każda prośba ma unikalny link, który możesz zabezpieczyć hasłem. Pliki są szyfrowane (AES-256) i usuwane po wybranym czasie.</p></details>
+    </div>
+  </div>
+</section>
+
+<footer class="final">
+  <div class="wrap">
+    <h2>Wyślij pierwszą prośbę jeszcze dziś.</h2>
+    <div class="row">
+      <p>Plan Free bez limitu czasu. Płatne plany od 39 zł netto miesięcznie, a na start 30 dni planu Biuro za darmo, bez karty.</p>
+      <a class="btn btn--black" href="#">Zacznij za darmo <span class="arr">→</span></a>
+    </div>
+  </div>
+  <div class="site-foot">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 348.92 100" role="img" aria-label="Monituj">
+<rect width="100" height="100" rx="23.08" fill="#ff6b00"/>
+<path fill="#0b0b0c" transform="scale(1.562500)" d="M16.00 46.00 L16.00 18.00 L22.27 18.00 L32.00 35.19 L41.73 18.00 L48.00 18.00 L48.00 46.00 L42.40 46.00 L42.40 27.39 L33.80 42.59 L30.20 42.59 L21.60 27.39 L21.60 46.00 Z"/>
+<path fill="#ffffff" transform="scale(100)" d="M1.403896484375 0.721904296875V0.27809570312500004H1.5380078124999998L1.6185351562499999 0.580830078125L1.6981542968749999 0.27809570312500004H1.8325683593749997V0.721904296875H1.74931640625V0.372548828125L1.661220703125 0.721904296875H1.5749414062499998L1.4871484375 0.372548828125V0.721904296875Z M1.8888890625 0.556611328125Q1.8888890625 0.514228515625 1.909777734375 0.47457031250000004Q1.93066640625 0.434912109375 1.9689623046875 0.41402343750000004Q2.007258203125 0.393134765625 2.0544847656250003 0.393134765625Q2.12744375 0.393134765625 2.17406484375 0.44051269531250004Q2.2206859375 0.487890625 2.2206859375 0.560244140625Q2.2206859375 0.633203125 2.1736107421875 0.6811865234375001Q2.126535546875 0.7291699218750001 2.055090234375 0.7291699218750001Q2.010891015625 0.7291699218750001 1.9707787109375001 0.709189453125Q1.93066640625 0.689208984375 1.909777734375 0.6506103515625Q1.8888890625 0.61201171875 1.8888890625 0.556611328125ZM1.9760765625 0.56115234375Q1.9760765625 0.608984375 1.9987816406249999 0.6344140625000001Q2.02148671875 0.6598437500000001 2.0547875 0.6598437500000001Q2.08808828125 0.6598437500000001 2.1106419921875004 0.6344140625000001Q2.133195703125 0.608984375 2.133195703125 0.560546875Q2.133195703125 0.5133203125 2.1106419921875004 0.487890625Q2.08808828125 0.4624609375 2.0547875 0.4624609375Q2.02148671875 0.4624609375 1.9987816406249999 0.487890625Q1.9760765625 0.5133203125 1.9760765625 0.56115234375Z M2.56732890625 0.721904296875H2.482260546875V0.557822265625Q2.482260546875 0.505751953125 2.4768113281249997 0.4904638671875Q2.471362109375 0.47517578125000004 2.4591013671875 0.46669921875000003Q2.446840625 0.45822265625 2.429584765625 0.45822265625Q2.40748515625 0.45822265625 2.3899265625 0.47033203125Q2.37236796875 0.48244140625 2.3658591796875 0.502421875Q2.359350390625 0.52240234375 2.359350390625 0.5762890625V0.721904296875H2.27428203125V0.40040039062500005H2.353295703125V0.447626953125Q2.39537578125 0.393134765625 2.459252734375 0.393134765625Q2.48740703125 0.393134765625 2.510717578125 0.40327636718750004Q2.534028125 0.41341796875000003 2.5459861328124997 0.42916015625000004Q2.557944140625 0.44490234375000004 2.5626365234375 0.4648828125Q2.56732890625 0.48486328125 2.56732890625 0.522099609375Z M2.641208203125 0.356806640625V0.27809570312500004H2.7262765625V0.356806640625ZM2.641208203125 0.721904296875V0.40040039062500005H2.7262765625V0.721904296875Z M2.948495703125 0.40040039062500005V0.46821289062500004H2.890370703125V0.597783203125Q2.890370703125 0.6371386718750001 2.8920357421875 0.6436474609375Q2.8937007812499997 0.65015625 2.8996041015625 0.65439453125Q2.905507421875 0.6586328125 2.9139839843749997 0.6586328125Q2.925790625 0.6586328125 2.94819296875 0.650458984375L2.95545859375 0.716455078125Q2.925790625 0.7291699218750001 2.8882515625 0.7291699218750001Q2.86524375 0.7291699218750001 2.8467769531249996 0.7214501953125001Q2.8283101562499997 0.71373046875 2.8196822265624997 0.7014697265625001Q2.811054296875 0.689208984375 2.80772421875 0.6683203125Q2.804999609375 0.6534863281250001 2.804999609375 0.60837890625V0.46821289062500004H2.765946875V0.40040039062500005H2.804999609375V0.3365234375L2.890370703125 0.28687500000000005V0.40040039062500005Z M3.206740234375 0.721904296875V0.67376953125Q3.189181640625 0.699501953125 3.1605732421875 0.7143359375Q3.13196484375 0.7291699218750001 3.100177734375 0.7291699218750001Q3.06778515625 0.7291699218750001 3.042052734375 0.71494140625Q3.0163203125 0.700712890625 3.00481640625 0.6749804687500001Q2.9933125 0.649248046875 2.9933125 0.603837890625V0.40040039062500005H3.078380859375V0.548134765625Q3.078380859375 0.615947265625 3.0830732421875 0.6312353515625Q3.087765625 0.6465234375 3.100177734375 0.6554541015625Q3.11258984375 0.664384765625 3.131662109375 0.664384765625Q3.153458984375 0.664384765625 3.17071484375 0.6524267578125Q3.187970703125 0.64046875 3.194328125 0.6227587890625Q3.200685546875 0.605048828125 3.200685546875 0.536025390625V0.40040039062500005H3.28575390625V0.721904296875Z M3.359633203125 0.356806640625V0.27809570312500004H3.4447015625V0.356806640625ZM3.4447015625 0.40040039062500005V0.7119140625Q3.4447015625 0.7733691406250001 3.4366791015625 0.7986474609375Q3.428656640625 0.82392578125 3.4058001953124997 0.838154296875Q3.38294375 0.8523828125 3.347523828125 0.8523828125Q3.334808984375 0.8523828125 3.3201263671875 0.8501123046875001Q3.30544375 0.847841796875 3.288490625 0.84330078125L3.303324609375 0.77064453125Q3.309379296875 0.77185546875 3.3146771484375 0.7726123046875Q3.319975 0.7733691406250001 3.324516015625 0.7733691406250001Q3.33753359375 0.7733691406250001 3.3458587890625 0.7677685546875Q3.354183984375 0.76216796875 3.35690859375 0.7542968750000001Q3.359633203125 0.74642578125 3.359633203125 0.7070703125V0.40040039062500005Z"/>
+</svg>
+          <p>Zbiera dokumenty od klientów za Ciebie i sam przypomina o brakach, aż dotrze komplet.</p>
+          <a class="mail" href="#">kontakt@monituj.pl</a>
+          <div class="social"><a href="#">Facebook ↗</a><a href="#">Instagram ↗</a></div>
+        </div>
+        <div><h4 class="mono">Produkt</h4><a href="#">Jak to działa</a><a href="#">Funkcje</a><a href="#">Film o Monituj</a><a href="#">Cennik</a><a href="#">Bezpieczeństwo</a><a href="#">Wypróbuj demo</a><a href="#">Wyślij prośbę bez konta</a></div>
+        <div><h4 class="mono">Branże</h4><a href="#">Biura rachunkowe</a><a href="#">Kadry i HR</a><a href="#">Kancelarie prawne</a><a href="#">Nieruchomości, kredyty i ubezpieczenia</a><a href="#">Firmy usługowe i B2B</a></div>
+        <div><h4 class="mono">Zasoby</h4><a href="#">Szablony list dokumentów</a><a href="#">Kalkulator czasu</a><a href="#">Jak zbierać dokumenty od klientów</a><a href="#">Dokumenty spoza KSeF</a><a href="#">Pytania do klienta</a><a href="#">Mail, WhatsApp czy dysk?</a></div>
+        <div><h4 class="mono">Pomoc</h4><a href="#">Centrum pomocy</a><a href="#">Najczęstsze pytania</a><a href="#">Kontakt</a><a href="#">Zaloguj się</a></div>
+        <div><h4 class="mono">Prawne</h4><a href="#">Regulamin</a><a href="#">Polityka prywatności</a><a href="#">Polityka cookies</a><a href="#">Umowa powierzenia</a><a href="#">Odstąpienie od umowy</a></div>
+      </div>
+      <div class="foot-bottom mono"><span>© 2026 Monituj</span><span>Ustawienia cookies</span></div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

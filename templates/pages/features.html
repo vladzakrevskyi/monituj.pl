@@ -1,130 +1,31 @@
 {% extends "pages/base_page.html" %}
 
-
 {% block hero_eyebrow %}Funkcje{% endblock %}
-{% block hero_title %}Wszystko, czego potrzeba, żeby <strong>proces domykał się sam</strong>{% endblock %}
-{% block hero_lead %}Monituj nie jest kolejnym miejscem na pliki. To narzędzie, które prowadzi prośbę o dokumenty od początku do końca - i odciąża Twój zespół z pilnowania.{% endblock %}
+{% block hero_title %}Funkcje programu do <strong>zbierania dokumentów.</strong>{% endblock %}
+{% block hero_lead %}Lista dokumentów, automatyczne przypomnienia o brakach, panel statusów i bezpieczne przesyłanie dokumentów bez konta. W jednym miejscu.{% endblock %}
+{% block hero_actions %}
+<div class="lp-cta">
+<a class="lp-btn lp-btn--orange" href="{% url 'accounts:register' %}">Zacznij za darmo <span class="lp-arr">→</span></a>
+<a class="lp-btn lp-btn--line" href="{% url 'pages:demo' %}"><span class="lp-dot" aria-hidden="true"></span>Wypróbuj demo</a>
+</div>
+{% endblock %}
 
 {% block page_body %}
-<section class="section section--flush-top">
-<div class="container">
-
-<div class="feature-group" id="prosby">
-<div class="feature-group__intro">
-<span class="feature-group__num">01</span>
-<h2>Prośby o dokumenty</h2>
-<p>Jedna prośba zawiera wszystko, czego klient potrzebuje, żeby przesłać komplet za pierwszym razem.</p>
+<section class="lp-section">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b>01</b> Co dostajesz</p>
+<h2 class="lp-h2">6 funkcji, które domykają zbieranie dokumentów.</h2>
+<div class="lp-tiles">
+<article class="lp-tile"><span class="lp-tile__n">01</span><h3>Prośby o dokumenty i szablony</h3><p>Lista dokumentów, termin i instrukcje w jednym linku. Także pozycje bez pliku, np. nadanie uprawnień w KSeF.</p><div class="lp-tags"><span>Gotowe szablony</span><span>Do wielu klientów</span><span>Co miesiąc sama</span></div></article>
+<article class="lp-tile lp-tile--orange"><span class="lp-tile__n">02</span><h3>Automatyczne przypomnienia o brakach</h3><p>Wychodzą według Twoich zasad i kończą się, gdy dotrze komplet dokumentów.</p><div class="lp-tags"><span>Harmonogram</span><span>Tylko o brakach</span><span>Ręcznie 1 kliknięciem</span></div></article>
+<article class="lp-tile lp-tile--dark"><span class="lp-tile__n">03</span><h3>Panel brakujących dokumentów</h3><p>W każdej chwili wiesz, kto i czego jeszcze nie przysłał.</p><div class="lp-tags"><span>Status dokumentu</span><span>Akceptuj / odrzuć</span><span>ZIP wszystkich plików</span></div></article>
+<article class="lp-tile lp-tile--dark"><span class="lp-tile__n">04</span><h3>Pytania do klienta i kalendarz</h3><p>Pytania o niejasne operacje, karta klienta i plan na dziś w jednym miejscu.</p><div class="lp-tags"><span>„Co to za przelew?”</span><span>Notatki</span><span>Mail „Na dziś”</span></div></article>
+<article class="lp-tile"><span class="lp-tile__n">05</span><h3>Przesyłanie dokumentów bez konta</h3><p>Klient nie zakłada konta ani aplikacji. Zdjęcia z telefonu łączymy w jeden PDF.</p><div class="lp-tags"><span>Bez logowania</span><span>Z telefonu</span><span>Potwierdzenia</span></div></article>
+<article class="lp-tile"><span class="lp-tile__n">06</span><h3>Bezpieczeństwo dokumentów i RODO</h3><p>Szyfrowanie i automatyczne usuwanie plików po czasie, który wybierzesz.</p><div class="lp-tags"><span>AES-256</span><span>30–365 dni</span><span>RODO</span></div></article>
 </div>
-<div class="feature-group__grid">
-{% include "pages/_mini.html" with icon="list" title="Lista dokumentów" text="Każdy dokument jako osobna pozycja z własnym statusem." %}
-{% include "pages/_mini.html" with icon="clock" title="Termin" text="Widoczny dla Ciebie i dla klienta, wyróżniony po przekroczeniu." %}
-{% include "pages/_mini.html" with icon="lock" title="Hasło dostępu" text="Opcjonalne - hasło trafia do klienta w osobnej wiadomości." %}
-{% include "pages/_mini.html" with icon="link" title="Jeden link dla klienta" text="Bez konta i instalacji. Link możesz wysłać ponownie na dowolny adres." %}
-{% include "pages/_mini.html" with icon="user" title="Do wielu klientów naraz" text="Jedna prośba do kilku klientów - każdy dostaje własny link i widzi tylko swoje dokumenty." %}
-{% include "pages/_mini.html" with icon="repeat" title="Prośby cykliczne" text="Codziennie, co tydzień, co 2 tygodnie albo co miesiąc - wychodzą same, z nazwą właściwego miesiąca." %}
-{% include "pages/_mini.html" with icon="list" title="Szablony próśb" text="Własne i gotowe listy dokumentów dla branż - prośba gotowa w kilka sekund." %}
-{% include "pages/_mini.html" with icon="check" title="Pozycje bez pliku" text="Coś do zrobienia zamiast pliku - np. nadanie biuru uprawnień w KSeF. Klient klika „Zrobione”, a Monituj przypomina, dopóki tego nie potwierdzi." %}
-</div>
-</div>
-
-<div class="feature-group" id="przypomnienia">
-<div class="feature-group__intro">
-<span class="feature-group__num">02</span>
-<h2>Automatyczne przypomnienia</h2>
-<p>Przestajesz pisać „przypominam o dokumentach”. Monituj robi to za Ciebie - dokładnie według Twoich zasad.</p>
-</div>
-<div class="feature-group__grid">
-{% include "pages/_mini.html" with icon="repeat" title="Własny harmonogram" text="Pierwsze po X dniach, kolejne co Y dni, maksymalnie Z razy." %}
-{% include "pages/_mini.html" with icon="clock" title="Godzina wysyłki" text="Przypomnienia wychodzą o wybranej godzinie, a nie w środku nocy." %}
-{% include "pages/_mini.html" with icon="clock" title="Przed terminem" text="2 dni przed terminem i w dniu terminu klient dostaje przypomnienie, że czas mija." %}
-{% include "pages/_mini.html" with icon="check" title="Auto-stop" text="Gdy dotrze komplet, przypomnienia wyłączają się same." %}
-{% include "pages/_mini.html" with icon="bell" title="Przypomnienie ręczne" text="Wyślij je w dowolnej chwili jednym kliknięciem." %}
-{% include "pages/_mini.html" with icon="history" title="Podgląd harmonogramu" text="W panelu widzisz dokładne daty kolejnych przypomnień." %}
-{% include "pages/_mini.html" with icon="mail" title="Lista braków w treści" text="Każde przypomnienie zawiera aktualną listę brakujących dokumentów." %}
-</div>
-</div>
-
-<div class="feature-group" id="kontrola">
-<div class="feature-group__intro">
-<span class="feature-group__num">03</span>
-<h2>Kontrola i przegląd</h2>
-<p>W każdej chwili wiesz, na czym stoisz - bez przeglądania skrzynki i arkuszy.</p>
-</div>
-<div class="feature-group__grid">
-{% include "pages/_mini.html" with icon="chart" title="Panel ze statystykami" text="Aktywne prośby, brakujące i dostarczone dokumenty w jednym widoku." %}
-{% include "pages/_mini.html" with icon="check" title="Akceptacja i odrzucanie" text="Odrzucasz dokument z powodem - klient wie, co poprawić. Wszystkie przesłane zaakceptujesz jednym kliknięciem." %}
-{% include "pages/_mini.html" with icon="user" title="Klienci z brakami" text="Lista klientów ze statusem i liczbą brakujących dokumentów." %}
-{% include "pages/_mini.html" with icon="upload" title="Import klientów" text="Wszystkich klientów dodasz naraz z pliku CSV lub Excel - np. z eksportu z programu księgowego." %}
-{% include "pages/_mini.html" with icon="search" title="Wyszukiwanie i filtry" text="Po kliencie, statusie, terminie i ustawieniach przypomnień." %}
-{% include "pages/_mini.html" with icon="file" title="Dokumenty klienta" text="Wszystkie dokumenty danego klienta - albo tylko te, których brakuje." %}
-{% include "pages/_mini.html" with icon="upload" title="Wszystko w jednym ZIP" text="Pliki prośby pobierzesz jednym kliknięciem, w folderach według listy dokumentów." %}
-{% include "pages/_mini.html" with icon="history" title="Pełna historia" text="Każde zdarzenie: wysłanie, otwarcie linku, przesłanie, akceptacja." %}
-{% include "pages/_mini.html" with icon="user" title="Praca w zespole" text="Zaproś współpracowników - każdy ma własny login, a w historii prośby widać, kto co zrobił. Jedna osoba może pracować w kilku zespołach. Start: 2 osoby, Biuro: 5, Pro: 15." %}
-{% include "pages/_mini.html" with icon="check" title="Wiele naraz" text="Zaznacz prośby lub klientów - na stronie albo wszystkie pasujące do filtrów - i usuń jednym kliknięciem." %}
-</div>
-</div>
-
-<div class="feature-group" id="pamiec-biura">
-<div class="feature-group__intro">
-<span class="feature-group__num">04</span>
-<h2>Pytania, karta klienta i kalendarz</h2>
-<p>Monituj pamięta za Ciebie nie tylko o dokumentach: o pytaniach do klienta, o tym, co już ustaliliście, i o tym, co masz zrobić dziś.</p>
-</div>
-<div class="feature-group__grid">
-{% include "pages/_mini.html" with icon="question" title="Pytania do klienta" text="„Co to za przelew 1 250 zł z 12.09?” - klient odpowiada słowami z linku w mailu, bez konta. Monituj przypomina, dopóki nie odpowie." %}
-{% include "pages/_mini.html" with icon="note" title="Po co pytam" text="Przy pytaniu zapisujesz, do czego potrzebujesz odpowiedzi. Widzi to tylko Twój zespół - klient nigdy." %}
-{% include "pages/_mini.html" with icon="check" title="Rozmowa, nie łańcuch maili" text="Dopytujesz w tej samej rozmowie, a klient odpowiada w tym samym miejscu. Wszystkie pytania i odpowiedzi zostają po kolei - zamykasz przyciskiem „Wyjaśnione”." %}
-{% include "pages/_mini.html" with icon="user" title="Karta klienta" text="Otwarte sprawy, pytania bez odpowiedzi, brakujące dokumenty i cała historia klienta na jednej stronie." %}
-{% include "pages/_mini.html" with icon="note" title="Notatki o kliencie" text="Notatki zespołu zamiast karteczek: „dzwoniła w sprawie leasingu, oddzwonić w piątek”." %}
-{% include "pages/_mini.html" with icon="calendar" title="Kalendarz" text="Terminy klientów, terminy odpowiedzi na pytania i wysyłki próśb cyklicznych w jednym widoku miesiąca." %}
-{% include "pages/_mini.html" with icon="bell" title="Przypomnij mi" text="Własne przypomnienia na wybrany dzień - z kalendarza albo z karty klienta." %}
-{% include "pages/_mini.html" with icon="sun" title="Poranny e-mail „Na dziś”" text="W dni robocze o 7:30: Twoje przypomnienia, terminy na dziś i jutro, pytania bez odpowiedzi i to, co dotarło od wczoraj." %}
-{% include "pages/_mini.html" with icon="phone" title="Kalendarz w telefonie" text="Subskrybujesz go w Google, Outlooku albo na iPhonie - terminy i przypomnienia pojawiają się tam same." %}
-</div>
-</div>
-
-<div class="feature-group" id="klient">
-<div class="feature-group__intro">
-<span class="feature-group__num">05</span>
-<h2>Dla Twojego klienta</h2>
-<p>Im prościej dla klienta, tym szybciej dostajesz dokumenty. Dlatego klient nie musi niczego zakładać ani instalować.</p>
-</div>
-<div class="feature-group__grid">
-{% include "pages/_mini.html" with icon="link" title="Bez konta" text="Klient otwiera link i od razu widzi listę dokumentów." %}
-{% include "pages/_mini.html" with icon="upload" title="Przeciągnij i upuść" text="Pliki dodaje prosto z komputera lub telefonu - także zdjęcia z iPhone'a (HEIC), które zapisujemy jako JPG." %}
-{% include "pages/_mini.html" with icon="mail" title="Potwierdzenia" text="Po każdym przesłaniu email z informacją, czego jeszcze brakuje." %}
-{% include "pages/_mini.html" with icon="x" title="Jasny powód poprawki" text="Jeśli dokument trzeba poprawić, klient wie dokładnie dlaczego." %}
-{% include "pages/_mini.html" with icon="check" title="„Nie mam tego dokumentu”" text="Klient zaznacza, że w tym okresie dokumentu nie było albo go nie dotyczy - przypomnienia o nim ustają, a Ty widzisz powód." %}
-{% include "pages/_mini.html" with icon="shield" title="Wie, kto prosi" text="Twoja nazwa i email, a jeśli chcesz - nazwa firmy i NIP z rejestru." %}
-</div>
-</div>
-
-<div class="feature-group" id="dane">
-<div class="feature-group__intro">
-<span class="feature-group__num">06</span>
-<h2>Dane i bezpieczeństwo</h2>
-<p>Dokumenty są potrzebne do zamknięcia sprawy - nie na zawsze. Monituj przechowuje je tylko tak długo, jak zdecydujesz.</p>
-</div>
-<div class="feature-group__grid">
-{% include "pages/_mini.html" with icon="shield" title="Automatyczne usuwanie" text="30, 90, 180 dni, rok lub własny okres dla każdej prośby - potem plik znika, a Ty i klient dostajecie powiadomienie." %}
-{% include "pages/_mini.html" with icon="trash" title="Usuwanie na żądanie" text="Prośbę albo klienta usuniesz w każdej chwili razem z plikami i historią - np. gdy klient poprosi o usunięcie danych." %}
-{% include "pages/_mini.html" with icon="server" title="Prywatny magazyn" text="Pliki nie są dostępne publicznie - tylko dla Ciebie i uprawnionego klienta." %}
-{% include "pages/_mini.html" with icon="key" title="Umowa powierzenia" text="Standardowa umowa powierzenia danych, zawierana wraz z Regulaminem." %}
-</div>
-</div>
-
-</div>
-</section>
-
-<section class="section section--flush-top">
-<div class="container">
-<div class="guest-cta">
-<span class="guest-cta__icon">{% include "pages/_icon.html" with icon="mail" %}</span>
-<div>
-<h2>Potrzebujesz dokumentów tylko raz?</h2>
-<p>Wyślij prośbę bez zakładania konta - z listą, terminem, hasłem i przypomnieniami. Wszystkie prośby zobaczysz w panelu pod stałym linkiem.</p>
-</div>
-<a class="btn btn-secondary btn-lg" href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
+<div class="lp-band">
+<p><strong>Potrzebujesz dokumentów tylko raz?</strong>Wyślij prośbę o dokumenty bez zakładania konta: z listą, terminem i przypomnieniami.</p>
+<a class="lp-btn lp-btn--black" href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta <span class="lp-arr">→</span></a>
 </div>
 </div>
 </section>

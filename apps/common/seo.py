@@ -11,6 +11,7 @@ is added here on purpose."""
 
 from django.conf import settings
 from django.templatetags.static import static
+from django.utils import timezone
 
 from apps.common.site import absolute_url
 
@@ -406,10 +407,11 @@ def for_request(request):
 # --- schema.org -----------------------------------------------------------
 
 
-SOCIAL_PROFILES = [
-    "https://www.facebook.com/monitujpl/",
-    "https://www.instagram.com/monitujpl/",
+SOCIAL_LINKS = [
+    {"name": "Facebook", "url": "https://www.facebook.com/monitujpl/"},
+    {"name": "Instagram", "url": "https://www.instagram.com/monitujpl/"},
 ]
+SOCIAL_PROFILES = [link["url"] for link in SOCIAL_LINKS]
 
 
 def organization():
@@ -559,9 +561,13 @@ def template_seo(request, template, segment, guide=None):
     extra = []
     if guide is not None:
         extra.append(faq_page(guide.faq_items))
+    # "... 2026": people search for this year's list. Only if it still fits.
+    name = f"{template.heading} {timezone.localdate().year}"
+    if len(page_title(name)) > 60:
+        name = template.heading
     return build(
         request,
-        template.heading,
+        name,
         template.summary,
         og_image=f"images/og/segment-{segment['slug']}.png",
         jsonld=[

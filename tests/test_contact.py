@@ -48,7 +48,7 @@ def test_contact_page_shows_the_form_and_address(client):
 def test_footer_shows_contact_address_everywhere(client):
     content = client.get(reverse("pages:faq")).content.decode()
 
-    assert 'class="site-footer__mail" href="mailto:kontakt@monituj.pl"' in content
+    assert 'class="lp-footer__mail" href="mailto:kontakt@monituj.pl"' in content
 
 
 @pytest.mark.django_db

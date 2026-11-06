@@ -1,20 +1,24 @@
 {% extends "pages/base_page.html" %}
 
-
 {% block hero_eyebrow %}FAQ{% endblock %}
-{% block hero_title %}Najczęstsze <strong>pytania</strong>{% endblock %}
-{% block hero_lead %}Nie znalazłeś odpowiedzi? Napisz do nas - odpowiemy najszybciej, jak to możliwe.{% endblock %}
-{% block hero_actions %}<a class="btn btn-secondary btn-lg" href="{% url 'pages:contact' %}">Skontaktuj się z nami</a>{% endblock %}
+{% block hero_title %}Pytania o zbieranie <strong>dokumentów od klientów.</strong>{% endblock %}
+{% block hero_lead %}Odpowiedzi o przypomnieniach, przesyłaniu dokumentów bez konta, bezpieczeństwie i cenach. Nie ma Twojego pytania? Napisz: {{ contact_email }}{% endblock %}
+{% block hero_actions %}
+<nav class="lp-tabs lp-tabs--dark" aria-label="Tematy pytań">
+{% for code, label in faq_categories %}<a href="#{{ code }}">{{ label }}</a>{% endfor %}
+<a href="{% url 'pages:contact' %}">Skontaktuj się z nami</a>
+</nav>
+{% endblock %}
 
 {% block page_body %}
-<section class="section section--flush-top">
-<div class="container container--narrow">
+<section class="lp-section">
+<div class="lp-wrap lp-wrap--narrow">
 {% for code, label in faq_categories %}
-<div class="faq-group" id="{{ code }}">
+<div class="lp-faq-cat" id="{{ code }}">
 <h2>{{ label }}</h2>
-<div class="faq">
-{% for item in faq %}{% if item.category == code %}{% include "pages/_faq_item.html" %}{% endif %}{% endfor %}
-</div>
+<div class="lp-qa">
+{% for item in faq %}{% if item.category == code %}<details><summary>{{ item.q }}</summary><p>{{ item.a }}</p></details>
+{% endif %}{% endfor %}</div>
 </div>
 {% endfor %}
 </div>

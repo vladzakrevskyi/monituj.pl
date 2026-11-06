@@ -27,20 +27,19 @@ def test_chapters_run_in_order_within_the_film():
 
 
 @pytest.mark.django_db
-def test_home_page_has_the_film_the_hero_card_and_the_dialog(client):
+def test_home_page_opens_the_film_in_a_dialog_from_the_hero(client):
     minutes, seconds = divmod(film.SECONDS, 60)
     page = client.get("/").content.decode()
 
-    assert 'id="film"' in page
+    # Without JavaScript the button leads to the film's own page.
     assert (
-        'class="film-card" href="#film" data-video-open aria-controls="film-dialog"'
+        f'href="{reverse("pages:film")}" data-video-open aria-controls="film-dialog"'
         in page
     )
-    assert "video/monituj-promo-thumb" in page
-    assert f">{minutes}:{seconds:02d}</span>" in page
+    assert f"Zobacz film · {minutes}:{seconds:02d}</a>" in page
     assert '<dialog class="video-dialog" id="film-dialog" data-modal-custom' in page
-    assert page.count("data-promo-video") == 2  # the section and the dialog
-    assert page.count("data-chapter ") == len(film.CHAPTERS)  # chapters once
+    assert page.count("data-promo-video") == 1  # only in the dialog
+    assert "data-chapter " not in page
     assert 'preload="none"' in page
     assert "js/promo_video.js" in page
 

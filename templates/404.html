@@ -2,77 +2,39 @@
 {% load static %}
 
 {% block page_name %}Nie znaleziono strony{% endblock %}
-{% block page_class %}page--flush{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages.css' %}">{% endblock %}
+{% block page_class %}page--flush lp-page{% endblock %}
+{% block extra_css %}<link rel="preload" href="{% static 'fonts/funnel-display-latin.woff2' %}" as="font" type="font/woff2" crossorigin>{% endblock %}
 
 {% block content %}
-<section class="hero hero--error">
-<div class="container hero__inner">
-<div class="hero__copy">
-<p class="eyebrow eyebrow--line">Błąd 404</p>
-<h1 class="display">Tej strony <strong>tu nie ma</strong></h1>
-<p class="hero__lead">Adres mógł się zmienić albo w linku jest literówka. Jeśli trafiłeś tu z maila z prośbą o dokumenty, prośba mogła zostać zamknięta lub usunięta - najlepiej napisz do osoby, która ją wysłała.</p>
-<div class="hero__actions">
+<section class="lp-phero lp-phero--full">
+<div class="lp-wrap lp-phero__grid">
+<div>
+<p class="lp-mono lp-label"><b aria-hidden="true">●</b> Błąd 404</p>
+<h1>Tej strony <strong>tu nie ma.</strong></h1>
+<p class="lp-lead">Adres mógł się zmienić albo w linku jest literówka. Jeśli trafiłeś tu z maila z prośbą o dokumenty, prośba mogła zostać zamknięta lub usunięta: najlepiej napisz do osoby, która ją wysłała.</p>
+<div class="lp-cta">
 {% if user.is_authenticated and not demo_account %}
-<a class="btn btn-dark btn-lg" href="{% url 'accounts:panel' %}" title="Przejdź do panelu Monituj">Przejdź do panelu</a>
-<a class="btn btn-secondary btn-lg" href="{% url 'landing' %}" title="Strona główna Monituj">Strona główna</a>
+<a class="lp-btn lp-btn--orange" href="{% url 'accounts:panel' %}" title="Przejdź do panelu Monituj">Przejdź do panelu <span class="lp-arr">→</span></a>
 {% else %}
-<a class="btn btn-dark btn-lg" href="{% url 'landing' %}" title="Strona główna Monituj">Strona główna</a>
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:contact' %}" title="Napisz do nas">Napisz do nas</a>
+<a class="lp-btn lp-btn--orange" href="{% url 'landing' %}" title="Strona główna Monituj">Strona główna <span class="lp-arr">→</span></a>
 {% endif %}
+<a class="lp-btn lp-btn--line" href="{% url 'pages:contact' %}" title="Napisz do nas">Napisz do nas</a>
 </div>
-<nav class="error-links" aria-label="Przydatne strony">
-<p class="error-links__label">Może szukasz</p>
-<ul>
-<li><a href="{% url 'pages:how-it-works' %}">Jak to działa</a></li>
-<li><a href="{% url 'pages:features' %}">Funkcje</a></li>
-<li><a href="{% url 'pages:pricing' %}">Cennik</a></li>
-<li><a href="{% url 'pages:faq' %}">Pytania i odpowiedzi</a></li>
-<li><a href="{% url 'pages:demo' %}">Demo</a></li>
-</ul>
+<nav class="lp-tabs lp-tabs--dark" aria-label="Przydatne strony">
+<a href="{% url 'pages:how-it-works' %}">Jak to działa</a>
+<a href="{% url 'pages:features' %}">Funkcje</a>
+<a href="{% url 'pages:pricing' %}">Cennik</a>
+<a href="{% url 'pages:faq' %}">Pytania i odpowiedzi</a>
+<a href="{% url 'pages:demo' %}">Demo</a>
 </nav>
 </div>
-
-<div class="hero__visual" aria-hidden="true">
-<span class="hero__circle hero__circle--orange"></span>
-<span class="hero__circle hero__circle--gray"></span>
-<div class="mock-window">
-<div class="mock-window__bar">
-<span class="mock-window__dots"><i></i><i></i><i></i></span>
-<span class="mock-window__url">monituj.pl{{ request.path|truncatechars:32 }}</span>
-</div>
-<div class="mock-window__body">
-<div class="mock-window__head">
-<div>
-<p class="mock-label">Czekasz na</p>
-<p class="mock-title">1 stronę, której nie ma</p>
-</div>
-</div>
-<ul class="mock-rows">
-<li class="mock-row">
-<div class="mock-row__main">
-<span class="mock-row__title">Szukana strona</span>
-<span class="mock-row__sub">{{ request.path|truncatechars:40 }}</span>
-<span class="mock-bar"><span class="mock-bar__fill mock-bar__fill--0"></span></span>
-</div>
-<span class="badge badge--missing">Brak</span>
-</li>
-<li class="mock-row">
-<div class="mock-row__main">
-<span class="mock-row__title">Strona główna</span>
-<span class="mock-row__sub">monituj.pl · zawsze na miejscu</span>
-<span class="mock-bar"><span class="mock-bar__fill mock-bar__fill--100"></span></span>
-</div>
-<span class="badge badge--complete">Dostępna</span>
-</li>
-</ul>
-<p class="error-code">404</p>
-</div>
-</div>
-<div class="mock-toast">
-<span class="mock-toast__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></span>
-<span><strong>Nie znaleziono strony</strong><span>Sprawdź adres albo wróć na stronę główną</span></span>
-</div>
+<div class="lp-card" aria-hidden="true">
+<div class="lp-mono lp-card__top"><span>Prośba o stronę</span><span class="lp-pill">Brak</span></div>
+<p class="lp-card__title">1 strona, której nie ma</p>
+<p class="lp-card__who">monituj.pl{{ request.path|truncatechars:32 }}</p>
+<div class="lp-bar lp-bar--missing"><i></i><i></i><i></i><i></i></div>
+<div class="lp-mono lp-bar-meta"><span>Dostarczono</span><strong>0 z 1</strong></div>
+<div class="lp-zero"><p><strong>Strona główna</strong>Zawsze na miejscu</p><b>404</b></div>
 </div>
 </div>
 </section>

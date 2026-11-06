@@ -1,4 +1,9 @@
 {% extends "base/base.html" %}
+{% load static %}
+
+{# The site's fonts and buttons, and the panel's own skin on top. #}
+{% block site_assets %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/panel.css' %}">{% endblock %}
 
 {% block layout %}
 <div class="app-shell">
@@ -118,7 +123,7 @@ Pomoc
 </aside>
 <div class="app-main">
 <header class="app-topbar">
-<a class="brand" href="{% url 'accounts:panel' %}" title="Monituj - przejdź do panelu">{% include "base/_logo.html" %}</a>
+<a class="brand" href="{% url 'accounts:panel' %}" title="Monituj - przejdź do panelu">{% include "base/_logo.html" with on_dark=True %}</a>
 {% include "base/_nav_toggle.html" with target="#app-sidebar" %}
 </header>
 {% include "demo/_bar.html" %}

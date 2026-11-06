@@ -1,9 +1,8 @@
-{% extends "base/base.html" %}
+{% extends "base/auth_base.html" %}
 
 {% block page_name %}Usuń konto{% endblock %}
-{% block page_class %}page--compact{% endblock %}
 
-{% block content %}
+{% block auth_form %}
 <div class="card card--danger">
 <h1>Usunąć konto na zawsze?</h1>
 <p class="text-muted">Konto <strong>{{ account_email }}</strong> zostanie usunięte natychmiast, razem ze wszystkimi danymi:</p>

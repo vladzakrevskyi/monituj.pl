@@ -45,17 +45,19 @@
 <link rel="stylesheet" href="{% static 'css/alerts.css' %}">
 <link rel="stylesheet" href="{% static 'css/modal.css' %}">
 <link rel="stylesheet" href="{% static 'css/utilities.css' %}">
+{% block site_assets %}<link rel="preload" href="{% static 'fonts/funnel-sans-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{% static 'css/marketing.css' %}">{% endblock %}
 {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
 {% if maintenance_bypass %}<div class="maintenance-bar" role="status"><strong>Tryb serwisowy włączony.</strong> Odwiedzający widzą stronę prac technicznych - Ty widzisz serwis, bo Twój adres IP jest na liście wyjątków.</div>{% endif %}
 {% block layout %}
-{% block site_header %}{% include "base/_public_header.html" %}{% endblock %}
+{% block site_header %}{% include "base/_site_header.html" %}{% endblock %}
 <main class="page {% block page_class %}{% endblock %}">
 {% include "base/_messages.html" %}
 {% block content %}{% endblock %}
 </main>
-{% block site_footer %}{% include "base/_public_footer.html" %}{% endblock %}
+{% block site_footer %}{% include "base/_site_footer.html" %}{% endblock %}
 {% endblock %}
 {% if cookie_consent.enabled %}{% include "base/_cookie_consent.html" %}{% endif %}
 <script src="{% static 'js/timezone.js' %}"></script>

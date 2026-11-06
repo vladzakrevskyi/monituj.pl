@@ -11,12 +11,12 @@
 {% block hero_lead %}Sześć zasad, dzięki którym klienci przysyłają dokumenty na czas i w komplecie - bez dziesiątek maili „przypominam o dokumentach”. Sprawdzą się w biurze rachunkowym, dziale kadr, kancelarii i każdej firmie, która czeka na papiery od innych.{% endblock %}
 
 {% block page_body %}
-<section class="section section--flush-top">
-<div class="container container--narrow">
-<article class="article">
+<section class="lp-section">
+<div class="lp-wrap lp-article">
 
-<nav class="article__toc" aria-label="Spis treści">
-<p class="article__toc-head">W tym poradniku</p>
+<aside class="lp-toc">
+<nav aria-label="Spis treści">
+<p class="lp-mono lp-label">W tym poradniku</p>
 <ol>
 <li><a href="#dlaczego">Dlaczego klienci nie przysyłają dokumentów na czas</a></li>
 <li><a href="#lista">Jedna lista zamiast wielu maili</a></li>
@@ -28,6 +28,9 @@
 <li><a href="#listy">Gotowe listy dokumentów dla branż</a></li>
 </ol>
 </nav>
+<a class="lp-btn lp-btn--orange lp-toc__cta" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+</aside>
+<article class="lp-prose">
 
 <h2 id="dlaczego">Dlaczego klienci nie przysyłają dokumentów na czas</h2>
 <p>Najczęściej nie ze złej woli. Klient nie pamięta dokładnie, czego od niego potrzebujesz, prośba zginęła w skrzynce między innymi wiadomościami, a termin wydaje się odległy - aż nagle jest jutro. Do tego przesłanie dokumentów bywa kłopotliwe: trzeba znaleźć właściwy mail, dołączyć pliki, sprawdzić, czy niczego nie pominął.</p>
@@ -61,7 +64,7 @@
 {% endfor %}
 </ul>
 
-<div class="article__summary">
+<div class="lp-summary">
 <h2>W skrócie</h2>
 <ul class="check-list">
 {% include "pages/_check.html" with text="jedna, konkretna lista dokumentów zamiast wielu maili" %}
@@ -72,9 +75,9 @@
 {% include "pages/_check.html" with text="prywatny magazyn i automatyczne usuwanie plików" %}
 </ul>
 <p>Monituj robi to wszystko za Ciebie: wysyłasz prośbę raz, a system przypomina, zbiera i pokazuje, czego jeszcze brakuje.</p>
-<div class="hero__actions">
-<a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:demo' %}">Wypróbuj demo</a>
+<div class="lp-cta">
+<a class="lp-btn lp-btn--orange" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+<a class="lp-btn lp-btn--outline" href="{% url 'pages:demo' %}">Wypróbuj demo</a>
 </div>
 </div>
 

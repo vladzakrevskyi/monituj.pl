@@ -1,22 +1,25 @@
 {% extends "pages/base_page.html" %}
+{% load static %}
 
 {% block hero_eyebrow %}Kalkulator czasu{% endblock %}
 {% block hero_title %}Ile kosztuje Cię <strong>przypominanie o dokumentach?</strong>{% endblock %}
-{% block hero_lead %}Ustaw, od ilu klientów co miesiąc zbierasz dokumenty, ile razy przypominasz i ile trwa jedno przypomnienie. Kalkulator pokaże, ile godzin i złotych miesięcznie zabiera ta praca.{% endblock %}
+{% block hero_lead %}Policz, ile godzin i złotych miesięcznie zabiera ręczne zbieranie dokumentów od klientów: maile, telefony i sprawdzanie braków.{% endblock %}
 
 {% block page_body %}
-{% include "pages/_calculator.html" %}
+{% include "pages/_lp_calculator.html" with num="01" calc_title="Policz czas na zbieranie dokumentów." %}
 
-<section class="section section--flush-top">
-<div class="container container--narrow">
-<article class="article">
-<h2>Jak liczymy</h2>
-<p>Mnożymy liczbę klientów przez liczbę przypomnień w miesiącu i czas jednego przypomnienia. W ten czas wchodzi nie tylko napisanie maila czy telefon, ale też sprawdzenie, czego jeszcze brakuje, i odszukanie wcześniejszej wiadomości. Wynik w złotych to ten czas pomnożony przez koszt godziny Twojej pracy.</p>
-<h2>Skąd biorą się godziny</h2>
-<p>Pięć minut na jedno przypomnienie wydaje się niczym. Ale przy 50 klientach i trzech przypomnieniach w miesiącu to już 150 wiadomości i telefonów - ponad 12 godzin, zwykle skumulowanych w kilku dniach przed terminem.</p>
-<h2>Jak odzyskać ten czas</h2>
-<p>W Monituj przypomnienia wychodzą same, tylko o tym, czego naprawdę brakuje, a Ty widzisz status każdego dokumentu. Zostaje Ci sprawdzenie plików, które dotarły. Zobacz, <a href="{% url 'pages:how-it-works' %}">jak to działa</a>, albo porównaj z <a href="{% url 'pages:comparison' %}">mailem, WhatsAppem i dyskiem</a>.</p>
-</article>
+<section class="lp-section">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b>02</b> Jak liczymy</p>
+<h2 class="lp-h2">Skąd biorą się godziny.</h2>
+<ol class="lp-steps">
+<li><span class="lp-steps__n">01</span><h3>Klienci × przypomnienia × minuty</h3><p>Liczymy też szukanie wcześniejszej wiadomości i sprawdzanie, czego jeszcze brakuje.</p></li>
+<li><span class="lp-steps__n">02</span><h3>5 minut to dużo</h3><p>50 klientów i 3 przypomnienia w miesiącu to 150 wiadomości: ponad 12 godzin tuż przed terminem.</p></li>
+<li><span class="lp-steps__n">03</span><h3>Jak odzyskać ten czas</h3><p>W Monituj <a href="{% url 'pages:how-it-works' %}">automatyczne przypomnienia o brakach</a> wychodzą same. Zostaje Ci sprawdzenie plików.</p></li>
+</ol>
+<a class="lp-more" href="{% url 'pages:comparison' %}">Zbieranie dokumentów mailem, WhatsAppem czy w Monituj? <span class="lp-arr">→</span></a>
 </div>
 </section>
 {% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/calculator.js' %}" defer></script>{% endblock %}

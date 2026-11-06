@@ -1,87 +1,53 @@
 {% extends "pages/base_page.html" %}
 
-
 {% block hero_eyebrow %}Bezpieczeństwo i RODO{% endblock %}
-{% block hero_title %}Dokumenty klientów <strong>pod ochroną</strong> - i tylko tak długo, jak trzeba{% endblock %}
-{% block hero_lead %}Zbierasz dokumenty, które często zawierają dane osobowe i finansowe. Dlatego bezpieczeństwo w Monituj jest częścią procesu, a nie dodatkową opcją.{% endblock %}
+{% block hero_title %}Bezpieczne przesyłanie dokumentów. <strong>Zgodnie z RODO.</strong>{% endblock %}
+{% block hero_lead %}Dokumenty klientów są szyfrowane, dostępne tylko dla Ciebie i osoby z linkiem, a po wybranym czasie usuwane automatycznie.{% endblock %}
 
 {% block page_body %}
-<section class="section section--flush-top">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">Ochrona dostępu</p>
-<h2 class="display-2">Kto może zobaczyć <strong>dokumenty</strong></h2>
-<p>Dostęp do dokumentów masz Ty oraz osoba, której przekazałeś link - i nikt więcej.</p>
-</div>
-<div class="feature-grid">
-{% include "pages/_feature.html" with icon="link" title="Unikalne linki" text="Każda prośba ma własny, losowo generowany link, którego nie da się odgadnąć." %}
-{% include "pages/_feature.html" with icon="lock" title="Hasło dostępu" text="Prośbę możesz dodatkowo zabezpieczyć hasłem. Klient dostaje je w osobnej wiadomości." %}
-{% include "pages/_feature.html" with icon="server" title="Prywatny magazyn plików" text="Pliki nie są dostępne pod publicznym adresem. Każde pobranie przechodzi kontrolę uprawnień i trafia do historii prośby." %}
-{% include "pages/_feature.html" with icon="file" title="Antywirus dla każdego pliku" text="Każdy plik sprawdza skaner antywirusowy, zanim trafi do Ciebie. Pliki Office z makrami i podrobione dokumenty blokujemy, a typ pliku sprawdzamy po zawartości, nie po rozszerzeniu." %}
-{% include "pages/_feature.html" with icon="shield" title="Szyfrowanie plików i połączenia" text="Każdy plik jest zaszyfrowany na dysku algorytmem AES-256 z osobnym kluczem, a cała komunikacja odbywa się przez HTTPS. Hasła kont przechowujemy tylko jako skrót Argon2." %}
-{% include "pages/_feature.html" with icon="key" title="Ochrona przed oszustami" text="Nazwy podszywające się pod banki i urzędy są blokowane, a każdy Twój klient może jednym kliknięciem zgłosić podejrzaną prośbę." %}
-</div>
-</div>
-</section>
-
-<section class="section section--flush-top">
-<div class="container">
-<div class="statement">
-<div class="statement__copy">
-<p class="eyebrow eyebrow--light">Minimalizacja danych</p>
-<h2 class="display-2">Dokument potrzebny do sprawy - <strong>nie na zawsze</strong></h2>
-<p>Dla każdej prośby wybierasz okres przechowywania plików: 30, 90, 180 dni, rok albo własny okres, maksymalnie 365 dni. Po tym czasie Monituj trwale usuwa plik i jego metadane. W historii prośby zostaje tylko informacja, że plik został usunięty.</p>
-</div>
-<ol class="retention-steps">
-<li><strong>Klient przesyła plik</strong><span>Zaczyna się okres przechowywania</span></li>
-<li><strong>Ty pobierasz i przetwarzasz</strong><span>Dokument jest dostępny w panelu</span></li>
-<li><strong>Okres mija</strong><span>Plik i jego nazwa są trwale usuwane</span></li>
-<li><strong>Oboje dostajecie powiadomienie</strong><span>Ty i Twój klient wiecie, że dane zniknęły</span></li>
-</ol>
-</div>
-</div>
-</section>
-
-<section class="section section--flush-top">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">RODO</p>
-<h2 class="display-2">Jasny podział <strong>odpowiedzialności</strong></h2>
-</div>
-<div class="duo">
-<div class="duo__card">
-<h3>Ty - administrator danych</h3>
-<p>Decydujesz, jakich dokumentów potrzebujesz, od kogo i jak długo je przechowywać. Dane Twoich klientów należą do Ciebie - gdy klient poprosi o ich usunięcie, usuniesz go razem ze wszystkimi prośbami i plikami jednym kliknięciem.</p>
-</div>
-<div class="duo__card duo__card--dark">
-<h3>Monituj - podmiot przetwarzający</h3>
-<p>Przetwarzamy dane Twoich klientów wyłącznie w Twoim imieniu i zgodnie z Twoimi ustawieniami, na podstawie umowy powierzenia zawieranej wraz z Regulaminem.</p>
-</div>
-</div>
-<div class="doc-links">
-<a class="doc-link" href="{% url 'legal:dpa' %}">{% include "pages/_icon.html" with icon="file" %}<span><strong>Umowa powierzenia</strong><span>Art. 28 RODO</span></span></a>
-<a class="doc-link" href="{% url 'legal:privacy' %}">{% include "pages/_icon.html" with icon="shield" %}<span><strong>Polityka prywatności</strong><span>Jak przetwarzamy dane</span></span></a>
-<a class="doc-link" href="{% url 'legal:terms' %}">{% include "pages/_icon.html" with icon="list" %}<span><strong>Regulamin</strong><span>Zasady korzystania z usługi</span></span></a>
-<a class="doc-link" href="{% url 'legal:cookies' %}">{% include "pages/_icon.html" with icon="server" %}<span><strong>Polityka cookies</strong><span>Tylko niezbędne pliki cookies</span></span></a>
-</div>
-</div>
-</section>
-
-<section class="section section--flush-top">
-<div class="container">
-<div class="security-band">
-<div>
-<p class="eyebrow">Rozliczalność</p>
-<h2 class="display-2">Pełna <strong>historia zdarzeń</strong></h2>
-<p>Każda prośba ma własną historię. W razie pytań klienta albo kontroli wiesz dokładnie, co się wydarzyło i kiedy.</p>
-</div>
-<ul class="check-list check-list--large">
-{% include "pages/_check.html" with text="Wysłanie prośby i przypomnień" %}
-{% include "pages/_check.html" with text="Otwarcie linku przez klienta" %}
-{% include "pages/_check.html" with text="Przesłanie, akceptacja i odrzucenie dokumentu" %}
-{% include "pages/_check.html" with text="Usunięcie pliku - przez klienta lub po okresie przechowywania" %}
-{% include "pages/_check.html" with text="Usunięcie prośby albo klienta z całą historią - gdy tego potrzebujesz" %}
+<section class="lp-section">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b>01</b> Ochrona dostępu</p>
+<h2 class="lp-h2">Jak chronimy dokumenty klientów.</h2>
+<ul class="lp-facts lp-facts--light">
+<li><b>AES-256</b><strong>Szyfrowanie plików</strong><p>Każdy plik szyfrowany na dysku z osobnym kluczem, cała komunikacja przez HTTPS.</p></li>
+<li><b>1 link</b><strong>Tylko Ty i Twój klient</strong><p>Każda prośba ma własny, losowy link. Możesz dodać hasło, wysyłane w osobnej wiadomości.</p></li>
+<li><b>Antywirus</b><strong>Dla każdego pliku</strong><p>Skaner sprawdza plik, zanim trafi do Ciebie. Makra i podrobione dokumenty blokujemy.</p></li>
+<li><b>Prywatny</b><strong>Magazyn plików</strong><p>Pliki nie mają publicznego adresu. Każde pobranie przechodzi kontrolę uprawnień.</p></li>
+<li><b>Historia</b><strong>Każde zdarzenie z datą</strong><p>Wysłanie, otwarcie linku, przesłanie i pobranie: wiesz, co się stało i kiedy.</p></li>
+<li><b>Ochrona</b><strong>Przed oszustami</strong><p>Nazwy podszywające się pod banki i urzędy blokujemy, a klient zgłosi podejrzaną prośbę 1 kliknięciem.</p></li>
 </ul>
+</div>
+</section>
+
+<section class="lp-section lp-dark">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b>02</b> Minimalizacja danych</p>
+<h2 class="lp-h2">Automatyczne usuwanie dokumentów po czasie.</h2>
+<ol class="lp-timeline">
+<li><time class="lp-mono">Start</time><strong>Klient przesyła</strong><p>Zaczyna się okres przechowywania</p></li>
+<li><time class="lp-mono">W trakcie</time><strong>Ty pobierasz</strong><p>Dokument dostępny w panelu</p></li>
+<li><time class="lp-mono">30–365 dni</time><strong>Okres mija</strong><p>Plik i jego nazwa trwale usunięte</p></li>
+<li><time class="lp-mono">Od razu</time><strong>Powiadomienie</strong><p>Ty i klient wiecie, że dane zniknęły</p></li>
+<li class="is-done"><time class="lp-mono">Historia</time><strong>Ślad</strong><p>Tylko informacja o usunięciu</p></li>
+</ol>
+<p class="lp-note"><b>Okres wybierasz dla prośby:</b> 30, 90, 180 dni, rok albo własny, maksymalnie 365 dni.</p>
+</div>
+</section>
+
+<section class="lp-section lp-section--grey">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b>03</b> RODO</p>
+<h2 class="lp-h2">RODO: kto odpowiada za dane.</h2>
+<div class="lp-split">
+<div class="lp-panel"><p class="lp-mono lp-label"><b aria-hidden="true">●</b> Ty</p><h3>Administrator danych</h3><p>Decydujesz, jakich dokumentów potrzebujesz, od kogo i jak długo je przechowywać. Klienta usuniesz razem ze wszystkimi prośbami i plikami jednym kliknięciem.</p></div>
+<div class="lp-panel lp-panel--dark"><p class="lp-mono lp-label"><b aria-hidden="true">●</b> Monituj</p><h3>Podmiot przetwarzający</h3><p>Przetwarzamy dane Twoich klientów wyłącznie w Twoim imieniu, na podstawie umowy powierzenia zawieranej wraz z Regulaminem.</p></div>
+</div>
+<div class="lp-links">
+<a href="{% url 'legal:dpa' %}"><strong>Umowa powierzenia</strong><span>Art. 28 RODO</span></a>
+<a href="{% url 'legal:privacy' %}"><strong>Polityka prywatności</strong><span>Jak przetwarzamy dane</span></a>
+<a href="{% url 'legal:terms' %}"><strong>Regulamin</strong><span>Zasady korzystania z usługi</span></a>
+<a href="{% url 'legal:cookies' %}"><strong>Polityka cookies</strong><span>Jakie pliki cookies</span></a>
 </div>
 </div>
 </section>

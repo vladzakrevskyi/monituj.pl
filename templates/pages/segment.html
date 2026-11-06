@@ -7,134 +7,84 @@
 <span aria-current="page">{{ segment.title }}</span>
 </nav>
 {% endblock %}
+{% block hero_layout %}{% endblock %}
 {% block hero_eyebrow %}{{ segment.title }}{% endblock %}
-{% block hero_title %}{{ segment.h1 }}{% endblock %}
+{% block hero_title %}{{ segment.h1 }} <strong>{{ segment.h1_accent }}</strong>{% endblock %}
 {% block hero_lead %}{{ segment.lead }}{% endblock %}
 {% block hero_actions %}
-<div class="hero__actions">
-<a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
-<a class="btn btn-secondary btn-lg" href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
+<div class="lp-cta">
+<a class="lp-btn lp-btn--orange" href="{% url 'accounts:register' %}">Zacznij za darmo <span class="lp-arr">→</span></a>
+<a class="lp-btn lp-btn--line" href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
+</div>
+{% endblock %}
+{% block hero_side %}
+<div class="lp-card lp-list-card" aria-label="Przykładowa lista dokumentów">
+<div class="lp-mono lp-card__top"><span>Lista dokumentów</span><span class="lp-pill">{{ segment.checklist|length }} pozycji</span></div>
+<p class="lp-card__title">{{ segment.title }}: przykładowa lista</p>
+<ul class="lp-docs">
+{% for item in segment.checklist|slice:":5" %}<li><span><i class="lp-tick" aria-hidden="true"></i>{{ item }}</span></li>
+{% endfor %}</ul>
+<div class="lp-zero"><p><strong>Przypomnienia o brakach</strong>Wychodzą same, aż dotrze komplet</p><b>0</b></div>
 </div>
 {% endblock %}
 
 {% block page_body %}
-<section class="section section--flush-top">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">Znasz to?</p>
-<h2 class="display-2">Gdzie dziś <strong>ucieka czas</strong></h2>
+<section class="lp-section">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b>01</b> Różnica</p>
+<h2 class="lp-h2">Zbieranie dokumentów bez pogoni.</h2>
+<div class="lp-vs">
+<div class="lp-vs__col lp-vs__col--before">
+<h3 class="lp-mono lp-label">Znasz to?</h3>
+<ul>
+{% for pain in segment.pains %}<li><i class="lp-x" aria-hidden="true"></i><s>{{ pain }}</s></li>
+{% endfor %}</ul>
 </div>
-<div class="pain-grid pain-grid--three">
-{% for pain in segment.pains %}
-<div class="pain-card">
-<span class="pain-card__icon">{% include "pages/_icon.html" with icon="clock" %}</span>
-<p>{{ pain }}</p>
-</div>
-{% endfor %}
+<div class="lp-vs__col lp-vs__col--after lp-dark">
+<h3 class="lp-mono lp-label"><b aria-hidden="true">●</b> Z Monituj</h3>
+<ul>
+{% for benefit in segment.benefits|slice:":4" %}<li><i class="lp-tick" aria-hidden="true"></i>{{ benefit }}</li>
+{% endfor %}</ul>
 </div>
 </div>
-</section>
-
-<section class="section section--flush-top">
-<div class="container">
-<article class="segment">
-<div class="segment__copy">
-<h2>Jak pomaga Monituj</h2>
-<p>{{ segment.solution }}</p>
-<ul class="check-list">
-{% for benefit in segment.benefits %}{% include "pages/_check.html" with text=benefit %}{% endfor %}
-</ul>
-</div>
-<div class="segment__example" aria-label="Przykładowa lista dokumentów">
-<p class="segment__example-head">Przykładowa lista dokumentów</p>
-<ul class="segment__list">
-{% for example in segment.checklist %}
-<li><span>{{ example }}</span><span class="badge {% if forloop.counter <= 3 %}badge--complete{% elif forloop.counter <= 5 %}badge--progress{% else %}badge--missing{% endif %}">{% if forloop.counter <= 3 %}Zaakceptowany{% elif forloop.counter <= 5 %}Dostarczony{% else %}Brak{% endif %}</span></li>
-{% endfor %}
-</ul>
-<p class="segment__example-foot">Listę dopasujesz do siebie - każdy dokument ma własny status.</p>
-</div>
-</article>
+<a class="lp-more" href="{% url 'pages:how-it-works' %}">Jak działa zbieranie dokumentów krok po kroku <span class="lp-arr">→</span></a>
 </div>
 </section>
 
-{% if templates %}<section class="section section--flush-top">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">Gotowe szablony</p>
-<h2 class="display-2">Listy dokumentów <strong>gotowe do wysłania</strong></h2>
-</div>
-<div class="template-grid">
-{% for template in templates %}
-<a class="template-card" href="{% url 'pages:template' template.slug %}">
-<span class="template-card__count">{{ template.items|length }} dokumentów</span>
-<h3>{{ template.title }}</h3>
-<p>{{ template.summary }}</p>
-<span class="template-card__more">Zobacz listę &rarr;</span>
-</a>
-{% endfor %}
-</div>
+{% if templates %}<section class="lp-section lp-section--grey">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b>02</b> Gotowe listy</p>
+<h2 class="lp-h2">Gotowe listy dokumentów: {{ segment.title|lower }}.</h2>
+<div class="lp-tcards">
+{% for template in templates %}<a class="lp-tcard" href="{% url 'pages:template' template.slug %}"><strong>{{ template.title }}</strong><span>{{ template.summary }}</span><em>{{ template.items|length }} dokumentów · zobacz listę →</em></a>
+{% endfor %}</div>
+<a class="lp-more" href="{% url 'pages:templates' %}">Wszystkie listy dokumentów <span class="lp-arr">→</span></a>
 </div>
 </section>
 
-{% endif %}<section class="section section--flush-top">
-<div class="container container--narrow">
-<div class="section-head">
-<p class="eyebrow">Jak to działa</p>
-<h2 class="display-2">Trzy kroki <strong>zamiast pogoni</strong></h2>
+{% endif %}<section class="lp-section">
+<div class="lp-wrap lp-faq__grid">
+<div class="lp-faq__head">
+<p class="lp-mono lp-label"><b>03</b> Pytania</p>
+<h2 class="lp-h2">Pytania o zbieranie dokumentów: {{ segment.title|lower }}.</h2>
+<a class="lp-more" href="{% url 'pages:faq' %}">Wszystkie pytania <span class="lp-arr">→</span></a>
 </div>
-<ol class="timeline">
-<li class="timeline__step">
-<span class="timeline__num">1</span>
-<div class="timeline__body">
-<h3>Wysyłasz listę dokumentów</h3>
-<p>Tworzysz prośbę z listą dokumentów i terminem. Odbiorca dostaje email z linkiem - bez zakładania konta i bez instalowania aplikacji.</p>
-</div>
-</li>
-<li class="timeline__step">
-<span class="timeline__num">2</span>
-<div class="timeline__body">
-<h3>Monituj przypomina o brakach</h3>
-<p>Przypomnienia wychodzą same, o tej godzinie, o której wysłałeś prośbę - aż dotrze komplet. Nie musisz pisać kolejnego maila „przypominam o dokumentach”.</p>
-</div>
-</li>
-<li class="timeline__step">
-<span class="timeline__num">3</span>
-<div class="timeline__body">
-<h3>Sprawdzasz i masz komplet</h3>
-<p>W panelu widzisz status każdego dokumentu. Akceptujesz albo odrzucasz z podaniem powodu - odbiorca od razu wie, co poprawić.</p>
-</div>
-</li>
-</ol>
-<div class="section-cta">
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:how-it-works' %}">Zobacz cały proces</a>
-</div>
+<div class="lp-qa">
+{% for item in segment.faq %}<details{% if forloop.first %} open{% endif %}><summary>{{ item.q }}</summary><p>{{ item.a }}</p></details>
+{% endfor %}</div>
 </div>
 </section>
 
-<section class="section section--flush-top">
-<div class="container container--narrow">
-<div class="section-head">
-<p class="eyebrow">Pytania</p>
-<h2 class="display-2">{{ segment.title }}: <strong>najczęstsze pytania</strong></h2>
-</div>
-<div class="faq">
-{% for item in segment.faq %}{% include "pages/_faq_item.html" %}{% endfor %}
-</div>
-</div>
-</section>
-
-<section class="section section--flush-top">
-<div class="container">
-<div class="note-card">
-<h2>Inne branże</h2>
-<p>Monituj działa tak samo wszędzie, gdzie praca czeka na dokumenty od innych osób.</p>
-<nav class="chip-nav" aria-label="Inne branże">
-{% for other in others %}<a class="chip" href="{% url 'pages:segment' other.slug %}">{{ other.title }}</a>{% endfor %}
-<a class="chip" href="{% url 'pages:guide' %}">Poradnik: jak zbierać dokumenty</a>
-{% if segment.slug == "biura-rachunkowe" %}<a class="chip" href="{% url 'pages:outside-ksef' %}">Poradnik: dokumenty spoza KSeF</a><a class="chip" href="{% url 'pages:client-questions' %}">Poradnik: pytania do klienta</a>{% endif %}
-</nav>
-</div>
+<section class="lp-section lp-section--grey">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b aria-hidden="true">●</b> Więcej</p>
+<h2 class="lp-h2">Inne branże i poradniki.</h2>
+<div class="lp-chips">
+{% for other in others %}<a class="lp-chip" href="{% url 'pages:segment' other.slug %}">{{ other.title }} <span class="lp-arr">→</span></a>
+{% endfor %}<a class="lp-chip" href="{% url 'pages:guide' %}">Jak zbierać dokumenty od klientów <span class="lp-arr">→</span></a>
+{% if segment.slug == "biura-rachunkowe" %}<a class="lp-chip" href="{% url 'pages:outside-ksef' %}">Dokumenty spoza KSeF <span class="lp-arr">→</span></a>
+<a class="lp-chip" href="{% url 'pages:client-questions' %}">Pytania do klienta biura <span class="lp-arr">→</span></a>
+{% endif %}</div>
 </div>
 </section>
 {% endblock %}

@@ -7,33 +7,23 @@
 </nav>
 {% endblock %}
 {% block hero_eyebrow %}Szablony dokumentów{% endblock %}
-{% block hero_title %}Gotowe listy dokumentów <strong>do zebrania od klientów</strong>{% endblock %}
-{% block hero_lead %}Co przygotować do rozliczenia miesiąca, zatrudnienia, kredytu czy sprawy spadkowej - listy dla firm w Polsce, z wyjaśnieniem każdego dokumentu. Wyślij je klientowi w Monituj jednym kliknięciem.{% endblock %}
+{% block hero_title %}Gotowe listy dokumentów <strong>do wysłania klientowi.</strong>{% endblock %}
+{% block hero_lead %}Listy dokumentów do rozliczenia miesiąca, zatrudnienia, kredytu czy sprawy spadkowej, z wyjaśnieniem każdego dokumentu. Wyślij listę klientowi w 2 minuty, a Monituj przypomni o brakach.{% endblock %}
 {% block hero_actions %}
-<nav class="chip-nav" aria-label="Branże">
-{% for group in groups %}<a class="chip" href="#{{ group.segment.slug }}">{{ group.segment.title }}</a>{% endfor %}
+<nav class="lp-tabs lp-tabs--dark" aria-label="Branże">
+{% for group in groups %}<a href="#{{ group.segment.slug }}">{{ group.segment.title }}</a>{% endfor %}
 </nav>
 {% endblock %}
 
 {% block page_body %}
-<section class="section section--flush-top">
-<div class="container">
+<section class="lp-section">
+<div class="lp-wrap">
 {% for group in groups %}
-<div class="template-section" id="{{ group.segment.slug }}">
-<div class="template-section__head">
-<h2>{{ group.segment.title }}</h2>
-<a class="link-arrow" href="{% url 'pages:segment' group.segment.slug %}">Monituj dla branży &rarr;</a>
-</div>
-<div class="template-grid">
-{% for template in group.templates %}
-<a class="template-card" href="{% url 'pages:template' template.slug %}">
-<span class="template-card__count">{{ template.items|length }} dokumentów</span>
-<h3>{{ template.title }}</h3>
-<p>{{ template.summary }}</p>
-<span class="template-card__more">Zobacz listę &rarr;</span>
-</a>
-{% endfor %}
-</div>
+<div class="lp-group" id="{{ group.segment.slug }}">
+<div class="lp-group__head"><h2>Lista dokumentów: {{ group.segment.title|lower }}</h2><a href="{% url 'pages:segment' group.segment.slug %}">Monituj dla branży →</a></div>
+<div class="lp-tcards">
+{% for template in group.templates %}<a class="lp-tcard" href="{% url 'pages:template' template.slug %}"><strong>{{ template.title }}</strong><span>{{ template.summary }}</span><em>{{ template.items|length }} dokumentów · zobacz listę →</em></a>
+{% endfor %}</div>
 </div>
 {% endfor %}
 </div>

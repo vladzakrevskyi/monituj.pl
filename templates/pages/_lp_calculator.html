@@ -1,0 +1,31 @@
+{% comment %}
+The time calculator (static/js/calculator.js fills the outputs). Needs
+calculator_plans in the context and the script on the page.
+{% endcomment %}
+<section class="lp-section lp-dark" id="kalkulator">
+<div class="lp-wrap lp-calc__grid" data-calculator>
+<div>
+<p class="lp-mono lp-label"><b>{{ num|default:"●" }}</b> Kalkulator</p>
+<h2 class="lp-h2">{{ calc_title|default:"Ile kosztuje Cię ręczne zbieranie dokumentów?" }}</h2>
+<div class="lp-sliders">
+<label><span>Klienci, od których co miesiąc zbierasz dokumenty</span><output data-show="clients">50</output><input type="range" min="1" max="300" step="1" value="50" data-input="clients"></label>
+<label><span>Przypomnienia do jednego klienta w miesiącu</span><output data-show="times">3</output><input type="range" min="1" max="10" step="1" value="3" data-input="times"></label>
+<label><span>Minuty na jedno przypomnienie: mail, telefon, sprawdzenie braków</span><output data-show="minutes">5</output><input type="range" min="1" max="30" step="1" value="5" data-input="minutes"></label>
+<label><span>Koszt godziny Twojej pracy</span><output data-show="rate">80 zł</output><input type="range" min="20" max="300" step="10" value="80" data-input="rate"></label>
+</div>
+</div>
+<div class="lp-result" aria-live="polite">
+<p class="lp-mono lp-label">Co miesiąc na przypominanie</p>
+<p class="lp-result__hours" data-out="hours">13 h</p>
+<p class="lp-result__money">≈ <span data-out="money">1 000 zł</span></p>
+<div class="lp-result__plan">
+<span class="lp-mono">Monituj zrobi to za Ciebie</span>
+<strong data-out="plan">Plan Biuro: 89 zł netto miesięcznie</strong>
+<p class="lp-result__payback" data-out="payback"></p>
+</div>
+<a class="lp-btn lp-btn--orange" href="{% url 'accounts:register' %}">Odzyskaj ten czas <span class="lp-arr">→</span></a>
+<p class="lp-mono lp-result__note">Szacunek z Twoich danych, liczony w przeglądarce</p>
+</div>
+</div>
+{{ calculator_plans|json_script:"calculator-plans" }}
+</section>

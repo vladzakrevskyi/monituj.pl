@@ -1,9 +1,8 @@
-{% extends "base/base.html" %}
+{% extends "base/auth_base.html" %}
 
 {% block page_name %}Przełączyć konto?{% endblock %}
-{% block page_class %}page--compact{% endblock %}
 
-{% block content %}
+{% block auth_form %}
 <div class="card">
 <h1>Przełączyć konto?</h1>
 <p>Jesteś zalogowany jako <strong>{{ user.email }}</strong>. Ten link otwiera panel konta <strong>{{ target_email }}</strong>.</p>

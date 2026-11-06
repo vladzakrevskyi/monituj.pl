@@ -104,7 +104,7 @@ FAQ = [
     },
     {
         "category": "firma",
-        "home": True,
+        "home": False,
         "q": "Czy mogę zadać klientowi pytanie, a nie prosić o dokument?",
         "a": (
             "Tak. Wybierz „Zadaj pytanie”, np. „Co to za przelew 1 250 zł z "
@@ -149,7 +149,7 @@ FAQ = [
     },
     {
         "category": "firma",
-        "home": False,
+        "home": True,
         "q": "Co z fakturami, które są w KSeF?",
         "a": (
             "O faktury wystawione w KSeF nie musisz prosić klienta - biuro pobiera "
@@ -247,7 +247,7 @@ FAQ = [
     },
     {
         "category": "klient",
-        "home": False,
+        "home": True,
         "q": "Czy klienci bez wprawy w komputerach sobie poradzą?",
         "a": (
             "Tak. Klient dostaje e-mail z jednym przyciskiem, a na stronie przy "
@@ -258,7 +258,7 @@ FAQ = [
     },
     {
         "category": "dane",
-        "home": True,
+        "home": False,
         "q": "Jak długo przechowujecie dokumenty?",
         "a": (
             "Tyle, ile ustawisz dla danej prośby: 30, 90 lub 180 dni, rok albo "
@@ -268,7 +268,7 @@ FAQ = [
     },
     {
         "category": "dane",
-        "home": False,
+        "home": True,
         "q": "Czy dokumenty moich klientów są bezpieczne?",
         "a": (
             "Każda prośba ma unikalny, trudny do odgadnięcia link, który możesz "
@@ -290,7 +290,7 @@ FAQ = [
     },
     {
         "category": "konto",
-        "home": False,
+        "home": True,
         "q": "Ile kosztuje Monituj?",
         "a": (
             "Płacisz za liczbę próśb w toku, czyli prowadzonych jednocześnie. "
@@ -355,7 +355,7 @@ FAQ = [
     },
     {
         "category": "konto",
-        "home": True,
+        "home": False,
         "q": "Czy mogę pracować w Monituj z zespołem?",
         "a": (
             "Tak, od planu Start. W zakładce Zespół zapraszasz współpracowników "
@@ -560,18 +560,18 @@ SEGMENTS = [
 # what people there actually search for.
 SEGMENT_PAGES = {
     "biura-rachunkowe": {
-        "seo_name": "Portal klienta dla biura rachunkowego",
+        "seo_name": "Aplikacja dla biura rachunkowego do dokumentów",
         "seo_description": (
             "Wyciągi, faktury spoza KSeF i raporty od klientów biura rachunkowego "
             "przed terminem VAT i JPK. Lista co miesiąc, przypomnienia same, "
             "klient bez konta."
         ),
-        "h1": "Dokumenty od klientów biura rachunkowego - na czas, bez pogoni",
+        "h1": "Dokumenty od klientów biura rachunkowego.",
+        "h1_accent": "Na czas.",
         "lead": (
-            "Co miesiąc ta sama sytuacja: zbliża się termin rozliczenia, a "
-            "połowa klientów jeszcze nie przysłała faktur i wyciągów. Monituj "
-            "wysyła każdemu klientowi listę dokumentów za dany miesiąc i sam "
-            "przypomina o brakach - Ty tylko księgujesz to, co już dotarło."
+            "Aplikacja dla biura rachunkowego, która co miesiąc wysyła klientom listę "
+            "dokumentów i sama przypomina o brakach. Ty księgujesz to, co już dotarło, "
+            "a termin VAT i JPK przestaje być wyścigiem."
         ),
         "pains": [
             "Dziesiątki maili i telefonów „prześlij, proszę, wyciąg za wrzesień”.",
@@ -641,17 +641,17 @@ SEGMENT_PAGES = {
         ],
     },
     "kadry": {
-        "seo_name": "Dokumenty do akt osobowych nowego pracownika",
+        "seo_name": "Lista dokumentów do zatrudnienia pracownika",
         "seo_description": (
             "Świadectwa pracy, badania, kwestionariusz osobowy - komplet do akt "
             "przed pierwszym dniem pracy. Monituj sam przypomina o brakach."
         ),
-        "h1": "Komplet dokumentów od nowego pracownika przed pierwszym dniem",
+        "h1": "Dokumenty do zatrudnienia pracownika.",
+        "h1_accent": "Komplet przed 1. dniem.",
         "lead": (
-            "Nowy pracownik to lista dokumentów, które muszą trafić do akt "
-            "osobowych, zanim zacznie pracę. Zamiast pilnować tego mailami i "
-            "telefonami, wysyłasz mu jeden link z listą - Monituj przypomina o "
-            "brakach, a Ty widzisz, czego jeszcze brakuje w aktach."
+            "Nowy pracownik dostaje listę dokumentów do zatrudnienia i przesyła je "
+            "z telefonu, bez zakładania konta. Monituj sam przypomina o brakach, "
+            "więc akta osobowe są kompletne przed pierwszym dniem pracy."
         ),
         "pains": [
             "Pracownik obiecuje dosłać dokumenty „w poniedziałek” - i zapomina.",
@@ -708,12 +708,12 @@ SEGMENT_PAGES = {
             "jednym miejscu, z historią wpływu. Monituj przypomina klientom "
             "kancelarii o brakach."
         ),
-        "h1": "Komplet dokumentów do sprawy - bez dopytywania klienta",
+        "h1": "Komplet dokumentów do sprawy.",
+        "h1_accent": "Bez dopytywania.",
         "lead": (
-            "Do sprawy potrzebujesz kompletu dokumentów, a klient przysyła je na "
-            "raty, różnymi kanałami. Monituj zbiera je w jednej prośbie, z "
-            "terminem, statusem każdego dokumentu i historią tego, kiedy co "
-            "wpłynęło."
+            "Klient kancelarii dostaje listę dokumentów do sprawy i przesyła je bez "
+            "zakładania konta. Monituj sam przypomina o brakach, a historia pokazuje, "
+            "kiedy dotarł każdy dokument."
         ),
         "pains": [
             "Dokumenty do sprawy przychodzą mailem, komunikatorem i pocztą.",
@@ -761,18 +761,18 @@ SEGMENT_PAGES = {
         ],
     },
     "posrednictwo": {
-        "seo_name": "Dokumenty do kredytu i ubezpieczenia",
+        "seo_name": "Dokumenty do kredytu hipotecznego od klienta",
         "seo_description": (
             "Zaświadczenia, wyciągi i dokumenty nieruchomości do wniosku - w "
             "komplecie i na czas. Monituj sam przypomina klientowi, czego "
             "jeszcze brakuje."
         ),
-        "h1": "Wniosek kredytowy rusza, gdy dotrze komplet dokumentów",
+        "h1": "Dokumenty do kredytu od klienta.",
+        "h1_accent": "W komplecie.",
         "lead": (
-            "Wniosek stoi, bo klient nie przysłał jednego zaświadczenia - a "
-            "każdy dzień zwłoki to ryzyko, że transakcja się opóźni. Monituj "
-            "wysyła klientowi listę dokumentów do wniosku i przypomina o brakach, "
-            "a Ty wiesz, kiedy możesz ruszać."
+            "Klient dostaje listę dokumentów do kredytu hipotecznego, ubezpieczenia "
+            "albo sprzedaży mieszkania i przesyła je z telefonu. Wniosek rusza, gdy "
+            "dotrze komplet, bez telefonów do klienta."
         ),
         "pains": [
             "Wniosek czeka tygodniami na jedno zaświadczenie o dochodach.",
@@ -819,18 +819,18 @@ SEGMENT_PAGES = {
         ],
     },
     "b2b": {
-        "seo_name": "Dokumenty przy onboardingu klienta B2B",
+        "seo_name": "Dokumenty od kontrahenta przy onboardingu B2B",
         "seo_description": (
             "Umowy, dane rejestrowe, pełnomocnictwa - ta sama lista dokumentów "
             "dla każdego nowego klienta, z terminem i automatycznymi "
             "przypomnieniami."
         ),
-        "h1": "Onboarding klienta bez blokujących braków w dokumentach",
+        "h1": "Dokumenty od nowego kontrahenta.",
+        "h1_accent": "Bez braków.",
         "lead": (
-            "Rozpoczęcie współpracy blokuje brak jednego dokumentu, a o brakach "
-            "dowiadujesz się dopiero przy realizacji. Z Monituj każdy nowy klient "
-            "dostaje tę samą listę dokumentów z terminem, a przypomnienia "
-            "pilnują reszty."
+            "Ta sama lista dokumentów dla każdego nowego klienta lub kontrahenta: dane "
+            "rejestrowe, umowy, pełnomocnictwa. Z terminem i automatycznymi "
+            "przypomnieniami, aż dotrze komplet."
         ),
         "pains": [
             "Start projektu przesuwa się, bo brakuje podpisanej umowy lub danych.",

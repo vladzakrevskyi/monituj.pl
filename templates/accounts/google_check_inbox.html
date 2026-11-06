@@ -1,9 +1,8 @@
-{% extends "base/base.html" %}
+{% extends "base/auth_base.html" %}
 
 {% block page_name %}Sprawdź swoją skrzynkę{% endblock %}
-{% block page_class %}page--compact{% endblock %}
 
-{% block content %}
+{% block auth_form %}
 <div class="card">
 <h1>Sprawdź swoją skrzynkę</h1>
 <p>Wysłaliśmy link potwierdzający na <strong>{{ email }}</strong>. Otwórz go <strong>w tej przeglądarce</strong> w ciągu 30 minut - potem logowanie przez Google zadziała od razu.</p>

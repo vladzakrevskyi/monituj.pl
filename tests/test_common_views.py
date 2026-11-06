@@ -87,7 +87,7 @@ def test_faq_page_shows_every_question(client):
 def test_active_page_is_marked_in_navigation(client):
     content = client.get(reverse("pages:features")).content.decode()
 
-    assert f'href="{reverse("pages:features")}" class="is-active"' in content
+    assert f'href="{reverse("pages:features")}" aria-current="page"' in content
 
 
 @pytest.mark.django_db
@@ -168,12 +168,15 @@ def test_plain_text_email_parts_are_not_html_escaped(request_record, request_ite
 
 
 @pytest.mark.django_db
-def test_site_and_emails_show_the_logo_image(client):
-    page = client.get(reverse("landing")).content.decode()
-    # Dark text on the white header, white text on the black footer.
-    assert "images/brand/logo/monituj-logo.svg" in page
-    assert "images/brand/logo/monituj-logo-white.svg" in page
+def test_site_and_emails_show_the_logo_image(client, user):
+    # The site's header and footer are black: the white logo.
+    page = client.get(reverse("pages:pricing")).content.decode()
+    assert page.count("images/brand/logo/monituj-logo-white.svg") == 2
     assert 'alt="Monituj"' in page
+    # The panel is black around its menu and its top bar on a phone, too.
+    client.force_login(user)
+    panel = client.get(reverse("accounts:panel")).content.decode()
+    assert panel.count("images/brand/logo/monituj-logo-white.svg") == 2
 
     EmailService.send(EmailTemplate.PASSWORD_RESET, to_email="a@example.com")
     html = mail.outbox[-1].alternatives[0][0]

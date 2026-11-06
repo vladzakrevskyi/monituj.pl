@@ -1,18 +1,24 @@
 {% extends "pages/base_page.html" %}
 {% load static %}
 
-
+{% block hero_layout %}{% endblock %}
 {% block hero_eyebrow %}Kontakt{% endblock %}
-{% block hero_title %}Porozmawiajmy o <strong>Twoim procesie</strong>{% endblock %}
-{% block hero_lead %}Masz pytanie o Monituj, potrzebujesz pomocy albo chcesz sprawdzić, czy sprawdzi się w Twojej firmie? Napisz do nas.{% endblock %}
-
-{% block page_body %}
-<section class="section section--flush-top">
-<div class="container">
-<div class="contact-layout">
-<div class="contact-form-card">
+{% block hero_title %}Porozmawiajmy o <strong>Twoim procesie.</strong>{% endblock %}
+{% block hero_lead %}Pytanie o zbieranie dokumentów w Monituj, pomoc w koncie albo sprawdzenie, czy sprawdzi się w Twojej firmie. Napisz, odpowiemy na podany adres.{% endblock %}
+{% block hero_actions %}
+<ul class="lp-contact-list">
+<li><span class="lp-mono">E-mail</span><a href="mailto:{{ contact_email }}" title="Napisz na {{ contact_email }}">{{ contact_email }}</a></li>
+<li><span class="lp-mono">Dane osobowe</span><a href="mailto:{{ legal.privacy_email }}" title="Napisz na {{ legal.privacy_email }}">{{ legal.privacy_email }}</a></li>
+<li><span class="lp-mono">Pomoc</span><a href="{% url 'help:index' %}">Centrum pomocy</a></li>
+<li><span class="lp-mono">Pytania</span><a href="{% url 'pages:faq' %}">Najczęstsze pytania</a></li>
+</ul>
+<div class="lp-contact-abuse"><p class="lp-mono lp-label"><b aria-hidden="true">●</b> Zgłoś nadużycie</p>
+<p>Dostałeś podejrzaną prośbę o dokumenty? Najszybciej zgłosisz ją linkiem „Zgłoś nadużycie” na dole maila albo strony prośby. Inne treści nielegalne lub naruszające Regulamin zgłoś tutaj, wybierając temat „Zgłoszenie nadużycia” - to punkt kontaktowy w rozumieniu aktu o usługach cyfrowych.</p>
+</div>
+{% endblock %}
+{% block hero_side %}
+<div class="lp-form-card">
 <h2>Napisz wiadomość</h2>
-<p class="contact-form-card__lead">Odpowiemy na adres, który podasz. Potwierdzenie otrzymania wyślemy od razu.</p>
 <form method="post" novalidate data-ajax-form data-replace-on-success data-contact-form>
 {% csrf_token %}
 {# Against bots - apps/contact/forms.py, static/js/contact.js. #}
@@ -58,35 +64,10 @@
 {{ form.consent }}
 {{ form.consent.errors }}
 </p>
-<button type="submit" class="btn btn-primary btn-lg">Wyślij wiadomość</button>
+<button type="submit" class="btn btn-primary btn-lg btn-block">Wyślij wiadomość</button>
 <p class="contact-form-card__note">Administratorem Twoich danych jest {{ legal.name }}. Przetwarzamy je na podstawie Twojej zgody wyłącznie po to, by odpowiedzieć na wiadomość. Wycofanie zgody nie wpływa na zgodność z prawem przetwarzania przed jej wycofaniem. Więcej w <a href="{% url 'legal:privacy' %}">Polityce prywatności</a>.</p>
 </form>
 </div>
-
-<aside class="contact-side">
-<div class="contact-card contact-card--dark">
-{% include "pages/_icon.html" with icon="mail" %}
-<h2>Wolisz email?</h2>
-<p>Pytania o produkt, pomoc przy konfiguracji, reklamacje.</p>
-<a class="contact-card__value" href="mailto:{{ contact_email }}" title="Napisz na {{ contact_email }}">{{ contact_email }}</a>
-</div>
-<div class="contact-card">
-{% include "pages/_icon.html" with icon="shield" %}
-<h2>Dane osobowe</h2>
-<p>Realizacja praw z RODO i pytania o przetwarzanie danych.</p>
-<a class="contact-card__value" href="mailto:{{ legal.privacy_email }}" title="Napisz na {{ legal.privacy_email }}">{{ legal.privacy_email }}</a>
-</div>
-<div class="contact-card">
-{% include "pages/_icon.html" with icon="x" %}
-<h2>Zgłoś nadużycie</h2>
-<p>Dostałeś podejrzaną prośbę o dokumenty? Najszybciej zgłosisz ją linkiem „Zgłoś nadużycie” na dole maila albo strony prośby. Inne treści nielegalne lub naruszające Regulamin zgłoś tutaj, wybierając temat „Zgłoszenie nadużycia” - to punkt kontaktowy w rozumieniu aktu o usługach cyfrowych.</p>
-</div>
-</aside>
-</div>
-
-<p class="pricing-note">Zanim napiszesz, zajrzyj do <a href="{% url 'pages:faq' %}">najczęstszych pytań</a> - odpowiedź może już tam być.</p>
-</div>
-</section>
 {% endblock %}
 
 {% block page_cta %}{% endblock %}

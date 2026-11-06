@@ -115,6 +115,11 @@ def public_request_detail(request, token):
     status = compute_status(request_obj)
     for item in items:
         item.thread = questions.thread(item) if item.is_question else []
+    # What is still to send comes first (a rejected file before a missing
+    # one), what is sent below - and a bar with one mark per item.
+    pending = [item for item in items if item.status in PENDING]
+    pending.sort(key=lambda item: item.status != "odrzucony")
+    sent = [item for item in items if item.status not in PENDING]
     return render(
         request,
         "public/request_detail.html",
@@ -131,10 +136,33 @@ def public_request_detail(request, token):
             ),
             "public_token": request_obj.public_token,
             "hidden_files": hidden_files,
+            "pending_items": pending,
+            "sent_items": sent,
+            "segments": _segments(items),
+            "days_left": _days_left(request_obj.deadline),
             "sender_view": sender_view,
             "panel_url": request_obj.panel_url() if sender_view else "",
         },
     )
+
+
+# Statuses the recipient still has to do something about.
+PENDING = ("brak", "odrzucony")
+
+
+def _segments(items):
+    """The progress bar: accepted, then sent and waiting for a check, then
+    missing - one mark per item."""
+    order = {"zaakceptowany": 0, "nie_dotyczy": 0, "dostarczony": 1}
+    marks = {0: "ok", 1: "sent", 2: "missing"}
+    return [marks[rank] for rank in sorted(order.get(i.status, 2) for i in items)]
+
+
+def _days_left(deadline):
+    """Whole days to the deadline (0 - today), None without one or after it."""
+    if deadline is None or deadline < timezone.now():
+        return None
+    return (timezone.localdate(deadline) - timezone.localdate()).days
 
 
 def _stored_documents(request_obj):

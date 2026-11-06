@@ -1,350 +1,147 @@
 {% extends "base/base.html" %}
 {% load static promo_video %}
 
-{% block page_class %}page--flush{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages.css' %}">{% endblock %}
+{% block page_class %}page--flush lp-page{% endblock %}
+{% block extra_css %}<link rel="preload" href="{% static 'fonts/funnel-display-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{% static 'css/pages.css' %}">{% endblock %}
+
 
 {% block content %}
-
-<section class="hero">
-<div class="container hero__inner">
-<div class="hero__copy">
-<p class="eyebrow">Dla biur rachunkowych - i nie tylko</p>
-<h1 class="display">Dokumenty od klientów <strong>na czas</strong>. Bez <strong>gonienia</strong>.</h1>
-<p class="hero__lead">Wyślij klientowi listę dokumentów. Klient przesyła je z telefonu, bez zakładania konta, a Monituj sam przypomina mu o brakach, aż dotrze komplet.</p>
-<div class="hero__actions hero__actions--film">
-{% if user.is_authenticated and not demo_account %}
-<a class="btn btn-primary btn-lg" href="{% url 'accounts:panel' %}">Przejdź do panelu</a>
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:how-it-works' %}">Zobacz, jak to działa</a>
-{% else %}
-<a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
-{% include "demo/_button.html" with cls="btn-secondary btn-lg" label="Wypróbuj demo" %}
-{% endif %}
-<a class="film-card" href="#film" data-video-open aria-controls="film-dialog" aria-haspopup="dialog" title="Zobacz film: Monituj w kilka minut">
-<span class="film-card__thumb"><img src="{% promo_video_thumb %}" alt="" width="480" height="270"><span class="film-card__play" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 3 1.8z"/></svg></span><span class="film-card__clock" aria-hidden="true">{% promo_video_clock %}</span></span>
-<span class="film-card__text"><strong>Zobacz, jak to działa</strong><span>Od pierwszej prośby po komplet</span></span>
-</a>
-</div>
-<ul class="check-list check-list--inline">
-{% include "pages/_check.html" with text="Bez karty kredytowej" %}
-{% include "pages/_check.html" with text="Klient nie zakłada konta" %}
-{% include "pages/_check.html" with text="Przypomnienia wysyłają się same" %}
-</ul>
-<p class="hero__price">Plan Free bez limitu czasu, płatne od {{ price_from }} zł netto miesięcznie, a na start {{ trial_days }} dni planu {{ trial_plan.name }} za darmo. <a href="{% url 'pages:pricing' %}">Zobacz cennik</a></p>
-</div>
-
-<div class="hero__visual" aria-hidden="true">
-<span class="hero__circle hero__circle--orange"></span>
-<span class="hero__circle hero__circle--gray"></span>
-<div class="mock-window">
-<div class="mock-window__bar">
-<span class="mock-window__dots"><i></i><i></i><i></i></span>
-<span class="mock-window__url">monituj.pl/prosby</span>
-</div>
-<div class="mock-window__body">
-<div class="mock-window__head">
+<section class="lp-hero">
+<div class="lp-wrap lp-hero__grid">
 <div>
-<p class="mock-label">Czekasz na</p>
-<p class="mock-title">6 dokumentów od 3 klientów</p>
+<p class="lp-mono lp-label"><b aria-hidden="true">●</b> Program do zbierania dokumentów od klientów</p>
+<h1>Zbieranie dokumentów od klientów. <em>Bez&nbsp;gonienia.</em></h1>
+<p class="lp-lead">Monituj zbiera dokumenty od klientów za Ciebie. Wysyłasz listę dokumentów, klient przesyła pliki z telefonu bez zakładania konta, <strong>a automatyczne przypomnienia o brakach wychodzą same, aż dotrze komplet.</strong></p>
+<div class="lp-cta">
+{% if user.is_authenticated and not demo_account %}
+<a class="lp-btn lp-btn--orange" href="{% url 'accounts:panel' %}">Przejdź do panelu <span class="lp-arr">→</span></a>
+{% else %}
+<a class="lp-btn lp-btn--orange" href="{% url 'accounts:register' %}">Zacznij za darmo <span class="lp-arr">→</span></a>
+{% endif %}
+<a class="lp-btn lp-btn--line" href="{% url 'pages:film' %}" data-video-open aria-controls="film-dialog" aria-haspopup="dialog" title="Zobacz film: Monituj w kilka minut"><span class="lp-play" aria-hidden="true"></span>Zobacz film · {% promo_video_clock %}</a>
+</div>
+<p class="lp-mono lp-fine"><span>Plan Free bez limitu czasu</span><span>Bez karty</span></p>
+</div>
+
+<div class="lp-card" aria-label="Przykład: jedna prośba od wysłania do kompletu">
+<div class="lp-mono lp-card__top"><span>Prośba o dokumenty</span><span class="lp-live">Komplet</span></div>
+<p class="lp-card__title">Dokumenty za {{ example.month }}</p>
+<p class="lp-card__who">Kowalski Sp. z o.o. · termin {{ example.due }}</p>
+<div class="lp-bar" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<div class="lp-mono lp-bar-meta"><span>Dostarczono</span><strong>4 z 4</strong></div>
+<ul class="lp-docs">
+<li><span><i class="lp-tick" aria-hidden="true"></i>Wyciąg bankowy</span><time class="lp-mono">{{ example.days.1 }}</time></li>
+<li><span><i class="lp-tick" aria-hidden="true"></i>Faktury kosztowe</span><time class="lp-mono">{{ example.days.2 }}</time></li>
+<li><span><i class="lp-tick" aria-hidden="true"></i>Umowa leasingu</span><time class="lp-mono">{{ example.days.3 }}</time></li>
+<li><span><i class="lp-tick" aria-hidden="true"></i>Paragony</span><time class="lp-mono">{{ example.days.3 }}</time></li>
+</ul>
+<ul class="lp-log">
+<li><time>{{ example.days.0 }} · 09:00</time><span>Prośba wysłana</span></li>
+<li><time>{{ example.days.1 }} · 09:00</time><span>Przypomnienie o 3 brakach<span class="lp-tag">auto</span></span></li>
+<li><time>{{ example.days.2 }} · 09:00</time><span>Przypomnienie o 2 brakach<span class="lp-tag">auto</span></span></li>
+<li class="is-done"><time>{{ example.days.3 }} · 16:42</time><span>Komplet. Przypomnienia zatrzymane.</span></li>
+</ul>
+<div class="lp-zero"><p><strong>Twoje maile z przypomnieniem</strong>Monituj wysłał je za Ciebie</p><b>0</b></div>
 </div>
 </div>
-<ul class="mock-rows">
-<li class="mock-row">
-<div class="mock-row__main">
-<span class="mock-row__title">Dokumenty za wrzesień</span>
-<span class="mock-row__sub">Kowalski Sp. z o.o. · następne przypomnienie jutro, 9:00</span>
-<span class="mock-bar"><span class="mock-bar__fill mock-bar__fill--60"></span></span>
+</section>
+
+<section class="lp-section" id="jak-to-dziala">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b>01</b> Jak to działa</p>
+<h2 class="lp-h2">Jak działa zbieranie dokumentów: 3&nbsp;kroki.</h2>
+<ol class="lp-steps">
+<li><span class="lp-steps__n">01</span><h3>Wybierz listę dokumentów</h3><p>Z <a href="{% url 'pages:templates' %}">gotowego szablonu</a> dla biura rachunkowego, kadr albo kancelarii. Ustaw termin.</p></li>
+<li><span class="lp-steps__n">02</span><h3>Wyślij klientowi jeden link</h3><p>Klient przesyła dokumenty z telefonu. Bez konta i bez aplikacji.</p></li>
+<li><span class="lp-steps__n">03</span><h3>Odbierz komplet dokumentów</h3><p>Przypomnienia o brakach wychodzą same i kończą się, gdy wszystko dotrze.</p></li>
+</ol>
+<a class="lp-more" href="{% url 'pages:how-it-works' %}">Jak działa zbieranie dokumentów krok po kroku <span class="lp-arr">→</span></a>
 </div>
-<span class="badge badge--progress">W trakcie</span>
-</li>
-<li class="mock-row">
-<div class="mock-row__main">
-<span class="mock-row__title">Akta nowego pracownika</span>
-<span class="mock-row__sub">Anna Nowak · komplet 4 z 4</span>
-<span class="mock-bar"><span class="mock-bar__fill mock-bar__fill--100"></span></span>
+</section>
+
+<section class="lp-section lp-section--grey">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b>02</b> Różnica</p>
+<h2 class="lp-h2">Koniec z ręcznym przypominaniem o&nbsp;dokumentach.</h2>
+<div class="lp-vs">
+<div class="lp-vs__col lp-vs__col--before">
+<h3 class="lp-mono lp-label">Dziś</h3>
+<ul>
+<li><i class="lp-x" aria-hidden="true"></i><s>Dokumenty rozrzucone po mailach i WhatsAppie</s></li>
+<li><i class="lp-x" aria-hidden="true"></i><s>Excel z brakującymi dokumentami</s></li>
+<li><i class="lp-x" aria-hidden="true"></i><s>Przypomnienia pisane ręcznie co kilka dni</s></li>
+<li><i class="lp-x" aria-hidden="true"></i><s>Braki wychodzą tuż przed terminem</s></li>
+</ul>
 </div>
-<span class="badge badge--complete">Komplet</span>
-</li>
-<li class="mock-row">
-<div class="mock-row__main">
-<span class="mock-row__title">Wniosek kredytowy</span>
-<span class="mock-row__sub">J. Wiśniewski · termin minął wczoraj</span>
-<span class="mock-bar"><span class="mock-bar__fill mock-bar__fill--20"></span></span>
-</div>
-<span class="badge badge--overdue">Po terminie</span>
-</li>
+<div class="lp-vs__col lp-vs__col--after lp-dark">
+<h3 class="lp-mono lp-label"><b aria-hidden="true">●</b> Z Monituj</h3>
+<ul>
+<li><i class="lp-tick" aria-hidden="true"></i>Jedna lista dokumentów dla każdego klienta</li>
+<li><i class="lp-tick" aria-hidden="true"></i>Status każdego dokumentu w jednym panelu</li>
+<li><i class="lp-tick" aria-hidden="true"></i>Automatyczne przypomnienia o brakach</li>
+<li><i class="lp-tick" aria-hidden="true"></i>Brakujące dokumenty widać od pierwszego dnia</li>
 </ul>
 </div>
 </div>
-<div class="mock-toast">
-<span class="mock-toast__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span>
-<span><strong>Przypomnienie wysłane automatycznie</strong><span>Kowalski Sp. z o.o. · brakuje 2 dokumentów</span></span>
+<a class="lp-more" href="{% url 'pages:comparison' %}">Zbieranie dokumentów mailem, WhatsAppem czy w Monituj? <span class="lp-arr">→</span></a>
 </div>
+</section>
+
+{% include "pages/_lp_calculator.html" with num="03" %}
+
+<section class="lp-section lp-product">
+<div class="lp-wrap">
+<div class="lp-product__head">
+<div><p class="lp-mono lp-label"><b>04</b> Produkt</p><h2 class="lp-h2">Ty widzisz brakujące dokumenty. Klient widzi, co przesłać.</h2></div>
+<p>Panel pokazuje, na jakim etapie jest zbieranie dokumentów u każdego klienta. Klient dostaje prostą listę dokumentów do przesłania na telefonie.</p>
+</div>
+<div class="lp-stage">
+<div class="lp-stage__screen"><img src="{% static 'images/landing/panel-1800.webp' %}" srcset="{% static 'images/landing/panel-900.webp' %} 900w, {% static 'images/landing/panel-1800.webp' %} 1800w" sizes="(max-width: 760px) 100vw, 905px" width="1800" height="1406" loading="lazy" alt="Panel programu do zbierania dokumentów: brakujące dokumenty i statusy klientów"></div>
+<div class="lp-phone"><div class="lp-phone__screen"><img src="{% static 'images/landing/client-540.webp' %}" width="540" height="1169" loading="lazy" alt="Lista dokumentów do przesłania na telefonie klienta, bez konta"></div></div>
+<p class="lp-mono lp-cap lp-cap--panel"><i aria-hidden="true"></i>Twój panel</p>
+<p class="lp-mono lp-cap lp-cap--phone"><i aria-hidden="true"></i>Telefon klienta · bez konta</p>
 </div>
 </div>
 </section>
 
-<section class="section section--first">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">Problem</p>
-<h2 class="display-2">Pogoń za dokumentami to <strong>ukryty koszt</strong> każdej firmy</h2>
-<p>Nikt nie wpisuje jej do budżetu, a zabiera godziny w każdym miesiącu - i wychodzi na jaw dopiero wtedy, gdy termin jest tuż-tuż.</p>
-</div>
-<div class="inbox-story">
-<div class="inbox" aria-hidden="true">
-<div class="inbox__bar"><span class="inbox__folder">Odebrane</span><span class="inbox__count">47 nieprzeczytanych</span></div>
-<ul class="inbox__list">
-<li class="is-unread"><span class="inbox__from">Kowalski Usługi</span><span class="inbox__subject">RE: RE: Fwd: wyciąg za wrzesień??</span><span class="inbox__date">9:42</span></li>
-<li><span class="inbox__from">Ja</span><span class="inbox__subject">Przypominam o dokumentach (3. raz)</span><span class="inbox__date">wczoraj</span></li>
-<li class="is-unread"><span class="inbox__from">Piekarnia Złoty Kłos</span><span class="inbox__subject">faktura_final_v2_POPRAWIONA.pdf</span><span class="inbox__date">wczoraj</span></li>
-<li><span class="inbox__from">Anna z biura</span><span class="inbox__subject">Kto ma aktualny arkusz braków?</span><span class="inbox__date">pon.</span></li>
-<li class="is-unread"><span class="inbox__from">Auto Serwis Nowak</span><span class="inbox__subject">Paragony mogą być w przyszłym tygodniu?</span><span class="inbox__date">pon.</span></li>
-<li class="is-late"><span class="inbox__from">Ja</span><span class="inbox__subject">VAT jutro - wciąż brak umowy leasingu</span><span class="inbox__date">9.10</span></li>
+<section class="lp-section">
+<div class="lp-wrap">
+<p class="lp-mono lp-label"><b>05</b> Dla kogo</p>
+<h2 class="lp-h2">Zbieranie dokumentów dla biur rachunkowych, kadr i&nbsp;kancelarii.</h2>
+<div class="lp-chips">
+{% for segment in segments %}<a class="lp-chip" href="{% url 'pages:segment' segment.slug %}">{{ segment.title }} <span class="lp-arr">→</span></a>
+{% endfor %}</div>
+<ul class="lp-trust">
+<li><p class="lp-mono lp-label"><b aria-hidden="true">●</b> Dostęp</p><p>Bezpieczne przesyłanie: dokumenty widzi tylko Ty i osoba z linkiem.</p></li>
+<li><p class="lp-mono lp-label"><b aria-hidden="true">●</b> Usuwanie</p><p>Automatyczne usuwanie plików po wybranym czasie, od 30 do 365 dni.</p></li>
+<li><p class="lp-mono lp-label"><b aria-hidden="true">●</b> RODO</p><p>Umowa powierzenia przetwarzania danych (RODO) w standardzie.</p></li>
 </ul>
-</div>
-<ol class="pain-list">
-<li><h3>Szukanie w skrzynce</h3><p>Załączniki rozproszone po wątkach, kilka wersji tego samego pliku i niepewność, która jest aktualna.</p></li>
-<li><h3>Ręczne przypominanie</h3><p>Kolejny mail „przypominam o dokumentach” - pisany ręcznie, do każdego klienta osobno, co kilka dni.</p></li>
-<li><h3>Arkusz braków</h3><p>Lista w Excelu, którą ktoś musi aktualizować - i o której ktoś musi pamiętać, gdy jest urlop albo nawał pracy.</p></li>
-<li><h3>Termin na ostatnią chwilę</h3><p>Brak dokumentu wychodzi na jaw dopiero przed terminem - kiedy nie ma już czasu, żeby go spokojnie uzupełnić.</p></li>
-</ol>
-</div>
+<a class="lp-more" href="{% url 'pages:security' %}">Bezpieczne przesyłanie dokumentów i RODO <span class="lp-arr">→</span></a>
 </div>
 </section>
 
-<section class="panel-section">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">Jak to działa</p>
-<h2 class="display-2">Ustawiasz raz. <strong>Monituj pilnuje do końca.</strong></h2>
-<p>Każda prośba o dokumenty przebiega według tego samego, przewidywalnego procesu.</p>
+<section class="lp-section lp-section--grey" id="pytania">
+<div class="lp-wrap lp-faq__grid">
+<div class="lp-faq__head">
+<p class="lp-mono lp-label"><b>06</b> Pytania</p>
+<h2 class="lp-h2">Pytania o zbieranie dokumentów od klientów.</h2>
+<a class="lp-more" href="{% url 'pages:faq' %}">Wszystkie pytania o zbieranie dokumentów <span class="lp-arr">→</span></a>
 </div>
-<ol class="steps">
-<li class="step">
-<span class="step__num">01</span>
-<h3>Określasz, czego potrzebujesz</h3>
-<p>Lista dokumentów, termin i harmonogram przypomnień - wpisane albo wzięte z gotowego szablonu. Raz przygotowana prośba zawiera wszystko, czego klient potrzebuje.</p>
-</li>
-<li class="step">
-<span class="step__num">02</span>
-<h3>Klient dostaje jeden link</h3>
-<p>Otwiera listę w przeglądarce i przesyła pliki - bez zakładania konta, bez instalowania czegokolwiek.</p>
-</li>
-<li class="step">
-<span class="step__num">03</span>
-<h3>Monituj domyka sprawę</h3>
-<p>Przypomina o brakach, aktualizuje status i przestaje, gdy dotrze komplet. Ty tylko akceptujesz dokumenty.</p>
-</li>
-</ol>
-<div class="section-cta">
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:how-it-works' %}">Zobacz cały proces krok po kroku</a>
-</div>
+<div class="lp-qa">
+{% for item in faq %}{% if item.home %}<details{% if forloop.first %} open{% endif %}><summary>{{ item.q }}</summary><p>{{ item.a }}</p></details>
+{% endif %}{% endfor %}</div>
 </div>
 </section>
 
-<section class="section" id="film">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">Zobacz w akcji</p>
-<h2 class="display-2">Monituj <strong>w kilka minut</strong></h2>
-<p>Od założenia konta po komplet dokumentów, pytania do klientów i kalendarz - tak wygląda praca z Monituj u Ciebie i u Twojego klienta.</p>
-</div>
-{% promo_video %}
-<p class="promo-video__page"><a href="{% url 'pages:film' %}">Otwórz film na osobnej stronie</a></p>
-</div>
-</section>
+{% include "pages/_final.html" %}
 
 <dialog class="video-dialog" id="film-dialog" data-modal-custom aria-label="Film: Monituj w kilka minut">
 <button type="button" class="video-dialog__close" data-video-close aria-label="Zamknij film"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 {% promo_video chapters=False %}
 </dialog>
-
-
-<section class="section section--flush-top">
-<div class="container">
-<div class="statement">
-<div class="statement__copy">
-<p class="eyebrow eyebrow--light">To nie jest kolejny dysk na pliki</p>
-<h2 class="display-2">Dysk przechowuje pliki. <strong>Monituj pilnuje, żeby w&nbsp;ogóle do Ciebie trafiły.</strong></h2>
-<p>Monituj nie zastępuje Twojego systemu księgowego ani archiwum. Zastępuje ręczną część procesu: pamiętanie, przypominanie i sprawdzanie, czego jeszcze brakuje.</p>
-<p><a class="statement__link" href="{% url 'pages:comparison' %}">Porównaj: mail, WhatsApp, dysk i Monituj &rarr;</a></p>
-</div>
-<div class="compare" role="table" aria-label="Porównanie: email i dysk kontra Monituj">
-<div class="compare__row compare__row--head" role="row">
-<span role="columnheader"></span>
-<span role="columnheader">Email i dysk</span>
-<span role="columnheader">Monituj</span>
-</div>
-<div class="compare__row" role="row">
-<span role="rowheader">Czego brakuje</span>
-<span class="compare__no" role="cell">Musisz pamiętać sam</span>
-<span class="compare__yes" role="cell">Lista braków przy każdej prośbie</span>
-</div>
-<div class="compare__row" role="row">
-<span role="rowheader">Przypomnienia</span>
-<span class="compare__no" role="cell">Piszesz je ręcznie</span>
-<span class="compare__yes" role="cell">Wysyłają się same, według harmonogramu</span>
-</div>
-<div class="compare__row" role="row">
-<span role="rowheader">Co miesiąc to samo</span>
-<span class="compare__no" role="cell">Kolejny mail do każdego klienta</span>
-<span class="compare__yes" role="cell">Prośba cykliczna wychodzi sama do wszystkich</span>
-</div>
-<div class="compare__row" role="row">
-<span role="rowheader">Lista dokumentów</span>
-<span class="compare__no" role="cell">Za każdym razem piszesz od nowa</span>
-<span class="compare__yes" role="cell">Gotowy szablon - własny albo dla Twojej branży</span>
-</div>
-<div class="compare__row" role="row">
-<span role="rowheader">Termin</span>
-<span class="compare__no" role="cell">W kalendarzu albo w głowie</span>
-<span class="compare__yes" role="cell">Przy prośbie i w kalendarzu Monituj - także w telefonie</span>
-</div>
-<div class="compare__row" role="row">
-<span role="rowheader">Pytanie do klienta</span>
-<span class="compare__no" role="cell">Ginie w wątku, a po tygodniu nie wiesz, po co pytałeś</span>
-<span class="compare__yes" role="cell">Czeka z przypomnieniami - razem z notatką, po co pytasz</span>
-</div>
-<div class="compare__row" role="row">
-<span role="rowheader">Status dokumentu</span>
-<span class="compare__no" role="cell">Nieznany</span>
-<span class="compare__yes" role="cell">Brak, dostarczony, zaakceptowany, odrzucony</span>
-</div>
-<div class="compare__row" role="row">
-<span role="rowheader">Po zakończeniu</span>
-<span class="compare__no" role="cell">Pliki zostają w skrzynce na zawsze</span>
-<span class="compare__yes" role="cell">Usuwane automatycznie po ustalonym czasie</span>
-</div>
-</div>
-</div>
-</div>
-</section>
-
-<section class="section" id="pamiec-biura">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">Pamięć biura</p>
-<h2 class="display-2">Nie musisz pamiętać. <strong>Monituj pamięta za Ciebie.</strong></h2>
-<p>Pytania do klientów, wszystko o kliencie w jednym miejscu i kalendarz z tym, co masz zrobić dziś - a rano mail, od czego zacząć.</p>
-</div>
-<div class="vignettes">
-<article class="vignette">
-<div class="vignette__scene vignette__scene--chat" aria-hidden="true">
-<p class="scene-bubble scene-bubble--asked">Co to za przelew 1 250 zł z 12.09?</p>
-<p class="scene-bubble scene-bubble--answer">Zaliczka za mąkę na październik.</p>
-<p class="scene-note">Po co pytasz: VAT za wrzesień</p>
-</div>
-<h3>Pytania do klienta</h3>
-<p>Klient odpowiada z linku, bez konta, a Monituj przypomina, dopóki nie odpowie. Obok pytania zapisujesz, po co pytasz - widzi to tylko Twój zespół.</p>
-</article>
-<article class="vignette">
-<div class="vignette__scene" aria-hidden="true">
-<p class="scene-title">Piekarnia Złoty Kłos</p>
-<ul class="scene-rows">
-<li><span>Pytanie bez odpowiedzi</span><b>3 dni</b></li>
-<li><span>Odpowiedź do sprawdzenia</span><b>1</b></li>
-<li><span>Brakujące dokumenty</span><b>2</b></li>
-<li><span>Notatka: nowe konto w banku</span><b>Anna</b></li>
-</ul>
-</div>
-<h3>Karta klienta</h3>
-<p>Otwarte sprawy, odpowiedzi do sprawdzenia, brakujące dokumenty, notatki zespołu i cała historia klienta na jednej stronie.</p>
-</article>
-<article class="vignette">
-<div class="vignette__scene" aria-hidden="true">
-<p class="scene-title">Na dziś · 7:30</p>
-<ul class="scene-rows">
-<li><span>Zadzwonić do Kowalskiego</span><b>dziś</b></li>
-<li><span>Termin: Hurtownia Mąki</span><b>jutro</b></li>
-<li><span>Dotarło od wczoraj</span><b>3 pliki</b></li>
-<li><span>Pytanie czeka od tygodnia</span><b>1</b></li>
-</ul>
-</div>
-<h3>Kalendarz i „Na dziś”</h3>
-<p>Terminy klientów, wysyłki cykliczne i Twoje przypomnienia w jednym kalendarzu - także w telefonie. W dni robocze o 7:30 mail z listą na dziś.</p>
-</article>
-</div>
-<div class="section-cta">
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:features' %}#pamiec-biura">Zobacz, co jeszcze potrafi</a>
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:client-questions' %}">Poradnik: jak pytać klienta</a>
-</div>
-</div>
-</section>
-
-{% include "pages/_calculator.html" %}
-
-<section class="section section--flush-top">
-<div class="container">
-<div class="note-card note-card--flush">
-<p class="eyebrow">KSeF 2026</p>
-<h2>KSeF załatwił faktury. Resztę dokumentów nadal trzeba zebrać</h2>
-<p>Wyciągi, paragony, faktury zagraniczne, umowy i dokumenty kadrowe dalej przychodzą od klienta. Monituj zbiera właśnie to - a o nadanie biuru uprawnień w KSeF poprosi klienta jako pozycję bez pliku, którą wystarczy potwierdzić.</p>
-<nav class="chip-nav" aria-label="KSeF">
-<a class="chip" href="{% url 'pages:outside-ksef' %}">Co zostaje poza KSeF</a>
-<a class="chip" href="{% url 'pages:template' 'dokumenty-ksiegowe-za-miesiac' %}">Gotowa lista: dokumenty za miesiąc</a>
-<a class="chip" href="{% url 'pages:template' 'nowy-klient-biura-rachunkowego' %}">Gotowa lista: nowy klient biura</a>
-</nav>
-</div>
-</div>
-</section>
-
-<section class="section section--flush-top">
-<div class="container">
-<div class="section-head">
-<p class="eyebrow">Dla kogo</p>
-<h2 class="display-2">Wszędzie tam, gdzie praca <strong>czeka na dokumenty</strong></h2>
-<p>Monituj sprawdza się w firmach, które regularnie zbierają dokumenty od klientów, pracowników lub kontrahentów.</p>
-</div>
-<ul class="segment-index">
-{% for segment in segments|slice:":4" %}
-<li><a href="{% url 'pages:segment' segment.slug %}"><span class="segment-index__name">{{ segment.title }}</span><span class="segment-index__text">{{ segment.teaser }}</span><span class="segment-index__more">Zobacz przykład <span aria-hidden="true">&rarr;</span></span></a></li>
-{% endfor %}
-</ul>
-<div class="section-cta">
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:templates' %}">Gotowe listy dokumentów dla branż</a>
-</div>
-</div>
-</section>
-
-{% include "pages/_try_band.html" with heading=True anchor="wyprobuj" %}
-
-<section class="section section--flush-top">
-<div class="container">
-<div class="security-band">
-<div>
-<p class="eyebrow">Bezpieczeństwo i RODO</p>
-<h2 class="display-2">Dokumenty klientów <strong>pod ochroną</strong></h2>
-<p>Bezpieczeństwo jest częścią procesu, a nie dodatkiem. Ty decydujesz, jak długo przechowujemy pliki - potem znikają automatycznie.</p>
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:security' %}">Jak chronimy dane</a>
-</div>
-<ul class="check-list check-list--large">
-{% include "pages/_check.html" with text="Unikalny link do każdej prośby, opcjonalnie z hasłem" %}
-{% include "pages/_check.html" with text="Pliki w niepublicznym magazynie z kontrolą dostępu" %}
-{% include "pages/_check.html" with text="Automatyczne usuwanie po okresie przechowywania" %}
-{% include "pages/_check.html" with text="Umowa powierzenia danych w standardzie" %}
-{% include "pages/_check.html" with text="Skaner antywirusowy dla każdego przesłanego pliku" %}
-</ul>
-</div>
-</div>
-</section>
-
-<section class="section section--flush-top">
-<div class="container container--narrow">
-<div class="section-head">
-<p class="eyebrow">Pytania</p>
-<h2 class="display-2">Najczęstsze <strong>pytania</strong></h2>
-</div>
-<div class="faq">
-{% for item in faq %}{% if item.home %}{% include "pages/_faq_item.html" %}{% endif %}{% endfor %}
-</div>
-<div class="section-cta">
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:faq' %}">Wszystkie pytania</a>
-</div>
-</div>
-</section>
-
-{% include "pages/_cta_band.html" %}
 {% endblock %}
 
-{% block extra_js %}<script src="{% static 'js/promo_video.js' %}"></script>{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/promo_video.js' %}"></script>
+<script src="{% static 'js/calculator.js' %}" defer></script>{% endblock %}

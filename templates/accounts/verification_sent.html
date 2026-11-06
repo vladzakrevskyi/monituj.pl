@@ -1,9 +1,8 @@
-{% extends "base/base.html" %}
+{% extends "base/auth_base.html" %}
 
 {% block page_name %}Sprawdź swoją skrzynkę{% endblock %}
-{% block page_class %}page--compact{% endblock %}
 
-{% block content %}
+{% block auth_form %}
 <div class="card">
 <h1>Sprawdź swoją skrzynkę</h1>
 <p>Wysłaliśmy link potwierdzający na {% if email %}<strong>{{ email }}</strong>{% else %}podany adres{% endif %}. Kliknij go, aby dokończyć zakładanie konta - zalogujesz się od razu.</p>

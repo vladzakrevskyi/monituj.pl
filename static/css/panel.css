@@ -1,0 +1,446 @@
+/* The panel in the site's style (marketing.css): Funnel Display for headings
+   and numbers, Funnel Sans for text, IBM Plex Mono for small labels, round
+   cards and buttons. Only the brand colours - orange, black, grey, white -
+   and green / red for status. Everything here is scoped to .app-shell, so
+   the panel's own layout stays as it is. */
+
+.app-shell {
+  --lp-orange: #ff6b00;
+  --lp-orange-text: #c24e00;
+  --lp-orange-bg: #fff0e5;
+  --lp-black: #0b0b0c;
+  --lp-line-dark: #232327;
+  --lp-line-dark-2: #3a3a40;
+  --lp-grey-1: #f1f1f3;
+  --lp-grey-2: #e4e4e8;
+  --lp-grey-3: #9a9ba5;
+  --lp-grey-4: #62636d;
+  --lp-green: #15803d;
+  --lp-green-bg: #e6f4ea;
+  --lp-red: #c81e1e;
+  --lp-red-bg: #fdecec;
+  --lp-display: "Funnel Display", "Helvetica Neue", Arial, sans-serif;
+  --lp-sans: "Funnel Sans", "Helvetica Neue", Arial, sans-serif;
+  --lp-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-family: var(--lp-sans);
+}
+
+.app-shell :is(h1, h2, h3) {
+  font-family: var(--lp-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* --- menu ------------------------------------------------------------- */
+
+.app-sidebar {
+  color: #fff;
+}
+
+.app-nav__label {
+  font-family: var(--lp-mono);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: #fff;
+  opacity: 0.55;
+}
+
+.app-nav__link {
+  min-height: 44px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.app-nav__link:hover {
+  background: #1c1c1f;
+  color: #fff;
+}
+
+.app-nav__link.is-active {
+  background: #fff;
+  color: var(--lp-black);
+}
+
+.app-nav__count {
+  font-family: var(--lp-mono);
+  font-weight: 500;
+}
+
+.app-nav__cta .btn {
+  min-height: 48px;
+}
+
+.app-plan {
+  border-radius: 16px;
+}
+
+.app-plan,
+.app-plan__usage,
+.app-user,
+.app-user__email {
+  color: #fff;
+}
+
+.app-plan__row span {
+  font-family: var(--lp-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* On a phone the top bar is black, like the site's header. */
+.app-topbar {
+  border-bottom: 0;
+  background: var(--lp-black);
+}
+
+.app-topbar .nav-toggle {
+  border-color: var(--lp-line-dark-2);
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+}
+
+/* --- page ------------------------------------------------------------- */
+
+.app-main {
+  background: var(--lp-grey-1);
+  min-height: 100vh;
+}
+
+.app-shell .page-header h1 {
+  font-size: clamp(30px, 3.2vw, 44px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.app-shell .db-head .page-header__sub,
+.app-shell .eyebrow {
+  font-family: var(--lp-mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--lp-grey-4);
+}
+
+.app-shell .card,
+.app-shell .stat-tile,
+.app-shell table {
+  border: 1px solid var(--lp-grey-2);
+  border-radius: 22px;
+  box-shadow: none;
+}
+
+.app-shell .card table {
+  border: 0;
+  border-radius: 0;
+}
+
+.app-shell .card-title {
+  font-size: 22px;
+}
+
+.app-shell thead th {
+  font-family: var(--lp-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  background: #fff;
+}
+
+/* --- controls --------------------------------------------------------- */
+
+.app-shell .btn {
+  border-radius: 999px;
+  font-family: var(--lp-sans);
+  font-weight: 600;
+}
+
+.app-shell .btn-icon {
+  border-radius: 50%;
+}
+
+.app-shell .btn-secondary {
+  border-color: var(--lp-grey-2);
+  background: #fff;
+}
+
+.app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="range"]),
+.app-shell select,
+.app-shell textarea {
+  border-radius: 12px;
+  font-family: var(--lp-sans);
+}
+
+.app-shell .badge {
+  font-family: var(--lp-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.app-shell .chip {
+  border-radius: 999px;
+}
+
+/* Tabs (lists' filters): pills, the current one black - no underline. */
+.app-shell .tabs {
+  gap: 6px;
+  border-bottom: 0;
+}
+
+.app-shell .tabs__item {
+  min-height: 40px;
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+}
+
+.app-shell .tabs__item:hover {
+  background: #fff;
+}
+
+.app-shell .tabs__item.is-active {
+  background: var(--lp-black);
+  color: #fff;
+}
+
+.app-shell .tabs__item.is-active .tabs__count {
+  background: #fff;
+  color: var(--lp-black);
+}
+
+/* --- the four numbers (dashboard, lists) ------------------------------ */
+
+.app-shell .stat-tile {
+  background: #fff;
+}
+
+.app-shell .stat-tile__label {
+  font-family: var(--lp-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--lp-grey-4);
+}
+
+.app-shell .stat-tile__value {
+  font-family: var(--lp-display);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.app-shell .stat-tile--overdue .stat-tile__value {
+  color: var(--lp-red);
+}
+
+.app-shell progress.progress-bar {
+  border-radius: 999px;
+}
+
+.app-shell .page-header__sub {
+  font-size: 15px;
+  color: var(--lp-grey-4);
+}
+
+/* --- one look for every control (audit 2026-11-06) ------------------- */
+
+/* Buttons that aren't .btn but act like one: the same pill as a small
+   secondary button. */
+.app-shell .set-row__action,
+.app-shell .set-preview__button,
+.app-shell .file-drop__button {
+  min-height: 36px;
+  border-color: var(--lp-grey-2);
+  border-radius: 999px;
+  font-family: var(--lp-sans);
+  font-weight: 600;
+}
+
+.app-shell .set-row__action:hover,
+.app-shell summary:hover .set-row__action {
+  border-color: var(--lp-black);
+}
+
+/* Checkboxes and radio buttons: one size, black when on. Hidden radios in
+   segmented switches keep their own sizing. */
+.app-shell input[type="checkbox"],
+.app-shell input[type="radio"],
+.lp-page input[type="checkbox"],
+.lp-page input[type="radio"] {
+  accent-color: var(--lp-black, #0b0b0c);
+}
+
+.app-shell input[type="checkbox"]:not(.visually-hidden),
+.app-shell label > input[type="radio"]:only-child,
+.app-shell .radio-option input[type="radio"] {
+  width: 18px;
+  height: 18px;
+}
+
+/* "Zrobione" next to a reminder looks like the other checkboxes. */
+.app-shell .today-list__check {
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--lp-grey-3);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.app-shell .today-list__check:hover {
+  border-color: var(--lp-black);
+}
+
+/* Drop-down menus (⋯). */
+.app-shell .menu__list {
+  border-radius: 16px;
+  border-color: var(--lp-grey-2);
+}
+
+.app-shell .menu__item {
+  border-radius: 10px;
+}
+
+/* Zestawienie: statuses and column names like everywhere else. */
+.app-shell .ov-pill {
+  font-family: var(--lp-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.app-shell .ov-head {
+  font-family: var(--lp-mono);
+  font-weight: 500;
+}
+
+.app-shell .ov-month,
+.app-shell .ov-tile {
+  border-radius: 999px;
+}
+
+.app-shell .ov-tile {
+  border-radius: 18px;
+}
+
+/* Side columns (a request's details, the calendar): a card's action fills
+   the card's width and matches the inputs (48px). */
+.app-shell .detail-layout__side .btn:not(.btn-icon):not(.menu__toggle),
+.app-shell .calendar-side .btn:not(.btn-icon):not(.menu__toggle),
+.app-shell .client-card__side .btn:not(.btn-icon):not(.menu__toggle) {
+  width: 100%;
+  min-height: 48px;
+  font-size: 15px;
+}
+
+.app-shell .detail-layout__side form,
+.app-shell .calendar-side form,
+.app-shell .client-card__side form {
+  width: 100%;
+}
+
+/* --- Plan i płatności: the site's pricing look --------------------------- */
+
+/* Your plan: a black band, like the site's dark blocks. */
+.app-shell .plan-status {
+  position: relative;
+  overflow: hidden;
+  padding: 30px 32px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--lp-black);
+  color: #fff;
+}
+
+.app-shell .plan-status::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(to right, var(--lp-line-dark) 1px, transparent 1px);
+  background-size: 80px 100%;
+  opacity: 0.5;
+}
+
+.app-shell .plan-status > * {
+  position: relative;
+}
+
+.app-shell .plan-status__label {
+  font-family: var(--lp-mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.07em;
+  color: #fff;
+}
+
+.app-shell .plan-status__name {
+  font-family: var(--lp-display);
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  color: #fff;
+}
+
+.app-shell .plan-status__text,
+.app-shell .plan-status__credit,
+.app-shell .plan-status__hint,
+.app-shell .plan-status__count,
+.app-shell .plan-status__count-label {
+  color: #fff;
+}
+
+.app-shell .plan-status__usage {
+  border: 1px solid var(--lp-line-dark);
+  border-radius: 18px;
+  background: #141416;
+}
+
+.app-shell .plan-status__count strong {
+  font-family: var(--lp-display);
+  font-size: 52px;
+  font-weight: 600;
+  color: var(--lp-orange);
+}
+
+.app-shell .plan-status .btn-secondary {
+  border-color: var(--lp-line-dark-2);
+  background: transparent;
+  color: #fff;
+}
+
+/* Choose a plan: header like the site's sections. */
+.app-shell .plan-picker__head h2 {
+  font-size: clamp(28px, 2.6vw, 40px);
+  letter-spacing: -0.035em;
+}
+
+.app-shell .lp-pricing.plan-picker {
+  margin-top: 40px;
+}
+
+.app-shell .lp-pricing .plan-grid {
+  margin-top: 24px;
+}
+
+.app-shell .lp-pricing .plan-card .btn {
+  min-height: 50px;
+}
+
+.app-shell .lp-pricing .plan-card .btn:disabled {
+  opacity: 0.45;
+}
+
+.app-shell .plan-status progress.progress-bar {
+  background: #2c2c31;
+}
+
+.app-shell .plan-status progress.progress-bar::-webkit-progress-bar {
+  background: #2c2c31;
+}

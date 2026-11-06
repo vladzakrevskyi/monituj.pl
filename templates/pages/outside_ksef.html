@@ -11,12 +11,12 @@
 {% block hero_lead %}Faktury krajowe pobierasz dziś z KSeF bez proszenia klienta. Ale wyciągi, paragony, faktury zagraniczne, umowy i dokumenty kadrowe wciąż przychodzą od niego - albo nie przychodzą. Zobacz, co zostało poza KSeF i jak to zbierać bez gonienia.{% endblock %}
 
 {% block page_body %}
-<section class="section section--flush-top">
-<div class="container container--narrow">
-<article class="article">
+<section class="lp-section">
+<div class="lp-wrap lp-article">
 
-<nav class="article__toc" aria-label="Spis treści">
-<p class="article__toc-head">W tym poradniku</p>
+<aside class="lp-toc">
+<nav aria-label="Spis treści">
+<p class="lp-mono lp-label">W tym poradniku</p>
 <ol>
 <li><a href="#zmiana">Co KSeF zmienił w zbieraniu dokumentów</a></li>
 <li><a href="#poza-ksef">Czego w KSeF nie ma</a></li>
@@ -25,6 +25,9 @@
 <li><a href="#szablony">Gotowe listy do użycia</a></li>
 </ol>
 </nav>
+<a class="lp-btn lp-btn--orange lp-toc__cta" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+</aside>
+<article class="lp-prose">
 
 <h2 id="zmiana">Co KSeF zmienił w zbieraniu dokumentów</h2>
 <p>Od 2026 roku faktury między firmami w Polsce wystawia się w Krajowym Systemie e-Faktur: od 1 lutego największe firmy, od 1 kwietnia pozostałe, a najmniejsi przedsiębiorcy mogą jeszcze do końca 2026 roku wystawiać część faktur po staremu. Biuro, któremu klient nadał uprawnienia, pobiera jego faktury sprzedażowe i kosztowe prosto z KSeF - zwykle z poziomu programu księgowego.</p>
@@ -69,7 +72,7 @@
 <li><a href="{% url 'pages:segment' 'biura-rachunkowe' %}">Monituj dla biur rachunkowych</a> - jak wygląda cały proces.</li>
 </ul>
 
-<div class="article__summary">
+<div class="lp-summary">
 <h2>W skrócie</h2>
 <ul class="check-list">
 {% include "pages/_check.html" with text="faktury krajowe pobierasz z KSeF - nie proś o nie klienta" %}
@@ -79,9 +82,9 @@
 {% include "pages/_check.html" with text="przypomnienia wychodzą same i same się kończą" %}
 </ul>
 <p>Monituj pilnuje tej części, której KSeF nie obejmuje: wysyłasz prośbę raz, a system przypomina, zbiera i pokazuje, czego jeszcze brakuje.</p>
-<div class="hero__actions">
-<a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:demo' %}">Wypróbuj demo</a>
+<div class="lp-cta">
+<a class="lp-btn lp-btn--orange" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+<a class="lp-btn lp-btn--outline" href="{% url 'pages:demo' %}">Wypróbuj demo</a>
 </div>
 </div>
 

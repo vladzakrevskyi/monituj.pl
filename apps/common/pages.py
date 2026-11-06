@@ -1,6 +1,9 @@
+from datetime import timedelta
+
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.common import seo
 from apps.common.content import FAQ, FAQ_CATEGORIES, SEGMENTS
@@ -53,6 +56,24 @@ def _calculator_plans(plans):
     ]
 
 
+MONTHS = [
+    "styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec",
+    "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień",
+]  # fmt: skip
+
+
+def hero_example(today):
+    """The hero card's one request, always in the past: documents for the
+    month before last, asked for and completed early last month."""
+    last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+    month_before = (last_month - timedelta(days=1)).replace(day=1)
+    return {
+        "month": MONTHS[month_before.month - 1],
+        "due": last_month.replace(day=10).strftime("%d.%m"),
+        "days": [last_month.replace(day=d).strftime("%d.%m") for d in (1, 4, 7, 8)],
+    }
+
+
 def _landing_context():
     from apps.billing import plans
 
@@ -61,6 +82,7 @@ def _landing_context():
         "trial_days": plans.TRIAL_DAYS,
         "trial_plan": plans.TRIAL_PLAN,
         "calculator_plans": _calculator_plans(plans),
+        "example": hero_example(timezone.localdate()),
     }
 
 

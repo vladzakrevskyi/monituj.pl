@@ -106,6 +106,16 @@ def _workspaces(request):
     return [dict(w, current=w["owner"].pk == current) for w in team.workspaces(user)]
 
 
+def _plan_facts():
+    from apps.billing import plans
+
+    return {
+        "price_from": min(plan.monthly for plan in plans.PAID_PLANS) // 100,
+        "trial_days": plans.TRIAL_DAYS,
+        "trial_plan": plans.TRIAL_PLAN.name,
+    }
+
+
 def site(request):
     from apps.common import cookies, seo
     from apps.common.content import SEGMENTS
@@ -118,6 +128,8 @@ def site(request):
         # Legal pages must stay readable before deciding, so no cookie wall there.
         "cookie_lock": getattr(request.resolver_match, "namespace", "") != "legal",
         "footer_segments": SEGMENTS,
+        "social_profiles": seo.SOCIAL_LINKS,
+        "plan_facts": _plan_facts(),
         "site_verification": {
             "google": settings.GOOGLE_SITE_VERIFICATION,
             "bing": settings.BING_SITE_VERIFICATION,

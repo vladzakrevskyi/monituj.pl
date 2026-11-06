@@ -1,0 +1,55 @@
+<footer class="lp-page lp-footer">
+<div class="lp-wrap">
+<div class="lp-footer__grid">
+<div class="lp-footer__brand">
+<a href="{% url 'landing' %}" title="Monituj - strona główna">{% include "base/_logo.html" with on_dark=True %}</a>
+<p>Monituj pilnuje dokumentów od klientów: zbiera je za Ciebie i sam przypomina o brakach, aż dotrze komplet.</p>
+<a class="lp-footer__mail" href="mailto:{{ contact_email }}">{{ contact_email }}</a>
+<div class="lp-footer__social">{% for profile in social_profiles %}<a href="{{ profile.url }}" rel="noopener" target="_blank">{{ profile.name }} ↗</a>{% endfor %}</div>
+</div>
+<div class="lp-footer__col">
+<h4 class="lp-mono">Produkt</h4>
+<a href="{% url 'pages:how-it-works' %}">Jak to działa</a>
+<a href="{% url 'pages:features' %}">Funkcje</a>
+<a href="{% url 'pages:film' %}">Film o Monituj</a>
+<a href="{% url 'pages:for-whom' %}">Dla kogo</a>
+<a href="{% url 'pages:pricing' %}">Cennik</a>
+<a href="{% url 'pages:security' %}">Bezpieczeństwo</a>
+<a href="{% url 'pages:demo' %}">Wypróbuj demo</a>
+<a href="{% url 'public:guest-request-create' %}">Wyślij prośbę bez konta</a>
+</div>
+<div class="lp-footer__col">
+<h4 class="lp-mono">Branże</h4>
+{% for item in footer_segments %}<a href="{% url 'pages:segment' item.slug %}">{{ item.title }}</a>
+{% endfor %}</div>
+<div class="lp-footer__col">
+<h4 class="lp-mono">Zasoby</h4>
+<a href="{% url 'pages:templates' %}">Szablony list dokumentów</a>
+<a href="{% url 'pages:calculator' %}">Kalkulator czasu</a>
+<a href="{% url 'pages:guide' %}">Jak zbierać dokumenty od klientów</a>
+<a href="{% url 'pages:outside-ksef' %}">Dokumenty spoza KSeF</a>
+<a href="{% url 'pages:client-questions' %}">Pytania do klienta</a>
+<a href="{% url 'pages:comparison' %}">Mail, WhatsApp czy dysk?</a>
+</div>
+<div class="lp-footer__col">
+<h4 class="lp-mono">Pomoc</h4>
+<a href="{% url 'help:index' %}">Centrum pomocy</a>
+<a href="{% url 'pages:faq' %}">Najczęstsze pytania</a>
+<a href="{% url 'pages:contact' %}">Kontakt</a>
+{% if user.is_authenticated %}<a href="{% url 'accounts:panel' %}">Panel</a>{% else %}<a href="{% url 'accounts:login' %}">Zaloguj się</a>{% endif %}
+</div>
+<div class="lp-footer__col">
+<h4 class="lp-mono">Prawne</h4>
+<a href="{% url 'legal:terms' %}">Regulamin</a>
+<a href="{% url 'legal:privacy' %}">Polityka prywatności</a>
+<a href="{% url 'legal:cookies' %}">Polityka cookies</a>
+<a href="{% url 'legal:dpa' %}">Umowa powierzenia</a>
+<a href="{% url 'legal:withdrawal' %}">Odstąpienie od umowy</a>
+</div>
+</div>
+<div class="lp-mono lp-footer__bottom">
+<p>&copy; {% now "Y" %} Monituj</p>
+{% if cookie_consent.enabled %}<button type="button" class="lp-footer__cookies" data-cookie-settings>Ustawienia cookies</button>{% endif %}
+</div>
+</div>
+</footer>

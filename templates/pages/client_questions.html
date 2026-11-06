@@ -11,12 +11,12 @@
 {% block hero_lead %}Przelew bez opisu, płatność bez faktury, wydatek, który może być prywatny. Każde biuro zadaje klientom takie pytania co miesiąc. Zobacz, jak pytać, żeby klient odpowiadał za pierwszym razem, a odpowiedź nie ginęła w skrzynce.{% endblock %}
 
 {% block page_body %}
-<section class="section section--flush-top">
-<div class="container container--narrow">
-<article class="article">
+<section class="lp-section">
+<div class="lp-wrap lp-article">
 
-<nav class="article__toc" aria-label="Spis treści">
-<p class="article__toc-head">W tym poradniku</p>
+<aside class="lp-toc">
+<nav aria-label="Spis treści">
+<p class="lp-mono lp-label">W tym poradniku</p>
 <ol>
 <li><a href="#skad">O co biuro pyta klienta najczęściej</a></li>
 <li><a href="#mail">Dlaczego pytania mailem i telefonem giną</a></li>
@@ -27,6 +27,9 @@
 <li><a href="#kalendarz">Kalendarz i plan na dziś</a></li>
 </ol>
 </nav>
+<a class="lp-btn lp-btn--orange lp-toc__cta" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+</aside>
+<article class="lp-prose">
 
 <h2 id="skad">O co biuro pyta klienta najczęściej</h2>
 <p>Dokumenty to połowa pracy. Druga połowa to wyjaśnienia - bo z samego wyciągu albo faktury nie zawsze wiadomo, jak coś zaksięgować. Najczęściej chodzi o:</p>
@@ -78,7 +81,7 @@
 <p>W dni robocze o 7:30 przychodzi mail „Na dziś”: Twoje przypomnienia, terminy na dziś i jutro, prośby po terminie, pytania, które czekają na odpowiedź dłużej niż tydzień - z notatką, po co pytałeś - i to, co dotarło od wczoraj. Jeśli nic nie czeka, maila nie ma.</p>
 <p class="article__note">Kalendarz pokazuje Twoje sprawy z klientami. Terminy ustawowe - ZUS, VAT, JPK - masz w programie księgowym i w kalendarzu podatnika.</p>
 
-<div class="article__summary">
+<div class="lp-summary">
 <h2>W skrócie</h2>
 <ul class="check-list">
 {% include "pages/_check.html" with text="pytaj konkretnie: kwota, data, kontrahent" %}
@@ -88,9 +91,9 @@
 {% include "pages/_check.html" with text="karta klienta, kalendarz i mail „Na dziś” pamiętają za Ciebie" %}
 </ul>
 <p>Monituj prowadzi pytania tak samo jak prośby o dokumenty: wysyłasz raz, a system przypomina, zbiera odpowiedź i pokazuje ją obok Twojej notatki.</p>
-<div class="hero__actions">
-<a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
-<a class="btn btn-secondary btn-lg" href="{% url 'pages:demo' %}">Wypróbuj demo</a>
+<div class="lp-cta">
+<a class="lp-btn lp-btn--orange" href="{% url 'accounts:register' %}">Zacznij za darmo</a>
+<a class="lp-btn lp-btn--outline" href="{% url 'pages:demo' %}">Wypróbuj demo</a>
 </div>
 <ul class="article__links">
 <li><a href="{% url 'pages:outside-ksef' %}">Dokumenty spoza KSeF</a> - co nadal zbierasz od klienta i jak.</li>

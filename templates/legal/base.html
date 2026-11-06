@@ -1,13 +1,26 @@
 {% extends "base/base.html" %}
+{% load static %}
 
-{% block page_class %}page--legal{% endblock %}
+{% block page_class %}page--flush lp-page{% endblock %}
+{% block extra_css %}<link rel="preload" href="{% static 'fonts/funnel-display-latin.woff2' %}" as="font" type="font/woff2" crossorigin>{% endblock %}
 
 {% block content %}
-{% include "legal/_tabs.html" %}
-<article class="card legal">
-{% if upcoming %}<p class="legal-notice">Ta wersja obowiązuje od {{ upcoming.since }}.{% if upcoming.current_url %} Do tego czasu obowiązuje <a href="{{ upcoming.current_url }}">obecna wersja</a>.{% endif %}</p>{% endif %}
+<section class="lp-phero lp-phero--legal">
+<div class="lp-wrap lp-phero__grid lp-phero__grid--solo">
+<div>
+<p class="lp-mono lp-label"><b aria-hidden="true">●</b> Dokumenty prawne</p>
 <h1>{% block legal_title %}{% endblock %}</h1>
-<p class="legal__meta">Obowiązuje od: {{ legal.effective_date }}</p>
+<p class="lp-lead legal__meta">Obowiązuje od: {{ legal.effective_date }}</p>
+{% include "legal/_tabs.html" %}
+</div>
+</div>
+</section>
+<section class="lp-section">
+<div class="lp-wrap lp-wrap--narrow">
+<article class="legal lp-legal">
+{% if upcoming %}<p class="legal-notice">Ta wersja obowiązuje od {{ upcoming.since }}.{% if upcoming.current_url %} Do tego czasu obowiązuje <a href="{{ upcoming.current_url }}">obecna wersja</a>.{% endif %}</p>{% endif %}
 {% block legal_body %}{% endblock %}
 </article>
+</div>
+</section>
 {% endblock %}

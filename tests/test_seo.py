@@ -76,7 +76,7 @@ def test_every_indexed_page_has_a_unique_title():
     "path, name",
     [
         ("/", "Program do zbierania dokumentów od klientów"),
-        ("/dla-kogo/kadry/", "Dokumenty do akt osobowych nowego pracownika"),
+        ("/dla-kogo/kadry/", "Lista dokumentów do zatrudnienia pracownika"),
         ("/logowanie/", "Zaloguj się"),
     ],
 )
@@ -296,8 +296,8 @@ def test_404_page_looks_like_the_site_and_is_never_indexed(client):
     html = response.content.decode().replace(" ", " ")
 
     assert response.status_code == 404
-    assert "Tej strony <strong>tu nie ma</strong>" in html
-    assert 'class="badge badge--missing">Brak' in html
+    assert "Tej strony <strong>tu nie ma.</strong>" in html
+    assert 'class="lp-pill">Brak' in html
     assert reverse("pages:faq") in html
     assert _meta(_head(response), "name", "robots") == "noindex, nofollow"
     # The typed address is shown back, but only as text.

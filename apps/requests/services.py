@@ -720,6 +720,31 @@ def _plural(n, one, few, many):
     return many
 
 
+# At most this many marks in the dashboard's month bar: more clients are
+# shown in proportion.
+MONTH_SEGMENTS = 30
+
+
+def month_segments(counts, total):
+    """One mark per client of the month (in proportion past MONTH_SEGMENTS):
+    complete first, then to check, waiting and late - for the bar's colours."""
+    from apps.requests import overview
+
+    if not total:
+        return []
+    states = [
+        ("komplet", counts[overview.KOMPLET]),
+        ("sprawdzenie", counts[overview.DO_SPRAWDZENIA]),
+        ("czekamy", counts[overview.CZEKAMY]),
+        ("po_terminie", counts[overview.PO_TERMINIE]),
+    ]
+    size = min(total, MONTH_SEGMENTS)
+    marks = []
+    for state, count in states:
+        marks += [state] * round(count * size / total)
+    return (marks + ["czekamy"] * size)[:size]
+
+
 class DashboardService:
     @staticmethod
     def for_owner(owner):
@@ -966,6 +991,7 @@ class DashboardService:
             "late": counts[overview.PO_TERMINIE],
             "remindable": data["remindable"],
             "percent": round(100 * counts[overview.KOMPLET] / total) if total else 0,
+            "segments": month_segments(counts, total),
         }
 
     @staticmethod

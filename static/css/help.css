@@ -301,7 +301,7 @@
 
 .help-recipient p {
   margin: 0;
-  color: var(--color-text-faint);
+  color: #fff;
 }
 
 .help-recipient__list {

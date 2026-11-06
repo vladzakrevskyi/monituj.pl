@@ -1,11 +1,16 @@
-{% extends "base/base.html" %}
+{% extends "base/auth_base.html" %}
 {% load static %}
 
-{% block page_class %}page--narrow{% endblock %}
+{% block auth_eyebrow %}Bez zakładania konta{% endblock %}
+{% block auth_title %}Prośba o dokumenty <strong>w 2&nbsp;minuty.</strong>{% endblock %}
+{% block auth_points %}
+{% include "base/_auth_point.html" with text="Lista dokumentów i termin w jednym linku" %}
+{% include "base/_auth_point.html" with text="Odbiorca przesyła pliki bez konta" %}
+{% include "base/_auth_point.html" with text="Automatyczne przypomnienia o brakach" %}
+{% endblock %}
 
-{% block content %}
+{% block auth_form %}
 <div class="card">
-<p class="eyebrow eyebrow--line">Bez zakładania konta</p>
 <h1>Wyślij prośbę o dokumenty</h1>
 <p class="card-lead">Podaj, czego potrzebujesz i od kogo. Odbiorca dostanie link, prześle pliki bez konta, a Monituj sam przypomni mu o brakach. Bez konta wyślesz jedną prośbę dziennie.</p>
 <form method="post" novalidate data-ajax-form>

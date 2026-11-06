@@ -1,20 +1,39 @@
 {% extends "base/base.html" %}
+{% load static %}
+
+{% block page_class %}page--flush lp-page{% endblock %}
+{% block extra_css %}<link rel="preload" href="{% static 'fonts/funnel-display-latin.woff2' %}" as="font" type="font/woff2" crossorigin>{% endblock %}
 
 {% block content %}
-<div class="auth-card">
-<div class="auth-card__intro">
-<span class="auth-card__logo">{% include "base/_logo.html" with on_dark=True %}</span>
-<h1>{% block auth_title %}Kontroluj <strong>dokumenty</strong> od klientów bez chaosu w mailach{% endblock %}</h1>
-<ul class="auth-card__points">
+<div class="lp-auth">
+<aside class="lp-auth__intro">
+<p class="lp-mono lp-label"><b aria-hidden="true">●</b> {% block auth_eyebrow %}Program do zbierania dokumentów od klientów{% endblock %}</p>
+<h1>{% block auth_title %}Zbieranie dokumentów od klientów. <strong>Bez gonienia.</strong>{% endblock %}</h1>
+<ul class="lp-auth__points">
 {% block auth_points %}
-{% include "base/_auth_point.html" with text="Bezpieczne linki z opcjonalnym hasłem" %}
+{% include "base/_auth_point.html" with text="Lista dokumentów w jednym linku, klient bez konta" %}
 {% include "base/_auth_point.html" with text="Automatyczne przypomnienia o brakach" %}
-{% include "base/_auth_point.html" with text="Pełna historia i kontrola statusu" %}
+{% include "base/_auth_point.html" with text="Status każdego dokumentu i pełna historia" %}
 {% endblock %}
 </ul>
-</div>
-<div class="auth-card__form">
+</aside>
+<div class="lp-auth__form">
+<div class="lp-auth__box">
 {% block auth_form %}{% endblock %}
 </div>
 </div>
+</div>
+{% endblock %}
+
+{% block site_footer %}
+<footer class="lp-page lp-auth-foot lp-mono">
+<span>&copy; {% now "Y" %} Monituj</span>
+<nav aria-label="Informacje prawne">
+<a href="{% url 'legal:terms' %}">Regulamin</a>
+<a href="{% url 'legal:privacy' %}">Polityka prywatności</a>
+<a href="{% url 'help:index' %}">Pomoc</a>
+<a href="{% url 'pages:contact' %}">Kontakt</a>
+{% if cookie_consent.enabled %}<button type="button" class="lp-footer__cookies" data-cookie-settings>Ustawienia cookies</button>{% endif %}
+</nav>
+</footer>
 {% endblock %}

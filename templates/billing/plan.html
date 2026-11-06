@@ -143,7 +143,7 @@
 {% endif %}
 {% endif %}
 
-<form class="plan-picker" method="post" action="{% if state.is_subscribed %}{% url 'billing:change' %}{% else %}{% url 'billing:checkout' %}{% endif %}">
+<form class="plan-picker lp-pricing" method="post" action="{% if state.is_subscribed %}{% url 'billing:change' %}{% else %}{% url 'billing:checkout' %}{% endif %}">
 {% csrf_token %}
 <div class="plan-picker__head">
 <h2>{% if state.is_subscribed %}Zmień plan{% else %}Wybierz plan{% endif %}</h2>

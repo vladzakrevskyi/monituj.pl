@@ -2,18 +2,19 @@
 {% load static formatting %}
 
 {% block page_name %}Panel{% endblock %}
+{% block page_class %}page--wide db-page{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">{% endblock %}
 {% block extra_js %}<script src="{% static 'js/core.js' %}"></script>{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header db-head">
 <div>
+<p class="page-header__sub">{{ today|date:"l · j E Y"|capfirst }}</p>
 <h1>{{ greeting }}{% if user.display_name %}, {{ user.display_name }}{% endif %}</h1>
-<p class="page-header__sub">{{ today|date:"l, j E"|capfirst }} · co czeka na Ciebie i na Twoich klientów.</p>
 </div>
 <div class="page-header__actions">
 <a class="btn btn-secondary" href="{% url 'requests:question-create' %}">Zadaj pytanie</a>
-<a class="btn btn-primary" href="{% url 'requests:create' %}">Nowa prośba</a>
+<a class="btn btn-primary" href="{% url 'requests:create' %}">+ Nowa prośba</a>
 <details class="menu">
 <summary class="btn btn-secondary btn-icon menu__toggle" aria-label="Więcej działań" title="Więcej działań"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></summary>
 <div class="menu__list">
@@ -79,6 +80,27 @@
 {% endif %}
 
 {% if not first_steps or active_requests %}
+<div class="db-sum">
+<section class="db-band" aria-labelledby="month-title">
+<p class="db-band__label"><span aria-hidden="true">●</span> <span id="month-title">{{ month.label|capfirst }}</span> · <a href="{% url 'requests:overview' %}">Zestawienie</a></p>
+{% if missing_documents %}<h2>Czekasz na <em>{{ missing_documents }} {{ missing_documents|pl_plural:"dokument,dokumenty,dokumentów" }}</em> od klientów.</h2>
+{% else %}<h2>Wszystko dotarło. <em>Nic nie brakuje.</em></h2>{% endif %}
+{% if month.total %}
+<div class="db-seg" aria-hidden="true">{% for state in month.segments %}<i class="db-seg__{{ state }}"></i>{% endfor %}</div>
+<div class="db-band__meta">
+<p><strong>{{ month.complete }} z {{ month.total }}</strong> {% if month.total == 1 %}klienta ma{% else %}klientów ma{% endif %} komplet w tym miesiącu{% if month.late %} · <a href="{% url 'requests:overview' %}?m={{ month.key }}&amp;s=po_terminie">po terminie: {{ month.late }}</a>{% endif %}</p>
+{% if month.remindable %}
+<form method="post" action="{% url 'requests:overview-remind' %}" data-confirm="Każdy klient, któremu czegoś brakuje w prośbach z tego miesiąca, dostanie jedną wiadomość z listą wszystkich braków ({{ month.remindable }}). Pominiemy prośby, o których przypomnienie wyszło w ciągu ostatniej godziny." data-confirm-title="Przypomnieć wszystkim?" data-confirm-label="Wyślij przypomnienia">
+{% csrf_token %}
+<input type="hidden" name="m" value="{{ month.key }}">
+<button type="submit" class="btn btn-primary">Przypomnij {{ month.remindable }} {{ month.remindable|pl_plural:"klientowi,klientom,klientom" }}</button>
+</form>
+{% endif %}
+</div>
+{% else %}
+<div class="db-band__meta db-band__empty"><p>W tym miesiącu nie wysłałeś jeszcze próśb.</p><a class="btn btn-primary" href="{% url 'requests:create' %}">+ Nowa prośba</a></div>
+{% endif %}
+</section>
 <nav class="stat-grid" aria-label="Podsumowanie">
 <a class="stat-tile stat-tile--action" href="#do-zrobienia">
 <span class="stat-tile__value">{{ to_review }}</span>
@@ -101,84 +123,37 @@
 <span class="stat-tile__hint">Kto i czego nie przysłał</span>
 </a>
 </nav>
+</div>
 {% endif %}
 
-<div class="dashboard-grid">
-<div class="dashboard-col">
-<section class="card" id="do-zrobienia" aria-labelledby="to-do-title">
-<h2 class="card-title" id="to-do-title">Do zrobienia</h2>
+<div class="db-cols">
+<section class="card db-todo" id="do-zrobienia" aria-labelledby="to-do-title">
+<div class="card-title-row"><h2 class="card-title" id="to-do-title">Do zrobienia</h2>{% if to_do %}<span class="db-count">{{ to_do|length }}</span>{% endif %}</div>
 {% if to_do %}
-<ul class="open-list">
+<ul class="db-todo__list">
 {% for entry in to_do %}
-<li class="open-item open-item--{{ entry.kind }}{% if entry.kind == 'overdue' %} open-item--late{% elif entry.kind == 'review' or entry.kind == 'answer' %} open-item--review{% endif %}">
-<span class="open-item__kind">{{ entry.label }}</span>
-<a class="open-item__title" href="{{ entry.url }}">{{ entry.title|truncatechars:110 }}</a>
-<span class="open-item__meta">{{ entry.meta|truncatechars:140 }}</span>
-{% if entry.remind %}<button type="button" class="btn btn-secondary btn-sm open-item__action" data-remind-request="{{ entry.remind.id }}" data-client="{{ entry.remind.client.name }}">Przypomnij</button>{% endif %}
+<li class="db-todo__item">
+<div class="db-todo__text">
+<span class="db-tag db-tag--{{ entry.kind }}">{{ entry.label }}</span>
+<a class="db-todo__title" href="{{ entry.url }}">{{ entry.title|truncatechars:90 }}</a>
+<span class="db-todo__meta">{{ entry.meta|truncatechars:120 }}</span>
+</div>
+{% if entry.remind %}<button type="button" class="btn btn-secondary db-todo__action" data-remind-request="{{ entry.remind.id }}" data-client="{{ entry.remind.client.name }}">Przypomnij</button>
+{% else %}<a class="btn btn-dark db-todo__action" href="{{ entry.url }}">{% if entry.kind == "review" %}Sprawdź{% else %}Zobacz{% endif %}</a>{% endif %}
 </li>
 {% endfor %}
 </ul>
 {% else %}
-<div class="all-clear">
-<span class="all-clear__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>
-<p class="mb-0">{% if first_steps %}Tu pojawią się dokumenty do sprawdzenia, odpowiedzi klientów i prośby po terminie.{% else %}Nic nie czeka na Ciebie. Monituj przypomina klientom o brakach - napiszemy, gdy coś przyjdzie.{% endif %}</p>
+<div class="db-clear">
+<span class="db-clear__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>
+<p>{% if first_steps %}Tu pojawią się dokumenty do sprawdzenia, odpowiedzi klientów i prośby po terminie.{% else %}Nic nie czeka na Ciebie. Monituj przypomina klientom o brakach i napisze, gdy coś przyjdzie.{% endif %}</p>
 </div>
 {% endif %}
 </section>
 
-<section class="card" aria-labelledby="upcoming-title">
-<div class="card-title-row">
-<h2 class="card-title" id="upcoming-title">Najbliższe terminy</h2>
-<a class="card-title-row__link" href="{% url 'agenda:calendar' %}">Kalendarz</a>
-</div>
-{% if upcoming %}
-<ul class="due-list">
-{% for request_obj in upcoming %}
-<li class="due-list__item">
-<a class="due-list__main" href="{% url 'requests:detail' request_obj.id %}">
-<span class="due-list__name">{{ request_obj.name }}</span>
-<span class="due-list__client">{{ request_obj.client.name }}</span>
-</a>
-<span class="due-list__when" title="{{ request_obj.deadline|dt }}">{{ request_obj.deadline|due|capfirst }}</span>
-<span class="due-list__progress"><progress class="progress-bar" value="{{ request_obj.delivered_items }}" max="{{ request_obj.total_items|default:1 }}" aria-label="Gotowe dokumenty"></progress><span>{{ request_obj.delivered_items }}/{{ request_obj.total_items }}</span></span>
-<button type="button" class="btn btn-secondary btn-sm" data-remind-request="{{ request_obj.id }}" data-client="{{ request_obj.client.name }}">Przypomnij</button>
-</li>
-{% endfor %}
-</ul>
-{% else %}
-<p class="text-muted mb-0">W najbliższych 7 dniach nie mija żaden termin. <a href="{% url 'requests:list' %}">Wszystkie prośby</a></p>
-{% endif %}
-</section>
-</div>
-
-<div class="dashboard-col">
-<section class="card" aria-labelledby="month-title">
-<div class="card-title-row">
-<h2 class="card-title" id="month-title">{{ month.label|capfirst }}</h2>
-<a class="card-title-row__link" href="{% url 'requests:overview' %}">Zestawienie</a>
-</div>
-{% if month.total %}
-<p class="month-card__lead"><strong>{{ month.complete }} z {{ month.total }}</strong> {% if month.total == 1 %}klienta ma{% else %}klientów ma{% endif %} komplet</p>
-<progress class="progress-bar month-card__bar" value="{{ month.complete }}" max="{{ month.total }}" aria-label="Klienci z kompletem"></progress>
-<ul class="month-card__facts">
-<li><a href="{% url 'requests:overview' %}?m={{ month.key }}&amp;s=czekamy"><span class="ov-dot ov-dot--czekamy"></span>W trakcie <strong>{{ month.waiting }}</strong></a></li>
-<li><a href="{% url 'requests:overview' %}?m={{ month.key }}&amp;s=po_terminie"><span class="ov-dot ov-dot--po_terminie"></span>Po terminie <strong>{{ month.late }}</strong></a></li>
-<li><a href="{% url 'requests:overview' %}?m={{ month.key }}&amp;s=do_sprawdzenia"><span class="ov-dot ov-dot--do_sprawdzenia"></span>Do sprawdzenia <strong>{{ month.to_check }}</strong></a></li>
-</ul>
-{% if month.remindable %}
-<form method="post" action="{% url 'requests:overview-remind' %}" data-confirm="Każdy klient, któremu czegoś brakuje w prośbach z tego miesiąca, dostanie jedną wiadomość z listą wszystkich braków ({{ month.remindable }}). Pominiemy prośby, o których przypomnienie wyszło w ciągu ostatniej godziny." data-confirm-title="Przypomnieć wszystkim?" data-confirm-label="Wyślij przypomnienia">
-{% csrf_token %}
-<input type="hidden" name="m" value="{{ month.key }}">
-<button type="submit" class="btn btn-secondary btn-block">Przypomnij wszystkim z brakami ({{ month.remindable }})</button>
-</form>
-{% endif %}
-{% else %}
-<p class="text-muted mb-0">W tym miesiącu nie wysłałeś jeszcze próśb. <a href="{% url 'requests:create' %}">Wyślij pierwszą</a></p>
-{% endif %}
-</section>
-
-<section class="card" aria-labelledby="today-title">
-<h2 class="card-title" id="today-title">Dziś</h2>
+<div class="db-side">
+<section class="card db-today" aria-labelledby="today-title">
+<div class="card-title-row"><h2 class="card-title" id="today-title">Dziś</h2>{% if summary.reminders %}<span class="db-count">{{ summary.reminders|length }}</span>{% endif %}</div>
 {% if summary.reminders %}
 <ul class="today-list">
 {% for reminder in summary.reminders %}
@@ -205,24 +180,38 @@
 <input type="text" id="home-reminder-text" name="text" maxlength="300" required placeholder="Przypomnij mi… np. zadzwonić do Kowalskiego">
 <label for="home-reminder-day" class="visually-hidden">Dnia</label>
 <input type="date" id="home-reminder-day" name="due_on" required value="{{ tomorrow|date:'Y-m-d' }}">
-<button type="submit" class="btn btn-secondary btn-sm">Dodaj przypomnienie</button>
+<button type="submit" class="btn btn-dark">Dodaj</button>
 </form>
 {% if next_send %}<p class="today-next">Następna wysyłka cykliczna: <a href="{% url 'requests:recurring-edit' next_send.id %}">{{ next_send.name }}</a> · {{ next_send.next_run_on|d }}</p>{% endif %}
 </section>
 
-<section class="card" aria-labelledby="activity-title">
-<div class="card-title-row">
-<h2 class="card-title" id="activity-title">Ostatnia aktywność</h2>
-{% if recent_activity %}<a class="card-title-row__link" href="{% url 'notifications:list' %}">Wszystkie</a>{% endif %}
-</div>
-<ul class="history-list history-list--compact">
-{% for entry in recent_activity|slice:":5" %}
-<li><span class="history-time">{{ entry.created_at|dt }}</span><span>{{ entry.label_pl }}{% if entry.request %} - {% if entry.url %}<a href="{{ entry.url }}">{{ entry.request.name|truncatechars:60 }}</a>{% else %}{{ entry.request.name|truncatechars:60 }}{% endif %} <span class="text-muted">({{ entry.request.client.name }})</span>{% endif %}{% if entry.actor and entry.actor != user and entry.actor != request.account %} · {{ entry.actor.display_name|default:entry.actor.email }}{% endif %}</span></li>
-{% empty %}
-<li>Tu zobaczysz, co dzieje się u klientów: otwarcia linków, przesłane pliki, przypomnienia.</li>
+<section class="card db-due" aria-labelledby="upcoming-title">
+<div class="card-title-row"><h2 class="card-title" id="upcoming-title">Najbliższe terminy</h2><a class="card-title-row__link" href="{% url 'agenda:calendar' %}">Kalendarz →</a></div>
+{% if upcoming %}
+<ul class="db-due__list">
+{% for request_obj in upcoming %}
+<li class="db-due__item">
+<span class="db-date" title="{{ request_obj.deadline|dt }}"><b>{{ request_obj.deadline|date:"j" }}</b>{{ request_obj.deadline|date:"b" }}</span>
+<a class="db-due__main" href="{% url 'requests:detail' request_obj.id %}"><strong>{{ request_obj.name|truncatechars:48 }}</strong><span>{{ request_obj.client.name }} · {{ request_obj.delivered_items }} z {{ request_obj.total_items }} · {{ request_obj.deadline|due }}</span></a>
+<button type="button" class="btn btn-secondary btn-sm" data-remind-request="{{ request_obj.id }}" data-client="{{ request_obj.client.name }}" title="Przypomnij teraz">Przypomnij</button>
+</li>
 {% endfor %}
 </ul>
+{% else %}
+<p class="text-muted mb-0">W najbliższych 7 dniach nie mija żaden termin. <a href="{% url 'requests:list' %}">Wszystkie prośby</a></p>
+{% endif %}
 </section>
 </div>
 </div>
+
+<section class="card db-activity" aria-labelledby="activity-title">
+<div class="card-title-row"><h2 class="card-title" id="activity-title">Ostatnia aktywność</h2>{% if recent_activity %}<a class="card-title-row__link" href="{% url 'notifications:list' %}">Wszystkie →</a>{% endif %}</div>
+<ul class="db-log">
+{% for entry in recent_activity|slice:":6" %}
+<li><time>{{ entry.created_at|dt }}</time><span>{{ entry.label_pl }}{% if entry.request %} · {% if entry.url %}<a href="{{ entry.url }}">{{ entry.request.name|truncatechars:60 }}</a>{% else %}{{ entry.request.name|truncatechars:60 }}{% endif %} <span class="text-muted">({{ entry.request.client.name }})</span>{% endif %}{% if entry.actor and entry.actor != user and entry.actor != request.account %} · {{ entry.actor.display_name|default:entry.actor.email }}{% endif %}</span></li>
+{% empty %}
+<li class="db-log__empty">Tu zobaczysz, co dzieje się u klientów: otwarcia linków, przesłane pliki, przypomnienia.</li>
+{% endfor %}
+</ul>
+</section>
 {% endblock %}

@@ -14,7 +14,15 @@
     box.querySelector(`[data-show="${name}"]`).textContent = text;
   };
 
+  // How far each slider is pulled, for a track filled up to the thumb.
+  const fill = () =>
+    box.querySelectorAll('input[type="range"]').forEach((range) => {
+      const share = (range.value - range.min) / (range.max - range.min);
+      range.style.setProperty("--fill", `${(share * 100).toFixed(1)}%`);
+    });
+
   function update() {
+    fill();
     const clients = input("clients");
     const times = input("times");
     const minutes = input("minutes");

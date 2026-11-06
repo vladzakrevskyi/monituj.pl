@@ -101,26 +101,32 @@ def _check_office_zip(content):
         raise ValidationAppError(antivirus.MACROS_MESSAGE, code="FILE_HAS_MACROS")
 
 
+# Says what will do instead, not only what won't.
+FORMAT_MESSAGE = (
+    "Tego formatu nie przyjmiemy. Prześlij PDF, zdjęcie (JPG, PNG, HEIC) "
+    "albo plik Word, Excel lub CSV."
+)
+
+
 def validate_upload(uploaded_file, request_obj=None) -> ValidatedUpload:
     """request_obj: where the file is going - named in an antivirus alarm."""
     if uploaded_file.size > MAX_UPLOAD_SIZE:
-        raise ValidationAppError("Plik jest za duży.", code="FILE_TOO_LARGE")
+        raise ValidationAppError(
+            f"Plik jest za duży - maksymalnie {MAX_UPLOAD_SIZE // (1024 * 1024)} MB.",
+            code="FILE_TOO_LARGE",
+        )
     if uploaded_file.size == 0:
         raise ValidationAppError("Plik jest pusty.", code="EMPTY_FILE")
 
     safe_name = os.path.basename(uploaded_file.name or "")
     extension = safe_name.rsplit(".", 1)[-1].lower() if "." in safe_name else ""
     if extension not in ALLOWED_EXTENSIONS:
-        raise ValidationAppError(
-            "Ten format pliku nie jest dozwolony.", code="EXTENSION_NOT_ALLOWED"
-        )
+        raise ValidationAppError(FORMAT_MESSAGE, code="EXTENSION_NOT_ALLOWED")
 
     content = uploaded_file.read()
     mime_type = magic.from_buffer(content, mime=True)
     if mime_type not in ALLOWED_TYPES[extension]:
-        raise ValidationAppError(
-            "Ten format pliku nie jest dozwolony.", code="MIME_NOT_ALLOWED"
-        )
+        raise ValidationAppError(FORMAT_MESSAGE, code="MIME_NOT_ALLOWED")
 
     if extension in OFFICE_ZIPS:
         _check_office_zip(content)

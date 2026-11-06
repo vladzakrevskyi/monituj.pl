@@ -479,4 +479,4 @@ def test_recipient_page_lists_questions_apart_and_sits_in_a_container(
     assert "Czeka na Twoją odpowiedź" in questions_part
     assert request_record.name in documents_part
     assert "Za co była ta płatność?" not in documents_part
-    assert 'class="page "' in html  # the site's container, not edge to edge
+    assert 'class="page lp-page' in html  # the site's container, not edge to edge

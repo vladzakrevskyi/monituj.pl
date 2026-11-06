@@ -1,19 +1,23 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block page_class %}page--flush{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages.css' %}">{% endblock %}
+{% block page_class %}page--flush lp-page{% endblock %}
+{% block extra_css %}<link rel="preload" href="{% static 'fonts/funnel-display-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{% static 'css/pages.css' %}">{% block page_css %}{% endblock %}{% endblock %}
 
 {% block content %}
-<section class="page-hero{% block hero_class %}{% endblock %}">
-<div class="container">
+<section class="lp-phero">
+<div class="lp-wrap lp-phero__grid{% block hero_layout %} lp-phero__grid--solo{% endblock %}">
+<div>
 {% block breadcrumbs %}{% endblock %}
-<p class="eyebrow">{% block hero_eyebrow %}{% endblock %}</p>
-<h1 class="display page-hero__title">{% block hero_title %}{% endblock %}</h1>
-<p class="page-hero__lead">{% block hero_lead %}{% endblock %}</p>
+<p class="lp-mono lp-label"><b aria-hidden="true">●</b> {% block hero_eyebrow %}{% endblock %}</p>
+<h1>{% block hero_title %}{% endblock %}</h1>
+<p class="lp-lead">{% block hero_lead %}{% endblock %}</p>
 {% block hero_actions %}{% endblock %}
+</div>
+{% block hero_side %}{% endblock %}
 </div>
 </section>
 {% block page_body %}{% endblock %}
-{% block page_cta %}{% include "pages/_cta_band.html" %}{% endblock %}
+{% block page_cta %}{% include "pages/_final.html" %}{% endblock %}
 {% endblock %}

@@ -1,10 +1,9 @@
-{% extends "base/base.html" %}
+{% extends "base/auth_base.html" %}
 {% load formatting %}
 
 {% block page_name %}Potwierdź wysłanie prośby{% endblock %}
-{% block page_class %}page--compact{% endblock %}
 
-{% block content %}
+{% block auth_form %}
 <div class="card">
 <p class="eyebrow eyebrow--line">Prośba bez konta</p>
 <h1>Wysłać prośbę?</h1>

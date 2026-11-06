@@ -1,0 +1,16 @@
+<section class="lp-final">
+<div class="lp-wrap">
+<h2>{{ final_title|default:"Zacznij zbierać dokumenty od klientów jeszcze dziś." }}</h2>
+<div class="lp-final__row">
+<p>Plan Free bez limitu czasu. Płatne plany od {{ plan_facts.price_from }} zł netto miesięcznie, a na start {{ plan_facts.trial_days }} dni planu {{ plan_facts.trial_plan }} za darmo, bez karty.</p>
+<div class="lp-final__actions">
+{% include "demo/_button.html" with cls="lp-btn lp-btn--outline-black" label="Wypróbuj demo" %}
+{% if user.is_authenticated and not demo_account %}
+<a class="lp-btn lp-btn--black" href="{% url 'accounts:panel' %}">Przejdź do panelu <span class="lp-arr">→</span></a>
+{% else %}
+<a class="lp-btn lp-btn--black" href="{% url 'accounts:register' %}">Zacznij za darmo <span class="lp-arr">→</span></a>
+{% endif %}
+</div>
+</div>
+</div>
+</section>
